@@ -4679,6 +4679,20 @@ div[data-decoration="bronze"]::after {
 	top: 47px;
 	left: 14px;
 }
+.cardsetion {
+	left: 1px;
+	width: calc(100% - 2px);
+	color: #fff;
+	text-shadow: 1px 1px black;
+	font-size: 15px;
+	bottom: 9%;
+	text-align: center;
+	z-index: 2;
+	pointer-events: none;
+}
+.card.tempname.tempimage {
+	opacity: 1 !important;
+}
 .card .wunature {
 	top: 74px;
 	right: 6px;

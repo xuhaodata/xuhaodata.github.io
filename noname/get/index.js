@@ -19,6 +19,149 @@ export class Get extends GetCompatible {
 	promises = new Promises();
 	Audio = Audio;
 	/**
+	 * 获取当前事件是由何skill/card事件衍生并生成相应的卡牌信息提示
+	 * @param {Player} player
+	 * @param {GameEventPromise} sourceEvent
+	 * @returns {GameEvent|string}
+	 */
+	cardsetion(player, sourceEvent) {
+		if (game.online) return;
+		if (!player && sourceEvent) player = game.me;
+		const info = lib.translate;
+		const { name, targets, judgestr } = _status.event;
+		const playername = get.slimName(player?.name);
+		let border = get.groupnature(get.bordergroup(player?.name), "raw");
+		let eventInfo = `<span style="font-weight:700"><span data-nature=${border}>${playername}</span><br/><span style="color:#FFD700">`;
+		let name1 = name,
+			name2 = _status.event.getParent().name,
+			th_skill = false,
+			evt1 = get.event(),
+			evt2 = get.event().getParent();
+		if ((name == "lose" && !lib.skill[name2] && _status.event.getParent(2).name != "die") || (name == "gain" && !info[get.event().getParent().name])) {
+			name1 = _status.event.getParent(2).name;
+			evt1 = _status.event.getParent(2);
+			name2 = _status.event.getParent(3).name;
+			evt2 = _status.event.getParent(3);
+		}
+		if (name1 == "compareMultiple" || name2 == "compareMultiple" || name1.indexOf("Callback") != -1 || name2.indexOf("Callback") != -1) {
+			name1 = _status.event.getParent(4).name;
+			evt1 = _status.event.getParent(4);
+			name2 = _status.event.getParent(5).name;
+			evt2 = _status.event.getParent(5);
+		} else if (name1 == "useCard" && name2 == "chooseUseTarget" && !evt1.skill) {
+			name1 = _status.event.getParent(2).name;
+			evt1 = _status.event.getParent(2);
+			name2 = _status.event.getParent(3).name;
+			evt2 = _status.event.getParent(3);
+		}
+		let banned = ["phaseJudge", "equip", "phaseUse"];
+		if (banned.includes(name1)) name1 = false;
+		if (banned.includes(name2)) name2 = false;
+		if (name1 && !info[name1]) {
+			if (name1.indexOf("equip_") == 0) name1 = name1.slice(6);
+			else if (name1.indexOf("pre_") == 0) {
+				name1 = name1.slice(4);
+				if (name1.indexOf("_backup") != -1 && !info[name1]) name1 = name1.slice(0, name1.indexOf("_backup"));
+			} else if (name1.indexOf("lose_") == 0) name1 = name1.slice(5);
+			else if (name1.indexOf("_lose") != -1 && name1.length - name1.indexOf("_lose") == 5) name1 = name1.slice(0, name1.length - 5);
+		}
+		if (name2 && !info[name2]) {
+			if ((name2 == "chooseToUse" || name2 == "chooseToRespond" || name2 == "_wuxie") && evt2.childEvents) {
+				let tempEvt;
+				for (let key of evt2.childEvents) {
+					if (key.name.indexOf("pre_") == 0 && key.name.indexOf("_backup") != -1) {
+						tempEvt = key;
+						break;
+					}
+				}
+				if (tempEvt) {
+					name2 = tempEvt.name;
+				} else if (name2 == "chooseToUse" && info[evt2.getParent().name] && lib.skill[evt2.getParent().name] && !banned.includes(evt2.getParent().name)) {
+					evt2 = evt2.getParent();
+					name2 = evt2.name;
+				}
+			}
+			if (name2.indexOf("equip_") == 0) name2 = name2.slice(6);
+			else if (name2.indexOf("pre_") == 0) {
+				name2 = name2.slice(4);
+				if (name2.indexOf("_backup") != -1) name2 = name2.slice(0, name2.indexOf("_backup"));
+			} else if (name2.indexOf("lose_") == 0) name2 = name2.slice(5);
+			else if (name2.indexOf("_lose") != -1 && name2.length - name2.indexOf("_lose") == 5) name2 = name2.slice(0, name2.length - 5);
+		}
+		if (name1 == "useSkill") name1 = evt1.skill;
+		if (name2 == "useSkill") name2 = evt2.skill;
+		if (_status.event.skill) {
+			let skill = _status.event.skill;
+			if (info[skill]) {
+				th_skill = true;
+				eventInfo += info[skill];
+				if (sourceEvent) return _status.event;
+			}
+		} else if ((name1 && info[name1]) || (evt1.skill && info[evt1.skill])) {
+			if (name1 && info[name1]) {
+				if (lib.card[name1] && evt1.card && evt1.card.nature && info[evt1.card.nature]) eventInfo += info[evt1.card.nature];
+				eventInfo += info[name1];
+			} else eventInfo += info[evt1.skill];
+			th_skill = true;
+			if (sourceEvent) return evt1;
+		} else if ((name2 && info[name2]) || (evt2.skill && info[evt2.skill])) {
+			if (name2 && info[name2]) {
+				if (lib.card[name2] && evt2.card && evt2.card.nature && info[evt2.card.nature]) eventInfo += info[evt2.card.nature];
+				eventInfo += info[name2];
+			} else eventInfo += info[evt2.skill];
+			th_skill = true;
+			if (sourceEvent) return evt2;
+		}
+		eventInfo += "</span>";
+		if (sourceEvent) return false;
+		switch (name) {
+			case "chooseToCompare": {
+				eventInfo += "拼点";
+				break;
+			}
+			case "phaseJudge": {
+				let card = _status.event.card;
+				let cardName = card.viewAs || card.name;
+				eventInfo += get.translation(cardName);
+				break;
+			}
+			case "useCard": {
+				eventInfo += "使用";
+				break;
+			}
+			case "lose": {
+				let event = _status.event,
+					evt = event.getParent();
+				if (event.type && event.type == "discard") eventInfo += "弃置";
+				else if (event.getParent(2).name == "recast" && event.getParent(3).name != "_recasting") eventInfo += "重铸";
+				break;
+			}
+			case "loseAsync": {
+				let event = _status.event;
+				if (event.type && event.type == "discard") eventInfo += "弃置";
+				break;
+			}
+			case "useSkill": {
+				let skill = _status.event.skill;
+				if (!skill || typeof skill != "string") {
+				} else if (skill == "_chongzhu") {
+					//eventInfo+="重铸"
+				}
+				break;
+			}
+			case "respond": {
+				eventInfo += "打出";
+				break;
+			}
+			case "judge": {
+				eventInfo += (!th_skill && judgestr ? judgestr : "") + "判定";
+				break;
+			}
+		}
+		eventInfo += "</span>";
+		return eventInfo;
+	}
+	/**
 	 * 返回牌名“【XXX】”形式的数组
 	 * @param { Function } [filter] 
 	 * @returns { string[] }
