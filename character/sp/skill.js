@@ -32593,7 +32593,7 @@ const skills = {
 		},
 		subSkill: {
 			use: {
-				audio: "xinfu_jianjie",
+				audio: ["xinfu_jianjie1.mp3", "xinfu_jianjie2.mp3"],
 				enable: "phaseUse",
 				usable: 1,
 				filter(event, player) {
@@ -32610,7 +32610,6 @@ const skills = {
 					}
 					return true;
 				},
-				logAudio: () => ["xinfu_jianjie1.mp3", "xinfu_jianjie2.mp3"],
 				selectTarget: 2,
 				complexSelect: true,
 				complexTarget: true,
