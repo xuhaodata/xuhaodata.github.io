@@ -52,7 +52,7 @@ const skills = {
 					delete player.storage[skill];
 					player.removeGaintag(skill);
 				},
-				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
+				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "cardsDiscardAfter"] },
 				filter(event, player) {
 					return player.hasCard(card => {
 						if (!card.hasGaintag("luansuo_debuff")) return false;
@@ -164,6 +164,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "dieBegin" },
 		filter(event, player) {
+			if (!(event.getParent().name !== "giveup" && player.maxHp > 0)) return false;
 			return get.cardPile2(c => get.tag(c, "fireDamage"));
 		},
 		forced: true,
