@@ -11377,7 +11377,6 @@ export class Player extends HTMLDivElement {
 	$give(card, player, log, init, cardsetion) {
 		if (!cardsetion && cardsetion !== false && lib.config.card_animation_info) {
 			let evt = get.cardsetion(null, true);
-			game.log(evt.name, evt.player, player);
 			if (evt && evt.player == player) cardsetion = get.cardsetion(player);
 			else cardsetion = get.cardsetion(this);
 		}
