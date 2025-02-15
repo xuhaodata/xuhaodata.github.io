@@ -187,7 +187,7 @@ const skills = {
 				filter(event, player) {
 					let bool = player.maxHp !== 1;
 					if (event.name === "phase") return bool && game.phaseNumber === 0;
-					return bool;
+					return true;
 				},
 				async content(event, trigger, player) {
 					if (["gainMaxHp", "loseMaxHp"].includes(trigger.name)) {
