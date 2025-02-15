@@ -4557,13 +4557,9 @@ const skills = {
 	sblijian: {
 		audio: 2,
 		enable: "phaseUse",
+		usable: 1,
 		filter(event, player) {
-			return (
-				!player.getStat("skill").sblijian &&
-				game.countPlayer(current => {
-					return current != player;
-				}) > 1
-			);
+			return game.countPlayer(current => current != player) > 1;
 		},
 		filterCard: true,
 		selectCard: [1, Infinity],
@@ -4589,15 +4585,7 @@ const skills = {
 			if (Array.isArray(cache)) return cache.length;
 			let targets = [],
 				cards = [0],
-				sbbiyue = player.hasSkill("sbbiyue")
-					? Math.max(
-						0,
-						3 -
-						game.countPlayer2(current => {
-							return current.getHistory("damage").length > 0;
-						})
-					)
-					: 0,
+				sbbiyue = player.hasSkill("sbbiyue") ? Math.max(0, 3 - game.countPlayer2(current.hasHistory("damage"))) : 0,
 				alter = [null, 1, 1],
 				temp;
 			for (let i of game.players) {
@@ -4618,13 +4606,13 @@ const skills = {
 			targets = targets.slice(
 				0,
 				1 +
-				player.countCards("he", card => {
-					if (lib.filter.cardDiscardable(card, player, "sblijian")) {
-						cards.push(get.value(card));
-						return true;
-					}
-					return false;
-				})
+					player.countCards("he", card => {
+						if (lib.filter.cardDiscardable(card, player, "sblijian")) {
+							cards.push(get.value(card));
+							return true;
+						}
+						return false;
+					})
 			);
 			cards.sort((a, b) => a - b);
 			for (let i = 0; i < targets.length; i++) {
@@ -4641,10 +4629,11 @@ const skills = {
 			return targets.length;
 		},
 		multiline: true,
-		content() {
-			var targetx = targets.slice().sortBySeat(target)[1];
-			var card = { name: "juedou", isCard: true };
-			if (target.canUse(card, targetx)) target.useCard(card, targetx);
+		async content(event, trigger, player) {
+			const { targets, target } = event;
+			const targetx = targets.slice().sortBySeat(target)[1];
+			const card = { name: "juedou", isCard: true };
+			if (target.canUse(card, targetx)) await target.useCard(card, targetx);
 		},
 		ai: {
 			threaten: 3,
@@ -4676,15 +4665,8 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
-		content() {
-			player.draw(
-				Math.min(
-					4,
-					game.countPlayer2(current => {
-						return current.getHistory("damage").length > 0;
-					}) + 1
-				)
-			);
+		async content(event, trigger, player) {
+			await player.draw(Math.min(4, game.countPlayer2(current => current.hasHistory("damage")) + 1));
 		},
 	},
 	//陈宫

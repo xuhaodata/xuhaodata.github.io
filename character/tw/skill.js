@@ -19815,106 +19815,109 @@ const skills = {
 		audio: 2,
 		trigger: {
 			global: "phaseBefore",
-			player: "enterGame",
+			player: ["enterGame", "damageEnd"],
 		},
 		filter(event, player) {
+			if (event.name == "damage") return event.num > 0;
 			return event.name != "phase" || game.phaseNumber == 0;
 		},
-		forced: true,
-		locked: false,
-		content() {
-			if (!lib.inpile.includes("dz_mantianguohai")) lib.inpile.add("dz_mantianguohai");
-			if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
-			var list = _status.dz_mantianguohai_suits.randomRemove(2).map(function (i) {
-				return game.createCard2("dz_mantianguohai", i, 5);
-			});
-			if (list.length) player.gain(list, "gain2", "log");
+		getIndex(event, player) {
+			return event.num || 1;
 		},
-		group: "twmiaolve_damage",
-		subSkill: {
-			damage: {
-				trigger: { player: "damageEnd" },
-				direct: true,
-				content() {
-					"step 0";
-					event.count = trigger.num;
-					"step 1";
-					event.count--;
-					var list = ["dz_mantianguohai"];
-					list.addArray(get.zhinangs());
-					player.chooseButton([get.prompt("twmiaolve"), [list, "vcard"]]).set("ai", function (button) {
-						if (button.link[2] == "dz_mantianguohai" && player.countCards("hs", "dz_mantianguohai") < 2) return 10;
-						return get.value({ name: button.link[2] });
-					});
-					"step 2";
-					if (result.bool) {
-						player.logSkill("twmiaolve");
-						var name = result.links[0][2];
-						if (name == "dz_mantianguohai") {
-							if (!lib.inpile.includes("dz_mantianguohai")) lib.inpile.add("dz_mantianguohai");
-							if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
-							if (_status.dz_mantianguohai_suits.length) player.gain(game.createCard2("dz_mantianguohai", _status.dz_mantianguohai_suits.randomRemove(), 5), "gain2");
-							else {
-								var card = get.cardPile(function (card) {
-									return card.name == name;
-								});
-								if (card) player.gain(card, "gain2");
-							}
-							player.draw();
-						} else {
-							var card = get.cardPile(function (card) {
-								return card.name == name;
-							});
-							if (card) player.gain(card, "gain2");
-						}
-						if (event.count > 0 && player.hasSkill("twmiaolve")) event.goto(1);
+		async cost(event, trigger, player) {
+			if (trigger.name == "damage") {
+				const list = ["dz_mantianguohai"];
+				list.addArray(get.zhinangs());
+				const {
+					result: { bool, links },
+				} = await player.chooseButton([get.prompt(event.skill), [list, "vcard"]]).set("ai", button => {
+					if (button.link[2] == "dz_mantianguohai" && player.countCards("hs", "dz_mantianguohai") < 2) return 10;
+					return get.value({ name: button.link[2] });
+				});
+				event.result = {
+					bool: bool,
+					cost_data: links,
+				};
+			} else event.result = { bool: true };
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "damage") {
+				const name = event.cost_data[0][2];
+				if (name == "dz_mantianguohai") {
+					if (!lib.inpile.includes("dz_mantianguohai")) lib.inpile.add("dz_mantianguohai");
+					if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
+					if (_status.dz_mantianguohai_suits.length) {
+						await player.gain(game.createCard2("dz_mantianguohai", _status.dz_mantianguohai_suits.randomRemove(), 5), "gain2");
+						await player.draw();
+					} else {
+						const card = get.cardPile(card => card.name == name);
+						if (card) await player.gain(card, "gain2");
 					}
-				},
-			},
+				} else {
+					const card = get.cardPile(card => card.name == name);
+					if (card) await player.gain(card, "gain2");
+				}
+			} else {
+				if (!lib.inpile.includes("dz_mantianguohai")) lib.inpile.add("dz_mantianguohai");
+				if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
+				const list = _status.dz_mantianguohai_suits.randomRemove(2).map(i => game.createCard2("dz_mantianguohai", i, 5));
+				if (list.length) await player.gain(list, "gain2", "log");
+			}
 		},
 	},
 	twyingjia: {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
-		direct: true,
 		filter(event, player) {
-			if (!player.countCards("he")) return false;
-			var history = player.getHistory("useCard"),
+			if (
+				!player.countCards("h", card => {
+					if (_status.connectMode) return true;
+					return lib.filter.cardDiscardable(card, player);
+				})
+			)
+				return false;
+			let bool = false;
+			const history = player.getHistory("useCard"),
 				map = {};
-			for (var i of history) {
-				if (get.type2(i.card) == "trick") {
-					if (!map[i.card.name]) map[i.card.name] = true;
-					else return true;
+			for (const evt of history) {
+				if (get.type2(evt.card) == "trick") {
+					if (!map[evt.card.name]) map[evt.card.name] = true;
+					else {
+						bool = true;
+						break;
+					}
 				}
 			}
-			return false;
+			return bool;
 		},
-		content() {
-			"step 0";
-			player.chooseCardTarget({
-				prompt: get.prompt("twyingjia"),
-				prompt2: "弃置一张牌并令一名角色进行一个额外回合",
-				filterCard: lib.filter.cardDiscardable,
-				filterTarget: true,
-				ai1(card) {
-					return 8 - get.value(card);
-				},
-				ai2(target) {
-					if (target.hasJudge("lebu")) return -1;
-					var player = _status.event.player;
-					if (get.attitude(player, target) > 4) {
-						return get.threaten(target) / Math.sqrt(target.hp + 1) / Math.sqrt(target.countCards("h") + 1);
-					}
-					return -1;
-				},
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("twyingjia", target);
-				player.discard(result.cards);
-				target.insertPhase();
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "弃置一张手牌并令一名角色进行一个额外回合",
+					filterCard: lib.filter.cardDiscardable,
+					filterTarget: true,
+					ai1(card) {
+						return 8 - get.value(card);
+					},
+					ai2(target) {
+						if (target.hasJudge("lebu")) return -1;
+						const player = get.player();
+						if (get.attitude(player, target) > 4) {
+							return get.threaten(target) / Math.sqrt(target.hp + 1) / Math.sqrt(target.countCards("h") + 1);
+						}
+						return -1;
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			await player.discard(cards);
+			target.insertPhase();
 		},
 	},
 	gx_lingbaoxianhu: {

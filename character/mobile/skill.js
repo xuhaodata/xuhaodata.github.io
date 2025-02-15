@@ -587,104 +587,51 @@ const skills = {
 	//势董昭
 	spmiaolve: {
 		audio: "twmiaolve",
-		trigger: {
-			global: "phaseBefore",
-			player: "enterGame",
-		},
-		filter(event, player) {
-			return event.name != "phase" || game.phaseNumber == 0;
-		},
-		forced: true,
-		locked: false,
-		async content(event, trigger, player) {
-			if (!lib.inpile.includes("dz_mantianguohai")) lib.inpile.add("dz_mantianguohai");
-			if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
-			var list = _status.dz_mantianguohai_suits.randomRemove(2).map(function (i) {
-				return game.createCard2("dz_mantianguohai", i, 5);
-			});
-			if (list.length) await player.gain(list, "gain2", "log");
-		},
-		group: "spmiaolve_damage",
-		subSkill: {
-			damage: {
-				trigger: { player: "damageEnd" },
-				async cost(event, trigger, player) {
-					const { result } = await player
-						.chooseButton([
-							"请选择一项",
+		inherit: "twmiaolve",
+		getIndex: () => 1,
+		async cost(event, trigger, player) {
+			if (trigger.name == "damage") {
+				const {
+					result: { bool, links },
+				} = await player
+					.chooseButton([
+						"请选择一项",
+						[
 							[
-								[
-									["draw", "摸两张牌"],
-									["gain", "从牌堆或弃牌堆中获得一张智囊"],
-								],
-								"textbutton",
+								["draw", "摸两张牌"],
+								["gain", "从牌堆或弃牌堆中获得一张智囊"],
 							],
-						])
-						.set("ai", button => Math.random());
-					event.result = {
-						bool: result.bool,
-						cost_data: result.links[0],
-					};
-				},
-				async content(event, trigger, player) {
-					const { cost_data } = event;
-					if (cost_data == "gain") {
-						const card = get.cardPile(function (c) {
-							return get.zhinangs().includes(c.name);
-						});
-						if (card) {
-							await player.gain(card);
-						} else {
-							player.chat("这智囊怎么一张都没有？");
-						}
-					} else {
-						await player.draw(2);
-					}
-				},
-			},
+							"textbutton",
+						],
+					])
+					.set("ai", button => Math.random());
+				event.result = {
+					bool: bool,
+					cost_data: links,
+				};
+			} else event.result = { bool: true };
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "damage") {
+				if (event.cost_data[0] == "gain") {
+					const card = get.cardPile(card => get.zhinangs().includes(card.name));
+					if (card) await player.gain(card, "gain2");
+					else player.chat("这智囊怎么一张都没有？");
+				} else await player.draw(2);
+			} else {
+				if (!lib.inpile.includes("dz_mantianguohai")) lib.inpile.add("dz_mantianguohai");
+				if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
+				const list = _status.dz_mantianguohai_suits.randomRemove(2).map(i => game.createCard2("dz_mantianguohai", i, 5));
+				if (list.length) await player.gain(list, "gain2", "log");
+			}
 		},
 	},
 	spyingjia: {
 		audio: "twyingjia",
-		trigger: {
-			global: "phaseEnd",
-		},
+		inherit: "twyingjia",
 		limited: true,
-		filter(event, player) {
-			if (!player.countCards("he")) return false;
-			var history = player.getHistory("useCard"),
-				map = {};
-			for (var i of history) {
-				if (get.type2(i.card) == "trick") {
-					if (!map[i.card.name]) map[i.card.name] = true;
-					else return true;
-				}
-			}
-			return false;
-		},
 		skillAnimation: true,
 		animationColor: "thunder",
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseCardTarget({
-					prompt: get.prompt("twyingjia"),
-					prompt2: "弃置一张牌并令一名角色进行一个额外回合",
-					filterCard: lib.filter.cardDiscardable,
-					filterTarget: true,
-					ai1(card) {
-						return 8 - get.value(card);
-					},
-					ai2(target) {
-						if (target.hasJudge("lebu")) return -1;
-						var player = _status.event.player;
-						if (get.attitude(player, target) > 4) {
-							return get.threaten(target) / Math.sqrt(target.hp + 1) / Math.sqrt(target.countCards("h") + 1);
-						}
-						return -1;
-					},
-				})
-				.forResult();
-		},
 		async content(event, trigger, player) {
 			const {
 				targets: [target],
@@ -692,18 +639,20 @@ const skills = {
 			} = event;
 			player.awakenSkill(event.name);
 			await player.discard(cards);
-			target.insertPhase("spyingjia");
-			target.addTempSkill("spyingjia_draw");
+			target.insertPhase(event.name);
+			target.addSkill(event.name + "_draw");
 		},
 		subSkill: {
 			draw: {
-				trigger: {
-					player: "phaseBegin",
-				},
+				charlotte: true,
+				trigger: { player: "phaseBegin" },
 				filter(event, player) {
 					return event.skill == "spyingjia";
 				},
+				forced: true,
+				popup: false,
 				async content(event, trigger, player) {
+					player.removeSkill(event.name);
 					await player.draw(2);
 				},
 			},
