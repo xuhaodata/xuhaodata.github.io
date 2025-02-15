@@ -610,12 +610,16 @@ const skills = {
 		selectTarget: [1, Infinity],
 		async content(event, trigger, player) {
 			const { target } = event;
-			if (!target.countCards("h")) await target.draw();
-			if (target.countCards("h") <= player.countCards("h")) await target.draw();
+			const num = !target.countCards("h") + (target.countCards("h") <= player.countCards("h"));
+			if (num) await target.draw(num);
 		},
 		ai: {
 			order: 10,
-			result: { target: 1 },
+			result: {
+				target(player, target) {
+					return !target.countCards("h") || target.countCards("h") <= player.countCards("h") ? 1 : 0;
+				},
+			},
 		},
 	},
 	//OL薛灵芸
