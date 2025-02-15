@@ -567,7 +567,7 @@ const skills = {
 		positions: {
 			head: {
 				name: "天冲",
-				info: "令其失去所有体力，若其因此死亡，你增加一点体力上限",
+				info: "令其失去所有体力，若其因此死亡，你增加1点体力上限",
 				css_male: {
 					left: "50%",
 					top: "14%",

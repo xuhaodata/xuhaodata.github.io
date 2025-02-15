@@ -816,7 +816,7 @@ const skills = {
 			content: "已对$发动过〖溃降〗",
 		},
 		prompt2(event, player) {
-			return `对${get.translation(event.player.name)}造成一点伤害`;
+			return `对${get.translation(event.player.name)}造成1点伤害`;
 		},
 		filter(event, player) {
 			if (event.player == player || !event.player.isIn()) {
@@ -1051,9 +1051,7 @@ const skills = {
 	},
 	//神卢植
 	hm_jigan: {
-		trigger: {
-			global: "phaseAfter",
-		},
+		trigger: { global: "phaseAfter" },
 		setDistanceObj(player) {
 			const obj = {};
 			for (const i of game.players) {
@@ -1106,7 +1104,13 @@ const skills = {
 			}
 			const targetsx = [].concat(giver).concat(distanceChanged);
 			const next = player.chooseTarget("令其中两名角色分别视为使用一张基本牌");
-			next.set("ai", function (target) {
+			next.set("ai", target => {
+				const player = get.player();
+				const list = get.inpileVCardList(info => {
+					if (info[0] != "basic") return false;
+					return target.hasValueTarget({ name: info[2], nature: info[3], isCard: true });
+				});
+				if (!list.length) return 0;
 				return get.attitude(player, target);
 			});
 			next.set("selectTarget", [2, 2]);
@@ -1121,50 +1125,25 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { targets } = event;
-			for (const target of targets) {
-				const list = [];
-				for (const i of lib.inpile.filter(c => get.type(c) == "basic")) {
-					if (i == "sha") {
-						for (const j of lib.inpile_nature) {
-							if (lib.filter.cardUsable({ name: "sha", nature: j }, target) && target.hasUseTarget({ name: "sha", nature: j }, true)) {
-								list.push(["基本", "", "sha", j]);
-							}
-						}
-					}
-					if (lib.filter.cardUsable({ name: i }, target) && target.hasUseTarget({ name: i }, true)) {
-						list.push(["基本", "", i]);
-					}
-				}
+			for (const target of targets.sortBySeat()) {
+				const list = get.inpileVCardList(info => {
+					if (info[0] != "basic") return false;
+					return target.hasUseTarget({ name: info[2], nature: info[3], isCard: true });
+				});
 				if (list.length) {
 					const next = target.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]]);
-					next.set("ai", function (button) {
-						const player = _status.event.player;
+					next.set("ai", button => {
+						const player = get.player();
 						const card = {
 							name: button.link[2],
 							nature: button.link[3],
 							isCard: true,
 						};
-						if (card.name == "tao") {
-							if (player.hp == 1 || (player.hp == 2 && !player.hasShan()) || player.needsToDiscard()) {
-								return 5;
-							}
-							return 1;
-						}
-						if (card.name == "sha") {
-							if (player.hasValueTarget(card, true)) {
-								if (card.nature == "fire") return 2.95;
-								if (card.nature == "thunder" || card.nature == "ice") return 2.92;
-								return 2.9;
-							}
-							return 0;
-						}
-						if (card.name == "jiu") {
-							return 0.5;
-						}
-						return 0;
+						return player.getUseValue(card);
 					});
-					const { result } = await next;
-					const card = { name: result.links[0][2], nature: result.links[0][3] };
+					const links = await next.forResultLinks();
+					if (!links?.length) return;
+					const card = { name: links[0][2], nature: links[0][3], isCard: true };
 					await target.chooseUseTarget(card, true);
 				}
 			}
@@ -3352,7 +3331,7 @@ const skills = {
 			trigger.num += player.countVCards("e");
 		},
 	},
-	//麹义
+	//麴义
 	yyfuqi: {
 		audio: "fuqi",
 		trigger: { player: "useCardToPlayer" },
@@ -5922,7 +5901,7 @@ const skills = {
 		marktext: "☯",
 		intro: {
 			content(storage) {
-				if (storage) return "其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，你可令其展示并交给你一张牌，若此牌不为黑色，你失去一点体力。";
+				if (storage) return "其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，你可令其展示并交给你一张牌，若此牌不为黑色，你失去1点体力。";
 				return "其他角色的回合开始时，若其体力值大于你，或其未处于横置状态，你可展示并交给其一张红色牌，本回合你不能使用手牌且你与其不能成为牌的目标。";
 			},
 		},
@@ -6472,7 +6451,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const result = await player
 				.chooseControl("选项一", "选项二", "cancel2")
-				.set("choiceList", ["失去一点体力，令一号位或“刘备”回复一点体力", "交给一名角色至多两张手牌"])
+				.set("choiceList", ["失去1点体力，令一号位或“刘备”回复1点体力", "交给一名角色至多两张手牌"])
 				.set("prompt", get.prompt("tyjinzhong"))
 				.set(
 					"choice",
@@ -6491,7 +6470,7 @@ const skills = {
 			}
 			if (result.control == "选项一") {
 				event.result = await player
-					.chooseTarget("尽忠：是否失去一点体力并令一号位或“刘备”回复一点体力？", function (card, player, target) {
+					.chooseTarget("尽忠：是否失去1点体力并令一号位或“刘备”回复1点体力？", function (card, player, target) {
 						return target.getSeatNum() == 1 || get.nameList(target).some(name => get.rawName(name) == "刘备");
 					})
 					.set("ai", target => {

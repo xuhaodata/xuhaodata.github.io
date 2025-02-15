@@ -172,7 +172,7 @@ const skills = {
 				const cards = next.cards;
 				if (!cards) return;
 				if (cards.some(c => c.name == "sha")) {
-					const { result } = await player.chooseTarget("对一名其他角色造成一点伤害").set("filterTarget", lib.filter.notMe);
+					const { result } = await player.chooseTarget("对一名其他角色造成1点伤害").set("filterTarget", lib.filter.notMe);
 					if (result.bool) {
 						result.targets[0].damage(player);
 					}

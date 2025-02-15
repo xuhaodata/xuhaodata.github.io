@@ -269,25 +269,23 @@ const skills = {
 	spolxudai: {
 		audio: 2,
 		limited: true,
-		trigger: {
-			player: ["useCard", "respond", "damageEnd"],
-		},
+		trigger: { player: ["useCard", "respond", "damageEnd"] },
 		filter(event, player) {
-			if (event.name == "damage") return true;
-			if (!event.respondTo) return false;
-			return true;
+			if (!game.hasPlayer(current => current != player && !current.hasSkill("spolzhujiu"))) return false;
+			return event.name == "damage" || event.respondTo;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget("是否令一名其他角色获得【煮酒】？")
-				.set("filterTarget", function (_, player, target) {
-					return target != player;
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target != player && !target.hasSkill("spolzhujiu");
 				})
-				.set("ai", function (target) {
+				.set("ai", target => {
 					return get.attitude(get.player(), target);
 				})
 				.forResult();
 		},
+		skillAnimation: true,
+		animationColor: "thunder",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const {
@@ -295,6 +293,7 @@ const skills = {
 			} = event;
 			await target.addSkills("spolzhujiu");
 		},
+		derivation: "spolzhujiu",
 	},
 	spolzhujiu: {
 		audio: 2,
@@ -312,54 +311,75 @@ const skills = {
 		selectCard() {
 			const player = get.player();
 			const num = player.countUsed({ name: "jiu" }, true) + 1;
-			return [num, num];
+			return [num, Infinity];
 		},
 		async precontent(event, trigger, player) {
-			const { result } = event;
-			for (const i of result.cards) {
-				if (get.suit(i) !== "club") {
-					player.tempBanSkill("spolzhujiu");
-				}
+			const {
+				result: { cards },
+			} = event;
+			if (cards.some(i => get.suit(i) !== "club")) player.tempBanSkill("spolzhujiu");
+		},
+		check(card) {
+			const player = get.player();
+			if (game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1)) {
+				if (get.position(card) == "h") return 4;
+				return 6 - ui.selected.cards.length - get.value(card);
 			}
+			return 6 - get.value(card);
+		},
+		ai: {
+			order(item, player) {
+				if (get.event().dying) return 9;
+				if (game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1)) {
+					return get.order({ name: "sha" }) + 0.2;
+				}
+				return 1;
+			},
+			result: { player: 1 },
 		},
 	},
 	spoljinglei: {
 		audio: 2,
+		trigger: { global: "useCardAfter" },
 		usable: 1,
-		trigger: {
-			global: "useCardAfter",
-		},
 		filter(event, player) {
 			if (event.card.name != "jiu") return false;
-			return !game.hasPlayer(c => c.isDying());
+			return !game.hasPlayer(current => current.isDying()) && game.hasPlayer(current => current.hasSkill("spolzhujiu") && current.countCards("h") != current.maxHp);
 		},
 		async cost(event, trigger, player) {
-			const { result } = await player
-				.chooseTarget("令一名拥有【煮酒】角色将手牌调整至体力上限")
-				.set("filterTarget", function (_, player, target) {
-					return target.hasSkill("spolzhujiu");
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "令一名拥有【煮酒】的角色将手牌调整至体力上限", (card, player, target) => target.hasSkill("spolzhujiu") && target.countCards("h") != target.maxHp)
+				.set("ai", target => {
+					const player = get.player();
+					if (player.countCards("hs", card => player.canSaveCard(card, player)) < 2 - player.hp) return 0;
+					const draw = Math.min(5, target.maxHp) - target.countCards("h");
+					const eff1 = get.damageEffect(player, player, player, "thunder");
+					if (draw > 0) return get.effect(target, { name: "draw" }, player, player) * draw + eff1;
+					if (draw < -1) return get.effect(target, { name: "guohe_copy", position: "h" }, player, player) * Math.sqrt(Math.min(target.countDiscardableCards(target, "h"), -draw)) + eff1;
+					return 0;
 				})
-				.set("ai", function (target) {
-					return get.attitude(player, target);
-				});
-			event.result = result;
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			await player.damage("thunder", "nosource");
 			const {
 				targets: [target],
 			} = event;
-			if (target.maxHp > target.countCards("h")) {
-				const num = Math.min(target.maxHp - target.countCards("h"), 5);
-				await target.draw(num);
+			const num = target.maxHp - target.countCards("h");
+			if (num === 0) return;
+			if (num > 0) {
+				await target.drawTo(Math.min(target.maxHp, 5));
 			} else {
-				const num = target.countCards("h") - target.maxHp;
-				const { result } = await player.chooseToDiscard([num, num], true);
-				if (player != target) {
-					await target.give(result.cards, player);
-				}
+				const num = Math.min(
+					target.countCards("h") - target.maxHp,
+					target.countCards("h", card => lib.filter.cardDiscardable(card, target))
+				);
+				if (num === 0) return;
+				const cards = await target.chooseToDiscard(num, true).forResultCards();
+				if (player != target && cards?.length) await player.gain(cards, "gain2").set("giver", target);
 			}
 		},
+		ai: { combo: "spolzhujiu" },
 	},
 	//OL刘璋
 	olfengwei: {
