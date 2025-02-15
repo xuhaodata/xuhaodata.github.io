@@ -3087,6 +3087,14 @@ const skills = {
 			return (player.countCards("ej") > 0) + player.isDamaged() + (Math.max(0, player.hp) < player.countCards("h"));
 		},
 		async cost(event, trigger, player) {
+			const func = (event, player) => {
+				const name = event.skill;
+				game.countPlayer(target => {
+					if (target != player) target.prompt(get.translation(name) + get.info(name).getNum(target));
+				});
+			};
+			if (event.player == game.me) func(event, player);
+			else if (event.isOnline()) player.send(func, event, player);
 			const cards = trigger.cards.filterInD("oe");
 			event.result = await player
 				.chooseTarget("三恇：选择一名其他角色", "令其交给你至少X张牌" + (cards.length ? "，然后其获得" + get.translation(cards) : "") + "（X为以下条件中其满足的项数：场上有牌、已受伤、体力值小于手牌数）", true, lib.filter.notMe)
@@ -3157,25 +3165,6 @@ const skills = {
 			player.recover();
 		},
 		ai: { combo: "clansankuang" },
-	},
-	_clansankuang: {
-		charlotte: true,
-		trigger: { player: "chooseTargetBegin" },
-		filter: event => event.getParent().skill === "clansankuang",
-		priority: 15,
-		direct: true,
-		content() {
-			const func = (event, player) => {
-				const name = event.getParent().skill;
-				game.countPlayer(target => {
-					if (event.filterTarget(null, player, target)) {
-						target.prompt(get.translation(name) + get.info(name).getNum(target));
-					}
-				});
-			};
-			if (event.player == game.me) func(trigger, player);
-			else if (event.isOnline()) player.send(func, trigger, player);
-		},
 	},
 	//族荀淑
 	clanshenjun: {
