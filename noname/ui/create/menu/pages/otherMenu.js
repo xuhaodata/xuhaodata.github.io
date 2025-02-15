@@ -1344,6 +1344,67 @@ export const otherMenu = function (/** @type { boolean | undefined } */ connectM
 	})();
 	(function () {
 		var page = ui.create.div("");
+		var node = ui.create.div(".menubutton.large", "内核", start.firstChild, clickMode);
+		node._initLink = function () {
+			node.link = page;
+			page.classList.add("menu-sym");
+			
+			const coreInfo = get.coreInfo();
+
+			const agent = document.createElement("div");
+			agent.css({
+				margin: "10px 0",
+				textAlign: "left",
+			});
+			let agentText = dedent`浏览器内核: ${coreInfo[0]}<br/>
+			浏览器版本: ${coreInfo[1]}.${coreInfo[2]}.${coreInfo[3]}<br/>`;
+
+			if (lib.device === 'android') {
+				agentText += dedent`应用平台: 安卓<br/>`;
+
+				if (typeof window.NonameAndroidBridge?.getPackageName === "function") {
+					agentText += dedent`安卓应用包名: ${window.NonameAndroidBridge.getPackageName()}<br/>`;
+				}
+
+				if (typeof window.NonameAndroidBridge?.getPackageVersionCode === "function") {
+					agentText += dedent`安卓应用版本: ${window.NonameAndroidBridge.getPackageVersionCode()}<br/>`;
+				}
+
+				if (typeof window.device === "object") {
+					agentText += dedent`安卓版本: ${device.version}<br/>
+					安卓SDK版本: ${device.sdkVersion}<br/>
+					设备制造商: ${device.manufacturer}<br/>`;
+				}
+			}
+			else if (lib.device === 'ios') {
+				agentText += dedent`应用平台: 苹果<br/>`;
+			}
+			else if (typeof window.require == "function" && typeof window.process == "object" && typeof window.__dirname == "string") {
+				agentText += dedent`应用平台: Electron<br/>
+				Electron版本: ${process.versions.electron}<br/>`;
+			}
+
+			agent.innerHTML = agentText;
+
+			page.appendChild(agent);
+
+			const button = document.createElement("button");
+			button.classList.add("changeWebviewProvider");
+			button.innerText = "点击切换WebView实现";
+			button.addEventListener("click", function () {
+				if (typeof window.NonameAndroidBridge?.changeWebviewProvider === "function") {
+					window.NonameAndroidBridge.changeWebviewProvider();
+				}
+				else {
+					alert("此客户端不支持此功能");
+				}
+			});
+			page.appendChild(button);
+		};
+		if (!get.config("menu_loadondemand")) node._initLink();
+	})();
+	(function () {
+		var page = ui.create.div("");
 		var node = ui.create.div(".menubutton.large", "战绩", start.firstChild, clickMode);
 		node.type = "rec";
 		node._initLink = function () {
