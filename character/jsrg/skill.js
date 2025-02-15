@@ -8275,25 +8275,20 @@ const skills = {
 	jsrgzhaobing: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
-			var hs = player.getCards("h");
+			const hs = player.getCards("h");
 			if (!hs.length) return false;
-			for (var i of hs) {
-				if (!lib.filter.cardDiscardable(i, player, "jsrgzhaobing")) return false;
-			}
-			return true;
+			return hs.every(card => lib.filter.cardDiscardable(card, player, "jsrgzhaobing"));
 		},
-		content() {
-			"step 0";
-			var cards = player.getCards("h");
-			var num = cards.length;
-			var prompt2 = "弃置所有手牌，令至多" + get.cnNumber(num) + "名其他角色依次选择一项：1.正面向上交给你一张【杀】；2.失去1点体力";
-			player
-				.chooseTarget(get.prompt("jsrgzhaobing"), prompt2, [1, num], lib.filter.notMe)
+		async cost(event, trigger, player) {
+			const cards = player.getCards("h");
+			const num = cards.length;
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), `弃置所有手牌，令至多${get.cnNumber(num)}名其他角色依次选择一项：1.正面向上交给你一张【杀】；2.失去1点体力`, [1, num], lib.filter.notMe)
 				.set("ai", target => {
-					if (!_status.event.goon) return 0;
-					return 2 - get.attitude(_status.event.player, target);
+					const { player, goon } = get.event();
+					if (!goon) return 0;
+					return 2 - get.attitude(player, target);
 				})
 				.set(
 					"goon",
@@ -8301,81 +8296,71 @@ const skills = {
 						game.countPlayer(current => {
 							return 2 - get.attitude(player, current) > 0;
 						})
-				);
-			"step 1";
-			if (result.bool) {
-				player.logSkill("jsrgzhaobing", result.targets);
-				event.targets = result.targets;
-				event.targets.sortBySeat();
-				player.chooseToDiscard(true, "h", player.countCards("h"));
-			} else event.finish();
-			"step 2";
-			var target = targets.shift();
-			event.target = target;
-			target
-				.chooseCard("诏兵：交给" + get.translation(player) + "一张【杀】，或失去1点体力", card => {
-					return get.name(card) == "sha";
-				})
-				.set("ai", card => {
-					if (_status.event.goon) return 0;
-					return 6 - get.value(card);
-				})
-				.set("goon", get.effect(target, { name: "losehp" }, target, target) >= 0);
-			"step 3";
-			if (result.bool) target.give(result.cards, player, true);
-			else target.loseHp();
-			if (targets.length) event.goto(2);
+				)
+				.forResult();
 		},
-		ai: {
-			expose: 0.2,
+		async content(event, trigger, player) {
+			const { targets } = event;
+			if (player.countCards("h")) await player.discard(player.getCards("h"));
+			for (const target of targets.sortBySeat()) {
+				if (!target.isIn()) continue;
+				const bool = await target
+					.chooseToGive(player, `诏兵：交给${get.translation(player)}一张【杀】，或失去1点体力`, card => get.name(card) == "sha")
+					.set("ai", card => {
+						if (get.event().goon) return 0;
+						return 6 - get.value(card);
+					})
+					.set("goon", get.effect(target, { name: "losehp" }, target, target) >= 0)
+					.forResultBool();
+				if (!bool) await target.loseHp();
+			}
 		},
+		ai: { expose: 0.2 },
 	},
 	jsrgzhuhuan: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			var hs = player.getCards("h", "sha");
+			const hs = player.getCards("h", "sha");
 			if (!hs.length) return false;
-			for (var i of hs) {
-				if (!lib.filter.cardDiscardable(i, player, "jsrgzhuhuan")) return false;
-			}
-			return true;
+			return hs.every(card => lib.filter.cardDiscardable(card, player, "jsrgzhuhuan"));
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player.chooseTarget(get.prompt2("jsrgzhuhuan"), lib.filter.notMe).set("ai", target => {
-				var player = _status.event.player;
-				return get.damageEffect(target, player, player);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("jsrgzhuhuan", target);
-				var hs = player.getCards("h", "sha");
-				event.num = hs.length;
-				player.discard(hs);
-			} else event.finish();
-			"step 2";
-			target
-				.chooseToDiscard(get.translation(player) + "对你发动了【诛宦】", "弃置" + get.cnNumber(num) + "张牌并失去1点体力；或点击“取消”令其回复1点体力且其摸" + get.cnNumber(num) + "张牌")
-				.set("ai", card => {
-					if (_status.event.goon) return 0;
-					return 5.5 - get.value(card);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player();
+					return get.damageEffect(target, player, player);
 				})
-				.set("goon", target.hp <= 2 || get.attitude(target, player) >= 0 || player.isHealthy());
-			"step 3";
-			if (result.bool) {
-				target.loseHp();
-			} else {
-				player.draw(num);
-				player.recover();
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const hs = player.getCards("h", "sha");
+			if (player.countCards("h")) await player.showHandcards();
+			const num = hs.length;
+			if (!num) return;
+			await player.discard(hs);
+			const bool =
+				target.countCards("he") < num
+					? true
+					: await target
+							.chooseToDiscard(`${get.translation(player)}对你发动了【诛宦】`, `弃置${get.cnNumber(num)}张牌并失去1点体力；或点击“取消”令其回复1点体力且其摸${get.cnNumber(num)}张牌`, "he")
+							.set("ai", card => {
+								if (get.event().goon) return 0;
+								return 5.5 - get.value(card);
+							})
+							.set("goon", target.hp <= 2 || get.attitude(target, player) >= 0 || player.isHealthy())
+							.forResultBool();
+			if (bool) await target.loseHp();
+			else {
+				await player.draw(num);
+				await player.recover();
 			}
 		},
-		ai: {
-			expose: 0.2,
-		},
+		ai: { expose: 0.2 },
 	},
 	jsrgyanhuo: {
 		inherit: "spyanhuo",
@@ -8388,28 +8373,28 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filterTarget: lib.filter.notMe,
-		content() {
-			"step 0";
-			var att = get.attitude(target, player);
-			target
-				.chooseCard(get.translation(player) + "对你发动了【平讨】", "交给其一张牌并令其此回合使用【杀】的次数上限+1；或点击“取消”令其视为对你使用一张【杀】", "he")
+		async content(event, trigger, player) {
+			const { target } = event;
+			const att = get.attitude(target, player);
+			const bool = await target
+				.chooseToGive(player, `${get.translation(player)}对你发动了【平讨】`, "交给其一张牌并令其此回合使用【杀】的次数上限+1；或点击“取消”令其视为对你使用一张【杀】", "he")
 				.set("ai", card => {
-					if (_status.event.give) {
+					const { give, att } = get.event();
+					if (give) {
 						if (card.name == "sha" || card.name == "tao" || card.name == "jiu") return 0;
 						return 8 - get.value(card);
 					}
-					if (_status.event.att < 0 && card.name == "sha") return -1;
+					if (att < 0 && card.name == "sha") return -1;
 					return 4 - get.value(card);
 				})
 				.set("give", (att >= 0 || (target.hp == 1 && target.countCards("hs", "shan") <= 1)) && get.effect(target, { name: "sha" }, player, target) < 0)
-				.set("att", att);
-			"step 1";
-			if (result.bool) {
-				target.give(result.cards, player);
-				player.addTempSkill("jsrgpingtao_sha");
-				player.addMark("jsrgpingtao_sha", 1, false);
-			} else if (player.canUse("sha", target, false)) {
-				player.useCard({ name: "sha", isCard: true }, target, false);
+				.set("att", att)
+				.forResultBool();
+			if (bool) {
+				player.addTempSkill(event.name + "_sha");
+				player.addMark(event.name + "_sha", 1, false);
+			} else if (player.canUse({ name: "sha", isCard: true }, target, false)) {
+				await player.useCard({ name: "sha", isCard: true }, target, false);
 			}
 		},
 		ai: {
@@ -8422,9 +8407,7 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				marktext: "讨",
-				intro: {
-					content: "本回合使用【杀】的次数上限+#",
-				},
+				intro: { content: "本回合使用【杀】的次数上限+#" },
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") return num + player.countMark("jsrgpingtao_sha");

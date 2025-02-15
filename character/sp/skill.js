@@ -2356,7 +2356,7 @@ const skills = {
 			const num = skills.length - get.info("olhedao").getLimit(player);
 			if (num > 0) {
 				const result =
-					num > skills.length
+					num < skills.length
 						? await player
 								.chooseButton(["青书：选择失去" + get.cnNumber(num) + "册多余的“天书”", [skills.map(item => [item, "（剩余" + player.storage[item][0] + "次）" + lib.translate[item + "_info"]]), "textbutton"]], true, num)
 								.set("ai", () => 1 + Math.random())
