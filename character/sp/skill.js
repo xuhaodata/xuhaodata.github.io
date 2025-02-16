@@ -329,28 +329,45 @@ const skills = {
 		trigger: { global: "useCardAfter" },
 		usable: 1,
 		filter(event, player) {
-			if (event.card.name != "jiu") return false;
-			return !game.hasPlayer(current => current.isDying()) && game.hasPlayer(current => current.hasSkill("spolzhujiu") && current.countCards("h") != current.maxHp);
+			return event.card.name === "jiu" && !game.hasPlayer(current => current.isDying());
 		},
-		async cost(event, trigger, player) {
-			event.result = await player
-				.chooseTarget(get.prompt2(event.skill), (card, player, target) => target.hasSkill("spolzhujiu") && target.countCards("h") != target.maxHp)
-				.set("ai", target => {
-					const player = get.player();
-					if (player.countCards("hs", card => player.canSaveCard(card, player)) < 2 - player.hp) return 0;
-					const draw = Math.min(5, target.maxHp) - target.countCards("h");
-					const eff1 = get.damageEffect(player, player, player, "thunder");
-					if (draw > 0) return get.effect(target, { name: "draw" }, player, player) * draw + eff1;
-					if (draw < -1) return get.effect(target, { name: "guohe_copy", position: "h" }, player, player) * Math.sqrt(Math.min(target.countDiscardableCards(target, "h"), -draw)) + eff1;
-					return 0;
-				})
-				.forResult();
+		check(event, player) {
+			if (get.damageEffect(player, player, player, "thunder") > 0) return true;
+			return (
+				Math.max(
+					...[0].concat(
+						game
+							.filterPlayer(target => {
+								return target.hasSkill("spolzhujiu", null, null, false);
+							})
+							.map(target => {
+								return get.info("spoljinglei").getEffect(player, target);
+							})
+					)
+				) > 0
+			);
 		},
 		async content(event, trigger, player) {
 			await player.damage("thunder", "nosource");
-			const {
-				targets: [target],
-			} = event;
+			if (
+				!game.hasPlayer(target => {
+					return target.hasSkill("spolzhujiu", null, null, false);
+				})
+			)
+				return;
+			const result = await player
+				.chooseTarget(
+					"惊雷：请选择一名拥有〖煮酒〗的角色",
+					(card, player, target) => {
+						return target.hasSkill("spolzhujiu", null, null, false);
+					},
+					true
+				)
+				.set("prompt2", "令其将手牌调整至体力上限（至多摸至5），然后若该角色不为你：其须将以此法弃置的牌交给你")
+				.set("ai", target => get.info("spoljinglei").getEffect(get.player(), target))
+				.forResult();
+			const target = result.targets?.[0];
+			if (!target) return;
 			const num = target.maxHp - target.countCards("h");
 			if (num === 0) return;
 			if (num > 0) {
@@ -364,6 +381,14 @@ const skills = {
 				const cards = await target.chooseToDiscard(num, true).forResultCards();
 				if (player != target && cards?.someInD("d")) await player.gain(cards.filterInD("d"), "gain2").set("giver", target);
 			}
+		},
+		getEffect(player, target) {
+			if (player.countCards("hs", card => player.canSaveCard(card, player)) < 2 - player.hp) return 0;
+			const draw = Math.min(5, target.maxHp) - target.countCards("h");
+			const eff1 = get.damageEffect(player, player, player, "thunder");
+			if (draw > 0) return get.effect(target, { name: "draw" }, player, player) * draw + eff1;
+			if (draw < -1) return get.effect(target, { name: "guohe_copy", position: "h" }, player, player) * Math.sqrt(Math.min(target.countDiscardableCards(target, "h"), -draw)) + eff1;
+			return 0;
 		},
 		ai: { combo: "spolzhujiu" },
 	},
