@@ -78,13 +78,10 @@ const skills = {
 		trigger: { player: "useCard1" },
 		filter(event, player) {
 			if (event.card.name != "sha" || !event.cards?.length) return false;
-			var evt = event.getParent("phaseUse");
 			return (
-				evt &&
-				evt.player == player &&
 				player
-					.getHistory("useCard", function (evt2) {
-						return evt2.card.name == "sha" && evt2.cards && evt2.cards.length && evt2.getParent("phaseUse") == evt;
+					.getHistory("useCard", evt2 => {
+						return evt2.card.name == "sha" && evt2.cards?.length;
 					})
 					.indexOf(event) == 0
 			);
@@ -101,17 +98,7 @@ const skills = {
 				audio: "liubing",
 				trigger: { global: "useCardAfter" },
 				filter(event, player) {
-					return (
-						event.player != player &&
-						event.card.isCard &&
-						event.card.name == "sha" &&
-						get.color(event.card) != "black" &&
-						event.cards.filterInD().length > 0 &&
-						event.player.isPhaseUsing() &&
-						!event.player.hasHistory("sourceDamage", function (evt) {
-							return evt.card == event.card;
-						})
-					);
+					return event.player != player && event.card.isCard && event.card.name == "sha" && get.color(event.card) != "black" && event.cards.filterInD().length > 0 && event.player.isPhaseUsing() && !event.player.hasHistory("sourceDamage", evt => evt.card == event.card);
 				},
 				forced: true,
 				logTarget: "player",
@@ -271,13 +258,13 @@ const skills = {
 		limited: true,
 		trigger: { player: ["useCard", "respond", "damageEnd"] },
 		filter(event, player) {
-			if (!game.hasPlayer(current => current != player && !current.hasSkill("spolzhujiu"))) return false;
+			if (!game.hasPlayer(current => current != player && !current.hasSkill("spolzhujiu", null, null, false))) return false;
 			return event.name == "damage" || event.respondTo;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
-					return target != player && !target.hasSkill("spolzhujiu");
+					return target != player && !target.hasSkill("spolzhujiu", null, null, false);
 				})
 				.set("ai", target => {
 					return get.attitude(get.player(), target);
@@ -313,11 +300,8 @@ const skills = {
 			const num = player.countUsed({ name: "jiu" }, true) + 1;
 			return [num, Infinity];
 		},
-		async precontent(event, trigger, player) {
-			const {
-				result: { cards },
-			} = event;
-			if (cards.some(i => get.suit(i) !== "club")) player.tempBanSkill("spolzhujiu");
+		onuse(result, player) {
+			if (result.cards?.some(i => get.suit(i) !== "club")) player.tempBanSkill("spolzhujiu");
 		},
 		check(card) {
 			const player = get.player();
@@ -348,7 +332,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt(event.skill), "令一名拥有【煮酒】的角色将手牌调整至体力上限", (card, player, target) => target.hasSkill("spolzhujiu") && target.countCards("h") != target.maxHp)
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => target.hasSkill("spolzhujiu") && target.countCards("h") != target.maxHp)
 				.set("ai", target => {
 					const player = get.player();
 					if (player.countCards("hs", card => player.canSaveCard(card, player)) < 2 - player.hp) return 0;
@@ -376,7 +360,7 @@ const skills = {
 				);
 				if (num === 0) return;
 				const cards = await target.chooseToDiscard(num, true).forResultCards();
-				if (player != target && cards?.length) await player.gain(cards, "gain2").set("giver", target);
+				if (player != target && cards?.someInD("d")) await player.gain(cards.filterInD("d"), "gain2").set("giver", target);
 			}
 		},
 		ai: { combo: "spolzhujiu" },
@@ -384,46 +368,33 @@ const skills = {
 	//OL刘璋
 	olfengwei: {
 		audio: 2,
-		trigger: {
-			global: "roundStart",
-		},
+		trigger: { global: "roundStart" },
 		forced: true,
 		async content(event, trigger, player) {
-			const { result } = await player.chooseControl([1, 2, 3, 4]).set("prompt", "选择摸一至四张牌");
-			const { result: result2 } = await player.draw(result.control);
-			player.addGaintag(result2, "olfengwei");
-			player.addTempSkill(["olfengwei_buff", "olfengwei_debuff"], { global: "roundStart" });
+			const nums = Array.from({ length: 4 }).map((_, i) => get.cnNumber(i + 1) + "张");
+			const { result } = await player
+				.chooseControl(nums)
+				.set("prompt", "奉蔚：请选择摸牌数")
+				.set("ai", () => 3);
+			const next = player.draw(result.index + 1);
+			next.gaintag.add("olfengwei_debuff");
+			await next;
+			player.addTempSkill("olfengwei_debuff", "roundStart");
 		},
 		subSkill: {
 			debuff: {
 				charlotte: true,
-				silent: true,
-				trigger: {
-					player: "damageBegin1",
-				},
+				trigger: { player: "damageBegin2" },
 				filter(event, player) {
-					return player.countCards("hs", card => card.hasGaintag("olfengwei")) > 0;
+					if (!event.card) return false;
+					return player.hasCard(card => card.hasGaintag("olfengwei"), "h");
 				},
-				async content(event, trigger, player) {
+				silent: true,
+				content() {
 					trigger.num++;
 				},
-			},
-			buff: {
-				charlotte: true,
-				mod: {
-					ignoredHandcard(card, player) {
-						if (card.hasGaintag("olfengwei")) {
-							return true;
-						}
-					},
-					cardDiscardable(card, player, name) {
-						if (name == "phaseDiscard" && card.hasGaintag("olfengwei")) {
-							return false;
-						}
-					},
-				},
-				onremove(player) {
-					player.removeGaintag("olfengwei");
+				onremove(player, skill) {
+					player.removeGaintag(skill);
 				},
 			},
 		},
@@ -1272,7 +1243,7 @@ const skills = {
 			return event.name !== "phase" || game.phaseNumber === 0;
 		},
 		forced: true,
-		priority: 12,//本体御用优先级
+		priority: 12, //本体御用优先级
 		content() {
 			player.storage[event.name] = 2 + (trigger.name === "dying");
 			player.markSkill(event.name);
