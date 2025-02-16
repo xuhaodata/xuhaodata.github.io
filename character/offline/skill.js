@@ -13584,110 +13584,107 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseBegin" },
 		filter(event, player) {
-			return player.countCards("he");
+			return player.countCards("he") && game.countPlayer() > 2;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var cards = player.getCards("he");
-			var current = trigger.player;
-			var ai1 = function (card) {
-				var player = _status.event.player,
-					current = _status.event.current;
-				var color = get.color(card);
-				if (color == "black") {
-					if (!current.hasSha() || !current.hasUseTarget({ name: "sha" })) return 0;
-					if (targets.length) return 5.5 - get.value(card);
-				} else if (color == "red") {
-					if (get.attitude(player, current) <= 0) return 0;
-					if (
-						current.hasCard(card => {
-							if (!get.tag(card, "damage")) return false;
-							var targetsx = game.filterPlayer(currentx => {
-								if (currentx == current || current == player) return false;
-								return current.canUse(card, currentx) && get.effect(currentx, card, current, player) > 0;
-							});
-							targets2.addArray(targetsx);
-							return targetsx.length;
-						}, "hs")
-					)
-						return 5.5 - get.value(card);
-				}
-				return 0;
-			};
-			var targets = game.filterPlayer(currentx => {
+		async cost(event, trigger, player) {
+			const cards = player.getCards("he");
+			const { player: current } = trigger;
+			const targets = game.filterPlayer(currentx => {
 				if (currentx == current || current == player) return false;
 				return !current.canUse("sha", currentx) || (get.effect(currentx, { name: "sha" }, current, player) > 0 && get.attitude(player, currentx) > -3);
 			});
-			targets.sort((a, b) => get.attitude(player, b) - get.attitude(player, a));
-			var targets2 = [];
-			var cardx = cards.sort((a, b) => ai1(b) - ai1(a))[0];
-			targets2.sort((a, b) => get.threaten(b, current) - get.threaten(a, current));
-			var next = player.chooseCardTarget({
-				filterCard: true,
-				prompt: get.prompt2("psqupo"),
-				current: trigger.player,
-				filterTarget(card, player, target) {
-					return player != target && target != _status.event.current;
-				},
-				ai1(card) {
-					return card == _status.event.cardx ? 1 : 0;
-				},
-				ai2(target) {
-					return target == _status.event.targetx ? 1 : 0;
-				},
+			const targets2 = game.filterPlayer(currentx => {
+				if (currentx == current || current == player) return false;
+				return current.hasCard(card => current.canUse(card, currentx) && get.effect(currentx, card, current, player) > 0 && get.color(card) == "red" && get.tag(card, "damage") > 0.5, "hs");
 			});
-			if (ai1(cardx) > 0) {
-				next.cardx = cardx;
-				if (get.color(cardx) == "black") {
-					if (targets.length) next.targetx = targets[0];
-				} else {
-					if (targets2.length) next.targetx = targets2[0];
-				}
-			}
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0],
-					cards = result.cards;
-				player.logSkill("psqupo", target);
-				player.give(cards, target);
-				var color = get.color(cards[0]);
-				if (color == "black") {
-					_status.currentPhase.addTempSkill("psqupo_black");
-					_status.currentPhase.markAuto("psqupo_black", [target]);
-				} else if (color == "red") {
-					target.addTempSkill("psqupo_red");
-					target.addMark("psqupo_red", 1, false);
-				}
+			event.result = await player
+				.chooseCardTarget({
+					filterCard: true,
+					position: "he",
+					prompt: get.prompt2(event.skill),
+					current: current,
+					targets1: targets,
+					targets2: targets2,
+					filterTarget(card, player, target) {
+						return player != target && target != get.event("current");
+					},
+					ai1(card) {
+						const { player, current, targets1, targets2 } = get.event();
+						const color = get.color(card);
+						if (!targets2.length) {
+							if (get.effect(current, { name: "losehp" }, player, player) < 0) return 0;
+							if (color != "black" || !targets1.length) return 0;
+							return 5.5 - get.value(card);
+						}
+						targets2.sort((a, b) => get.threaten(b, current) - get.threaten(a, current));
+						if (!targets1.length) {
+							if (color != "red") return 0;
+							if (get.attitude(player, current) <= 0) return 0;
+							return 5.5 - get.value(card);
+						}
+						const target = targets2[0];
+						const color1 = get.effect(current, { name: "losehp" }, player, player) > Math.max(0, get.effect(target, { name: "losehp" }, player, player)) ? "black" : "red";
+						if (color !== color1) return 0;
+						return 6 - get.value(card);
+					},
+					ai2(target) {
+						if (!ui.selected.cards.length) return 0;
+						const { player, current, targets1, targets2 } = get.event();
+						const color = get.color(ui.selected.cards[0]);
+						if (!["red", "black"].includes(color)) return 0;
+						if (color == "black") {
+							if (!targets1.includes(target)) return 0;
+							return get.attitude(player, target) + 0.1;
+						}
+						if (!targets2.includes(target)) return 0;
+						return get.effect(target, { name: "losehp" }, player, player);
+					},
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cards,
+			} = event;
+			await player.give(cards, target);
+			const color = get.color(cards[0]);
+			const skill = event.name + "_" + color;
+			if (color == "black") {
+				trigger.player.addTempSkill(skill);
+				trigger.player.markAuto(skill, [target]);
+			} else if (color == "red") {
+				target.addTempSkill(skill);
+				target.addMark(skill, 1, false);
 			}
 		},
 		subSkill: {
 			black: {
-				trigger: { player: "useCardToTarget" },
-				forced: true,
+				trigger: { player: "useCardToPlayer" },
 				charlotte: true,
 				onremove: true,
+				forced: true,
+				popup: false,
 				filter(event, player) {
 					if (event.card.name != "sha") return false;
-					var targets = player.getStorage("psqupo_black").slice();
-					targets.remove(event.target);
-					return targets.length;
+					return !player.getStorage("psqupo_black").includes(event.target);
 				},
 				content() {
-					var targets = player.getStorage("psqupo_black").slice();
-					targets.remove(trigger.target);
-					player.loseHp(targets.length);
+					player.loseHp();
 				},
+				intro: { content: "本回合使用【杀】指定不为$的目标时失去1点体力" },
 			},
 			red: {
 				trigger: { player: "damageBegin3" },
 				charlotte: true,
-				forced: true,
 				onremove: true,
+				forced: true,
+				popup: false,
 				content() {
-					player.loseHp(player.countMark("psqupo_red"));
-					player.removeSkill("psqupo_red");
+					player.loseHp(player.countMark(event.name));
+					player.removeSkill(event.name);
 				},
+				intro: { content: "本回合下一次受到伤害时失去#点体力" },
 			},
 		},
 	},
