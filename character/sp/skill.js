@@ -2563,18 +2563,18 @@ const skills = {
 			}
 		},
 		filter(event, player) {
+			if (player.getStorage("spolzhubei_used").length > 1) return false;
 			return game.hasPlayer(current => get.info("spolzhubei").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, target) {
-			return player != target && target.countCards("hes", cardx => ["sha", "juedou"].some(name => !player.getStorage("spolzhubei_used").includes(name) && target.canUse(get.autoViewAs({ name: name }, [cardx]), player, false))) >= get.event().spolzhubei_num;
+			return player != target;
 		},
 		async content(event, trigger, player) {
 			const { target } = event,
 				num = event.getParent(2).spolzhubei_num;
 			const list = get.inpileVCardList(info => {
 				if (!["sha", "juedou"].includes(info[2]) || info[3]) return false;
-				if (player.getStorage("spolzhubei_used").includes(info[2])) return false;
-				return target.countCards("hes", cardx => target.canUse(get.autoViewAs({ name: info[2] }, [cardx]), player, false)) >= num;
+				return !player.getStorage("spolzhubei_used").includes(info[2]);
 			});
 			if (!list.length) return;
 			const links =
@@ -2593,52 +2593,64 @@ const skills = {
 			const viewAs = { name: links[0][2] };
 			player.addTempSkill("spolzhubei_used", "phaseUseAfter");
 			player.markAuto("spolzhubei_used", [viewAs.name]);
-			game.broadcastAll(
-				(viewAs, num) => {
-					lib.skill.spolzhubei_backup.viewAs = viewAs;
-					lib.skill.spolzhubei_backup.selectCard = [num, Infinity];
-				},
-				viewAs,
-				num
-			);
-			const next = target.chooseToUse();
-			next.set("openskilldialog", `逐北：将至少${get.cnNumber(num)}张牌当作${get.translation(viewAs.name)}对${get.translation(player)}使用`);
-			next.set("norestore", true);
-			next.set("_backupevent", "spolzhubei_backup");
-			next.set("custom", {
-				add: {},
-				replace: { window() {} },
-			});
-			next.backup("spolzhubei_backup");
-			next.set("targetRequired", true);
-			next.set("complexSelect", true);
-			next.set("filterTarget", function (card, player, target) {
-				if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) return false;
-				return lib.filter.targetEnabled.apply(this, arguments);
-			});
-			next.set("sourcex", player);
-			next.set("addCount", false);
-			next.set("forced", true);
-			player
-				.when({ player: "damageEnd" })
-				.filter(evt => evt.getParent(4) == event && evt.cards.someInD())
-				.step(async (event, trigger, player) => {
-					await player.gain(trigger.cards.filterInD(), "gain2");
+			const count = target.countCards("hes", cardx => target.canUse(get.autoViewAs({ name: viewAs.name }, [cardx]), player, false));
+			if (count >= num) {
+				game.broadcastAll(
+					(viewAs, num) => {
+						lib.skill.spolzhubei_backup.viewAs = viewAs;
+						lib.skill.spolzhubei_backup.selectCard = [num, Infinity];
+					},
+					viewAs,
+					num
+				);
+				const next = target.chooseToUse();
+				next.set("openskilldialog", `逐北：将至少${get.cnNumber(num)}张牌当作${get.translation(viewAs.name)}对${get.translation(player)}使用`);
+				next.set("norestore", true);
+				next.set("_backupevent", "spolzhubei_backup");
+				next.set("custom", {
+					add: {},
+					replace: { window() {} },
 				});
-			player
-				.when({ global: "useCardAfter" })
-				.filter(evt => evt.getParent(2) == event && !player.hasHistory("damage", evtx => evtx.card == evt.card) && (player.isDamaged() || (evt.player.isIn() && [player, evt.player].some(current => current.countCards("h")))))
-				.step(async () => {
-					await player.recover();
-					if (target.isIn() && [player, target].some(current => current.countCards("h"))) {
-						const bool = await player
-							.chooseBool(`逐北`, `与${get.translation(target)}交换手牌？`)
-							.set("choice", get.attitude(player, target) > 0 || player.countCards("h") < target.countCards("h"))
-							.forResultBool();
-						if (bool) await player.swapHandcards(target);
-					}
+				next.backup("spolzhubei_backup");
+				next.set("targetRequired", true);
+				next.set("complexSelect", true);
+				next.set("filterTarget", function (card, player, target) {
+					if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) return false;
+					return lib.filter.targetEnabled.apply(this, arguments);
 				});
-			await next;
+				next.set("sourcex", player);
+				next.set("addCount", false);
+				next.set("forced", true);
+				player
+					.when({ player: "damageEnd" })
+					.filter(evt => evt.getParent(4) == event && evt.cards.someInD())
+					.step(async (event, trigger, player) => {
+						await player.gain(trigger.cards.filterInD(), "gain2");
+					});
+				player
+					.when({ global: "useCardAfter" })
+					.filter(evt => evt.getParent(2) == event && !player.hasHistory("damage", evtx => evtx.card == evt.card) && (player.isDamaged() || (evt.player.isIn() && [player, evt.player].some(current => current.countCards("h")))))
+					.step(async () => {
+						await player.recover();
+						if (target.isIn() && [player, target].some(current => current.countCards("h"))) {
+							const bool = await player
+								.chooseBool(`逐北`, `与${get.translation(target)}交换手牌？`)
+								.set("choice", get.attitude(player, target) > 0 || player.countCards("h") < target.countCards("h"))
+								.forResultBool();
+							if (bool) await player.swapHandcards(target);
+						}
+					});
+				await next;
+			} else {
+				await player.recover();
+				if (target.isIn() && [player, target].some(current => current.countCards("h"))) {
+					const bool = await player
+						.chooseBool(`逐北`, `与${get.translation(target)}交换手牌？`)
+						.set("choice", get.attitude(player, target) > 0 || player.countCards("h") < target.countCards("h"))
+						.forResultBool();
+					if (bool) await player.swapHandcards(target);
+				}
+			}
 		},
 		ai: {
 			order: 2,
