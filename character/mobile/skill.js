@@ -136,7 +136,7 @@ const skills = {
 		forced: true,
 		locked: true,
 		async content(event, trigger, player) {
-			const card = game.createCard2("xuanjian");
+			const card = game.createCard2("xuanjian", "spade", 9);
 			await player.gain([card], "gain2");
 			await player.chooseUseTarget(card, true, false);
 		},
@@ -144,9 +144,7 @@ const skills = {
 		subSkill: {
 			gain: {
 				audio: "friendxiaxing",
-				trigger: {
-					global: ["loseEnd", "equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
-				},
+				trigger: { global: ["loseEnd", "equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"] },
 				filter(event, player) {
 					if (!player.getStorage("friendqihui").length) return false;
 					return event.getd()?.some(i => i.name == "xuanjian");
@@ -191,11 +189,12 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			player.markAuto("friendqihui", [get.type2(trigger.card)]);
-			if (player.getStorage("friendqihui").length >= 3) {
+			const { name: skillName } = event;
+			player.markAuto(skillName, [get.type2(trigger.card)]);
+			if (player.getStorage(skillName).length >= 3) {
 				const {
 					result: { links },
-				} = await player.chooseButton(["选择你要移去的“启诲”标记", [player.getStorage("friendqihui").map(c => [c, get.translation(c)]), "tdnodes"]], [2, 2], true).set("ai", button => {
+				} = await player.chooseButton(["选择你要移去的“启诲”标记", [player.getStorage(skillName).map(c => [c, get.translation(c)]), "tdnodes"]], [2, 2], true).set("ai", button => {
 					const player = get.player();
 					return (
 						1 +
@@ -205,15 +204,17 @@ const skills = {
 						})
 					);
 				});
-				player.unmarkAuto("friendqihui", links);
+				if (!links?.length) return;
+				player.unmarkAuto(skillName, links);
 				const { result } = await player
 					.chooseButton(
 						[
 							"启诲：请执行一项",
 							[
 								[
-									["recover", "回复1点体力并重铸一张牌"],
-									["draw", "摸两张牌且使用的下一张牌不计入次数且无次数限制"],
+									["recover", "回复1点体力"],
+									["draw", "摸两张牌"],
+									["use", "使用的下一张牌无任何次数限制"],
 								],
 								"textbutton",
 							],
@@ -222,46 +223,32 @@ const skills = {
 					)
 					.set("ai", button => {
 						const player = get.player();
-						if (button.link === "recover")
-							return (
-								get.recoverEffect(player, player, player) +
-								Math.max(
-									...[0].concat(
-										player
-											.getCards("he", card => {
-												return player.canRecast(card);
-											})
-											.map(card => get.info("zhiheng").check(card))
-									)
-								)
-							);
-						return (
-							get.effect(player, { name: "draw" }, player, player) * 2 +
-							Math.max(
-								...[0].concat(
-									player
-										.getCards("he", card => {
-											return player.hasValueTarget(card, false);
-										})
-										.map(card => player.getUseValue(card, false))
-								)
+						if (button.link === "recover") return get.recoverEffect(player, player, player);
+						if (button.link === "draw") return get.effect(player, { name: "draw" }, player, player) * 2;
+						return Math.max(
+							...[0].concat(
+								player
+									.getCards("he", card => {
+										return player.hasValueTarget(card, false);
+									})
+									.map(card => player.getUseValue(card, false))
 							)
 						);
+					})
+					.set("filterButton", button => {
+						const player = get.player();
+						return button.link !== "recover" || player.isDamaged();
 					});
 				if (result.bool) {
 					switch (result.links[0]) {
 						case "recover":
 							await player.recover();
-							if (player.hasCard(card => player.canRecast(card), "he")) {
-								const {
-									result: { cards },
-								} = await player.chooseCard("he", "请重铸一张牌", true);
-								if (cards?.length) await player.recast(cards);
-							}
 							break;
 						case "draw":
 							await player.draw(2);
-							player.addSkill("friendqihui_unlimit");
+							break;
+						default:
+							player.addSkill(skillName + "_unlimit");
 					}
 				}
 			}
@@ -275,11 +262,9 @@ const skills = {
 				forced: true,
 				popup: false,
 				firstDo: true,
-				content() {
-					player.removeSkill("friendqihui_unlimit");
-					var card = trigger.card;
-					if (!card.storage) card.storage = {};
-					card.storage.oltuishi = true;
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					const { card } = trigger;
 					if (trigger.addCount !== false) {
 						trigger.addCount = false;
 						player.getStat("card")[card.name]--;

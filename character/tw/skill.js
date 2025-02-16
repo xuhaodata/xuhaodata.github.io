@@ -7418,28 +7418,23 @@ const skills = {
 				audio: "twkaizeng",
 				forceaudio: true,
 				enable: "phaseUse",
-				usable: 1,
 				charlotte: true,
 				prompt: "点击“确定”来寻求施舍",
 				filter(event, player) {
 					if (player.hasSkill("twkaizeng_used")) return false;
-					return game.hasPlayer(current => {
-						return current != player && current.hasSkill("twkaizeng");
-					});
+					return game.hasPlayer(current => current != player && current.hasSkill("twkaizeng") && current.countCards("h"));
 				},
 				chooseButton: {
 					dialog(event, player) {
-						var targets = game.filterPlayer(current => {
-							return current != player && current.hasSkill("twkaizeng");
-						});
-						return ui.create.dialog("###慨赠###" + "选择一种基本牌的牌名或非基本牌的类型，然后令" + get.translation(targets) + (targets.length > 1 ? "中的一人" : "") + "选择是否交给你任意张牌");
+						const targets = game.filterPlayer(current => current != player && current.hasSkill("twkaizeng") && current.countCards("h"));
+						return ui.create.dialog("###慨赠###" + "选择一种基本牌的牌名或非基本牌的类型，然后令" + get.translation(targets) + (targets.length > 1 ? "中的一人" : "") + "选择是否交给你任意张手牌");
 					},
 					chooseControl() {
-						var list = [];
-						var basic = [];
-						for (var i = 0; i < lib.inpile.length; i++) {
-							var name = lib.inpile[i];
-							var type = get.type(name, "trick");
+						const list = [];
+						const basic = [];
+						for (let i = 0; i < lib.inpile.length; i++) {
+							const name = lib.inpile[i];
+							const type = get.type2(name);
 							if (type == "basic") {
 								list.push(name);
 								basic.push(name);
@@ -7450,22 +7445,22 @@ const skills = {
 					},
 					check(event, player) {
 						if (Math.random() < 0.4) {
-							var list = _status.event.controls.slice();
+							const list = get.event().controls.slice();
 							list.remove("du");
 							return list.randomGet();
 						}
-						var targets = game.filterPlayer(current => current != player && current.hasSkill("twkaizeng"));
+						const targets = game.filterPlayer(current => current != player && current.hasSkill("twkaizeng") && current.countCards("h"));
 						targets.sort((a, b) => get.attitude(player, b) - get.attitude(player, a));
-						var cards = targets[0].getCards("h");
-						var list = [];
-						for (var card of cards) {
-							var type = get.type2(card);
+						const cards = targets[0].getCards("h");
+						const list = [];
+						for (const card of cards) {
+							const type = get.type2(card);
 							if (type == "basic") list.add(get.name(card));
 							else list.add(type);
 						}
-						var need = ["trick", "equip"].randomSort();
+						const need = ["trick", "equip"].randomSort();
 						need.addArray(["sha", "jiu"].randomSort());
-						for (var type of need) {
+						for (const type of need) {
 							if (list.includes(type)) return type;
 						}
 						return list.randomGet();
@@ -7480,67 +7475,49 @@ const skills = {
 								return target.hasSkill("twkaizeng");
 							},
 							selectTarget() {
-								var player = _status.event.player;
-								var targets = game.filterPlayer(function (current) {
-									return current != player && current.hasSkill("twkaizeng");
-								});
+								const player = get.player();
+								const targets = game.filterPlayer(current => current != player && current.hasSkill("twkaizeng") && current.countCards("h"));
 								return targets.length > 1 ? 1 : -1;
 							},
 							prepare(cards, player, targets) {
 								targets[0].logSkill("twkaizeng_want", player);
 							},
-							content() {
-								"step 0";
-								player.addTempSkill("twkaizeng_used");
-								var type = lib.skill.twkaizeng_want_backup.type;
-								var isbasic = lib.card[type];
-								target
-									.chooseCard("慨赠：是否交给" + get.translation(player) + "任意张手牌？", "若你以此法：交给其至少两张牌，你摸一张牌；交给其的牌包含" + get.translation(type) + (isbasic ? "" : "牌") + "，你获得一张不为此牌名或类型的牌", [1, Infinity])
+							async content(event, trigger, player) {
+								player.addTempSkill("twkaizeng_used", "phaseUseAfter");
+								const { target, name } = event;
+								const type = lib.skill[name].type;
+								const isbasic = lib.card[type];
+								const {
+									result: { bool, cards },
+								} = await target
+									.chooseToGive(player, `慨赠：是否交给${get.translation(player)}任意张手牌？`, `若你以此法：交给其至少两张牌，你摸一张牌；交给其的牌包含${get.translation(type)}${isbasic ? "" : "牌"}，你获得一张不为此牌名或类型的牌`, [1, Infinity])
 									.set("ai", card => {
-										if (!_status.event.goon) return -get.value(card);
-										var player = _status.event.player,
-											target = _status.event.getParent().player;
+										const { player, target, goon, type } = get.event();
+										if (!goon) return -get.value(card);
 										if (ui.selected.cards.length > player.countCards("h") / 2 && ui.selected.cards.length >= 2) return 0;
-										var type = _status.event.type;
-										var isbasic = lib.card[type];
-										var add = 0;
+										const isbasic = lib.card[type];
+										let add = 0;
 										if (!ui.selected.cards.some(i => get[isbasic ? "name" : "type2"](i, target) == type)) add += 3;
 										if (ui.selected.cards.length < 2) add += 3;
 										return get.value(card, target) - get.value(card, player) + add;
 									})
 									.set("type", type)
 									.set("goon", get.attitude(target, player) > 0);
-								"step 1";
-								if (result.bool) {
-									var cards = result.cards;
-									event.cards = cards;
-									target.give(cards, player);
+								if (bool) {
+									if (cards.length > 1) await target.draw();
+									const fn = isbasic ? "name" : "type2";
+									if (cards.some(card => get[fn](card, player) == type)) {
+										const card = get.cardPile(cardx => get[fn](cardx, target) != type);
+										if (card) await target.gain(card, "gain2");
+									}
+									await game.delayx();
 								} else {
-									var refuseInfo = lib.skill.twkaizeng.refuseInfo.slice();
+									const refuseInfo = lib.skill.twkaizeng.refuseInfo.slice();
 									if (get.attitude(target, player) < 0) refuseInfo.push("没门");
 									target.chat(refuseInfo.randomGet());
-									event.finish();
 								}
-								"step 2";
-								if (cards.length > 1) target.draw();
-								"step 3";
-								var type = lib.skill.twkaizeng_want_backup.type;
-								var isbasic = lib.card[type];
-								var fn = isbasic ? "name" : "type2";
-								if (cards.some(card => get[fn](card, player) == type)) {
-									var card = get.cardPile(cardx => {
-										return get[fn](cardx, target) != type;
-									});
-									if (card) target.gain(card, "gain2");
-								}
-								"step 4";
-								game.delayx();
 							},
-							ai: {
-								result: {
-									target: 1,
-								},
-							},
+							ai: { result: { target: 1 } },
 						};
 					},
 					prompt: () => "请选择一名有【慨赠】的角色",
@@ -7549,41 +7526,34 @@ const skills = {
 					order: 10,
 					result: {
 						player(player) {
-							var targets = game.filterPlayer(current => {
-								return current != player && current.hasSkill("twkaizeng");
-							});
-							for (var i of targets) if (get.attitude(player, i) > 0) return 1;
+							if (game.hasPlayer(current => current != player && current.hasSkill("twkaizeng") && current.countCards("h") && get.attitude(player, current) > 0)) return 1;
 							return 0;
 						},
 					},
 				},
 			},
 			want_backup: {},
-			used: {},
+			used: { charlotte: true },
 		},
-		ai: {
-			threaten: 3,
-		},
+		ai: { threaten: 3 },
 	},
 	twyangming: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseEnd",
-		},
+		trigger: { player: "phaseUseEnd" },
+		getNum: (event, player) =>
+			player
+				.getHistory("useCard", evt => evt.getParent("phaseUse") == event)
+				.map(evt => get.type2(evt.card))
+				.toUniqued().length,
 		frequent: true,
 		filter(event, player) {
-			return player.hasHistory("useCard", evt => evt.getParent("phaseUse") == event);
+			return get.info("twyangming").getNum(event, player);
 		},
-		content() {
-			var types = [];
-			var history = player.getHistory("useCard", evt => evt.getParent("phaseUse") == trigger);
-			for (var evt of history) {
-				types.add(get.type2(evt.card));
-			}
-			var num = types.length;
-			player.draw(num);
-			player.addTempSkill("twyangming_limit");
-			player.addMark("twyangming_limit", num, false);
+		async content(event, trigger, player) {
+			const num = get.info(event.name).getNum(trigger, player);
+			await player.draw(num);
+			player.addTempSkill(event.name + "_limit");
+			player.addMark(event.name + "_limit", num, false);
 			game.log(player, "本回合的手牌上限", "#g+" + num);
 		},
 		subSkill: {
@@ -7595,6 +7565,7 @@ const skills = {
 						return num + player.countMark("twyangming_limit");
 					},
 				},
+				intro: { content: "本回合手牌上限+#" },
 			},
 		},
 	},
