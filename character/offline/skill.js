@@ -1516,75 +1516,89 @@ const skills = {
 	},
 	//何曼
 	hm_juedian: {
-		trigger: {
-			source: "damageSource",
-		},
-		forced: true,
+		trigger: { source: "damageSource" },
 		filter(event, player) {
-			return (
-				player.getHistory("sourceDamage", function (evt) {
-					return evt.getParent(2)?.targets?.length == 1;
-				}).length <= 1
-			);
+			const { player: target } = event;
+			const juedou = get.autoViewAs({ name: "juedou", isCard: true });
+			if (!target.isIn() || !player.canUse(juedou, target, false)) return false;
+			return event.getParent().type == "card" && event.getParent(2)?.targets?.length === 1 && player.getHistory("sourceDamage", evt => evt.getParent(2)?.targets?.length === 1).indexOf(event) == 0;
 		},
-		async content(event, trigger, player) {
-			const target = trigger.player;
+		locked: true,
+		async cost(event, trigger, player) {
+			const { player: target } = trigger;
 			const control = await player
-				.chooseControl("baonue_hp", "baonue_maxHp", "背水！", function (event, player) {
-					if (player.hp == player.maxHp) return "baonue_hp";
-					if (player.hp < player.maxHp - 1 || player.hp <= 2) return "baonue_maxHp";
+				.chooseControl("baonue_hp", "baonue_maxHp", "背水！")
+				.set("prompt", `决巅：选择一项并视为对${get.translation(target)}使用一张【决斗】`)
+				.set("ai", () => {
+					const { player, target } = get.event();
+					const bool1 = player.getHp() > 2;
+					const bool2 = player.isDamaged() && player.maxHp > 3;
+					if (bool1 && bool2 && (player.hasSkill("hm_nitian_buff") || target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count" > 0))) return "背水！";
+					if (bool2) return "baonue_maxHp";
 					return "baonue_hp";
 				})
-				.set("prompt", `决巅：选择一项并视为对${get.translation(target.name)}使用一张【决斗】`)
+				.set("target", target)
 				.forResultControl();
-			if (control === "baonue_hp") {
-				await player.loseHp();
-			} else if (control === "baonue_maxHp") {
-				await player.loseMaxHp(true);
-			} else {
-				await player.loseHp();
-				await player.loseMaxHp(true);
-			}
-			const next = player.chooseUseTarget("juedou");
-			next.set("forced", true);
-			next.set("targets", [target]);
-			if (control === "背水！") {
-				next.set("oncard", () => {
-					const evt = get.event();
-					evt.baseDamage++;
-				});
+			event.result = {
+				bool: true,
+				cost_data: control,
+				targets: [target],
+			};
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data: control,
+			} = event;
+			const juedou = get.autoViewAs({ name: "juedou", isCard: true });
+			if (["baonue_hp", "背水！"].includes(control)) await player.loseHp();
+			if (["baonue_maxHp", "背水！"].includes(control)) await player.loseMaxHp(true);
+			if (player.canUse(juedou, target, false)) {
+				const next = player.useCard(juedou, target, false);
+				if (control == "背水！") next.baseDamage = 2;
+				await next;
 			}
 		},
 	},
 	hm_nitian: {
-		limited: true,
 		enable: "phaseUse",
+		limited: true,
+		skillAnimation: true,
+		animationColor: "fire",
 		async content(event, trigger, player) {
-			player.awakenSkill("hm_nitian");
-			player.addTempSkill(["hm_nitian_buff", "hm_nitian_debuff"]);
+			player.awakenSkill(event.name);
+			player.addTempSkill(event.name + "_buff");
+		},
+		ai: {
+			order(item, player) {
+				if (
+					game.hasPlayer(current => {
+						if (get.attitude(player, current) > 0) return false;
+						if (current.getHp() > 3) return false;
+						return player.hasCard(card => get.tag(card, "damage") > 0.5 && player.canUse(card, current) && get.effect(current, card, player, player) > 0, "hs");
+					})
+				)
+					return 10;
+				return 0.1;
+			},
+			result: {
+				player(player, target) {
+					return player.hasCard(card => get.tag(card, "damage") > 0.5 && player.hasValueTarget(card), "hs") ? 1 : 0;
+				},
+			},
 		},
 		subSkill: {
 			buff: {
-				trigger: {
-					player: "useCard",
+				trigger: { player: ["useCard", "phaseJieshuBegin"] },
+				filter(event, player) {
+					if (event.name == "useCard") return true;
+					return !Boolean(player.getStat("kill"));
 				},
 				silent: true,
 				charlotte: true,
 				async content(event, trigger, player) {
-					trigger.directHit.addArray(game.filterPlayer2());
-				},
-			},
-			debuff: {
-				trigger: {
-					player: "phaseJieshuBegin",
-				},
-				filter(event, player) {
-					return !Boolean(player.getStat("kill"));
-				},
-				charlotte: true,
-				forced: true,
-				async content(event, trigger, player) {
-					await player.die();
+					if (trigger.name == "useCard") trigger.directHit.addArray(game.filterPlayer2());
+					else await player.die();
 				},
 			},
 		},
