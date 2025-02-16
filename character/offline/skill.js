@@ -11530,13 +11530,11 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.player) > 0;
 		},
-		content() {
-			trigger.player.addTempSkill("vtbyaoli_effect");
-			trigger.player.addMark("vtbyaoli_effect", 1, false);
+		async content(event, trigger, player) {
+			trigger.player.addTempSkill(event.name + "_effect");
+			trigger.player.addMark(event.name + "_effect", 1, false);
 		},
-		ai: {
-			expose: 0.15,
-		},
+		ai: { expose: 0.15 },
 		subSkill: {
 			effect: {
 				audio: "vtbyaoli",
@@ -11544,51 +11542,37 @@ const skills = {
 				trigger: { player: "useCard2" },
 				forced: true,
 				onremove: true,
-				nopop: true,
+				direct: true,
 				filter(event, player) {
 					return event.card.name == "sha" && player.countMark("vtbyaoli_effect") > 0;
 				},
-				content() {
-					"step 0";
-					player.removeSkill("vtbyaoli_effect");
+				async content(event, trigger, player) {
 					trigger.directHit.addArray(game.filterPlayer());
-					var num = player.countMark("vtbyaoli_effect");
-					if (
-						!game.hasPlayer(current => {
-							return !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current);
+					const num = player.countMark(event.name);
+					player.removeSkill(event.name);
+					const targets = game.filterPlayer(current => !trigger.targets.includes(current) && lib.filter.targetEnabled2(trigger.card, player, current));
+					if (!targets.length) return;
+					const { result } = await player
+						.chooseTarget("媱丽：是否为" + get.translation(trigger.card) + "额外指定" + (num > 1 ? "至多" : "") + get.cnNumber(num) + "个目标？", num == 1 ? 1 : [1, num], (card, player, target) => {
+							return !get.event("sourcex").includes(target) && player.canUse(get.event("card"), target);
 						})
-					)
-						event.finish();
-					else
-						player
-							.chooseTarget("媱丽：是否为" + get.translation(trigger.card) + "额外指定" + (num > 1 ? "至多" : "") + get.cnNumber(num) + "个目标？", num == 1 ? 1 : [1, num], (card, player, target) => {
-								return !_status.event.sourcex.includes(target) && player.canUse(_status.event.card, target);
-							})
-							.set("sourcex", trigger.targets)
-							.set("ai", target => {
-								var player = _status.event.player;
-								return get.effect(target, _status.event.card, player, player);
-							})
-							.set("card", trigger.card);
-					"step 1";
-					if (result.bool) {
-						if (!event.isMine() && !event.isOnline()) game.delayx();
-						event.targets = result.targets;
-					} else {
-						event.finish();
-					}
-					"step 2";
-					player.logSkill("vtbyaoli_effect", event.targets);
-					trigger.targets.addArray(event.targets);
+						.set("sourcex", trigger.targets)
+						.set("ai", target => {
+							const { player, card } = get.event();
+							return get.effect(target, card, player, player);
+						})
+						.set("card", trigger.card);
+					if (!result.targets?.length) return;
+					if (!event.isMine() && !event.isOnline()) await game.delayx();
+					player.logSkill(event.name, result.targets);
+					trigger.targets.addArray(result.targets);
 				},
 				marktext: "媱",
-				intro: {
-					content: "下一张【杀】不可被响应且可以额外指定&个目标",
-				},
+				intro: { content: "下一张【杀】不可被响应且可以额外指定&个目标" },
 				ai: {
 					directHit_ai: true,
 					skillTagFilter(player, tag, arg) {
-						return arg.card.name == "sha";
+						return arg?.card?.name === "sha";
 					},
 				},
 			},
