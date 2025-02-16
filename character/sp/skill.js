@@ -28082,61 +28082,56 @@ const skills = {
 	chenqing: {
 		audio: 2,
 		trigger: { global: "dying" },
-		//priority:6,
 		filter(event, player) {
-			return event.player.hp <= 0 && !player.hasSkill("chenqing2");
+			return event.player.hp <= 0 && game.hasPlayer(current => current != player && current != event.player);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("chenqing"), function (card, player, target) {
-					return target != player && target != _status.event.getTrigger().player;
+		round: 1,
+		async cost(event, trigger, player) {
+			const { player: target } = trigger;
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return target != player && target != get.event("targetx");
 				})
-				.set("ai", function (target) {
-					var player = _status.event.player;
-					var trigger = _status.event.getTrigger();
-					if (get.attitude(player, trigger.player) > 0) {
-						var att1 = get.attitude(target, player);
-						var att2 = get.attitude(target, trigger.player);
-						var att3 = get.attitude(player, target);
+				.set("ai", target => {
+					const { player, targetx } = get.event();
+					if (get.attitude(player, targetx) > 0) {
+						const att1 = get.attitude(target, player);
+						const att2 = get.attitude(target, targetx);
+						const att3 = get.attitude(player, target);
 						if (att3 < 0) return 0;
 						return att1 / 2 + att2 + att3;
 					} else {
 						return 0;
 						// return get.attitude(player,target);
 					}
-				});
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("chenqing2", "roundStart");
-				event.target = result.targets[0];
-				event.target.draw(4);
-				player.logSkill("chenqing", event.target);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			var target = event.target;
-			var tosave = trigger.player;
-			var att = get.attitude(target, tosave);
-			var hastao = target.countCards("h", "tao");
-			target
+				})
+				.set("targetx", target)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			await target.draw(4);
+			if (!target.countCards("he", card => lib.filter.cardDiscardable)) return;
+			const { player: tosave } = trigger;
+			const att = get.attitude(target, tosave);
+			const hastao = target.countCards("hs", card => target.canSaveCard(card, tosave)) >= 1 - tosave.hp;
+			const { result } = await target
 				.chooseToDiscard(4, true, "he")
-				.set("ai", function (card) {
-					var hastao = _status.event.hastao;
-					var att = _status.event.att;
+				.set("ai", card => {
+					const { hastao, att } = get.event();
 					if (!hastao && att > 0) {
-						var suit = get.suit(card);
-						for (var i = 0; i < ui.selected.cards.length; i++) {
+						const suit = get.suit(card);
+						for (let i = 0; i < ui.selected.cards.length; i++) {
 							if (get.suit(ui.selected.cards[i]) == suit) {
 								return -4 - get.value(card);
 							}
 						}
 					}
 					if (att < 0 && ui.selected.cards.length == 3) {
-						var suit = get.suit(card);
-						for (var i = 0; i < ui.selected.cards.length; i++) {
+						const suit = get.suit(card);
+						for (let i = 0; i < ui.selected.cards.length; i++) {
 							if (get.suit(ui.selected.cards[i]) == suit) {
 								return -get.value(card);
 							}
@@ -28147,15 +28142,10 @@ const skills = {
 				})
 				.set("hastao", hastao)
 				.set("att", att);
-			"step 3";
-			if (result.cards && result.cards.length == 4) {
-				var suits = [];
-				for (var i = 0; i < result.cards.length; i++) {
-					suits.add(get.suit(result.cards[i]));
-				}
-				if (suits.length == 4 && game.checkMod({ name: "tao", isCard: true }, player, trigger.player, "unchanged", "cardSavable", player)) {
-					event.target.useCard({ name: "tao", isCard: true }, trigger.player);
-				}
+			if (result.cards?.length === 4) {
+				const suits = result.cards.map(card => get.suit(card)).toUniqued();
+				const tao = get.autoViewAs({ name: "tao", isCard: true });
+				if (suits.length == 4 && target.canUse(tao, tosave)) await target.useCard(tao, tosave);
 			}
 		},
 		ai: {
@@ -28224,7 +28214,6 @@ const skills = {
 		popname: true,
 		sourceSkill: "mozhi",
 	},
-	chenqing2: { charlotte: true },
 	ranshang: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
