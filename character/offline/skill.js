@@ -1533,7 +1533,8 @@ const skills = {
 					const { player, target } = get.event();
 					const bool1 = player.getHp() > 2;
 					const bool2 = player.isDamaged() && player.maxHp > 3;
-					if (bool1 && bool2 && (player.hasSkill("hm_nitian_buff") || target.mayHaveSha(player, "respond", null, "count") - player.mayHaveSha(player, "respond", null, "count" > 0))) return "背水！";
+					const eff = get.effect(target, { name: "juedou", isCard: true }, player, player);
+					if (eff > 0 && ((bool1 && bool2 && target.mayHaveSha(player, "respond", null, "count") <= player.mayHaveSha(player, "respond", null, "count")) || player.hasSkill("hm_nitian_buff"))) return "背水！";
 					if (bool2) return "baonue_maxHp";
 					return "baonue_hp";
 				})
