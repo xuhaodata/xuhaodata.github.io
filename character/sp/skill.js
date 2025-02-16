@@ -2573,12 +2573,13 @@ const skills = {
 				num = event.getParent(2).spolzhubei_num;
 			const list = get.inpileVCardList(info => {
 				if (!["sha", "juedou"].includes(info[2]) || info[3]) return false;
-				return target.countCards("hes", cardx => ["sha", "juedou"].some(name => !player.getStorage("spolzhubei_used").includes(name) && target.canUse(get.autoViewAs({ name: name }, [cardx]), player, false))) >= num;
+				if (player.getStorage("spolzhubei_used").includes(info[2])) return false;
+				return target.countCards("hes", cardx => target.canUse(get.autoViewAs({ name: info[2] }, [cardx]), player, false)) >= num;
 			});
 			if (!list.length) return;
 			const links =
 				list.length == 1
-					? list[0]
+					? list
 					: await target
 							.chooseButton([`请选择要对${get.translation(player)}使用的牌`, [list, "vcard"]], true)
 							.set("ai", button => {
@@ -2588,7 +2589,7 @@ const skills = {
 								return get.effect(target, { name: link[2] }, player, player);
 							})
 							.forResultLinks();
-			if (!links || !links.length) return;
+			if (!links?.length) return;
 			const viewAs = { name: links[0][2] };
 			player.addTempSkill("spolzhubei_used", "phaseUseAfter");
 			player.markAuto("spolzhubei_used", [viewAs.name]);
