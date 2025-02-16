@@ -658,7 +658,7 @@ const skills = {
 						init: player => {
 							player.recover();
 						},
-						translate: "你回复一点体力",
+						translate: "你回复1点体力",
 						result: { player: 1 },
 					},
 					{
@@ -666,7 +666,7 @@ const skills = {
 						init: player => {
 							player.loseHp();
 						},
-						translate: "你失去一点体力",
+						translate: "你失去1点体力",
 						result: {
 							player: player => (player.hasSkillTag("maihp") ? 1 : -1),
 						},
@@ -676,7 +676,7 @@ const skills = {
 						init: player => {
 							player.damage(1, "nosource");
 						},
-						translate: "你受到一点无伤害来源的伤害",
+						translate: "你受到1点无伤害来源的伤害",
 						result: {
 							// TODO maixie和maixie_hp的区别
 							player: player => (player.hasSkillTag("maixie") ? 1 : -1),
@@ -725,7 +725,7 @@ const skills = {
 						init: player => {
 							player.gainMaxHp();
 						},
-						translate: "你增加一点体力上限",
+						translate: "你增加1点体力上限",
 						result: { player: 1 },
 					},
 					{
@@ -733,7 +733,7 @@ const skills = {
 						init: player => {
 							player.loseMaxHp();
 						},
-						translate: "你失去一点体力上限",
+						translate: "你失去1点体力上限",
 						result: { player: -2 },
 					},
 					{
@@ -1446,7 +1446,7 @@ const skills = {
 						async content(event, trigger, player) {
 							player.recover();
 						},
-						translate: "你回复一点体力",
+						translate: "你回复1点体力",
 						filter: (event, player) => !player.isHealthy(),
 						result: {
 							player: player => (player.isHealthy() ? 0 : 1),
@@ -1466,7 +1466,7 @@ const skills = {
 						async content(event, trigger, player) {
 							player.damage("nocard", "nosource");
 						},
-						translate: "你受到一点无来源的伤害",
+						translate: "你受到1点无来源的伤害",
 						result: {
 							player: player => (player.hasSkillTag("maixie") ? 1 : -1),
 						},
@@ -1475,7 +1475,7 @@ const skills = {
 						async content(event, trigger, player) {
 							player.loseHp();
 						},
-						translate: "你失去一点体力",
+						translate: "你失去1点体力",
 						result: {
 							player: player => (player.hasSkillTag("maihp") ? 1 : -1),
 						},
@@ -1498,7 +1498,7 @@ const skills = {
 						async content(event, trigger, player) {
 							player.gainMaxHp();
 						},
-						translate: "你增加一点体力上限",
+						translate: "你增加1点体力上限",
 						result: {
 							player: 1,
 						},
@@ -1507,7 +1507,7 @@ const skills = {
 						async content(event, trigger, player) {
 							player.loseMaxHp();
 						},
-						translate: "你减少一点体力上限",
+						translate: "你减少1点体力上限",
 						result: {
 							player: player => (player.maxHp == 1 ? -Infinity : -3),
 						},
@@ -1569,7 +1569,7 @@ const skills = {
 								}
 							}
 						},
-						translate: "你进行一次判定, 若结果为红色，你可以对一名其他角色造成一点伤害",
+						translate: "你进行一次判定, 若结果为红色，你可以对一名其他角色造成1点伤害",
 						result: {
 							player: player => (player.hasSkill("tiandu") || player.hasSkill("xinleiji") ? 3 : 1),
 						},
@@ -1715,7 +1715,7 @@ const skills = {
 						async content(event, trigger, player) {
 							trigger.player.recover();
 						},
-						translate: "其回复一点体力",
+						translate: "其回复1点体力",
 						filter: (event, player) => !event.player.isHealthy(),
 						result: {
 							evtPlayer: player => (player.isHealthy() ? 0 : 1),
@@ -1725,7 +1725,7 @@ const skills = {
 						async content(event, trigger, player) {
 							trigger.player.damage("nocard", player);
 						},
-						translate: "其受到一点来自于你的伤害",
+						translate: "其受到1点来自于你的伤害",
 						result: {
 							evtPlayer: player => (player.hasSkillTag("maixie") ? 1 : -1),
 						},
@@ -1743,7 +1743,7 @@ const skills = {
 						async content(event, trigger, player) {
 							trigger.player.loseHp();
 						},
-						translate: "其失去一点体力",
+						translate: "其失去1点体力",
 						result: {
 							evtPlayer: player => (player.hasSkillTag("maihp") ? 1 : -1),
 						},
@@ -1766,7 +1766,7 @@ const skills = {
 						async content(event, trigger, player) {
 							trigger.player.gainMaxHp();
 						},
-						translate: "其增加一点体力上限",
+						translate: "其增加1点体力上限",
 						result: {
 							evtPlayer: 1,
 						},
@@ -1775,7 +1775,7 @@ const skills = {
 						async content(event, trigger, player) {
 							trigger.player.loseMaxHp();
 						},
-						translate: "其失去一点体力上限",
+						translate: "其失去1点体力上限",
 						result: {
 							evtPlayer: player => (player.maxHp == 1 ? -Infinity : -2),
 						},

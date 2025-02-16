@@ -3077,8 +3077,7 @@ const skills = {
 	clansankuang: {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
-		direct: true,
-		forced: true,
+		locked: true,
 		filter(event, player) {
 			if (!game.hasPlayer(current => current != player)) return false;
 			const type = get.type2(event.card);
@@ -3087,16 +3086,24 @@ const skills = {
 		getNum(player) {
 			return (player.countCards("ej") > 0) + player.isDamaged() + (Math.max(0, player.hp) < player.countCards("h"));
 		},
-		content() {
-			"step 0";
-			var cards = trigger.cards.filterInD("oe");
-			player
+		async cost(event, trigger, player) {
+			const func = (event, player) => {
+				const name = event.skill;
+				game.countPlayer(target => {
+					if (target != player) target.prompt(get.translation(name) + get.info(name).getNum(target));
+				});
+			};
+			if (event.player == game.me) func(event, player);
+			else if (event.isOnline()) player.send(func, event, player);
+			const cards = trigger.cards.filterInD("oe");
+			event.result = await player
 				.chooseTarget("三恇：选择一名其他角色", "令其交给你至少X张牌" + (cards.length ? "，然后其获得" + get.translation(cards) : "") + "（X为以下条件中其满足的项数：场上有牌、已受伤、体力值小于手牌数）", true, lib.filter.notMe)
 				.set("ai", target => {
-					var att = get.attitude(player, target),
+					const { player, goon } = get.event();
+					const att = get.attitude(player, target),
 						num = lib.skill.clansankuang.getNum(target);
 					if (num == 0) return att;
-					if (_status.event.goon) return -att;
+					if (goon) return -att;
 					return -Math.sqrt(Math.abs(att)) - lib.skill.clansankuang.getNum(target);
 				})
 				.set(
@@ -3105,38 +3112,28 @@ const skills = {
 						Math,
 						trigger.cards.map(i => get.value(i))
 					) <= 5 || trigger.cards.filterInD("oe").length == 0
-				);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0],
-					num = lib.skill.clansankuang.getNum(target),
-					num2 = target.countCards("he");
-				event.target = target;
-				player.logSkill("clansankuang", target);
-				if (num2 == 0) event._result = { bool: false };
-				else if (num2 <= num)
-					event._result = {
-						bool: true,
-						cards: target.getCards("he"),
-					};
-				else {
-					var cards = trigger.cards.filterInD("oe");
-					target
-						.chooseCard("he", num > 0, [num, Infinity])
-						.set("ai", get.unuseful)
-						.set("prompt", num > 0 ? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？" : "交给" + get.translation(player) + "至少" + get.cnNumber(num) + "张牌");
-				}
-			} else event.finish();
-			"step 2";
-			if (result.bool) {
-				var cards = result.cards;
-				target.give(cards, player);
-				if (!cards.length) event.finish();
-				else game.delayx();
-			} else event.finish();
-			"step 3";
-			if (trigger.cards.filterInD().length) target.gain(trigger.cards.filterInD(), "gain2", "bySelf");
-			else if (trigger.cards.filterInD("e").length) target.gain(trigger.cards.filterInD("e"), get.owner(trigger.cards.filterInD("e")[0]), "give");
+				)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const num = lib.skill.clansankuang.getNum(target),
+				num2 = target.countCards("he");
+			const cards = trigger.cards.filterInD("oe");
+			const bool =
+				num2 == 0
+					? false
+					: await target
+							.chooseToGive(player, "he", num > 0, [Math.min(num2, num), Infinity])
+							.set("ai", get.unuseful)
+							.set("prompt", num > 0 ? "是否交给" + get.translation(player) + "任意张牌" + (cards.length ? "并获得" + get.translation(cards) : "") + "？" : "交给" + get.translation(player) + "至少" + get.cnNumber(num) + "张牌")
+							.forResultBool();
+			if (!bool || !cards.length) return;
+			await game.delayx();
+			if (trigger.cards.filterInD().length) await target.gain(trigger.cards.filterInD(), "gain2", "bySelf");
+			else if (trigger.cards.filterInD("e").length) await target.gain(trigger.cards.filterInD("e"), get.owner(trigger.cards.filterInD("e")[0]), "give");
 		},
 		ai: {
 			reverseOrder: true,
@@ -3153,24 +3150,21 @@ const skills = {
 	},
 	clanbeishi: {
 		audio: 2,
-		trigger: {
-			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
+		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 		forced: true,
 		filter(event, player) {
-			var history = player.getAllHistory("useSkill", evt => evt.skill == "clansankuang");
+			if (player.isHealthy()) return false;
+			const history = player.getAllHistory("useSkill", evt => evt.skill == "clansankuang");
 			if (!history.length) return false;
-			var target = history[0].targets[0];
+			const target = history[0].targets[0];
 			if (target.countCards("h")) return false;
-			var evt = event.getl(target);
-			return evt && evt.hs && evt.hs.length;
+			const evt = event.getl(target);
+			return evt?.hs?.length;
 		},
 		content() {
 			player.recover();
 		},
-		ai: {
-			combo: "clansankuang",
-		},
+		ai: { combo: "clansankuang" },
 	},
 	//族荀淑
 	clanshenjun: {
