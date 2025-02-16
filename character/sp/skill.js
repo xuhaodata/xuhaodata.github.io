@@ -300,8 +300,10 @@ const skills = {
 			const num = player.countUsed({ name: "jiu" }, true) + 1;
 			return [num, Infinity];
 		},
-		onuse(result, player) {
-			if (result.cards?.some(i => get.suit(i) !== "club")) player.tempBanSkill("spolzhujiu");
+		log: false,
+		precontent() {
+			player.logSkill("spolzhujiu");
+			if (event.result.cards?.some(i => get.suit(i) !== "club")) player.tempBanSkill("spolzhujiu");
 		},
 		check(card) {
 			const player = get.player();
