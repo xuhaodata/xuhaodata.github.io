@@ -544,7 +544,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("olzongluan"), (card, player, target) => {
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.hasUseTarget(new lib.element.VCard({ name: "sha", isCard: true }));
 				})
 				.set("ai", target => {
@@ -554,6 +554,7 @@ const skills = {
 						if (!target.canUse(card, current)) return false;
 						return get.effect(current, card, target, player) > 0;
 					});
+					if (!targets.length) return 0;
 					if (targets.some(current => get.effect(current, card, target, target) > 0)) {
 						targets = targets.filter(current => get.effect(current, card, target, target) > 0);
 					} else targets = [targets.sort((a, b) => get.effect(b, card, target, target) - get.effect(a, card, target, target))[0]];
@@ -10412,22 +10413,14 @@ const skills = {
 			player.addSkill("olzhuyan_record");
 		},
 		onremove: ["olzhuyan_true", "olzhuyan_false"],
-		direct: true,
 		filter(event, player) {
-			for (var bool of [true, false]) {
-				var targeted = player.getStorage("olzhuyan_" + bool);
-				if (
-					game.hasPlayer(current => {
-						return !targeted.includes(current) && lib.skill.olzhuyan.getNum(current, bool);
-					})
-				)
-					return true;
-			}
-			return false;
+			return game.hasPlayer(current => {
+				return [true, false].some(bool => !player.getStorage("olzhuyan_" + bool).includes(current) && lib.skill.olzhuyan.getNum(current, bool));
+			});
 		},
 		getNum(player, status) {
 			if (!_status.olzhuyan || !_status.olzhuyan[player.playerid]) return 0;
-			var num = _status.olzhuyan[player.playerid][status ? 1 : 0];
+			let num = _status.olzhuyan[player.playerid][status ? 1 : 0];
 			if (status) {
 				let no = num > 5;
 				num -= player.countCards("h");
@@ -10438,97 +10431,102 @@ const skills = {
 			}
 			return num;
 		},
-		content() {
-			"step 0";
-			var map = {};
-			for (var bool of [true, false]) {
-				var targeted = player.getStorage("olzhuyan_" + bool);
+		getMap(player) {
+			const map = {};
+			for (const bool of [true, false]) {
+				const targeted = player.getStorage("olzhuyan_" + bool);
 				game.countPlayer(current => {
 					if (targeted.includes(current)) return false;
 					if (!map[current.playerid]) map[current.playerid] = [];
 					map[current.playerid][bool ? 1 : 0] = lib.skill.olzhuyan.getNum(current, bool);
 				});
 			}
-			event.map = map;
-			player
-				.chooseTarget(get.prompt("olzhuyan"), "令一名角色将{体力值/手牌数}调整至与其上个结束阶段相同(“--”表示已对其发动过该分支)", (card, player, target) => {
-					var list = _status.event.map[target.playerid];
+			return map;
+		},
+		async cost(event, trigger, player) {
+			const map = get.info(event.skill).getMap(player);
+			const targetprompt = target => {
+				const list = map[target.playerid];
+				let str = "";
+				for (let i = 0; i < 2; i++) {
+					if (list[i] === undefined) str += "--";
+					else {
+						str += (list[i] > 0 ? "+" : "") + list[i];
+					}
+					str += "/";
+				}
+				return str.slice(0, -1);
+			};
+			const func = () => {
+				game.countPlayer(target => {
+					let text = targetprompt(target);
+					target.prompt("体力值" + text.replaceAll("/", "<br>手牌数"));
+				});
+			};
+			if (event.player == game.me) func();
+			else if (event.isOnline()) player.send(func);
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "令一名角色将{体力值/手牌数}调整至与其上个结束阶段相同(“--”表示已对其发动过该分支)", (card, player, target) => {
+					const list = get.event().map[target.playerid];
 					return list && (list[0] || list[1]);
 				})
 				.set("map", map)
-				.set("targetprompt", target => {
-					var list = _status.event.map[target.playerid];
-					var str = "";
-					for (var i = 0; i < 2; i++) {
-						if (list[i] === undefined) str += "--";
-						else {
-							str += (list[i] > 0 ? "+" : "") + list[i];
-						}
-						str += "/";
-					}
-					return str.slice(0, -1);
-				})
+				.set("targetprompt", targetprompt)
 				.set("ai", target => {
-					var list = _status.event.map[target.playerid];
-					var att = get.attitude(_status.event.player, target);
-					var v1 = list[0],
+					const list = get.event().map[target.playerid];
+					const att = get.attitude(get.player(), target);
+					const v1 = list[0],
 						v2 = get.sgn(list[1]) * Math.sqrt(Math.abs(list[1]));
 					return Math[att > 0 ? "max" : "min"](v1, v2) * att;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("olzhuyan", target);
-				event.target = target;
-				var list = event.map[target.playerid];
-				var choices = ["体力值", "手牌数"];
-				if (list[0] && list[1]) {
-					player
-						.chooseControl(choices)
-						.set("choiceList", ["令" + get.translation(target) + (list[0] > 0 ? "回复" : "失去") + Math.abs(list[0]) + "点体力" + (list[0] < 0 ? "（至多失去至1）" : ""), "令" + get.translation(target) + (list[1] > 0 ? "摸" : "弃置") + get.cnNumber(Math.abs(list[1])) + "张" + (list[1] > 0 ? "" : "手") + "牌" + (list[1] > 0 ? "（至多摸至5）" : "")])
-						.set("prompt", "驻颜：请选择一项")
-						.set("ai", () => _status.event.choice)
-						.set(
-							"choice",
-							(function () {
-								var v1 = list[0],
-									v2 = get.sgn(list[1]) * Math.sqrt(Math.abs(list[1]));
-								if (get.attitude(player, target) > 0) {
-									return v1 > v2 ? 0 : 1;
-								}
-								return v1 > v2 ? 1 : 0;
-							})()
-						);
-				} else {
-					event._result = { index: list[0] ? 0 : 1 };
-				}
-			} else event.finish();
-			"step 2";
-			var ind = result.index;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const map = get.info(event.name).getMap(player);
+			const list = map[target.playerid];
+			const choices = ["体力值", "手牌数"];
+			let result;
+			if (list[0] && list[1]) {
+				result = await player
+					.chooseControl(choices)
+					.set("choiceList", ["令" + get.translation(target) + (list[0] > 0 ? "回复" : "失去") + Math.abs(list[0]) + "点体力" + (list[0] < 0 ? "（至多失去至1）" : ""), "令" + get.translation(target) + (list[1] > 0 ? "摸" : "弃置") + get.cnNumber(Math.abs(list[1])) + "张" + (list[1] > 0 ? "" : "手") + "牌" + (list[1] > 0 ? "（至多摸至5）" : "")])
+					.set("prompt", "驻颜：请选择一项")
+					.set("ai", () => _status.event.choice)
+					.set(
+						"choice",
+						(() => {
+							const v1 = list[0],
+								v2 = get.sgn(list[1]) * Math.sqrt(Math.abs(list[1]));
+							if (get.attitude(player, target) > 0) {
+								return v1 > v2 ? 0 : 1;
+							}
+							return v1 > v2 ? 1 : 0;
+						})()
+					)
+					.forResult();
+			} else result = { index: list[0] ? 0 : 1 };
+			const ind = result.index;
 			player.markAuto("olzhuyan_" + Boolean(ind), [target]);
-			var num = event.map[target.playerid][ind];
+			let num = map[target.playerid][ind];
 			if (ind == 0) {
-				if (num > 0) {
-					target.recover(num);
-				} else {
-					num = Math.min(target.hp - 1, -num);
-					target.loseHp(num);
-				}
+				if (num > 0) await target.recover(num);
+				else await target.loseHp(Math.min(target.hp - 1, -num));
 			} else {
 				if (num > 0) {
 					num = Math.min(5 - target.countCards("h"), num);
-					if (num > 0) target.draw(num);
+					if (num > 0) await target.draw(num);
 				} else {
 					num = -num;
-					target.chooseToDiscard(num, true).set("prompt", "驻颜：请弃置" + get.cnNumber(Math.abs(num)) + "张手牌");
+					if (target.countCards("h")) await target.chooseToDiscard(num, true).set("prompt", "驻颜：请弃置" + get.cnNumber(Math.abs(num)) + "张手牌");
 				}
 			}
 		},
 		subSkill: {
 			record: {
-				trigger: {
-					global: ["phaseJieshuAfter", "phaseBefore", "enterGame"],
-				},
+				trigger: { global: ["phaseJieshuAfter", "phaseBefore", "enterGame"] },
 				lastDo: true,
 				charlotte: true,
 				forced: true,
@@ -10553,14 +10551,11 @@ const skills = {
 	olleijie: {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("olleijie"), "令一名角色判定。若结果为♠2~9，其受到2点雷电伤害，否则其摸两张牌。")
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "令一名角色判定。若结果为♠2~9，其受到2点雷电伤害，否则其摸两张牌。")
 				.set("ai", target => {
-					var player = _status.event.player,
-						sgn = _status.event.sgn;
+					const { player, sgn } = get.event();
 					if (sgn > 0) {
 						return get.damageEffect(target, target, player, "thunder");
 					} else if (sgn == 0) {
@@ -10570,36 +10565,33 @@ const skills = {
 				})
 				.set(
 					"sgn",
-					(function () {
-						var sgn = 0;
+					(() => {
+						let sgn = 0;
 						game.countPlayer(current => {
 							if (!current.hasSkillTag("rejudge")) return;
 							sgn = get.sgnAttitude(player, current);
 						});
 						return sgn;
 					})()
-				);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("olleijie", target);
-				target
-					.judge(card => {
-						var number = get.number(card);
-						if (get.suit(card) == "spade" && number >= 2 && number <= 9) return -4;
-						return 2;
-					})
-					.set("judge2", result => {
-						return result.bool === false ? true : false;
-					});
-			} else event.finish();
-			"step 2";
-			if (result.bool) {
-				target.draw(2);
-			} else {
-				target.damage(2, "thunder");
-			}
+				)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const bool = await target
+				.judge(card => {
+					const number = get.number(card);
+					if (get.suit(card) == "spade" && number >= 2 && number <= 9) return -4;
+					return 2;
+				})
+				.set("judge2", result => {
+					return result.bool === false;
+				})
+				.forResultBool();
+			if (bool) await target.draw(2);
+			else await target.damage(2, "thunder");
 		},
 	},
 	releijie: {
