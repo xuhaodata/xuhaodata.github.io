@@ -57,7 +57,13 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
-			return player.getStorage("friendyangming_mark").includes(event);
+			return (
+				player
+					.getHistory("lose", evt => {
+						return evt.getParent("phaseUse") === event;
+					})
+					.reduce((sum, evt) => sum + evt.getl?.(player)?.hs?.length ?? 0, 0) >= 3
+			);
 		},
 		frequent: true,
 		async content(event, trigger, player) {
@@ -93,7 +99,7 @@ const skills = {
 				if (result.bool) await player.gain(result.links, "gain2");
 			}
 		},
-		group: "friendyangming_check",
+		//group: "friendyangming_check",
 		subSkill: {
 			mark: {
 				charlotte: true,
@@ -528,7 +534,7 @@ const skills = {
 								if (player.countMark("friendyance") < 7) {
 									player.addMark("friendyance", Math.min(7 - player.countMark("friendyance"), 1 + num), false);
 								}
-								if (storage[4]) player.restoreSkill("friendfangqiu");
+								//if (storage[4]) player.restoreSkill("friendfangqiu");
 							}
 						}
 						player.removeSkill("friendyance_record");
