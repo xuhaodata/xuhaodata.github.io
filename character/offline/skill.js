@@ -1476,15 +1476,22 @@ const skills = {
 	},
 	hm_difeng: {
 		trigger: {
-			global: ["loseAfter", "addToExpansionAfter", "cardsGotoSpecialAfter", "loseAsyncAfter"],
+			global: ["loseAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		getIndex(event, player) {
+			return game.filterPlayer(target => event.getl?.(target)?.cards2?.length > 0);
+		},
+		filter(event, player, name, target) {
+			if (!target?.isIn()) return false;
+			if (event.name == "addToExpansion") return true;
+			return event.getlx !== false && (event.toStorage == true || event.type == "addToExpansion");
 		},
 		forced: true,
-		filter(event, player, name) {
-			if (event.name == "lose" || event.name == "loseAsync") return event.getlx !== false && event.toStorage == true;
-			return event.source;
+		logTarget(event, player, name, target) {
+			return target;
 		},
 		async content(event, trigger, player) {
-			await game.asyncDraw([player, trigger.source].unique());
+			await game.asyncDraw([player, ...event.targets].sortBySeat());
 		},
 		group: "hm_difeng_damage",
 		subSkill: {
