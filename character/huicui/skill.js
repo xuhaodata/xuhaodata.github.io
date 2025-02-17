@@ -2015,7 +2015,7 @@ const skills = {
 			const lose_list = [],
 				players = game.filterPlayer();
 			players.forEach(current => {
-				const pos = "ej" + (current === player ? "h" : "");
+				const pos = "ej" + (current !== player ? "h" : "");
 				const sishis = current.getCards(pos, isSishi);
 				if (sishis.length > 0) {
 					current.$throw(sishis);
