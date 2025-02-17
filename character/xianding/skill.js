@@ -2501,7 +2501,7 @@ const skills = {
 					def,
 					...(() => {
 						let list = [];
-						if (bool) list.push(get.effect(target, { name: "guohe_copy", position: "e" }, target, player) * Math.sqrt(target.countDiscardableCards(target, "e")));
+						if (bool) list.push(get.effect(target, { name: "guohe_copy", position: "e" }, target, player) * Math.sqrt(target.countDiscardableCards(target, "e")) + get.effect(target, { name: "losehp" }, target, player));
 						if (goon) list.push(get.effect(target, { name: "guohe_copy", position: "h" }, target, player) * Math.sqrt(Math.min(2, target.countDiscardableCards(target, "h"))));
 						return list;
 					})()
@@ -2521,9 +2521,9 @@ const skills = {
 					.set("choiceList", ["弃置装备区内的所有牌并失去1点体力", "弃置两张手牌，然后非锁定技本回合失效"])
 					.set("ai", () => {
 						const player = get.player();
-						if (player.hp == 1) return 1;
-						if (player.hp == 2 && player.countCards("e") >= 2) return 1;
-						return 0;
+						const bool = get.effect(player, { name: "guohe_copy", position: "e" }, player, player) * Math.sqrt(player.countDiscardableCards(player, "e")) + get.effect(player, { name: "losehp" }, player, player);
+						const goon = get.effect(player, { name: "guohe_copy", position: "h" }, player, player) * Math.sqrt(Math.min(2, player.countDiscardableCards(player, "h")));
+						return bool > goon ? 0 : 1;
 					})
 					.forResult();
 			} else {
