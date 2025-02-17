@@ -4740,6 +4740,7 @@ const skills = {
 	},
 	xingshang: {
 		audio: 2,
+		audioname2: { caoying: "lingren_xingshang" },
 		trigger: { global: "die" },
 		preHidden: true,
 		filter(event) {

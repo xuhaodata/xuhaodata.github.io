@@ -32218,7 +32218,7 @@ const skills = {
 			return get.tag(event.card, "damage");
 		},
 		usable: 1,
-		derivation: ["lingren_jianxiong", "lingren_xingshang"],
+		derivation: ["new_rejianxiong", "rexingshang"],
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt(event.name.slice(0, -5)), "选择一名目标角色并猜测其手牌构成", (card, player, target) => {
@@ -32280,86 +32280,19 @@ const skills = {
 			player.popup("猜对" + get.cnNumber(num) + "项");
 			game.log(player, "猜对了" + get.cnNumber(num) + "项");
 			if (num > 0) {
-				target.addTempSkill("lingren_adddamage");
-				lib.skill.lingren_adddamage.addCardDamage(target, trigger.card);
+				var map = trigger.customArgs;
+				var id = target.playerid;
+				if (!map[id]) map[id] = {};
+				if (typeof map[id].extraDamage != "number") map[id].extraDamage = 0;
+				map[id].extraDamage++;
 			}
 			if (num > 1) await player.draw(2);
-			if (num > 2) await player.addTempSkills(["lingren_jianxiong", "lingren_xingshang"], { player: "phaseBegin" });
+			if (num > 2) await player.addTempSkills(get.info(event.name).derivation, { player: "phaseBegin" });
 		},
 		ai: { threaten: 2.4 },
 	},
-	lingren_adddamage: {
-		onremove: true,
-		trigger: {
-			player: "damageBegin3",
-		},
-		filter(event, player) {
-			const info = player.storage.lingren_adddamage;
-			if (!event.card || !Array.isArray(info)) return false;
-			for (let obj of info) {
-				if (obj.card === event.card) return true;
-			}
-			return false;
-		},
-		silent: true,
-		popup: false,
-		forced: true,
-		charlotte: true,
-		sourceSkill: "xinfu_lingren",
-		addCardDamage(target, card, num = 1) {
-			if (!target.storage.lingren_adddamage) target.storage.lingren_adddamage = [];
-			let find;
-			for (let obj of target.storage.lingren_adddamage) {
-				if (obj.card === card) {
-					obj.num += num;
-					find = true;
-					break;
-				}
-			}
-			if (!find)
-				target.storage.lingren_adddamage.push({
-					card,
-					num: 1,
-				});
-		},
-		content() {
-			let num = 0;
-			for (let obj of player.storage.lingren_adddamage) {
-				if (obj.card === trigger.card) {
-					num = obj.num;
-					break;
-				}
-			}
-			trigger.num += num;
-		},
-	},
-	lingren_jianxiong: {
-		audio: 1,
-		trigger: {
-			player: "damageEnd",
-		},
-		content() {
-			"step 0";
-			if (get.itemtype(trigger.cards) == "cards" && get.position(trigger.cards[0], true) == "o") {
-				player.gain(trigger.cards, "gain2");
-			}
-			player.draw("nodelay");
-		},
-		ai: {
-			maixie: true,
-			maixie_hp: true,
-			effect: {
-				target(card, player, target) {
-					if (player.hasSkillTag("jueqing", false, target)) return [1, -1];
-					if (get.tag(card, "damage") && player != target) return [1, 0.6];
-				},
-			},
-		},
-	},
-	lingren_xingshang: {
-		audio: 1,
-		inherit: "rexingshang",
-	},
+	lingren_jianxiong: { audio: 1 },
+	lingren_xingshang: { audio: 1 },
 	xinfu_fujian: {
 		audio: 2,
 		trigger: {
