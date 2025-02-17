@@ -2484,40 +2484,57 @@ const skills = {
 		audio: "chuanxin",
 		trigger: { source: "damageBegin2" },
 		filter(event, player) {
-			if (_status.currentPhase != player) return false;
-			if (!_status.event.getParent("phaseUse")) return false;
-			return event.card && ["sha", "juedou"].includes(event.card.name) && event.getParent().name == event.card.name;
+			if (!player.isPhaseUsing()) return false;
+			if (!event.card || !["sha", "juedou"].includes(event.card.name)) return false;
+			const evt = event.getParent(2);
+			return evt.name === "useCard" && evt.card?.name === event.card.name;
 		},
 		logTarget: "player",
 		check(event, player) {
-			if (get.attitude(player, event.player) < 0) {
-				if (event.player.hp == 1 && event.player.countCards("e") < 2 && event.player.name2 != "gz_pangtong") return false;
-				return true;
-			}
-			return false;
+			const target = event.player;
+			const bool = target.countDiscardableCards(target, "e") > 0;
+			const goon = target.countDiscardableCards(target, "h") >= 2;
+			const def = get.damageEffect(target, player, player);
+			if (!bool && !goon) return def < 0;
+			return (
+				Math.min(
+					def,
+					...(() => {
+						let list = [];
+						if (bool) list.push(get.effect(target, { name: "guohe_copy", position: "e" }, target, player) * Math.sqrt(target.countDiscardableCards(target, "e")));
+						if (goon) list.push(get.effect(target, { name: "guohe_copy", position: "h" }, target, player) * Math.sqrt(Math.min(2, target.countDiscardableCards(target, "h"))));
+						return list;
+					})()
+				) > 0
+			);
 		},
 		async content(event, trigger, player) {
 			trigger.cancel();
 			let result;
 			const target = event.targets[0];
-			if (target.countCards("e")) {
+			const bool = target.countDiscardableCards(target, "e") > 0;
+			const goon = target.countDiscardableCards(target, "h") >= 2;
+			if (!bool && !goon) return;
+			if (bool && goon) {
 				result = await target
-					.chooseControl(function (event, player) {
+					.chooseControl()
+					.set("choiceList", ["弃置装备区内的所有牌并失去1点体力", "弃置两张手牌，然后非锁定技本回合失效"])
+					.set("ai", () => {
+						const player = get.player();
 						if (player.hp == 1) return 1;
 						if (player.hp == 2 && player.countCards("e") >= 2) return 1;
 						return 0;
 					})
-					.set("choiceList", ["弃置装备区内的所有牌并失去1点体力", "弃置两张手牌，然后非锁定技本回合失效"])
 					.forResult();
 			} else {
-				result = { index: 1 };
+				result = { index: bool ? 0 : 1 };
 			}
 			if (result.index == 1) {
 				await target.chooseToDiscard("h", 2, true);
 				target.addTempSkill("fengyin");
 			} else {
-				target.discard(trigger.player.getCards("e"));
-				target.loseHp();
+				await target.discard(trigger.player.getDiscardableCards(target, "e"));
+				await target.loseHp();
 			}
 		},
 	},
