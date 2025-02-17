@@ -12561,9 +12561,8 @@ const skills = {
 	new_rejianxiong: {
 		audio: "rejianxiong",
 		audioname: ["shen_caopi"],
-		trigger: {
-			player: "damageEnd",
-		},
+		audioname2: { caoying: "lingren_jianxiong" },
+		trigger: { player: "damageEnd" },
 		content() {
 			"step 0";
 			if (get.itemtype(trigger.cards) == "cards" && get.position(trigger.cards[0], true) == "o") {
@@ -15218,6 +15217,7 @@ const skills = {
 	},
 	rexingshang: {
 		audio: 2,
+		audioname2: { caoying: "lingren_xingshang" },
 		trigger: { global: "die" },
 		filter(event, player) {
 			return player.isDamaged() || event.player.countCards("he") > 0;

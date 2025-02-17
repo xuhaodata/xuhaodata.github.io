@@ -1476,15 +1476,22 @@ const skills = {
 	},
 	hm_difeng: {
 		trigger: {
-			global: ["loseAfter", "addToExpansionAfter", "cardsGotoSpecialAfter", "loseAsyncAfter"],
+			global: ["loseAfter", "loseAsyncAfter", "addToExpansionAfter"],
+		},
+		getIndex(event, player) {
+			return game.filterPlayer(target => event.getl?.(target)?.cards2?.length > 0);
+		},
+		filter(event, player, name, target) {
+			if (!target?.isIn()) return false;
+			if (event.name == "addToExpansion") return true;
+			return event.getlx !== false && (event.toStorage == true || event.type == "addToExpansion");
 		},
 		forced: true,
-		filter(event, player, name) {
-			if (event.name == "lose" || event.name == "loseAsync") return event.getlx !== false && event.toStorage == true;
-			return event.source;
+		logTarget(event, player, name, target) {
+			return target;
 		},
 		async content(event, trigger, player) {
-			await game.asyncDraw([player, trigger.source].unique());
+			await game.asyncDraw([player, ...event.targets].sortBySeat());
 		},
 		group: "hm_difeng_damage",
 		subSkill: {
@@ -4459,16 +4466,14 @@ const skills = {
 	},
 	scls_lingren: {
 		audio: "xinfu_lingren",
-		trigger: {
-			player: "useCardToPlayered",
-		},
+		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			if (!player.isPhaseUsing() || player.hasSkill("scls_lingren_used")) return false;
 			if (event.getParent().triggeredTargets3.length > 1) return false;
 			if (event.card.name === "sha") return true;
 			return get.tag(event.card, "damage") && get.type(event.card) === "trick";
 		},
-		derivation: ["scls_lingren_jianxiong", "scls_lingren_xingshang"],
+		derivation: ["jianxiong", "xingshang"],
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt(event.name.slice(0, -5)), "选择一名目标角色并猜测其手牌构成", (card, player, target) => {
@@ -4515,35 +4520,22 @@ const skills = {
 			player.popup("猜对" + get.cnNumber(num) + "项");
 			game.log(player, "猜对了" + get.cnNumber(num) + "项");
 			switch (num) {
-				case 3:
-					player.addTempSkills(["scls_lingren_jianxiong", "scls_lingren_xingshang"], { player: "phaseBegin" });
-				case 2:
-					target.addTempSkill("lingren_adddamage");
-					lib.skill.lingren_adddamage.addCardDamage(target, trigger.card);
 				case 1:
 					await player.draw(2);
+				case 2:
+					var map = trigger.customArgs;
+					var id = target.playerid;
+					if (!map[id]) map[id] = {};
+					if (typeof map[id].extraDamage != "number") map[id].extraDamage = 0;
+					map[id].extraDamage++;
+				case 3:
+					player.addTempSkills(get.info(event.name).derivation, { player: "phaseBegin" });
 			}
 		},
 		ai: {
 			threaten: 2.4,
 		},
 		subSkill: {
-			jianxiong: {
-				audio: "lingren_jianxiong",
-				mark: true,
-				intro: {
-					content: lib.translate.lingren_jianxiong_info,
-				},
-				inherit: "jianxiong",
-			},
-			xingshang: {
-				audio: "lingren_xingshang",
-				mark: true,
-				intro: {
-					content: lib.translate.lingren_xingshang_info,
-				},
-				inherit: "xingshang",
-			},
 			used: {
 				charlotte: true,
 			},

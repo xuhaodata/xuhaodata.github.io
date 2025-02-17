@@ -4673,7 +4673,7 @@ const skills = {
 			return player.countCards("h") > player.hp;
 		},
 		filterTarget(card, player, target) {
-			return player !== target && target.inRange(player) && target.countCards("e") > 0;
+			return player !== target && target.inRange(player);
 		},
 		content() {
 			"step 0";

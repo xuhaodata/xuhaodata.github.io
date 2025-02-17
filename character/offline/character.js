@@ -68,6 +68,7 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		skills: ["scls_lingren"],
+		tempname: ["caoying"],
 		dieAudios: ["caoying"],
 	},
 	scl_luotong: {

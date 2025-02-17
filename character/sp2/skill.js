@@ -1642,6 +1642,7 @@ const skills = {
 		audio: 2,
 		trigger: { source: "damageBegin1" },
 		filter(event, player) {
+			if (_status.currentPhase !== player) return false;
 			return !event.player.getHistory("damage").length && player.getHistory("useCard").length >= event.player.getHp();
 		},
 		forced: true,
