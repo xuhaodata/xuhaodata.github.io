@@ -152,7 +152,7 @@ const skills = {
 				audio: "friendxiaxing",
 				trigger: { global: ["loseEnd", "equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"] },
 				filter(event, player) {
-					if (!player.getStorage("friendqihui").length) return false;
+					if (player.getStorage("friendqihui").length < 2) return false;
 					return event.getd()?.some(i => i.name == "xuanjian");
 				},
 				async cost(event, trigger, player) {
@@ -160,7 +160,7 @@ const skills = {
 					const gains = trigger.getd().filter(i => i.name == "xuanjian");
 					const {
 						result: { links, bool },
-					} = await player.chooseButton(["###" + get.prompt("friendxiaxing") + '###<div class="text center">移去1枚“启诲”标记，获得' + get.translation(gains) + "</div>", [storage.map(c => [c, get.translation(c)]), "tdnodes"]]).set("ai", button => {
+					} = await player.chooseButton(["###" + get.prompt("friendxiaxing") + '###<div class="text center">移去2枚“启诲”标记，获得' + get.translation(gains) + "</div>", [storage.map(c => [c, get.translation(c)]), "tdnodes"]], 2).set("ai", button => {
 						const player = get.player();
 						if (player.getVEquip("xuanjian")) return 0;
 						return (
@@ -534,7 +534,7 @@ const skills = {
 								if (player.countMark("friendyance") < 7) {
 									player.addMark("friendyance", Math.min(7 - player.countMark("friendyance"), 1 + num), false);
 								}
-								//if (storage[4]) player.restoreSkill("friendfangqiu");
+								if (storage[4] && storage[3] > 3) player.restoreSkill("friendfangqiu");
 							}
 						}
 						player.removeSkill("friendyance_record");
@@ -15400,7 +15400,7 @@ const skills = {
 	},
 	gongsun_shadow: {
 		global: "gongsun_shadow2",
-		sourceSkill: "gongsun_shadow",
+		sourceSkill: "gongsun",
 		init(player, skill) {
 			if (!player.storage[skill]) player.storage[skill] = [];
 		},
