@@ -101,11 +101,11 @@ game.import("card", function () {
 				usable: 1,
 				updateUsable: "phaseUse",
 				global: "icesha_skill",
-				range: function (card, player, target) {
+				range(card, player, target) {
 					return player.inRange(target);
 				},
 				selectTarget: 1,
-				cardPrompt: function (card) {
+				cardPrompt(card) {
 					var natures = get.natureList(Array.isArray(card) ? card[3] : card);
 					if (lib.translate["sha_nature_" + natures[0] + "_info"]) return lib.translate["sha_nature_" + natures[0] + "_info"];
 					var str = "出牌阶段，对你攻击范围内的一名角色使用。其须使用一张【闪】，";
@@ -119,10 +119,10 @@ game.import("card", function () {
 					return str;
 				},
 				defaultYingbianEffect: "add",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return player != target;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					if (typeof event.shanRequired != "number" || !event.shanRequired || event.shanRequired < 0) {
 						event.shanRequired = 1;
@@ -224,7 +224,7 @@ game.import("card", function () {
 					}
 				},
 				ai: {
-					yingbian: function (card, player, targets, viewer) {
+					yingbian(card, player, targets, viewer) {
 						if (get.attitude(viewer, player) <= 0) return 0;
 						var base = 0,
 							hit = false;
@@ -339,7 +339,7 @@ game.import("card", function () {
 						return res;
 					},
 					result: {
-						target: function (player, target, card, isLink) {
+						target(player, target, card, isLink) {
 							let eff = -1.5,
 								odds = 1.35,
 								num = 1;
@@ -412,20 +412,20 @@ game.import("card", function () {
 					tag: {
 						respond: 1,
 						respondShan: 1,
-						damage: function (card) {
+						damage(card) {
 							if (game.hasNature(card, "poison")) return;
 							return 1;
 						},
-						natureDamage: function (card) {
+						natureDamage(card) {
 							if (game.hasNature(card, "linked")) return 1;
 						},
-						fireDamage: function (card, nature) {
+						fireDamage(card, nature) {
 							if (game.hasNature(card, "fire")) return 1;
 						},
-						thunderDamage: function (card, nature) {
+						thunderDamage(card, nature) {
 							if (game.hasNature(card, "thunder")) return 1;
 						},
-						poisonDamage: function (card, nature) {
+						poisonDamage(card, nature) {
 							if (game.hasNature(card, "poison")) return 1;
 						},
 					},
@@ -444,20 +444,20 @@ game.import("card", function () {
 					tag: {
 						respond: 1,
 						respondShan: 1,
-						damage: function (card) {
+						damage(card) {
 							if (game.hasNature(card, "poison")) return;
 							return 1;
 						},
-						natureDamage: function (card) {
+						natureDamage(card) {
 							if (game.hasNature(card)) return 1;
 						},
-						fireDamage: function (card, nature) {
+						fireDamage(card, nature) {
 							if (game.hasNature(card, "fire")) return 1;
 						},
-						thunderDamage: function (card, nature) {
+						thunderDamage(card, nature) {
 							if (game.hasNature(card, "thunder")) return 1;
 						},
-						poisonDamage: function (card, nature) {
+						poisonDamage(card, nature) {
 							if (game.hasNature(card, "poison")) return 1;
 						},
 					},
@@ -471,7 +471,7 @@ game.import("card", function () {
 				notarget: true,
 				nodelay: true,
 				defaultYingbianEffect: "draw",
-				content: function () {
+				content() {
 					event.result = "shaned";
 					event.getParent().delayx = false;
 					game.delay(0.5);
@@ -498,18 +498,18 @@ game.import("card", function () {
 				type: "basic",
 				cardcolor: "red",
 				toself: true,
-				enable: function (card, player) {
+				enable(card, player) {
 					return player.hp < player.maxHp;
 				},
 				savable: true,
 				selectTarget: -1,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player && target.hp < target.maxHp;
 				},
-				modTarget: function (card, player, target) {
+				modTarget(card, player, target) {
 					return target.hp < target.maxHp;
 				},
-				content: function () {
+				content() {
 					target.recover();
 				},
 				ai: {
@@ -723,10 +723,10 @@ game.import("card", function () {
 				type: "equip",
 				subtype: "equip1",
 				ai: {
-					order: function () {
+					order() {
 						return get.order({ name: "sha" }) - 0.1;
 					},
-					equipValue: function (card, player) {
+					equipValue(card, player) {
 						if (player._zhuge_temp) return 1;
 						player._zhuge_temp = true;
 						var result = (function () {
@@ -788,7 +788,7 @@ game.import("card", function () {
 				subtype: "equip1",
 				distance: { attackFrom: -2 },
 				ai: {
-					equipValue: function (card, player) {
+					equipValue(card, player) {
 						return Math.min(2.5 + player.countCards("h", "sha"), 4);
 					},
 					basic: {
@@ -803,7 +803,7 @@ game.import("card", function () {
 				subtype: "equip1",
 				distance: { attackFrom: -2 },
 				ai: {
-					equipValue: function (card, player) {
+					equipValue(card, player) {
 						var num = 2.5 + player.countCards("h") / 3;
 						return Math.min(num, 4);
 					},
@@ -819,7 +819,7 @@ game.import("card", function () {
 				subtype: "equip1",
 				distance: { attackFrom: -2 },
 				ai: {
-					equipValue: function (card, player) {
+					equipValue(card, player) {
 						var num = 2.5 + (player.countCards("h") + player.countCards("e")) / 2.5;
 						return Math.min(num, 5);
 					},
@@ -861,7 +861,7 @@ game.import("card", function () {
 				cardcolor: "red",
 				selectTarget: -1,
 				filterTarget: true,
-				contentBefore: function () {
+				contentBefore() {
 					"step 0";
 					if (!targets.length) {
 						event.finish();
@@ -943,7 +943,7 @@ game.import("card", function () {
 					);
 					game.log(event.card, "亮出了", cards);
 				},
-				content: function () {
+				content() {
 					"step 0";
 					for (var i = 0; i < ui.dialogs.length; i++) {
 						if (ui.dialogs[i].videoId == event.preResult) {
@@ -1037,7 +1037,7 @@ game.import("card", function () {
 					game.log(target, "选择了", button.link);
 					game.delay();
 				},
-				contentAfter: function () {
+				contentAfter() {
 					for (var i = 0; i < ui.dialogs.length; i++) {
 						if (ui.dialogs[i].videoId == event.preResult) {
 							var dialog = ui.dialogs[i];
@@ -1063,7 +1063,7 @@ game.import("card", function () {
 					game.addVideo("cardDialog", null, event.preResult);
 				},
 				ai: {
-					wuxie: function () {
+					wuxie() {
 						if (Math.random() < 0.5) return 0;
 					},
 					basic: {
@@ -1071,7 +1071,7 @@ game.import("card", function () {
 						useful: 0.5,
 					},
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							var sorter = _status.currentPhase || player;
 							let opt = 6 + 0.75 * (game.countPlayer() - 2 * get.distance(sorter, target, "absolute"));
 							if (get.is.versus()) {
@@ -1100,14 +1100,14 @@ game.import("card", function () {
 				cardcolor: "red",
 				reverseOrder: true,
 				defaultYingbianEffect: "remove",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					//return target.hp<target.maxHp;
 					return true;
 				},
-				ignoreTarget: function (card, player, target) {
+				ignoreTarget(card, player, target) {
 					return target.isHealthy();
 				},
-				content: function () {
+				content() {
 					target.recover();
 				},
 				ai: {
@@ -1120,7 +1120,7 @@ game.import("card", function () {
 						value: 0,
 					},
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							return target.hp < target.maxHp ? 2 : 0;
 						},
 					},
@@ -1137,11 +1137,11 @@ game.import("card", function () {
 				enable: true,
 				selectTarget: -1,
 				defaultYingbianEffect: "remove",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target != player;
 				},
 				reverseOrder: true,
-				content: function () {
+				content() {
 					"step 0";
 					if (typeof event.shaRequired != "number" || !event.shaRequired || event.shaRequired < 0) event.shaRequired = 1;
 					if (typeof event.baseDamage != "number") event.baseDamage = 1;
@@ -1371,10 +1371,10 @@ game.import("card", function () {
 				selectTarget: -1,
 				reverseOrder: true,
 				defaultYingbianEffect: "remove",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target != player;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					if (typeof event.shanRequired != "number" || !event.shanRequired || event.shanRequired < 0) event.shanRequired = 1;
 					if (typeof event.baseDamage != "number") event.baseDamage = 1;
@@ -1606,11 +1606,11 @@ game.import("card", function () {
 				selectTarget: -1,
 				cardcolor: "red",
 				toself: true,
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target == player;
 				},
 				modTarget: true,
-				content: function () {
+				content() {
 					if (get.is.versus()) {
 						if (game.friend.includes(target)) {
 							if (game.friend.length < game.enemy.length) {
@@ -1627,7 +1627,7 @@ game.import("card", function () {
 					target.draw(2);
 				},
 				ai: {
-					wuxie: function (target, card, player, viewer) {
+					wuxie(target, card, player, viewer) {
 						if (get.mode() == "guozhan") {
 							if (!_status._aozhan) {
 								if (!player.isMajor()) {
@@ -1659,10 +1659,10 @@ game.import("card", function () {
 				type: "trick",
 				enable: true,
 				defaultYingbianEffect: "hit",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return target != player;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					if (event.turn == undefined) event.turn = target;
 					if (typeof event.baseDamage != "number") event.baseDamage = 1;
@@ -1708,6 +1708,7 @@ game.import("card", function () {
 						next.set("pdamage", get.damageEffect(player, target, event.turn));
 						next.set("tdamage", get.damageEffect(target, player, event.turn));
 						next.set("shaRequired", event.shaRequired);
+						next.set("respondTo", [player, card]);
 						next.autochoose = lib.filter.autoRespondSha;
 						if (event.turn == target) {
 							next.source = player;
@@ -1743,7 +1744,7 @@ game.import("card", function () {
 					event._result = {};
 				},
 				ai: {
-					wuxie: function (target, card, player, viewer, status) {
+					wuxie(target, card, player, viewer, status) {
 						if (player === game.me && get.attitude(viewer, player._trueMe || player) > 0) return 0;
 						if (status * get.attitude(viewer, target) * get.effect(target, card, player, target) >= 0) return 0;
 					},
@@ -1836,19 +1837,19 @@ game.import("card", function () {
 				enable: true,
 				range: { global: 1 },
 				selectTarget: 1,
-				postAi: function (targets) {
+				postAi(targets) {
 					return targets.length == 1 && targets[0].countCards("j");
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (player == target) return false;
 					return target.hasCard(card => lib.filter.canBeGained(card, player, target), get.is.single() ? "he" : "hej");
 				},
-				content: function () {
+				content() {
 					let pos = get.is.single() ? "he" : "hej";
 					if (target.countGainableCards(player, pos)) player.gainPlayerCard(pos, target, true).set("target", target).set("complexSelect", false).set("ai", lib.card.shunshou.ai.button);
 				},
 				ai: {
-					wuxie: function (target, card, player, viewer) {
+					wuxie(target, card, player, viewer) {
 						if (!target.countCards("hej") || get.attitude(viewer, player._trueMe || player) > 0) return 0;
 					},
 					basic: {
@@ -1899,7 +1900,7 @@ game.import("card", function () {
 						return btv + val;
 					},
 					result: {
-						player: function (player, target) {
+						player(player, target) {
 							const hs = target.getGainableCards(player, "h");
 							const es = target.getGainableCards(player, "e");
 							const js = target.getGainableCards(player, "j");
@@ -1931,7 +1932,7 @@ game.import("card", function () {
 							}
 							return 1;
 						},
-						target: function (player, target) {
+						target(player, target) {
 							const hs = target.getGainableCards(player, "h");
 							const es = target.getGainableCards(player, "e");
 							const js = target.getGainableCards(player, "j");
@@ -1975,7 +1976,7 @@ game.import("card", function () {
 						value: 9,
 					},
 					result: {
-						target: function (player, target, card) {
+						target(player, target, card) {
 							let position = "hej";
 							if (card && card.position) position = card.position;
 							const hs = position.includes("h") ? target.getGainableCards(player, "h") : [];
@@ -2005,7 +2006,7 @@ game.import("card", function () {
 								? 1.5
 								: -1.5;
 						},
-						player: function (player, target, card) {
+						player(player, target, card) {
 							let position = "hej";
 							if (card && card.position) position = card.position;
 							const hs = position.includes("h") ? target.getGainableCards(player, "h") : [];
@@ -2054,7 +2055,7 @@ game.import("card", function () {
 						value: 9,
 					},
 					result: {
-						target: function (player, target, card, isLink) {
+						target(player, target, card, isLink) {
 							return lib.card.shunshou_copy.ai.result.target(
 								player,
 								target,
@@ -2065,7 +2066,7 @@ game.import("card", function () {
 								isLink
 							);
 						},
-						player: function (player, target, card, isLink) {
+						player(player, target, card, isLink) {
 							return lib.card.shunshou_copy.ai.result.player(
 								player,
 								target,
@@ -2089,15 +2090,15 @@ game.import("card", function () {
 				type: "trick",
 				enable: true,
 				selectTarget: 1,
-				postAi: function (targets) {
+				postAi(targets) {
 					return targets.length == 1 && targets[0].countCards("j");
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					if (player == target) return false;
 					return target.hasCard(card => lib.filter.canBeDiscarded(card, player, target), get.is.single() ? "he" : "hej");
 				},
 				defaultYingbianEffect: "add",
-				content: function () {
+				content() {
 					"step 0";
 					if (get.is.single()) {
 						let bool1 = target.countDiscardableCards(player, "h"),
@@ -2150,7 +2151,7 @@ game.import("card", function () {
 							return 0.42 * max;
 						},
 					},
-					yingbian: function (card, player, targets, viewer) {
+					yingbian(card, player, targets, viewer) {
 						if (get.attitude(viewer, player) <= 0) return 0;
 						if (
 							game.hasPlayer(function (current) {
@@ -2199,7 +2200,7 @@ game.import("card", function () {
 						return val;
 					},
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							const att = get.attitude(player, target);
 							const hs = target.getDiscardableCards(player, "h");
 							const es = target.getDiscardableCards(player, "e");
@@ -2258,7 +2259,7 @@ game.import("card", function () {
 						value: 5,
 					},
 					result: {
-						target: function (player, target, card) {
+						target(player, target, card) {
 							let position = "hej";
 							if (card && card.position) position = card.position;
 							const att = get.attitude(player, target);
@@ -2319,7 +2320,7 @@ game.import("card", function () {
 						value: 5,
 					},
 					result: {
-						target: function (player, target, card, isLink) {
+						target(player, target, card, isLink) {
 							return lib.card.guohe_copy.ai.result.target(
 								player,
 								target,
@@ -2346,7 +2347,7 @@ game.import("card", function () {
 				targetprompt: ["被借刀", "出杀目标"],
 				complexSelect: true,
 				complexTarget: true,
-				multicheck: function () {
+				multicheck() {
 					var card = { name: "sha", isCard: true };
 					return game.hasPlayer(function (current) {
 						if (current.getEquips(1).length > 0) {
@@ -2356,7 +2357,7 @@ game.import("card", function () {
 						}
 					});
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					var card = { name: "sha", isCard: true };
 					return (
 						player != target &&
@@ -2366,11 +2367,11 @@ game.import("card", function () {
 						})
 					);
 				},
-				filterAddedTarget: function (card, player, target, preTarget) {
+				filterAddedTarget(card, player, target, preTarget) {
 					var card = { name: "sha", isCard: true };
 					return target != preTarget && preTarget.inRange(target) && lib.filter.targetEnabled(card, preTarget, target);
 				},
-				content: function () {
+				content() {
 					"step 0";
 					if (event.directHit || !event.addedTarget || (!_status.connectMode && lib.config.skip_shan && !target.hasSha())) {
 						event.directfalse = true;
@@ -2397,7 +2398,7 @@ game.import("card", function () {
 					}
 				},
 				ai: {
-					wuxie: function (target, card, player, viewer) {
+					wuxie(target, card, player, viewer) {
 						if (player == game.me && get.attitude(viewer, player._trueMe || player) > 0) return 0;
 					},
 					basic: {
@@ -2473,7 +2474,7 @@ game.import("card", function () {
 				notarget: true,
 				finalDelay: false,
 				defaultYingbianEffect: "draw",
-				contentBefore: function () {
+				contentBefore() {
 					"step 0";
 					if (get.mode() == "guozhan" && get.cardtag(card, "guo")) {
 						var trigger = event.getParent(2)._trigger;
@@ -2492,7 +2493,7 @@ game.import("card", function () {
 						event.getParent().guowuxie = true;
 					}
 				},
-				content: function () {
+				content() {
 					var trigger = event.getParent(2)._trigger;
 					if (trigger.name == "phaseJudge") {
 						trigger.untrigger("currentOnly");
@@ -2532,18 +2533,18 @@ game.import("card", function () {
 				audio: true,
 				fullskin: true,
 				type: "delay",
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return lib.filter.judge(card, player, target) && player != target;
 				},
-				judge: function (card) {
+				judge(card) {
 					if (get.suit(card) == "heart") return 1;
 					return -2;
 				},
-				judge2: function (result) {
+				judge2(result) {
 					if (result.bool == false) return true;
 					return false;
 				},
-				effect: function () {
+				effect() {
 					if (result.bool == false) {
 						player.skip("phaseUse");
 					}
@@ -2570,7 +2571,7 @@ game.import("card", function () {
 								if (evt && evt.phaseList.indexOf("phaseJudge") <= evt.num) return 0;
 							}
 							let num = target.needsToDiscard(3),
-								cf = Math.pow(get.threaten(target, player), 2);
+								cf = Math.pow(get.threaten(target, player) + 0.6, 2);
 							if (!num) return -0.01 * cf;
 							if (target.hp > 2) num--;
 							let dist = Math.sqrt(1 + get.distance(player, target, "absolute"));
@@ -2589,33 +2590,33 @@ game.import("card", function () {
 				fullskin: true,
 				type: "delay",
 				cardnature: "thunder",
-				modTarget: function (card, player, target) {
+				modTarget(card, player, target) {
 					return lib.filter.judge(card, player, target);
 				},
-				enable: function (card, player) {
+				enable(card, player) {
 					return player.canAddJudge(card);
 				},
-				filterTarget: function (card, player, target) {
+				filterTarget(card, player, target) {
 					return lib.filter.judge(card, player, target) && player == target;
 				},
 				selectTarget: [-1, -1],
 				toself: true,
-				judge: function (card) {
+				judge(card) {
 					if (get.suit(card) == "spade" && get.number(card) > 1 && get.number(card) < 10) return -5;
 					return 1;
 				},
-				judge2: function (result) {
+				judge2(result) {
 					if (result.bool == false) return true;
 					return false;
 				},
-				effect: function () {
+				effect() {
 					if (result.bool == false) {
 						player.damage(3, "thunder", "nosource");
 					} else {
 						player.addJudgeNext(card);
 					}
 				},
-				cancel: function () {
+				cancel() {
 					player.addJudgeNext(card);
 				},
 				ai: {
@@ -2625,7 +2626,7 @@ game.import("card", function () {
 						value: 0,
 					},
 					result: {
-						target: function (player, target) {
+						target(player, target) {
 							var num = game.countPlayer(function (current) {
 								//var skills=current.getSkills();
 								for (var j = 0; j < current.skills.length; j++) {
@@ -2706,10 +2707,10 @@ game.import("card", function () {
 				trigger: { player: "useCard" },
 				forced: true,
 				audio: "qinglong_skill",
-				filter: function (event, player) {
+				filter(event, player) {
 					return get.mode() == "guozhan" && event.card.name == "sha";
 				},
-				content: function () {
+				content() {
 					if (!_status.qinglong_guozhan) _status.qinglong_guozhan = [];
 					_status.qinglong_guozhan.add(trigger);
 					game.countPlayer2(function (current) {
@@ -2742,7 +2743,7 @@ game.import("card", function () {
 			qinglong_guozhan_mingzhi: {
 				ai: {
 					nomingzhi: true,
-					skillTagFilter: function (player) {
+					skillTagFilter(player) {
 						if (_status.qinglong_guozhan) {
 							for (var i = 0; i < _status.qinglong_guozhan.length; i++) {
 								if (_status.qinglong_guozhan[i].targets.includes(player)) return true;
@@ -2757,11 +2758,11 @@ game.import("card", function () {
 				trigger: { source: "damageBegin2" },
 				//direct:true,
 				audio: true,
-				filter: function (event) {
+				filter(event) {
 					return event.card && event.card.name == "sha" && event.notLink() && event.player.getCards("he").length > 0;
 				},
 				//priority:1,
-				check: function (event, player) {
+				check(event, player) {
 					var target = event.player;
 					var eff = get.damageEffect(target, player, player, event.nature);
 					if (get.attitude(player, target) > 0) {
@@ -2789,7 +2790,7 @@ game.import("card", function () {
 					return false;
 				},
 				logTarget: "player",
-				content: function () {
+				content() {
 					"step 0";
 					trigger.cancel();
 					"step 1";
@@ -2809,7 +2810,7 @@ game.import("card", function () {
 				trigger: { source: "damageBegin3" },
 				equipSkill: false,
 				ruleSkill: true,
-				filter: function (event) {
+				filter(event) {
 					return event.hasNature("ice") && event.notLink() && event.player.getCards("he").length > 0;
 				},
 			},
@@ -2819,7 +2820,7 @@ game.import("card", function () {
 				forced: true,
 				priority: 6,
 				audio: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (player.hasSkillTag("unequip2")) return false;
 					if (
 						event.player.hasSkillTag("unequip", false, {
@@ -2831,7 +2832,7 @@ game.import("card", function () {
 						return false;
 					return event.card.name == "sha" && get.color(event.card) == "black";
 				},
-				content: function () {
+				content() {
 					trigger.cancel();
 				},
 				ai: {
@@ -2862,14 +2863,14 @@ game.import("card", function () {
 				firstDo: true,
 				trigger: { player: "useCard1" },
 				forced: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return !event.audioed && event.card.name == "sha" && player.countUsed("sha", true) > 1 && event.getParent().type == "phase";
 				},
-				content: function () {
+				content() {
 					trigger.audioed = true;
 				},
 				mod: {
-					cardUsable: function (card, player, num) {
+					cardUsable(card, player, num) {
 						var cards = player.getEquips("zhuge");
 						if (card.name == "sha") {
 							if (!cards.length || player.hasSkill("zhuge_skill", null, false) || cards.some(card => card != _status.zhuge_temp && !ui.selected.cards.includes(card))) {
@@ -2880,7 +2881,7 @@ game.import("card", function () {
 							}
 						}
 					},
-					cardEnabled2: function (card, player) {
+					cardEnabled2(card, player) {
 						if (!_status.event.addCount_extra || player.hasSkill("zhuge_skill", null, false)) return;
 						var cards = player.getEquips("zhuge");
 						if (card && cards.includes(card)) {
@@ -2903,23 +2904,42 @@ game.import("card", function () {
 				trigger: { player: "useCardToPlayered" },
 				audio: true,
 				logTarget: "target",
-				check: function (event, player) {
+				check(event, player) {
 					if (get.attitude(player, event.target) > 0) return true;
 					var target = event.target;
 					return target.countCards("h") == 0 || !target.hasSkillTag("noh");
 				},
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.card.name != "sha") return false;
 					return player.differentSexFrom(event.target);
 				},
-				content: function () {
+				content() {
 					"step 0";
 					if (!trigger.target.countCards("h")) event._result = { bool: false };
 					else
 						trigger.target.chooseToDiscard("弃置一张手牌，或令" + get.translation(player) + "摸一张牌").set("ai", function (card) {
-							var trigger = _status.event.getTrigger();
-							return -get.attitude(trigger.target, trigger.player) - get.value(card) - Math.max(0, 4 - trigger.target.hp) * 2;
-						});
+							const bool = get.event("bool");
+							if (!bool) return 0;
+							if (get.name(card) === "shan") {
+								return bool - get.event("shan") * get.value(card);
+							}
+							return bool - get.value(card);
+						}).set("bool", function () {
+							const hs = trigger.target.countCards("h"), att = get.attitude(trigger.target, trigger.player);
+							if (!hs || att > 0) return false;
+							if (trigger.target.hasSkillTag("noh")) return 8;
+							if (get.effect(trigger.target, trigger.card, player, trigger.target) >= 0) return 6;
+							return -att - Math.max(0, 4 - trigger.target.hp) * 2;
+						}()).set("shan", function () {
+							if (player.hasSkillTag("directHit_ai", true, {
+								target: trigger.target,
+								card: trigger.card,
+							})) return 0;
+							const shans = trigger.target.mayHaveShan(trigger.target, "use", null, "count");
+							if (shans === 0 || shans > 2) return 1;
+							if (shans === 1) return 3.6 / Math.min(3.6, trigger.target.getHp());
+							return 1.8 / Math.min(1.8, trigger.target.getHp());
+						}());
 					"step 1";
 					if (result.bool == false) player.draw();
 				},
@@ -2930,19 +2950,19 @@ game.import("card", function () {
 				trigger: {
 					player: "useCardToPlayered",
 				},
-				filter: function (event) {
+				filter(event) {
 					return event.card.name == "sha";
 				},
 				forced: true,
 				logTarget: "target",
-				content: function () {
+				content() {
 					trigger.target.addTempSkill("qinggang2");
 					trigger.target.storage.qinggang2.add(trigger.card);
 					trigger.target.markSkill("qinggang2");
 				},
 				ai: {
 					unequip_ai: true,
-					skillTagFilter: function (player, tag, arg) {
+					skillTagFilter(player, tag, arg) {
 						if (arg && arg.name == "sha") return true;
 						return false;
 					},
@@ -2951,7 +2971,7 @@ game.import("card", function () {
 			qinggang2: {
 				firstDo: true,
 				ai: { unequip2: true },
-				init: function (player, skill) {
+				init(player, skill) {
 					if (!player.storage[skill]) player.storage[skill] = [];
 				},
 				onremove: true,
@@ -2962,7 +2982,7 @@ game.import("card", function () {
 					global: ["useCardEnd"],
 				},
 				charlotte: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					const evt = event.getParent("useCard", true, true);
 					if (evt && evt.effectedCount < evt.effectCount) return false;
 					return player.storage.qinggang2 && event.card && player.storage.qinggang2.includes(event.card) && (event.name != "damage" || event.notLink());
@@ -2971,7 +2991,7 @@ game.import("card", function () {
 				forced: true,
 				popup: false,
 				priority: 12,
-				content: function () {
+				content() {
 					player.storage.qinggang2.remove(trigger.card);
 					if (!player.storage.qinggang2.length) player.removeSkill("qinggang2");
 				},
@@ -2982,11 +3002,11 @@ game.import("card", function () {
 				equipSkill: true,
 				trigger: { player: ["shaMiss", "eventNeutralized"] },
 				direct: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (get.mode() == "guozhan" || !event.card || event.card.name != "sha") return false;
 					return event.target.isIn() && player.canUse("sha", event.target, false) && (player.hasSha() || (_status.connectMode && player.countCards("hs")));
 				},
-				content: function () {
+				content() {
 					"step 0";
 					player
 						.chooseToUse(
@@ -3013,12 +3033,12 @@ game.import("card", function () {
 				position: "hs",
 				viewAs: { name: "sha" },
 				complexCard: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.countCards("hs") >= 2;
 				},
 				audio: true,
 				prompt: "将两张手牌当杀使用或打出",
-				check: function (card) {
+				check(card) {
 					let player = _status.event.player;
 					if (
 						player.hasCard(function (card) {
@@ -3039,7 +3059,7 @@ game.import("card", function () {
 				},
 				ai: {
 					respondSha: true,
-					skillTagFilter: function (player) {
+					skillTagFilter(player) {
 						return player.countCards("hs") >= 2;
 					},
 				},
@@ -3051,13 +3071,13 @@ game.import("card", function () {
 				},
 				direct: true,
 				audio: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.type != "card" || event.card.name != "sha" || !event.target.isIn()) return false;
 					var min = 2;
 					if (!player.hasSkill("guanshi_skill", null, false)) min += get.sgn(player.getEquips("guanshi").length);
 					return player.countCards("he") >= min;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					//装备区内可能有多个贯石斧 或者玩家可能通过其他渠道获得贯石斧技能 只要留一张贯石斧不扔掉即可
 					var next = player
@@ -3093,7 +3113,7 @@ game.import("card", function () {
 				},
 				ai: {
 					directHit_ai: true,
-					skillTagFilter: function (player, tag, arg) {
+					skillTagFilter(player, tag, arg) {
 						if (player._guanshi_temp) return;
 						player._guanshi_temp = true;
 						var bool =
@@ -3114,7 +3134,7 @@ game.import("card", function () {
 				trigger: { player: "useCard1" },
 				forced: true,
 				firstDo: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.card.name != "sha" || get.mode() == "guozhan") return false;
 					var card = event.card;
 					var range;
@@ -3128,9 +3148,9 @@ game.import("card", function () {
 					game.checkMod(card, player, range, "selectTarget", player);
 					return range[1] != -1 && event.targets.length > range[1];
 				},
-				content: function () {},
+				content() {},
 				mod: {
-					selectTarget: function (card, player, range) {
+					selectTarget(card, player, range) {
 						if (card.name != "sha") return;
 						if (get.mode() == "guozhan") return;
 						if (range[1] == -1) return;
@@ -3146,7 +3166,7 @@ game.import("card", function () {
 			fangtian_guozhan: {
 				equipSkill: true,
 				trigger: { player: "useCard2" },
-				filter: function (event, player) {
+				filter(event, player) {
 					if (get.mode() != "guozhan") return false;
 					if (event.card.name != "sha") return false;
 					return game.hasPlayer(function (target) {
@@ -3160,7 +3180,7 @@ game.import("card", function () {
 					});
 				},
 				direct: true,
-				content: function () {
+				content() {
 					"step 0";
 					player
 						.chooseTarget(get.prompt2("fangtian"), [1, Infinity], function (card, player, target) {
@@ -3195,7 +3215,7 @@ game.import("card", function () {
 				trigger: { player: "shaMiss" },
 				silent: true,
 				onremove: true,
-				content: function () {
+				content() {
 					if (player.storage[event.name].includes(trigger.card)) trigger.getParent().excluded.addArray(trigger.getParent().targets);
 				},
 				group: "fangtian_guozhan_remove",
@@ -3203,22 +3223,22 @@ game.import("card", function () {
 			fangtian_guozhan_remove: {
 				trigger: { player: ["useCardAfter", "useCardCancelled"] },
 				silent: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					return player.storage.fangtian_guozhan_trigger && player.storage.fangtian_guozhan_trigger.includes(event.card);
 				},
-				content: function () {
+				content() {
 					player.storage.fangtian_guozhan_trigger.remove(trigger.card);
 				},
 			},
 			qilin_skill: {
 				equipSkill: true,
 				trigger: { source: "damageBegin2" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return event.card && event.card.name == "sha" && event.notLink() && event.player.getCards("e", { subtype: ["equip3", "equip4", "equip6"] }).length > 0;
 				},
 				direct: true,
 				audio: true,
-				content: function () {
+				content() {
 					"step 0";
 					var att = get.attitude(player, trigger.player) <= 0;
 					var next = player.chooseButton();
@@ -3238,7 +3258,7 @@ game.import("card", function () {
 			bagua_skill: {
 				equipSkill: true,
 				trigger: { player: ["chooseToRespondBegin", "chooseToUseBegin"] },
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.responded) return false;
 					if (event.bagua_skill) return false;
 					if (!event.filterCard || !event.filterCard({ name: "shan" }, player, event)) return false;
@@ -3257,7 +3277,7 @@ game.import("card", function () {
 					return true;
 				},
 				audio: true,
-				check: function (event, player) {
+				check(event, player) {
 					if (!event) return true;
 					if (event.ai) {
 						var ai = event.ai;
@@ -3273,7 +3293,7 @@ game.import("card", function () {
 					if (evt.card && evt.player && player.isLinked() && game.hasNature(evt.card) && get.attitude(player, evt.player._trueMe || evt.player) > 0) return false;
 					return true;
 				},
-				content: function () {
+				content() {
 					"step 0";
 					trigger.bagua_skill = true;
 					player.judge("bagua", function (card) {
@@ -3304,7 +3324,7 @@ game.import("card", function () {
 						return true;
 					},
 					effect: {
-						target: function (card, player, target, effect) {
+						target(card, player, target, effect) {
 							if (target.hasSkillTag("unequip2")) return;
 							if (
 								player.hasSkillTag("unequip", false, {
@@ -3353,7 +3373,7 @@ game.import("card", function () {
 				popup: false,
 				forced: true,
 				silent: true,
-				filter: function (event, player) {
+				filter(event, player) {
 					if (event.card.storage && event.card.storage.nowuxie) return false;
 					var card = event.card;
 					if (event.name == "phaseJudge" && card.viewAs) card = { name: card.viewAs };
@@ -3368,7 +3388,7 @@ game.import("card", function () {
 				},
 				forceLoad: true,
 				forceDie: true,
-				content: function () {
+				content() {
 					"step 0";
 					delete event.wuxieresult;
 					delete event.wuxieresult2;
@@ -3408,7 +3428,7 @@ game.import("card", function () {
 					map.id2 = trigger.getParent().id;
 					event._global_waiting = true;
 					//发送函数
-					event.send = function (player, map, skillState) {
+					event.send = function (player, map, skillState, eventData) {
 						//获取技能数据
 						if (skillState) {
 							player.applySkills(skillState);
@@ -3444,14 +3464,14 @@ game.import("card", function () {
 							ui.tempnowuxie._origin = map.id2;
 						}
 						var next = player.chooseToUse({
-							filterCard: function (card, player) {
+							filterCard(card, player) {
 								if (get.name(card) != "wuxie") return false;
 								return lib.filter.cardEnabled(card, player, "forceEnable");
 							},
 							prompt: prompt,
 							type: "wuxie",
 							_global_waiting: true,
-							ai1: function () {
+							ai1() {
 								if (map.isJudge) {
 									var card = evtmap.card,
 										source = evtmap.target;
@@ -3532,6 +3552,11 @@ game.import("card", function () {
 						} else {
 							next.nouse = true;
 						}
+						if (eventData) {
+							for (let key in eventData) {
+								if (next[key] === undefined) next[key] = eventData[key];
+							}
+						}
 					};
 					"step 1";
 					//判断谁有无懈
@@ -3606,8 +3631,20 @@ game.import("card", function () {
 					for (var i = 0; i < list.length; i++) {
 						if (list[i].isOnline()) {
 							withol = true;
+							const onchooseToUse_data = list[i].chooseToUse();
+							onchooseToUse_data.setContent(async function () {});
+							event.next.remove(onchooseToUse_data);
+							var skills = list[i].getSkills("invisible").concat(lib.skill.global);
+							game.expandSkills(skills);
+							for (let skill of skills) {
+								var info = lib.skill[skill];
+								if (info?.onChooseToUse) {
+									info.onChooseToUse(onchooseToUse_data);
+								}
+							}
+							onchooseToUse_data.cancel();
 							list[i].wait(sendback);
-							list[i].send(event.send, list[i], event._info_map, get.skillState(list[i]));
+							list[i].send(event.send, list[i], event._info_map, get.skillState(list[i]), onchooseToUse_data);
 							list.splice(i--, 1);
 						} else if (list[i] == game.me) {
 							withme = true;
