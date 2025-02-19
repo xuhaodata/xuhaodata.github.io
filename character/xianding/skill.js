@@ -1101,7 +1101,8 @@ const skills = {
 				next2.gaintag.add("dczhengyue");
 				await next2;
 				if (player.getExpansions("dczhengyue")[0]) {
-					player.addTip("dczhengyue", get.translation(player.getExpansions("dczhengyue")[0]));
+					const card = player.getExpansions("dczhengyue")[0];
+					player.addTip("dczhengyue", ["dczhengyue", get.suit(card), get.number(card)].map(i => get.translation(i)).join(" "));
 				} else {
 					player.removeTip("dczhengyue");
 				}
@@ -1136,7 +1137,7 @@ const skills = {
 					} else {
 						const puts = trigger.cards.filterInD("ode");
 						const expansion = player.getExpansions("dczhengyue");
-						await game.cardsGotoOrdering(expansion.addArray(puts));
+						await game.cardsGotoOrdering(puts.filterInD("od"));
 						const next = player.chooseToMove("征越：将这些牌以任意顺序置于武将牌上", true);
 						next.set("list", [
 							["武将牌", expansion],
@@ -1155,18 +1156,31 @@ const skills = {
 						} = await next;
 						const cards = moved[0];
 						cards.reverse();
+						const targets = game.filterPlayer(i => {
+							if (i === player && expansion.length) return true;
+							return puts.filterInD("d").some(j => get.owner(j) === i);
+						});
+						if (targets.length > 0) {
+							const lose_list = [];
+							for (const i of targets) {
+								const loseCard = puts.filterInD("d").filter(j => get.owner(j) === i);
+								lose_list.push([i, (i === player ? expansion : []).concat(loseCard)]);
+							}
+							await game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
+						}
 						const next2 = player.addToExpansion(cards, "gain2");
 						next2.gaintag.add("dczhengyue");
 						await next2;
 						player.addTempSkill("dczhengyue_count");
-						player.addMark("dczhengyue_count", puts.length - moved[1].length);
+						player.addMark("dczhengyue_count", puts.length - moved[1].length, false);
 						if (player.storage.dczhengyue_count >= 2) {
 							player.storage.dczhengyue_count = player.storage.dczhengyue_count % 2;
 							player.addTempSkill("dczhengyue_debuff");
 						}
 					}
 					if (player.getExpansions("dczhengyue")[0]) {
-						player.addTip("dczhengyue", get.translation(player.getExpansions("dczhengyue")[0]));
+						const card = player.getExpansions("dczhengyue")[0];
+						player.addTip("dczhengyue", ["dczhengyue", get.suit(card), get.number(card)].map(i => get.translation(i)).join(" "));
 					} else {
 						player.removeTip("dczhengyue");
 					}

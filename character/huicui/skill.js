@@ -2025,9 +2025,9 @@ const skills = {
 			});
 			if (lose_list.length) {
 				await game.loseAsync({ lose_list }).setContent("chooseToCompareLose");
+				await game.delayx();
 			}
 			sishiList.addArray(cards.filter(isSishi));
-			if (lose_list.length) await game.delayx();
 			player.gain(sishiList, "gain2");
 			player
 				.when("phaseEnd")

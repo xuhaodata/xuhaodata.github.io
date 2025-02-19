@@ -15400,7 +15400,7 @@ const skills = {
 	},
 	gongsun_shadow: {
 		global: "gongsun_shadow2",
-		sourceSkill: "gongsun_shadow",
+		sourceSkill: "gongsun",
 		init(player, skill) {
 			if (!player.storage[skill]) player.storage[skill] = [];
 		},
