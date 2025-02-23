@@ -6164,6 +6164,7 @@ const skills = {
 								ai1(card) {
 									return _status.event.player.getUseValue(card);
 								},
+								addCount: false,
 							});
 						break;
 					}
