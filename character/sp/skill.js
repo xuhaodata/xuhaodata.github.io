@@ -11104,7 +11104,7 @@ const skills = {
 		ai: {
 			effect: {
 				player(card, player, target) {
-					if (get.attitude(player, target) > 0 && card && card.name == "huogong" && card.storage && card.storage.olhuiyun && !player.hasSkill("olhuiyun_3")) return [0, 0.5, 0, 0.5];
+					if (get.attitude(player, target) > 0 && card?.name === "huogong" && card.storage?.olhuiyun && player.getStorage("olhuiyun_used").length < 3) return [0, 0.5, 0, 0.5];
 				},
 			},
 		},
@@ -11117,59 +11117,51 @@ const skills = {
 				audio: "olhuiyun",
 				trigger: { global: "useCardAfter" },
 				charlotte: true,
-				forced: true,
-				direct: true,
+				locked: true,
 				filter(event, player) {
-					return event.card.name == "huogong" && event.card.storage && event.card.storage.olhuiyun && event.targets.some(i => i.isIn());
+					if (player.getStorage("olhuiyun_used").length > 2) return false;
+					return event.card.name == "huogong" && event.card.storage?.olhuiyun && event.targets.some(i => i.isIn());
 				},
-				content() {
-					"step 0";
-					var choices = [];
-					var choiceList = ["使用展示牌，然后重铸所有手牌", "使用一张手牌，然后重铸展示牌", "摸一张牌"];
-					for (var i = 1; i <= 3; i++) {
+				async cost(event, trigger, player) {
+					const choices = [];
+					const choiceList = ["使用展示牌，然后重铸所有手牌", "使用一张手牌，然后重铸展示牌", "摸一张牌"];
+					for (let i = 1; i <= 3; i++) {
 						if (!player.getStorage("olhuiyun_used").includes(i)) choices.push("选项" + get.cnNumber(i, true));
 						else choiceList[i - 1] = '<span style="opacity:0.5">' + choiceList[i - 1] + "</span>";
 					}
-					if (!choices.length) event.finish();
-					else {
-						player.logSkill("olhuiyun_after");
-						player
-							.chooseControl(choices)
-							.set("choiceList", choiceList)
-							.set("prompt", "晖云：选择一项，令" + get.translation(trigger.targets) + "可以选择执行")
-							.set("ai", () => {
-								return _status.event.choice;
-							})
-							.set(
-								"choice",
-								(function () {
-									if (choices.length == 1) return choices[0];
-									var choicesx = choices.slice();
-									if (get.attitude(player, trigger.targets[0]) > 0 && choices.includes("选项三")) return "选项三";
-									choicesx.remove("选项三");
-									return choicesx.randomGet();
-								})()
-							);
-					}
-					"step 1";
-					if (result.control != "cancel2") {
-						var index = ["选项一", "选项二", "选项三"].indexOf(result.control) + 1;
-						event.index = index;
-						game.log(player, "选择了", "#y" + result.control);
-						player.addTempSkill("olhuiyun_used", "roundStart");
-						player.markAuto("olhuiyun_used", [index]);
-						event.targets = trigger.targets.slice(0);
-					} else event.finish();
-					"step 2";
-					var target = targets.shift();
-					event.target = target;
-					if (target.isIn()) {
-						var cards = target.getCards("h", card => card.hasGaintag("olhuiyun_tag"));
-						if (event.index == 3) {
-							target.chooseBool("是否摸一张牌？").set("ai", () => true);
-							event.goto(5);
-						} else if (event.index == 1 && cards.length) {
-							target.chooseToUse({
+					const control = await player
+						.chooseControl(choices)
+						.set("choiceList", choiceList)
+						.set("prompt", "晖云：选择一项，令" + get.translation(trigger.targets) + "可以选择执行")
+						.set("ai", () => {
+							return get.event().choice;
+						})
+						.set(
+							"choice",
+							(() => {
+								if (choices.length == 1) return choices[0];
+								const choicesx = choices.slice();
+								if (get.attitude(player, trigger.targets[0]) > 0 && choices.includes("选项三")) return "选项三";
+								choicesx.remove("选项三");
+								return choicesx.randomGet();
+							})()
+						)
+						.forResultControl();
+					event.result = {
+						bool: true,
+						cost_data: control,
+					};
+				},
+				async content(event, trigger, player) {
+					const index = ["选项一", "选项二", "选项三"].indexOf(event.cost_data) + 1;
+					game.log(player, "选择了", "#y" + event.cost_data);
+					player.addTempSkill("olhuiyun_used", "roundStart");
+					player.markAuto("olhuiyun_used", [index]);
+					for (const target of trigger.targets.sortBySeat()) {
+						if (!target.isIn()) continue;
+						const cards = target.getCards("h", card => card.hasGaintag("olhuiyun_tag"));
+						if (index == 1 && cards.length) {
+							const { result } = await target.chooseToUse({
 								filterCard(card) {
 									if (get.itemtype(card) != "card" || !card.hasGaintag("olhuiyun_tag")) return false;
 									return lib.filter.filterCard.apply(this, arguments);
@@ -11177,8 +11169,12 @@ const skills = {
 								prompt: "是否使用一张展示牌，然后重铸所有手牌？",
 								addCount: false,
 							});
-						} else if (event.index == 2) {
-							target.chooseToUse({
+							if (result.bool) {
+								const hs = target.getCards("h", lib.filter.cardRecastable);
+								if (hs.length) await target.recast(hs);
+							}
+						} else if (index == 2) {
+							const { result } = await target.chooseToUse({
 								filterCard(card) {
 									if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) return false;
 									return lib.filter.filterCard.apply(this, arguments);
@@ -11186,34 +11182,21 @@ const skills = {
 								prompt: "是否使用一张手牌，然后重铸展示牌？",
 								addCount: false,
 							});
-							event.goto(4);
-						} else event.goto(6);
-					} else event.goto(6);
-					"step 3";
-					if (result.bool) {
-						var hs = target.getCards("h", lib.filter.cardRecastable);
-						if (hs.length) {
-							target.recast(hs);
+							if (result.bool) {
+								const hs = target.getCards("h", card => {
+									if (!card.hasGaintag("olhuiyun_tag")) return false;
+									return target.canRecast(card);
+								});
+								if (hs.length) await target.recast(hs);
+							}
+						} else if (index == 3) {
+							const bool = await target
+								.chooseBool("是否摸一张牌？")
+								.set("ai", () => true)
+								.forResultBool();
+							if (bool) await target.draw();
 						}
 					}
-					event.goto(6);
-					"step 4";
-					if (result.bool) {
-						var hs = target.getCards("h", card => {
-							if (!card.hasGaintag("olhuiyun_tag")) return false;
-							return target.canRecast(card);
-						});
-						if (hs.length) {
-							target.recast(hs);
-						}
-					}
-					event.goto(6);
-					"step 5";
-					if (result.bool) {
-						target.draw();
-					}
-					"step 6";
-					if (targets.length) event.goto(2);
 				},
 			},
 			record: {
@@ -11224,12 +11207,11 @@ const skills = {
 				firstDo: true,
 				filter(event, player) {
 					if (event.getParent().name != "huogong") return false;
-					var card = event.getParent(2).card;
-					if (card && card.storage && card.storage.olhuiyun) return true;
-					return false;
+					const card = event.getParent(2).card;
+					return card?.storage?.olhuiyun;
 				},
 				content() {
-					game.broadcastAll(function (cards) {
+					game.broadcastAll(cards => {
 						cards.forEach(card => card.addGaintag("olhuiyun_tag"));
 					}, trigger.cards);
 				},

@@ -9802,72 +9802,45 @@ const skills = {
 	},
 	drlt_zhiti: {
 		audio: 2,
-		locked: true,
-		group: ["drlt_zhiti_damage", "drlt_zhiti_compare", "drlt_zhiti_juedou"],
-		global: "g_drlt_zhiti",
-		subSkill: {
-			juedou: {
-				audio: "drlt_zhiti",
-				trigger: {
-					player: "juedouAfter",
-					target: "juedouAfter",
-				},
-				forced: true,
-				filter(event, player) {
-					if (!event.turn || event.turn === player || !player.hasDisabledSlot()) return false;
-					const opposite = event.player === player ? event.target : event.player;
-					if (!opposite.isDamaged()) return false;
-					return opposite && opposite.isIn() && opposite.inRangeOf(player);
-				},
-				content() {
-					player.chooseToEnable();
-				},
-			},
-			compare: {
-				audio: "drlt_zhiti",
-				trigger: {
-					player: ["chooseToCompareAfter", "compareMultipleAfter"],
-					target: ["chooseToCompareAfter", "compareMultipleAfter"],
-				},
-				filter(event, player) {
-					if (event.preserve || !player.hasDisabledSlot()) return false;
-					let opposite;
-					if (player === event.player) {
-						if (event.num1 > event.num2) {
-							opposite = event.target;
-						} else {
-							return false;
-						}
-					} else {
-						if (event.num1 < event.num2) {
-							opposite = event.player;
-						} else {
-							return false;
-						}
-					}
-					if (!opposite.isDamaged()) return false;
-					return opposite && opposite.isIn() && opposite.inRangeOf(player);
-				},
-				forced: true,
-				content() {
-					player.chooseToEnable();
-				},
-			},
-			damage: {
-				audio: "drlt_zhiti",
-				trigger: { player: "damageEnd" },
-				forced: true,
-				filter(event, player) {
-					if (!player.hasDisabledSlot()) return false;
-					const opposite = event.source;
-					if (!opposite.isDamaged()) return false;
-					return opposite && opposite.isIn() && opposite.inRangeOf(player);
-				},
-				content() {
-					player.chooseToEnable();
-				},
-			},
+		trigger: {
+			global: ["juedouAfter", "chooseToCompareAfter", "compareMultipleAfter"],
+			player: "damageEnd",
 		},
+		filter(event, player) {
+			if (!player.hasDisabledSlot()) return false;
+			if (event.name == "juedou") {
+				if (![event.player, event.target].includes(player)) return false;
+				if (!event.turn || event.turn === player) return false;
+				const opposite = event.player === player ? event.target : event.player;
+				return opposite?.isIn() && opposite.inRangeOf(player) && opposite.isDamaged();
+			} else if (event.name == "damage") {
+				const opposite = event.source;
+				return opposite?.isIn() && opposite.inRangeOf(player) && opposite.isDamaged();
+			} else {
+				if (![event.player, event.target].includes(player)) return false;
+				if (event.preserve) return false;
+				let opposite;
+				if (player === event.player) {
+					if (event.num1 > event.num2) {
+						opposite = event.target;
+					} else {
+						return false;
+					}
+				} else {
+					if (event.num1 < event.num2) {
+						opposite = event.player;
+					} else {
+						return false;
+					}
+				}
+				return opposite?.isIn() && opposite.inRangeOf(player) && opposite.isDamaged();
+			}
+		},
+		forced: true,
+		content() {
+			player.chooseToEnable();
+		},
+		global: "g_drlt_zhiti",
 	},
 	g_drlt_zhiti: {
 		mod: {
