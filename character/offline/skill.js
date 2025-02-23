@@ -15275,7 +15275,7 @@ const skills = {
 		},
 		content() {
 			var cards = trigger.getg(player);
-			player.chooseUseTarget(get.prompt("yjyibing"), "将" + get.translation(cards) + "当做【杀】使用", "sha", cards, false, "nodistance").logSkill = "yjyibing";
+			player.chooseUseTarget(get.prompt("yjyibing"), "将" + get.translation(cards) + "当做【杀】使用", { name: "sha" }, cards, false, "nodistance").logSkill = "yjyibing";
 		},
 	},
 	//龙羽飞

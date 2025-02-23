@@ -8580,7 +8580,7 @@ const skills = {
 		countSkill(player) {
 			return player.getSkills(null, false, false).filter(skill => {
 				const info = get.info(skill);
-				if (!info?.charlotte) return false;
+				if (!info || info.charlotte) return false;
 				if (info.zhuSkill) return player.hasZhuSkill(skill);
 				return true;
 			}).length;
