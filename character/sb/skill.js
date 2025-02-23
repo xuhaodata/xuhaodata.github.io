@@ -4585,7 +4585,7 @@ const skills = {
 			if (Array.isArray(cache)) return cache.length;
 			let targets = [],
 				cards = [0],
-				sbbiyue = player.hasSkill("sbbiyue") ? Math.max(0, 3 - game.countPlayer2(current.hasHistory("damage"))) : 0,
+				sbbiyue = player.hasSkill("sbbiyue") ? Math.max(0, 3 - game.countPlayer2(current => current.hasHistory("damage"))) : 0,
 				alter = [null, 1, 1],
 				temp;
 			for (let i of game.players) {
