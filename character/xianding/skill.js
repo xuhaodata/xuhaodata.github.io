@@ -18932,90 +18932,84 @@ const skills = {
 		filter(event, player) {
 			return !event.numFixed;
 		},
-		content() {
-			"step 0";
+		check(event, player) {
+			return player.getStorage("pianchong_effect").length < 2 || event.num <= 2;
+		},
+		async content(event, trigger, player) {
 			trigger.changeToZero();
-			var cards = [];
-			var card1 = get.cardPile2(function (card) {
-				return get.color(card, false) == "red";
-			});
+			const cards = [];
+			const card1 = get.cardPile2(card => get.color(card, false) == "red");
 			if (card1) cards.push(card1);
-			var card2 = get.cardPile2(function (card) {
-				return get.color(card, false) == "black";
-			});
+			const card2 = get.cardPile2(card => get.color(card, false) == "black");
 			if (card2) cards.push(card2);
-			if (cards.length) player.gain(cards, "gain2");
-			"step 1";
-			player
+			if (cards.length) await player.gain(cards, "gain2");
+			const effect = event.name + "_effect";
+			const control = await player
 				.chooseControl("red", "black")
 				.set("prompt", "偏宠：请选择一种颜色。直至你的下回合开始时，失去该颜色的一张牌后，从牌堆获得另一种颜色的一张牌。")
-				.set("ai", function () {
-					var red = 0,
-						black = 0;
-					var player = _status.event.player;
-					var cards = player.getCards("he");
-					for (var i of cards) {
-						var add = 1;
-						var color = get.color(i, player);
-						if (get.position(i) == "e") add = 0.5;
-						else if (get.name(i, player) != "sha" && player.hasValueTarget(i)) add = 1.5;
-						if (color == "red") red += add;
-						else black += add;
+				.set("ai", () => {
+					const { player, effect, controls } = get.event();
+					if (!effect.length) {
+						let red = 0,
+							black = 0;
+						const cards = player.getCards("he");
+						for (const i of cards) {
+							let add = 1;
+							const color = get.color(i, player);
+							if (get.position(i) == "e") add = 0.5;
+							else if (get.name(i, player) != "sha" && player.hasValueTarget(i)) add = 1.5;
+							if (color == "red") red += add;
+							else black += add;
+						}
+						if (black > red) return "black";
+						return "red";
+					} else if (effect.length == 1) {
+						return controls.remove(effect[0])[0];
+					} else {
+						return controls.randomGet();
 					}
-					if (black > red) return "black";
-					return "red";
-				});
-			"step 2";
-			player.markAuto("pianchong2", result.control);
-			player.addTempSkill("pianchong2", { player: "phaseBeginStart" });
-			player.popup(result.control, result.control == "red" ? "fire" : "thunder");
-			game.log(player, "声明了", "#y" + get.translation(result.control));
-		},
-		ai: {
-			threaten: 4.8,
-		},
-	},
-	pianchong2: {
-		audio: "pianchong",
-		trigger: {
-			player: "loseAfter",
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
-		forced: true,
-		charlotte: true,
-		onremove: true,
-		sourceSkill: "pianchong",
-		filter(event, player) {
-			var evt = event.getl(player);
-			if (!evt || !evt.cards2 || !evt.cards2.length) return false;
-			for (var i of evt.cards2) {
-				if (player.getStorage("pianchong2").includes(get.color(i, player))) return true;
-			}
-			return false;
-		},
-		content() {
-			"step 0";
-			let cardsx = trigger
-				.getl(player)
-				.cards2.filter(function (card) {
-					return player.getStorage("pianchong2").includes(get.color(card, player));
 				})
-				.slice(0);
-			let cards = [];
-			while (cardsx.length) {
-				let precard = cardsx.shift();
-				var card = get.cardPile2(function (card) {
-					return !cards.includes(card) && get.color(card, false) != get.color(precard, false);
-				});
-				if (card) cards.push(card);
-				else break;
-			}
-			if (cards.length) player.gain(cards, "gain2");
+				.set("effect", player.getStorage(effect))
+				.forResultControl();
+			if (!["red", "black"].includes(control)) return;
+			player.markAuto(effect, control);
+			player.addTempSkill(effect, { player: "phaseBeginStart" });
+			player.popup(control, control == "red" ? "fire" : "thunder");
+			game.log(player, "声明了", "#y" + get.translation(control));
 		},
-		mark: true,
-		intro: {
-			content: "失去一张$牌后，从牌堆中获得一张与此牌颜色不同的牌",
+		subSkill: {
+			effect: {
+				audio: "pianchong",
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				forced: true,
+				charlotte: true,
+				onremove: true,
+				filter(event, player) {
+					const evt = event.getl(player);
+					return evt?.cards2?.some(card => player.getStorage("pianchong_effect").includes(get.color(card, player)));
+				},
+				async content(event, trigger, player) {
+					let cardsx = trigger
+						.getl(player)
+						.cards2.filter(card => player.getStorage(event.name).includes(get.color(card, player)))
+						.slice(0);
+					let cards = [];
+					while (cardsx.length) {
+						let precard = cardsx.shift();
+						const card = get.cardPile2(card => !cards.includes(card) && get.color(card, false) != get.color(precard, false));
+						if (card) cards.push(card);
+						else break;
+					}
+					if (cards.length) await player.gain(cards, "gain2");
+				},
+				mark: true,
+				intro: { content: "失去一张$牌后，从牌堆中获得一张与此牌颜色不同的牌" },
+			},
 		},
+		ai: { threaten: 4.8 },
 	},
 	zunwei: {
 		audio: 2,
