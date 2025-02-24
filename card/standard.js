@@ -1148,7 +1148,11 @@ game.import("card", function () {
 					"step 1";
 					if (event.directHit) event._result = { bool: false };
 					else {
-						var next = target.chooseToRespond({ name: "sha" });
+						var next = target.chooseToRespond();
+						next.set("filterCard", function (card, player) {
+							if (get.name(card) != "sha") return false;
+							return lib.filter.cardRespondable(card, player);
+						});
 						if (event.shaRequired > 1) {
 							next.set("prompt2", "共需打出" + event.shaRequired + "张杀");
 						}
@@ -1381,7 +1385,11 @@ game.import("card", function () {
 					"step 1";
 					if (event.directHit) event._result = { bool: false };
 					else {
-						var next = target.chooseToRespond({ name: "shan" });
+						var next = target.chooseToRespond();
+						next.set("filterCard", function (card, player) {
+							if (get.name(card) != "shan") return false;
+							return lib.filter.cardRespondable(card, player);
+						});
 						if (event.shanRequired > 1) {
 							next.set("prompt2", "共需打出" + event.shanRequired + "张闪");
 						}
