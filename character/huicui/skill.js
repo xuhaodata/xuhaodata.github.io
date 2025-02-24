@@ -110,6 +110,7 @@ const skills = {
 				mod: {
 					cardEnabled2(card, player, result) {
 						const evt = get.event();
+						if (evt.name != "chooseToUse") return;
 						const judge = evt.skill !== "dcxianniang_tag";
 						if ([card].concat(card.cards || []).some(c => get.itemtype(c) === "card" && c.hasGaintag("dcxianniang_tag") && get.type(c) == "basic") && judge) return false;
 					},
