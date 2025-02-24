@@ -10309,6 +10309,12 @@ export class Library {
 			if (get.itemtype(card) == "card") {
 				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
+			} else if (card.cards) {
+				for (let cardx of card.cards) {
+					if (get.itemtype(cardx) != "card") continue;
+					let mod2 = game.checkMod(cardx, player, event, "unchanged", "cardEnabled2", player);
+					if (mod2 != "unchanged") return mod2;
+				}
 			}
 			card = get.autoViewAs(card);
 			if (event === "forceEnable") {
@@ -10326,18 +10332,19 @@ export class Library {
 		},
 		cardRespondable: function (card, player, event) {
 			event = event || _status.event;
-			if (event.name != "chooseToRespond") return true;
+			if (player == undefined) player = _status.event.player;
+			if (!player) return false;
 			var source = event.getParent().player;
 			if (source && source != player) {
 				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
 					return false;
 				}
 			}
-			if (player == undefined) player = _status.event.player;
 			if (get.itemtype(card) == "card") {
 				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
 			}
+			card = get.autoViewAs(card);
 			var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
 			if (mod != "unchanged") return mod;
 			return true;
