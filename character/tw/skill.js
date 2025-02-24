@@ -2022,10 +2022,10 @@ const skills = {
 						.filter(evt => evt == next)
 						.then(() => {
 							player.addTempSkill("twrenxian_mark", "phaseAfter");
-							player.markAuto("twrenxian_mark", cards);
+							player.markAuto("twrenxian_mark", cardsx);
 						})
 						.assign({ firstDo: true })
-						.vars({ cards: player.getStorage("twrenxian_phase") });
+						.vars({ cardsx: player.getStorage("twrenxian_phase") });
 				},
 			},
 			mark: {
@@ -2038,8 +2038,11 @@ const skills = {
 					content: "执行一个仅有出牌阶段的额外回合",
 				},
 				mod: {
-					cardEnabled2(card, player) {
-						if (!player.getStorage("twrenxian_mark").includes(card)) return false;
+					cardEnabled(card, player) {
+						if ([card].concat(card.cards || []).some(c => get.itemtype(c) === "card" && !player.getStorage("twrenxian_mark").includes(c))) return false;
+					},
+					cardSavable(card, player) {
+						if ([card].concat(card.cards || []).some(c => get.itemtype(c) === "card" && !player.getStorage("twrenxian_mark").includes(c))) return false;
 					},
 					cardUsable(card, player, num) {
 						if (card.name == "sha") return Infinity;
