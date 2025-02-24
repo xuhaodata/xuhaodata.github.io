@@ -1689,7 +1689,11 @@ game.import("card", function () {
 					if (event.directHit) {
 						event._result = { bool: false };
 					} else {
-						var next = event.turn.chooseToRespond({ name: "sha" });
+						var next = event.turn.chooseToRespond();
+						next.set("filterCard", function (card, player) {
+							if (get.name(card) != "sha") return false;
+							return lib.filter.cardRespondable(card, player);
+						});
 						if (event.shaRequired > 1) next.set("prompt2", "共需打出" + event.shaRequired + "张杀");
 						next.set("ai", function (card) {
 							let event = _status.event,
