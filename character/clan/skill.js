@@ -175,24 +175,26 @@ const skills = {
 				});
 			event.result = {
 				bool: result.bool,
-				cost_data: result.links[0],
+				cost_data: result.links?.[0],
 			};
 		},
 		async content(event, trigger, player) {
-			player.addSkill("clananran_used");
-			if (player.countMark("clananran_used") < 4) player.addMark("clananran_used", 1, false);
-			const count = player.countMark("clananran_used");
+			const tag = "clananran_tag",
+				mark = "clananran_used";
+			player.addSkill(mark);
+			if (player.countMark(mark) < 4) player.addMark(mark, 1, false);
+			const count = player.countMark(mark);
 			const { cost_data } = event,
 				map = { player: "useCard1", global: "phaseAfter" };
 			if (cost_data == "draw") {
-				player.addTempSkill("clananran_tag", map);
-				await player.draw(count).set("gaintag", ["clananran_tag"]);
+				player.addTempSkill(tag, map);
+				await player.draw(count).set("gaintag", [tag]);
 			} else {
-				const { result } = await player.chooseTarget(`岸然：令至多${get.cnNumber(count)}名角色摸一张牌`, [1, count], true);
+				const { result } = await player.chooseTarget(`岸然：令至多${get.cnNumber(count)}名角色各摸一张牌`, [1, count], true);
 				if (result.targets?.length) {
 					for (const i of result.targets.sortBySeat()) {
-						i.addTempSkill("clananran_tag", map);
-						await i.draw("nodelay").set("gaintag", ["clananran_tag"]);
+						i.addTempSkill(tag, map);
+						await i.draw("nodelay").set("gaintag", [tag]);
 					}
 					await game.delayx();
 				}
