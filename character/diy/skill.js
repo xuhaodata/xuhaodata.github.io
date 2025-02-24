@@ -6743,122 +6743,71 @@ const skills = {
 	},
 	nsyaowang: {
 		trigger: { player: "phaseBegin" },
-		direct: true,
-		createDialog(player, target, onlylist) {
-			var names = [];
-			var list = [];
-			if (target.name1 && !target.isUnseen(0)) names.add(target.name1);
-			if (target.name2 && !target.isUnseen(1)) names.add(target.name2);
-			var pss = player.getSkills();
-			for (var i = 0; i < names.length; i++) {
-				var info = lib.character[names[i]];
-				if (info) {
-					var skills = info[3];
-					for (var j = 0; j < skills.length; j++) {
-						if (lib.translate[skills[j] + "_info"] && lib.skill[skills[j]] && !lib.skill[skills[j]].unique && !pss.includes(skills[j])) {
-							list.add(skills[j]);
-						}
-					}
-				}
-			}
-			if (onlylist) return list;
-			var dialog = ui.create.dialog("forcebutton");
-			dialog.add("选择获得一项技能");
-			_status.event.list = list;
-			var clickItem = function () {
-				_status.event._result = this.link;
-				game.resume();
-			};
-			for (i = 0; i < list.length; i++) {
-				if (lib.translate[list[i] + "_info"]) {
-					var translation = get.translation(list[i]);
-					if (translation[0] == "新" && translation.length == 3) {
-						translation = translation.slice(1, 3);
-					} else {
-						translation = translation.slice(0, 2);
-					}
-					var item = dialog.add('<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + translation + "】</div><div>" + lib.translate[list[i] + "_info"] + "</div></div>");
-					item.firstChild.addEventListener("click", clickItem);
-					item.firstChild.link = list[i];
-				}
-			}
-			dialog.add(ui.create.div(".placeholder"));
-			return dialog;
+		filter(event, player) {
+			return game.hasPlayer(
+				current =>
+					player != current &&
+					current.getSkills(null, false, false).filter(skill => {
+						const info = get.info(skill);
+						return info && !info.charlotte;
+					}).length
+			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("nsyaowang"), function (card, player, target) {
-					var names = [];
-					if (target.name1 && !target.isUnseen(0)) names.add(target.name1);
-					if (target.name2 && !target.isUnseen(1)) names.add(target.name2);
-					var pss = player.getSkills();
-					for (var i = 0; i < names.length; i++) {
-						var info = lib.character[names[i]];
-						if (info) {
-							var skills = info[3];
-							for (var j = 0; j < skills.length; j++) {
-								if (lib.translate[skills[j] + "_info"] && lib.skill[skills[j]] && !lib.skill[skills[j]].unique && !pss.includes(skills[j])) {
-									return true;
-								}
-							}
-						}
-						return false;
-					}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return (
+						player != target &&
+						target.getSkills(null, false, false).filter(skill => {
+							const info = get.info(skill);
+							return info && !info.charlotte;
+						}).length
+					);
 				})
-				.set("ai", function (target) {
-					if (get.attitude(_status.event.player, target) > 0) return Math.random();
+				.set("ai", target => {
+					if (get.attitude(get.player(), target) > 0) return Math.random();
 					return 0;
-				});
-			"step 1";
-			if (result.bool) {
-				event.target = result.targets[0];
-				player.logSkill("nsyaowang", event.target);
-			} else {
-				event.finish();
-			}
-			"step 2";
-			event.skillai = function (list) {
-				return get.max(list, get.skillRank, "item");
-			};
-			if (event.isMine()) {
-				event.dialog = lib.skill.nsyaowang.createDialog(player, target);
-				event.switchToAuto = function () {
-					event._result = event.skillai(event.list);
-					game.resume();
-				};
-				_status.imchoosing = true;
-				game.pause();
-			} else {
-				event._result = event.skillai(lib.skill.nsyaowang.createDialog(player, target, true));
-			}
-			"step 3";
-			_status.imchoosing = false;
-			if (event.dialog) {
-				event.dialog.close();
-			}
-			player.addTempSkill(result);
-			player.popup(result);
-			game.log(player, "获得了", "【" + get.translation(result) + "】");
-			var names = [];
-			for (var i = 0; i < game.players.length; i++) {
-				names.add(game.players[i].name);
-				names.add(game.players[i].name1);
-				names.add(game.players[i].name2);
-			}
-			for (var i = 0; i < game.dead.length; i++) {
-				names.add(game.dead[i].name);
-				names.add(game.dead[i].name1);
-				names.add(game.dead[i].name2);
-			}
-			var list = get.gainableSkills(function (info, skill, name) {
-				if (names.includes(name)) return false;
-				return true;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const skills = target.getSkills(null, false, false).filter(skill => {
+				const info = get.info(skill);
+				return info && !info.charlotte;
 			});
-			var skill = list.randomGet();
-			target.popup(skill);
-			target.addTempSkill(skill, { player: "phaseAfter" });
-			game.log(target, "获得了", "【" + get.translation(skill) + "】");
+			if (!skills.length) return;
+			const list = skills.map(skill => [
+				skill,
+				'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">' +
+					(() => {
+						let str = get.translation(skill);
+						if (!lib.skill[skill]?.nobracket) str = "【" + str + "】";
+						return str;
+					})() +
+					"</div><div>" +
+					lib.translate[skill + "_info"] +
+					"</div></div>",
+			]);
+			const links = await player
+				.chooseButton(["选择获得一个技能", [list, "textbutton"]])
+				.set("displayIndex", false)
+				.set("ai", button => {
+					const player = get.player();
+					let info = get.info(button.link);
+					if (info?.ai?.neg || info?.ai?.halfneg) return 0;
+					return get.skillRank(button.link, "inout");
+				})
+				.forResultLinks();
+			if (!links?.length) return;
+			await player.addTempSkills(links[0]);
+			const names = game.players.concat(game.dead).reduce((list, i) => list.addArray(get.nameList(i)), []);
+			const skillList = get.gainableSkills((info, skill, name) => !names.includes(name));
+			if (!skillList.length) return;
+			const skill = skillList.randomGet();
+			await target.addTempSkills(skill, { player: "phaseAfter" });
 		},
 	},
 	nsjianshu: {
