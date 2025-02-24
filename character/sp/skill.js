@@ -815,6 +815,7 @@ const skills = {
 		group: "olqiaozhi_use",
 		subSkill: {
 			use: {
+				audio: "olqiaozhi",
 				enable: "phaseUse",
 				filterCard: true,
 				prompt: "请弃置一张牌",
