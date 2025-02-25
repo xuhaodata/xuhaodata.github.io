@@ -799,6 +799,7 @@ const skills = {
 		},
 	},
 	olqiaozhi: {
+		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
@@ -818,6 +819,7 @@ const skills = {
 		group: "olqiaozhi_use",
 		subSkill: {
 			use: {
+				audio: "olqiaozhi",
 				enable: "phaseUse",
 				filterCard: true,
 				prompt: "请弃置一张牌",
