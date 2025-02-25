@@ -10426,7 +10426,7 @@ const skills = {
 					if (cards.length) {
 						await player
 							.chooseToUse(function (card, player, event) {
-								if (!get.event("cards").includes(card)) return false;
+								if (get.itemtype(card) != "card" || !get.event("cards").includes(card)) return false;
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "炎谋：选择使用其中的一张【火攻】或火【杀】")
 							.set("cards", cards)
