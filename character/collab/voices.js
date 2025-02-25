@@ -1,4 +1,9 @@
 export default {
+	"#oljuejue1": "打虎亲兄弟，上阵父子兵！",
+	"#oljuejue2": "你伪汉五虎，可敌不过我韩家五虎！",
+	"#olpimi1": "什么？赵云大怒，已经打过来啦？！",
+	"#olpimi2": "我韩家五虎出手，必定所向披靡！",
+	"#hanshiwuhu:die": "我的儿呀！好你个老匹夫！",
 	"#olzishu": "这些牌都归我吧！",
 	"#ol_zishu:die": "油米全没了……",
 	"#olchouniu": "牛角之歌，自保足矣。",
