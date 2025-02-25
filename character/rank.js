@@ -1378,7 +1378,6 @@ window.noname_character_rank = {
 		"hm_chengyuanzhi",
 		"hm_gaosheng",
 		"hm_heman",
-		"hm_zhangkai",
 		"hm_yanzheng",
 		"hm_bocai",
 		"hm_dengmao",

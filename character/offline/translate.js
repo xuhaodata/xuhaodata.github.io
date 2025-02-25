@@ -30,7 +30,6 @@ const translates = {
 	hm_chengyuanzhi: "程远志",
 	hm_gaosheng: "高升",
 	hm_heman: "何曼",
-	hm_zhangkai: "张闿",
 	hm_yanzheng: "严政",
 	hm_bocai: "波才",
 	hm_dengmao: "邓茂",
