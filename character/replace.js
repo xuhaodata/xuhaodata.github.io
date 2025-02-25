@@ -93,7 +93,7 @@ window.noname_character_replace = {
 	jiangwei: ["jiangwei", "ol_jiangwei", "re_jiangwei", "ol_sb_jiangwei", "sb_jiangwei", "jsrg_jiangwei", "huan_jiangwei", "jd_sb_jiangwei", "sp_jiangwei"],
 	liushan: ["liushan", "ol_liushan", "re_liushan", "huan_liushan"],
 	sunce: ["sunce", "re_sunce", "re_sunben", "sb_sunce", "dc_sunce", "jsrg_sunce", "sp_sunce"],
-	zhangzhang: ["zhangzhang", "ol_zhangzhang", "re_zhangzhang", "tw_zhangzhao", "tw_zhanghong", "star_zhangzhao"],
+	zhangzhang: ["zhangzhang", "ol_zhangzhang", "re_zhangzhang"],
 	zuoci: ["zuoci", "re_zuoci"],
 	caiwenji: ["caiwenji", "ol_caiwenji", "re_caiwenji", "yue_caiwenji", "sp_caiwenji"],
 	xuyou: ["xuyou", "sp_xuyou", "jsrg_xuyou", "yj_xuyou", "junk_xuyou"],
@@ -389,4 +389,5 @@ window.noname_character_replace = {
 	jin_xiahouhui: ["jin_xiahouhui", "jd_jin_xiahouhui"],
 	yuanhuan: ["yuanhuan", "ol_yuanhuan"],
 	yangfeng: ["yangfeng", "ol_yangfeng"],
+	tw_zhangzhao: ["tw_zhangzhao", "star_zhangzhao"],
 };
