@@ -15,6 +15,7 @@ window.noname_character_replace = {
 	shen_simayi: ["shen_simayi", "xin_simayi", "new_simayi"],
 	shen_liubei: ["shen_liubei", "ty_shen_liubei"],
 	shen_zhangfei: ["shen_zhangfei", "ty_shen_zhangfei"],
+	shen_jiaxu: ["shen_jiaxu", "le_shen_jiaxu"],
 	lifeng: ["dc_lifeng", "lifeng"],
 	liuyong: ["liuyong", "jsrg_liuyong"],
 	qiaorui: ["qiaorui", "tw_qiaorui"],
