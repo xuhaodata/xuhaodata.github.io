@@ -10129,12 +10129,6 @@ export class Library {
 			if (get.itemtype(card) == "card") {
 				var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
-			} else if (card.cards) {
-				for (let cardx of card.cards) {
-					if (get.itemtype(cardx) != "card") continue;
-					let mod2 = game.checkMod(cardx, player, event, "unchanged", "cardEnabled2", player);
-					if (mod2 != "unchanged") return mod2;
-				}
 			}
 			card = get.autoViewAs(card);
 			var mod = game.checkMod(card, player, target, "unchanged", "cardSavable", player);
@@ -10316,12 +10310,6 @@ export class Library {
 			if (get.itemtype(card) == "card") {
 				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
-			} else if (card.cards) {
-				for (let cardx of card.cards) {
-					if (get.itemtype(cardx) != "card") continue;
-					let mod2 = game.checkMod(cardx, player, event, "unchanged", "cardEnabled2", player);
-					if (mod2 != "unchanged") return mod2;
-				}
 			}
 			card = get.autoViewAs(card);
 			if (event === "forceEnable") {
@@ -10350,12 +10338,6 @@ export class Library {
 			if (get.itemtype(card) == "card") {
 				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
-			} else if (card.cards) {
-				for (let cardx of card.cards) {
-					if (get.itemtype(cardx) != "card") continue;
-					let mod2 = game.checkMod(cardx, player, event, "unchanged", "cardEnabled2", player);
-					if (mod2 != "unchanged") return mod2;
-				}
 			}
 			card = get.autoViewAs(card);
 			var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
