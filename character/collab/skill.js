@@ -70,7 +70,7 @@ const skills = {
 				event.result = await player
 					.chooseCardTarget({
 						prompt: get.prompt(event.skill),
-						prompt2: "交给其中一名角色一张手牌，然后获得其两张手牌",
+						prompt2: "交给其中一名角色一张手牌，然后获得其至多两张手牌",
 						filterCard: true,
 						filterTarget(card, player, target) {
 							return get.event("targets").includes(target);
@@ -103,7 +103,7 @@ const skills = {
 					.forResult();
 			} else {
 				event.result = await target
-					.chooseCard("h", get.prompt(event.skill), `交给${get.translation(player)}一张手牌，然后获得其两张手牌`)
+					.chooseCard("h", get.prompt(event.skill), `交给${get.translation(player)}一张手牌，然后获得其至多两张手牌`)
 					.set("ai", card => {
 						const { player, target } = get.event();
 						const att = get.attitude(player, target);
