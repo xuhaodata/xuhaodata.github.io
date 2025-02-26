@@ -254,6 +254,7 @@ window.noname_character_replace = {
 	wuanguo: ["ol_wuanguo", "wuanguo"],
 	wuban: ["clan_wuban", "dc_wuban", "wuban", "xin_wuban", "ty_wuban"],
 	wuguotai: ["wuguotai", "ol_wuguotai", "xin_wuguotai", "re_wuguotai"],
+	wuhujiang: ["wuhujiang", "hanshiwuhu"],
 	wujing: ["ol_wujing", "wujing", "tw_wujing"],
 	wuxian: ["wuxian", "clan_wuxian"],
 	wuyi: ["wuyi", "re_wuyi", "clan_wuyi", "dc_wuyi", "xin_wuyi"],
