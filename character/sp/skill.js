@@ -1177,10 +1177,13 @@ const skills = {
 		onChooseToUse(event) {
 			if (!game.online && event.type === "phase" && !event.olliyong_suits) {
 				const player = event.player;
-				event.olliyong_suits = player
-					.getHistory("useCard")
-					.map(evt => get.suit(evt.card))
-					.unique();
+				event.set(
+					"olliyong_suits",
+					player
+						.getHistory("useCard")
+						.map(evt => get.suit(evt.card))
+						.unique()
+				);
 				if (event.olliyong_suits.length) {
 					event.olliyong_suits.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 					player.addTip("olliyong", get.translation("olliyong") + event.olliyong_suits.reduce((str, i) => str + get.translation(i), ""), "phaseUseAfter");
@@ -1198,7 +1201,7 @@ const skills = {
 		filterCardx(card, player) {
 			const suits = get.event().olliyong_suits;
 			if (!player.storage["olliyong"]) {
-				if (suits.includes(get.suit(card))) return false;
+				if (suits?.includes(get.suit(card))) return false;
 				return game.hasPlayer(target => player.canUse(get.autoViewAs({ name: "juedou" }, [card]), target));
 			}
 			return game.hasPlayer(target => target.canUse(new lib.element.VCard({ name: "juedou" }), player));
@@ -1206,7 +1209,7 @@ const skills = {
 		filterCard(card, player) {
 			const suits = get.event().olliyong_suits;
 			if (!player.storage["olliyong"]) {
-				if (suits.includes(get.suit(card))) return false;
+				if (suits?.includes(get.suit(card))) return false;
 				return game.hasPlayer(target => player.canUse(get.autoViewAs({ name: "juedou" }, [card]), target));
 			}
 			return false;
@@ -10463,7 +10466,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			const map = get.info(event.skill).getMap(player);
-			const targetprompt = target => {
+			const targetprompt = (map, target) => {
 				const list = map[target.playerid];
 				let str = "";
 				for (let i = 0; i < 2; i++) {
@@ -10475,21 +10478,20 @@ const skills = {
 				}
 				return str.slice(0, -1);
 			};
-			const func = () => {
+			const func = (targetprompt, map) => {
 				game.countPlayer(target => {
-					let text = targetprompt(target);
+					let text = targetprompt(map, target);
 					target.prompt("体力值" + text.replaceAll("/", "<br>手牌数"));
 				});
 			};
-			if (event.player == game.me) func();
-			else if (event.isOnline()) player.send(func);
+			if (event.player == game.me) func(targetprompt, map);
+			else if (event.isOnline()) player.send(func, targetprompt, map);
 			event.result = await player
 				.chooseTarget(get.prompt(event.skill), "令一名角色将{体力值/手牌数}调整至与其上个结束阶段相同(“--”表示已对其发动过该分支)", (card, player, target) => {
 					const list = get.event().map[target.playerid];
 					return list && (list[0] || list[1]);
 				})
 				.set("map", map)
-				.set("targetprompt", targetprompt)
 				.set("ai", target => {
 					const list = get.event().map[target.playerid];
 					const att = get.attitude(get.player(), target);

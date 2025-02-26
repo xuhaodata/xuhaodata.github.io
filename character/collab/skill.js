@@ -2,6 +2,154 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//夏侯恩
+	olyinfeng: {
+		audio: 2,
+		trigger: { global: ["gainAfter", "loseAsyncAfter"] },
+		getIndex(event, player) {
+			return game
+				.filterPlayer(current => {
+					if (current == player) return false;
+					const cards = event.getg?.(current);
+					if (!cards?.length) return false;
+					return event.getl?.(player)?.hs?.some(card => cards.includes(card)) && (cards.some(card => card.name == "chixueqingfeng") || player.countCards("h", { name: "chixueqingfeng" }));
+				})
+				.sortBySeat();
+		},
+		filter(event, player, name, target) {
+			if (event.name === "loseAsync" && event.type !== "gain") return false;
+			return target?.isIn();
+		},
+		forced: true,
+		logTarget: (event, player, name, target) => target,
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			if (player.countCards("h", { name: "chixueqingfeng" })) await target.damage();
+			if (trigger.getg(target).some(card => card.name == "chixueqingfeng")) await player.damage(target);
+		},
+		group: "olyinfeng_gain",
+		subSkill: {
+			gain: {
+				audio: "yinfeng",
+				trigger: {
+					global: ["phaseBefore", "loseAfter", "loseAsyncAfter"],
+					player: "enterGame",
+				},
+				forced: true,
+				filter(event, player) {
+					if (event.name.indexOf("lose") == 0) {
+						if (event.type != "discard" || event.getlx === false || event.position != ui.discardPile) return false;
+						return event.getd().some(card => card.name == "chixueqingfeng" && get.position(card, true) == "d");
+					}
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				async content(event, trigger, player) {
+					if (trigger.name.indexOf("lose") == 0) {
+						await player.loseHp();
+						const cards = trigger.getd().filter(card => card.name == "chixueqingfeng" && get.position(card, true) == "d");
+						if (cards.length) await player.gain(cards, "gain2");
+					} else await player.gain(game.createCard2("chixueqingfeng", "spade", 6), "gain2");
+				},
+			},
+		},
+	},
+	olfulu: {
+		audio: 2,
+		trigger: { global: "useCardAfter" },
+		filter(event, player) {
+			const { card, player: target, targets } = event;
+			if (card.name != "sha" || !target.countCards("h")) return false;
+			if (player == target) return targets.some(i => i.isIn());
+			return event.olfulu_map?.[player.playerid] && targets.includes(player);
+		},
+		async cost(event, trigger, player) {
+			const { player: target } = trigger;
+			if (player == target) {
+				event.result = await player
+					.chooseCardTarget({
+						prompt: get.prompt(event.skill),
+						prompt2: "交给其中一名角色一张手牌，然后获得其两张手牌",
+						filterCard: true,
+						filterTarget(card, player, target) {
+							return get.event("targets").includes(target);
+						},
+						ai1(card) {
+							const { player, targets } = get.event();
+							if (player.countCards("h", { name: "chixueqingfeng" }) && player.hasSkill("olyinfeng") && targets.some(target => get.damageEffect(target, player, player) > 0)) {
+								if (card.name == "chixueqingfeng") return 0;
+								return 6.5 - get.value(card);
+							}
+							if (targets.some(target => get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) > 0)) return 6.5 - get.value(card);
+							return 0;
+						},
+						ai2(target) {
+							const { player, targets } = get.event();
+							const cards = ui.selected.cards;
+							if (!cards.length) return 0;
+							const { name } = cards[0];
+							const eff = get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) * Math.min(2, target.countCards("h"));
+							if (player.countCards("h", { name: "chixueqingfeng" }) && name != "chixueqingfeng" && player.hasSkill("olyinfeng")) {
+								return get.damageEffect(target, player, player) + eff;
+							}
+							return eff;
+						},
+					})
+					.set(
+						"targets",
+						trigger.targets.filter(i => i.isIn())
+					)
+					.forResult();
+			} else {
+				event.result = await target
+					.chooseCard("h", get.prompt(event.skill), `交给${get.translation(player)}一张手牌，然后获得其两张手牌`)
+					.set("ai", card => {
+						const { player, target } = get.event();
+						const att = get.attitude(player, target);
+						if (att > 0) {
+							const bool = target.countCards("h", { name: "chixueqingfeng" });
+							if (!target.countCards("h")) return 0;
+							return !bool && player.needsToDiscard() ? 6 - get.value(card) : 0;
+						}
+						return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) > 0 ? 6 - get.value(card) : 0;
+					})
+					.set("target", player)
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			const { player: target } = trigger;
+			const { cards, targets } = event;
+			if (player == target) {
+				const [target] = targets;
+				await player.give(cards, target);
+				if (target.countGainableCards(player, "h")) await player.gainPlayerCard(target, "h", [1, 2], true);
+			} else {
+				await target.give(cards, player);
+				if (player.countGainableCards(target, "h")) await target.gainPlayerCard(player, "h", [1, 2], true);
+			}
+		},
+		group: "olfulu_record",
+		subSkill: {
+			record: {
+				trigger: { global: "useCard1" },
+				silent: true,
+				forced: true,
+				popup: false,
+				firstDo: true,
+				filter(event, player) {
+					const { card, player: target } = event;
+					if (card.name != "sha") return false;
+					return target != player && target.getHp() < player.getHp();
+				},
+				content() {
+					if (!trigger.olfulu_map) trigger.olfulu_map = {};
+					trigger.olfulu_map[player.playerid] = true;
+				},
+			},
+		},
+	},
 	//食岑昏
 	dcbaoshi: {
 		audio: 2,
