@@ -4215,8 +4215,8 @@ const skills = {
 			let locals = targets.slice(0).randomSort();
 			locals.removeArray(humans);
 			const eventId = get.id();
-			const send = (question, current, eventId) => {
-				lib.skill.olhunjiang.chooseControl(question, current, eventId);
+			const send = (current, player, eventId) => {
+				lib.skill.olhunjiang.chooseControl(current, player, eventId);
 				game.resume();
 			};
 			event._global_waiting = true;
@@ -4226,17 +4226,15 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result && typeof result.index == "number") {
-							resolve();
-							answer_result[result.index].push(player);
-						} else reject();
+						if (typeof result?.index == "number") answer_result[result.index].push(player);
+						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
-								current.send(send, question, current, eventId);
+								current.send(send, current, player, eventId);
 								current.wait(solve(resolve, reject));
 							} else {
 								const next = lib.skill.olhunjiang.chooseControl(current, player, eventId);

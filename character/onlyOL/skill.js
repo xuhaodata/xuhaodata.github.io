@@ -1337,7 +1337,7 @@ const skills = {
 			let humans = targets.filter(current => current === game.me || current.isOnline());
 			locals.removeArray(humans);
 			const eventId = get.id();
-			const send = (current, eventId) => {
+			const send = (current, targets, eventId) => {
 				lib.skill.olsbbojue.chooseCard(current, targets, eventId);
 				game.resume();
 			};
@@ -1348,17 +1348,15 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result?.bool && result.cards?.length) {
-							map[player.playerid] = result.cards[0];
-							resolve();
-						} else reject();
+						if (result?.bool && result.cards?.length) map[player.playerid] = result.cards[0];
+						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
-								current.send(send, current, eventId);
+								current.send(send, current, targets, eventId);
 								current.wait(solve(resolve, reject));
 							} else {
 								const next = lib.skill.olsbbojue.chooseCard(current, targets, eventId);
@@ -2157,7 +2155,7 @@ const skills = {
 			let humans = targets.filter(current => current === game.me || current.isOnline());
 			locals.removeArray(humans);
 			const eventId = get.id();
-			const send = (current, eventId) => {
+			const send = (current, targets, eventId) => {
 				lib.skill.oljianmie.chooseControl(current, targets, eventId);
 				game.resume();
 			};
@@ -2168,17 +2166,15 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result && result.control) {
-							map[player.playerid] = result.control == "none2" ? "none" : result.control;
-							resolve();
-						} else reject();
+						if (result?.control) map[player.playerid] = result.control == "none2" ? "none" : result.control;
+						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
-								current.send(send, current, eventId);
+								current.send(send, current, targets, eventId);
 								current.wait(solve(resolve, reject));
 							} else {
 								const next = lib.skill.oljianmie.chooseControl(current, targets, eventId);
@@ -2359,7 +2355,7 @@ const skills = {
 			let locals = targets.slice();
 			locals.removeArray(humans);
 			const eventId = get.id();
-			const send = (current, eventId) => {
+			const send = (current, trigger, eventId) => {
 				lib.skill.olsbzhengyi.chooseBool(current, trigger, eventId);
 				game.resume();
 			};
@@ -2371,17 +2367,15 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result && result.bool) {
-							choices.push(player);
-							resolve();
-						} else reject();
+						if (result?.bool) choices.push(player);
+						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
-								current.send(send, current, eventId);
+								current.send(send, current, trigger, eventId);
 								current.wait(solve(resolve, reject));
 							} else {
 								const next = lib.skill.olsbzhengyi.chooseBool(current, trigger, eventId);
@@ -2399,7 +2393,7 @@ const skills = {
 			if (locals.length > 0) {
 				for (const current of locals) {
 					const result = await lib.skill.olsbzhengyi.chooseBool(current, trigger).forResult();
-					if (result && result.bool) choices.push(current);
+					if (result?.bool) choices.push(current);
 				}
 			}
 			delete event._global_waiting;
@@ -2435,9 +2429,7 @@ const skills = {
 				.set("id", eventId)
 				.set("_global_waiting", true);
 		},
-		ai: {
-			combo: "olsbliwen",
-		},
+		ai: { combo: "olsbliwen" },
 	},
 	//OL界吴国太
 	olganlu: {

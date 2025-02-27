@@ -9828,6 +9828,7 @@ const skills = {
 			},
 			respondSha: true,
 		},
+		subSkill: { backup: {} },
 	},
 	//神曹仁
 	jxjushou: {
