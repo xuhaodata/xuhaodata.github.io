@@ -1,4 +1,5 @@
 const characters = {
+	yj_yongkai: ["male", "shu", 5, ["psxiaofan", "psjiaohu", "psquanpan", "pshuoluan"], ["doublegroup:qun:shu:wu"]],
 	hm_shen_zhangjiao: ["male", "shen", 4, ["hm_fudao", "hm_zongfu", "hm_dangjing", "hm_sanshou"], []],
 	hm_shen_zhangbao: ["male", "shen", 4, ["hm_zhouyuan", "hm_zhaobing", "hm_sanshou"], []],
 	hm_shen_zhangliang: ["male", "shen", 4, ["hm_jijun", "hm_fengtong", "hm_sanshou"], []],

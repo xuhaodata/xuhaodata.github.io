@@ -774,6 +774,7 @@ window.noname_character_rank = {
 		"yue_zhouyu",
 	],
 	bp: [
+		"yj_yongkai",
 		"ol_zishu",
 		"ol_chouniu",
 		"ol_yinhu",
@@ -2573,6 +2574,7 @@ window.noname_character_rank = {
 			"niufu",
 		],
 		rare: [
+			"yj_yongkai",
 			"lvju",
 			"panghong",
 			"ol_sb_zhangfei",
