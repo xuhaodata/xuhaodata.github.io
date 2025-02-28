@@ -3384,7 +3384,7 @@ export class Player extends HTMLDivElement {
 		}
 		if (node) {
 			if (name === name2) {
-				var skinName = this.skin.name;
+				var skinName = this.name == name ? this.skin?.name : this.skin?.name2;
 				if (!skinName || skinName === name2) node.setBackground(name2, "character");
 				else node.setBackground(skinName, "character");
 			} else node.setBackground(name2, "character");
@@ -6121,10 +6121,10 @@ export class Player extends HTMLDivElement {
 		} else if (next.card == undefined) {
 			if (next.cards) {
 				next.card = next.cards[0];
-				if (!next.skill) {
-					next.card = get.autoViewAs(next.card, next.cards);
-				}
 			}
+		}
+		if (next.card) {
+			next.card = get.autoViewAs(next.card, next.cards);
 		}
 		next.setContent("respond");
 		return next;

@@ -10130,6 +10130,7 @@ export class Library {
 				var mod2 = game.checkMod(card, player, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
 			}
+			card = get.autoViewAs(card);
 			var mod = game.checkMod(card, player, target, "unchanged", "cardSavable", player);
 			if (mod != "unchanged") return mod;
 			var savable = get.info(card).savable;
@@ -10326,18 +10327,19 @@ export class Library {
 		},
 		cardRespondable: function (card, player, event) {
 			event = event || _status.event;
-			if (event.name != "chooseToRespond") return true;
+			if (player == undefined) player = _status.event.player;
+			if (!player) return false;
 			var source = event.getParent().player;
 			if (source && source != player) {
 				if (source.hasSkillTag("norespond", false, [card, player, event], true)) {
 					return false;
 				}
 			}
-			if (player == undefined) player = _status.event.player;
 			if (get.itemtype(card) == "card") {
 				var mod2 = game.checkMod(card, player, event, "unchanged", "cardEnabled2", player);
 				if (mod2 != "unchanged") return mod2;
 			}
+			card = get.autoViewAs(card);
 			var mod = game.checkMod(card, player, "unchanged", "cardRespondable", player);
 			if (mod != "unchanged") return mod;
 			return true;

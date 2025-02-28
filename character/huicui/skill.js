@@ -4,25 +4,31 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//侯成
 	dcxianniang: {
-		init: () => game.addGlobalSkill("dcxianniang_tag"),
 		audio: 2,
 		trigger: {
 			player: ["loseAfter", "damageEnd"],
+			global: "loseAsyncAfter",
 		},
 		filter(event, player) {
-			if (player.getStorage("dcxianniang_used").includes(event.name)) return false;
-			if (event.name === "lose") {
+			if (!game.hasPlayer(current => player.countCards("h") <= current.countCards("h") && current.countGainableCards(player, current != player ? "he" : "h"))) return false;
+			if (event.name == "damage") return !player.getStorage("dcxianniang_used").includes(event.name);
+			if (player.getStorage("dcxianniang_used").includes("lose")) return false;
+			if (event.name == "lose") {
 				if (event.type != "discard") return false;
-				const evt = event.getParent();
-				if (evt.notBySelf !== true) return false;
-				const evtx = event.getl(player);
-				return evtx && evtx.cards2 && evtx.cards2.length > 0;
-			} else return true;
+				if ((event.discarder || event.getParent(2).player) == player) return false;
+				const evt = event.getl(player);
+				return evt?.cards2?.length;
+			} else if (event.type == "discard") {
+				const { discarder } = event;
+				if (!discarder || player === discarder) return false;
+				const evt = event.getl(player);
+				return evt?.cards2?.length;
+			}
+			return false;
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget("你可获得一名手牌数不小于你的角色至多两张牌，并可以交给另一名其他角色至多等量张牌")
-				.set("filterTarget", (card, player, target) => player.countCards("h") <= target.countCards("h") && target.countGainableCards(player, target != player ? "he" : "he") > 0)
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => player.countCards("h") <= target.countCards("h") && target.countGainableCards(player, target != player ? "he" : "h"))
 				.set("ai", target => {
 					let att = get.attitude(get.player(), target) * -1;
 					if (target.getHp() < target.countCards("h")) return att * 2;
@@ -32,19 +38,21 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			player.addTempSkill(event.name + "_used", "roundStart");
-			player.markAuto(event.name + "_used", trigger.name);
-			const mark = player.getCards("h");
-			const result = await player.gainPlayerCard(event.targets[0], [1, 2], "he", true).forResult();
-			const cardmark = result.cards.filter(c => !mark.includes(c));
-			if (cardmark.length) player.addMark(event.name + "_gain", cardmark.length, false);
-			player.addTempSkill(event.name + "_gain", "roundStart");
-			if (player.countMark(event.name + "_gain") > 2) await player.loseHp();
-			player.addGaintag(
-				cardmark.filter(c => get.type(c) === "basic"),
-				"dcxianniang_tag"
-			);
-			if (player.countCards("h")) {
-				const num = result.cards.length;
+			player.markAuto(event.name + "_used", trigger.name == "damage" ? "damage" : "lose");
+			const {
+				targets: [target],
+			} = event;
+			const tag = event.name + "_tag";
+			const position = target != player ? "he" : "h";
+			if (!target.countGainableCards(player, position)) return;
+			const next = player.gainPlayerCard(target, [1, 2], position, true);
+			next.gaintag.add(tag);
+			const links = await next.forResultCards();
+			if (!links?.length) return;
+			player.addSkill(tag);
+			const num = links.length;
+			const targetsx = game.filterPlayer(current => current != player && current != target);
+			if (player.countCards("h") && targetsx.length) {
 				const {
 					result: { bool, cards, targets },
 				} = await player.chooseCardTarget({
@@ -52,10 +60,10 @@ const skills = {
 					filterCard: true,
 					position: "he",
 					selectCard: [1, num],
-					filterTarget: (card, player, target) => ![player, event.targets[0]].includes(target),
+					filterTarget: (card, player, target) => get.event("targetsx").includes(target),
 					ai1(card) {
 						if (card.name == "du") return 10;
-						let player = _status.event.player;
+						const player = get.player();
 						if (
 							!game.hasPlayer(current => {
 								return get.attitude(player, current) > 0 && !current.hasSkillTag("nogain");
@@ -65,29 +73,30 @@ const skills = {
 						return 1 / Math.max(0.1, get.value(card));
 					},
 					ai2(target) {
-						let player = _status.event.player,
+						let player = get.player(),
 							att = get.attitude(player, target);
 						if (ui.selected.cards[0].name == "du") return -att;
 						if (target.hasSkillTag("nogain")) att /= 6;
 						return att;
 					},
+					targetsx: targetsx,
 				});
 				if (bool) {
 					player.line(targets[0]);
-					await targets[0].gain(cards, player, "giveAuto");
-					targets[0].addGaintag(
-						cards.filter(c => get.type(c) === "basic"),
-						"dcxianniang_tag"
-					);
+					const next = targets[0].gain(cards, player, "giveAuto");
+					next.gaintag.add(tag);
+					await next;
+					targets[0].addSkill(tag);
 				}
 			}
+			if (player.getRoundHistory("gain", evt => evt.getParent(2).name == event.name).reduce((num, evt) => num + evt.cards.length, 0) > 1) await player.loseHp();
 		},
 		subSkill: {
 			tag: {
 				charlotte: true,
 				audio: "dcxianniang",
 				enable: "chooseToUse",
-				filterCard: card => card.hasGaintag("dcxianniang_tag"),
+				filterCard: card => get.itemtype(card) == "card" && card.hasGaintag("dcxianniang_tag") && get.type(card) == "basic",
 				viewAs: {
 					name: "jiu",
 					isCard: true,
@@ -95,29 +104,19 @@ const skills = {
 				prompt: "将一张“献酿”牌当作【酒】使用",
 				check: () => 1,
 				viewAsFilter: player => {
-					if (!player.countCards("hs", lib.skill["dcxianniang_tag"].filterCard)) return false;
+					return player.countCards("hs", lib.skill["dcxianniang_tag"].filterCard);
 				},
 				position: "hs",
 				mod: {
 					cardEnabled2(card, player, result) {
 						const evt = get.event();
+						if (evt.name != "chooseToUse") return;
 						const judge = evt.skill !== "dcxianniang_tag";
-						if (get.itemtype(card) === "vcard" && Array.isArray(card.cards)) {
-							if (card.cards.some(c => c.hasGaintag("dcxianniang_tag")) && judge) {
-								return false;
-							}
-						}
-						if (card.hasGaintag("dcxianniang_tag") && judge) {
-							return false;
-						}
+						if ([card].concat(card.cards || []).some(c => get.itemtype(c) === "card" && c.hasGaintag("dcxianniang_tag") && get.type(c) == "basic") && judge) return false;
 					},
 				},
 			},
 			used: {
-				charlotte: true,
-				onremove: true,
-			},
-			gain: {
 				charlotte: true,
 				onremove: true,
 			},

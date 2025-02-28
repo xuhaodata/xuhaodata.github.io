@@ -95,7 +95,7 @@ const skills = {
 				} else break;
 			}
 			if (player.hasSkill("friendpangtonggongli") && get.info("friendgongli").isFriendOf(player, "friend_xushu") && cards.length) {
-				const { result } = player.chooseCardButton(cards, "养名：是否获得其中一张牌？").set("ai", button => get.value(button.link));
+				const { result } = await player.chooseCardButton(cards, "养名：是否获得其中一张牌？").set("ai", button => get.value(button.link));
 				if (result.bool) await player.gain(result.links, "gain2");
 			}
 		},

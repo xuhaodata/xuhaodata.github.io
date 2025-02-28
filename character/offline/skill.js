@@ -849,158 +849,141 @@ const skills = {
 	//神皇甫嵩
 	hm_shice: {
 		zhuanhuanji: true,
-		locked: false,
 		mark: true,
 		marktext: "☯",
 		intro: {
 			content(storage, player, skill) {
-				if (Boolean(player.storage[skill])) {
-					return "当你受到属性伤害时，若你的技能数不大于伤害来源，你可以防止此伤害并视为使用一张【火攻】。";
-				}
+				if (!storage) return "当你受到属性伤害时，若你的技能数不大于伤害来源，你可以防止此伤害并视为使用一张【火攻】。";
 				return "当你不因此技能使用牌指定唯一目标后，你可以令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）。";
 			},
 		},
-		prompt: "是否发动【势策】？",
-		prompt2(event, player, triggername) {
-			if (triggername === "damageBegin4") {
-				return "防止此伤害并视为使用一张【火攻】";
-			}
-			return "令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）";
-		},
-		trigger: {
-			player: ["damageBegin4", "useCardToPlayered"],
-		},
-		init(player, skill) {
-			player.storage[skill] = true;
-		},
-		countSkill(player) {
-			return player.getSkills(null, false, false).filter(function (skill) {
-				var info = get.info(skill);
-				if (!info || info.charlotte) return false;
-				if (info.zhuSkill) return player.hasZhuSkill(skill);
-				return true;
-			}).length;
-		},
-		filter(event, player, triggername) {
+		trigger: { player: ["damageBegin4", "useCardToPlayered"] },
+		filter(event, player) {
 			const storage = player.storage.hm_shice;
-			const bool = Boolean(storage);
-			if (bool) {
-				if (triggername == "damageBegin4" && event.source) {
-					const playerSkillNum = lib.skill.hm_shice.countSkill(player);
-					const sourceSkillNum = lib.skill.hm_shice.countSkill(event.source);
-					return event.hasNature() && playerSkillNum <= sourceSkillNum;
-				}
-			} else {
-				if (triggername == "useCardToPlayered") {
-					return event.getParent(4).skill !== "hm_shice" && event.targets && event.targets.length === 1;
-				}
+			if (!storage && event.name == "damage") {
+				const { source } = event;
+				if (!source) return false;
+				return event.hasNature() && lib.skill.jsrgjuxia.countSkill(source) >= lib.skill.jsrgjuxia.countSkill(player);
+			} else if (storage && event.name == "useCardToPlayered") {
+				return event.getParent(3).name !== "hm_shice" && event.targets?.length === 1 && event.targets[0].countCards("e");
 			}
 			return false;
 		},
+		async cost(event, trigger, player) {
+			const { source, target, card, nature } = trigger;
+			if (trigger.name == "damage")
+				event.result = await player
+					.chooseBool(get.prompt(event.skill), "防止此伤害并视为使用一张【火攻】")
+					.set("chioce", get.damageEffect(player, source, player, nature) < 0)
+					.forResult();
+			else {
+				const bool = await player
+					.chooseBool(get.prompt(event.skill, target), "令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）")
+					.set("chioce", get.effect(target, card, player, player) > 0)
+					.forResultBool();
+				event.result = {
+					bool: bool,
+					targets: [target],
+				};
+			}
+		},
 		async content(event, trigger, player) {
-			player.changeZhuanhuanji("hm_shice");
-			if (event.triggername == "damageBegin4") {
+			player.changeZhuanhuanji(event.name);
+			if (trigger.name == "damage") {
 				trigger.cancel();
-				const next = player.chooseUseTarget("huogong", true);
-				await next;
+				const huogong = get.autoViewAs({ name: "huogong", isCard: true });
+				if (player.hasUseTarget(huogong)) await player.chooseUseTarget(huogong, true);
 			} else {
-				const target = trigger.target;
-				if (target.countCards("e")) {
-					await target.chooseToDiscard("e", [1, Infinity]);
-				}
-				trigger.getParent().effectCount += target.countCards("e");
+				const { target, card } = trigger;
+				if (target.countCards("e"))
+					await target
+						.chooseToDiscard("e", [1, Infinity])
+						.set("ai", card => {
+							if (get.event("goon")) return 0;
+							return 7 - get.value(card);
+						})
+						.set("goon", get.effect(target, card, player, target) > 0);
+				const num = target.countCards("e");
+				if (!num) return;
+				trigger.getParent().effectCount += num;
+				game.log(card, `额外结算${num}次`);
 			}
 		},
 	},
 	hm_podai: {
-		trigger: {
-			global: ["phaseBeginStart", "phaseEnd"],
+		trigger: { global: ["phaseBegin", "phaseEnd"] },
+		filter(event, player) {
+			const storage = player.getStorage("hm_podai_round");
+			if (!event.player.isIn() || storage.length > 1) return false;
+			return !storage.includes("draw") || (!storage.includes("disable") && lib.skill.hm_podai.getSkills(event.player).length);
 		},
-		infoTranslationIncludesString(skill, list) {
-			const text = get.skillInfoTranslation(skill);
+		infoTranslationIncludesString(skill, list, player) {
+			const text = get.skillInfoTranslation(skill, player);
 			const plainText = get.plainText(text);
-			for (const key of list) {
-				if (plainText.includes(key)) {
-					return true;
-				}
-			}
-			return false;
+			return list.some(key => plainText.includes(key));
 		},
 		derivation: "hm_podai_faq",
 		getSkills(player) {
-			return player.getSkills(null, false, true).filter(function (skill) {
-				var info = get.info(skill);
+			return player.getSkills(null, false, true).filter(skill => {
+				const info = get.info(skill);
 				//无人生还
 				const list = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]
 					.concat(["零", "一", "二", "两", "三", "四", "五", "六", "七", "八", "九", "十"])
 					.concat(["壹", "贰", "叁", "肆", "伍", "陆", "柒", "捌", "玖", "拾", "佰", "仟", "万", "亿"])
 					.concat(get.cardTranslation(c => get.type(c) == "basic"));
 				if (!info || info.charlotte || info.persevereSkill) return false;
-				if (info.zhuSkill) return player.hasZhuSkill(skill);
-				return lib.skill.hm_podai.infoTranslationIncludesString(skill, list);
+				return lib.skill.hm_podai.infoTranslationIncludesString(skill, list, player);
 			});
 		},
 		async cost(event, trigger, player) {
+			const { player: target } = trigger;
 			const storage = player.getStorage("hm_podai_round");
-			const skill = lib.skill.hm_podai.getSkills(trigger.player);
-			let bool = true;
-			if (storage.length >= 2) {
-				bool = false;
-			}
-			if (storage.includes("draw") && skill.length === 0) {
-				bool = false;
-			}
-			if (bool) {
-				const name = get.translation(trigger.player.name);
-				const dialog = [
-					"请选择一项",
+			const name = get.translation(target);
+			const dialog = [
+				"请选择一项",
+				[
 					[
-						[
-							["disable", `令${name}描述中含有基本牌名或数字的一个技能失效`],
-							["draw", `令${name}摸三张牌，然后对其造成1点火焰伤害。`],
-						],
-						"textbutton",
+						["disable", `令${name}描述中含有基本牌名或数字的一个技能失效`],
+						["draw", `令${name}摸三张牌，然后对其造成1点火焰伤害。`],
 					],
-				];
-				const next = player.chooseButton(dialog);
-				next.set("ai", function (button) {
-					const { link } = button;
-					if (link == "disable") {
-						return -(get.threaten(trigger.player, player) * get.attitude(player, trigger.player));
-					}
-					return 3 * (get.damageEffect(trigger.player, player, player, "fire") + get.attitude(trigger.player, player));
-				});
-				next.set("filterButton", function (button) {
-					const skill = lib.skill.hm_podai.getSkills(trigger.player);
-					if (!skill.length && button.link === "disable") {
-						return false;
-					}
-					const storage = player.getStorage("hm_podai_round");
-					return !storage.includes(button.link);
-				});
-				const result = await next.forResult();
-				event.result = {
-					bool: result.bool,
-				};
-				if (result.bool) {
-					Object.assign(event.result, {
-						cost_data: result.links[0],
-					});
+					"textbutton",
+				],
+			];
+			const next = player.chooseButton(dialog);
+			next.set("ai", button => {
+				const { player, target } = get.event();
+				const { link } = button;
+				if (link == "disable") return -(get.threaten(target, player) * get.attitude(player, target));
+				else {
+					if (get.attitude(player, target) > 0 && (target.hasSkillTag("nofire") || target.hasSkillTag("nodamage"))) return 1;
+					return get.damageEffect(target, player, player, "fire") + get.effect(target, { name: "draw" }, player, player) * 3;
 				}
-			} else {
-				event.result = { bool: false };
-			}
-		},
-		async content(event, trigger, player) {
-			const cost_data = event.cost_data;
-			const target = trigger.player;
-			player.addTempSkill("hm_podai_round", {
-				global: "roundStart",
 			});
-			player.getStorage("hm_podai_round").add(cost_data);
+			next.set("filterButton", button => {
+				const { player, target, storage } = get.event();
+				const { link } = button;
+				if (storage.includes(link)) return false;
+				const skill = lib.skill.hm_podai.getSkills(target);
+				return link !== "disable" || skill.length;
+			});
+			next.set("target", target);
+			next.set("storage", storage);
+			const result = await next.forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links?.[0],
+			};
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const { cost_data } = event;
+			const { player: target } = trigger;
+			player.addTempSkill("hm_podai_round", "roundStart");
+			player.markAuto("hm_podai_round", [cost_data]);
 			if (cost_data === "disable") {
-				const dialog = ui.create.dialog();
 				const list = lib.skill.hm_podai.getSkills(target);
+				if (!list.length) return;
+				const dialog = ui.create.dialog();
 				dialog.addText("令一个技能失效", true);
 				for (const skill of list) {
 					dialog.add([[[skill, '<div class="popup pointerdiv" style="width:80%;display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]], "textbutton"]);
@@ -1009,7 +992,7 @@ const skills = {
 				const result = await next.forResult();
 				if (result.bool) {
 					target.addSkill("hm_podai_sb");
-					target.getStorage("hm_podai_sb").add(result.links[0]);
+					target.markAuto("hm_podai_sb", [result.links[0]]);
 				}
 			} else if (cost_data === "draw") {
 				await target.draw(3);
@@ -1019,9 +1002,6 @@ const skills = {
 		subSkill: {
 			round: {
 				charlotte: true,
-				init(player, skill) {
-					player.storage[skill] = [];
-				},
 				onremove: true,
 			},
 			sb: {
@@ -1039,7 +1019,7 @@ const skills = {
 				mark: true,
 				intro: {
 					content(storage, player, skill) {
-						var list = player.getSkills(null, false, false).filter(function (i) {
+						const list = player.getSkills(null, false, false).filter(i => {
 							return lib.skill.hm_podai_sb.skillBlocker(i, player);
 						});
 						if (list.length) return "失效技能：" + get.translation(list);
@@ -10426,7 +10406,7 @@ const skills = {
 					if (cards.length) {
 						await player
 							.chooseToUse(function (card, player, event) {
-								if (!get.event("cards").includes(card)) return false;
+								if (get.itemtype(card) != "card" || !get.event("cards").includes(card)) return false;
 								return lib.filter.filterCard.apply(this, arguments);
 							}, "炎谋：选择使用其中的一张【火攻】或火【杀】")
 							.set("cards", cards)
@@ -15275,7 +15255,7 @@ const skills = {
 		},
 		content() {
 			var cards = trigger.getg(player);
-			player.chooseUseTarget(get.prompt("yjyibing"), "将" + get.translation(cards) + "当做【杀】使用", "sha", cards, false, "nodistance").logSkill = "yjyibing";
+			player.chooseUseTarget(get.prompt("yjyibing"), "将" + get.translation(cards) + "当做【杀】使用", { name: "sha" }, cards, false, "nodistance").logSkill = "yjyibing";
 		},
 	},
 	//龙羽飞
