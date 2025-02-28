@@ -262,7 +262,7 @@ const skills = {
 					.filter(c => c.targets && c.targets.length)
 					.at(-1);
 			if (!history) return false;
-			return history.targets.includes(player);
+			return history.targets.length == 1;
 		},
 		mod: {
 			aiOrder(player, card, num) {
