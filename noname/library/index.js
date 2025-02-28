@@ -10327,6 +10327,7 @@ export class Library {
 		},
 		cardRespondable: function (card, player, event) {
 			event = event || _status.event;
+			if (event.name != "chooseToRespond") return true;
 			if (player == undefined) player = _status.event.player;
 			if (!player) return false;
 			var source = event.getParent().player;

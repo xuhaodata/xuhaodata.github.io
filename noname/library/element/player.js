@@ -8342,13 +8342,13 @@ export class Player extends HTMLDivElement {
 		}
 		return skill;
 	}
-	addSkills(skill) {
+	addSkills(skill, popup = true) {
 		if (!skill) return;
-		return this.changeSkills(Array.isArray(skill) ? skill : [skill], []);
+		return this.changeSkills(Array.isArray(skill) ? skill : [skill], [], popup);
 	}
-	removeSkills(skill) {
+	removeSkills(skill, popup = true) {
 		if (!skill) return;
-		return this.changeSkills([], Array.isArray(skill) ? skill : [skill]);
+		return this.changeSkills([], Array.isArray(skill) ? skill : [skill], popup);
 	}
 	changeSkills(addSkill = [], removeSkill = [], popup = true) {
 		if (!Array.isArray(addSkill) || !Array.isArray(removeSkill)) {

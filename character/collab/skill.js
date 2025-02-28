@@ -256,7 +256,7 @@ const skills = {
 						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
@@ -288,7 +288,7 @@ const skills = {
 			if (cost) game.changeCoin(coinMap.get(player));
 			game.log(winner, "为本次", "#y拼手气", "中手气最好的角色");
 			game.broadcastAll(
-				(player, id, list) => {
+				(player, id, list, cost) => {
 					const dialog = ui.create.dialog(get.translation(player) + "发起了拼手气红包");
 					dialog.videoId = id;
 					dialog.classList.add("fullheight");
@@ -322,7 +322,8 @@ const skills = {
 				},
 				player,
 				videoId,
-				list
+				list,
+				cost
 			);
 			await game.delay(3);
 			game.broadcastAll("closeDialog", videoId);

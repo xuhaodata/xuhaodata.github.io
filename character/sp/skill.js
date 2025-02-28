@@ -2262,7 +2262,11 @@ const skills = {
 		//清理
 		tianshuClear(skill, player, num = 1) {
 			if (num > 0 && get.info(skill)?.nopop) {
-				game.broadcastAll(skill => delete lib.skill[skill].nopop, skill);
+				game.broadcastAll((player, skill) => {
+					delete lib.skill[skill].nopop;
+					lib.skill[skill].markimage = "image/card/tianshu1.png";
+					if (player.marks[skill]) player.marks[skill].setBackgroundImage(lib.skill[skill].markimage);
+				}, player, skill);
 				player.update();
 			}
 			player.storage[skill][0] -= num;
@@ -2354,6 +2358,7 @@ const skills = {
 								.join("<br>");
 						},
 					};
+					lib.skill[skill].markimage = "image/card/tianshu2.png";
 					lib.translate[skill] = "天书";
 					lib.translate[skill + "_info"] = from.name + "，" + to.name + "。";
 					game.finishSkill(skill);
@@ -2397,24 +2402,17 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
 			const { target } = event;
-			const result = await player
-				.chooseButton(
-					[
-						"授术：请选择你要授予" + get.translation(target) + "的天书",
-						[
-							player
-								.getSkills(null, false, false)
-								.filter(skill => {
-									return get.info(skill)?.olhedao && get.info(skill).nopop;
-								})
-								.map(item => [item, get.translation(item + "_info")]),
-							"textbutton",
-						],
-					],
-					true
-				)
-				.set("ai", () => 1 + Math.random())
-				.forResult();
+			const skills = player.getSkills(null, false, false).filter(skill => {
+				return get.info(skill)?.olhedao && get.info(skill).nopop;
+			});
+			if (!skills.length) return;
+			const result =
+				skills.length > 1
+					? await player
+							.chooseButton(["授术：请选择你要授予" + get.translation(target) + "的天书", [skills.map(item => [item, get.translation(item + "_info")]), "textbutton"]], true)
+							.set("ai", () => 1 + Math.random())
+							.forResult()
+					: { bool: true, links: skills };
 			if (result?.bool && result.links?.length) {
 				const [skill] = result.links;
 				player.removeSkill(skill);
@@ -2531,9 +2529,9 @@ const skills = {
 				async content(event, trigger, player) {
 					for (const target of trigger.targets.sortBySeat()) {
 						if (target.getHp() > player.countCards("h")) await player.draw();
-						if (target.getHp() > player.getHp() && target.countGainableCards(player, "he")) {
+						if (target.getHp() > player.getHp()) {
 							await player.recover();
-							await player.gainPlayerCard(target, "he", true);
+							if (target.countGainableCards(player, "he")) await player.gainPlayerCard(target, "he", true);
 						}
 					}
 				},
