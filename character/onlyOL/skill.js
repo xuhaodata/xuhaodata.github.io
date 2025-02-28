@@ -2,6 +2,89 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL界伏皇后
+	olqiuyuan: {
+		inherit: "qiuyuan",
+		filter(event, player) {
+			const { card } = event;
+			return (
+				(card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5)) &&
+				game.hasPlayer(current => {
+					return current != player && !event.targets.includes(current) && lib.filter.targetEnabled(card, event.player, current);
+				})
+			);
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const { card } = trigger;
+			const name = get.name(card),
+				type = get.type2(card);
+			const bool = await target
+				.chooseToGive(
+					(card, player) => {
+						const name = get.name(card, player);
+						return name != get.event("name") && get.type2(name) == get.event("type");
+					},
+					`交给${get.translation(player)}一张不为【${get.translation(name)}】的${get.translation(type)}牌，或成为${get.translation(card)}的额外目标`,
+					player
+				)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					return get.attitude(player, target) >= 0 ? 1 : -1;
+				})
+				.set("name", name)
+				.set("type", type)
+				.forResultBool();
+			if (!bool) {
+				trigger.getParent().targets.push(target);
+				trigger.getParent().triggeredTargets2.push(target);
+				game.log(target, "成为了", card, "的额外目标");
+			}
+		},
+	},
+	//OL界郭淮
+	oljingce: {
+		audio: 2,
+		inherit: "rejingce",
+		trigger: { global: "phaseUseEnd" },
+		group: "oljingce_add",
+		subSkill: {
+			add: {
+				trigger: { player: "loseEnd" },
+				silent: true,
+				firstDo: true,
+				filter(event, player) {
+					if (event.getParent().name != "useCard") return false;
+					const list = player.getStorage("oljingce_effect");
+					return event.cards.some(card => !list.includes(get.suit(card, player)));
+				},
+				async content(event, trigger, player) {
+					const effect = "oljingce_effect";
+					player.addTempSkill(effect);
+					player.markAuto(
+						effect,
+						trigger.cards.map(card => get.suit(card, player))
+					);
+					player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, suit) => str + get.translation(suit), ""));
+				},
+			},
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				intro: { content: "当前已使用花色：$" },
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.getStorage("oljingce_effect").length;
+					},
+				},
+			},
+		},
+	},
 	//OL谋张绣
 	olsbchoulie: {
 		audio: 2,

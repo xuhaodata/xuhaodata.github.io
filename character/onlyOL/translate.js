@@ -213,6 +213,14 @@ const translates = {
 	olsbjiaodi_info: "锁定技。①你的攻击范围视为你的体力值。②当你使用【杀】指定唯一目标时，若其攻击范围：小于等于你，你令此牌造成的伤害+1，获得其一张手牌；大于等于你，你弃置其区域一张牌，选择一名角色作为此牌的额外目标。",
 	olsbbaojing: "保京",
 	olsbbaojing_info: "出牌阶段限一次，你可以令一名其他角色的攻击范围+1或-1（至多减至1）直到你的下个出牌阶段开始。",
+	ol_guohuai: "OL界郭淮",
+	ol_guohuai_prefix: "OL界",
+	oljingce: "精策",
+	oljingce_info: "当你于一回合内首次使用某种花色的手牌时，你的手牌上限+1。一名角色的出牌阶段结束时，你可以摸X张牌（X为你本阶段内使用过的牌的类型数）。",
+	ol_fuhuanghou: "OL界伏寿",
+	ol_fuhuanghou_prefix: "OL界",
+	olqiuyuan: "求援",
+	olqiuyuan_info: "当你成为【杀】或伤害锦囊牌的目标时，你可以令另一名其他角色选择一项：1.交给你一张与此牌同类型且不同牌名的牌；2.成为此牌的额外目标。",
 };
 
 export default translates;

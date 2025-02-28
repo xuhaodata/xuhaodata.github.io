@@ -172,54 +172,56 @@ const skills = {
 		},
 	},
 	rejingce: {
+		getNum(event, player) {
+			const list = [];
+			player.getHistory("useCard", evt => {
+				if (evt.getParent("phaseUse") == event) list.add(get.type2(evt.card));
+			});
+			return list.length;
+		},
 		audio: "jingce",
 		trigger: { player: "phaseUseEnd" },
 		frequent: true,
 		filter(event, player) {
-			return (
-				player.getHistory("useCard", function (evt) {
-					return evt.getParent("phaseUse") == event;
-				}).length > 0
-			);
+			return player.hasHistory("useCard", evt => evt.getParent("phaseUse") == event);
 		},
-		content() {
-			var list = [];
-			player.getHistory("useCard", function (evt) {
-				if (evt.getParent("phaseUse") == trigger) list.add(get.type2(evt.card));
-			});
-			player.draw(list.length);
+		async content(event, trigger, player) {
+			const num = get.info(event.name).getNum(trigger, player);
+			await player.draw(num);
 		},
 		group: "rejingce_add",
-	},
-	rejingce_add: {
-		trigger: { player: "loseEnd" },
-		silent: true,
-		firstDo: true,
-		sourceSkill: "rejingce",
-		filter(event, player) {
-			if (event.getParent().name != "useCard" || player != _status.currentPhase) return false;
-			var list = player.getStorage("rejingce2");
-			for (var i of event.cards) {
-				if (!list.includes(get.suit(i, player))) return true;
-			}
-			return false;
-		},
-		content() {
-			if (!player.storage.rejingce2) player.storage.rejingce2 = [];
-			for (var i of trigger.cards) player.storage.rejingce2.add(get.suit(i, player));
-			player.storage.rejingce2.sort();
-			player.addTempSkill("rejingce2");
-			player.markSkill("rejingce2");
-		},
-	},
-	rejingce2: {
-		onremove: true,
-		intro: {
-			content: "当前已使用花色：$",
-		},
-		mod: {
-			maxHandcard(player, num) {
-				return num + player.getStorage("rejingce2").length;
+		subSkill: {
+			add: {
+				trigger: { player: "loseEnd" },
+				silent: true,
+				firstDo: true,
+				filter(event, player) {
+					if (event.getParent().name != "useCard") return false;
+					const list = player.getStorage("rejingce_effect");
+					return event.cards.some(card => !list.includes(get.suit(card, player)));
+				},
+				async content(event, trigger, player) {
+					const effect = "rejingce_effect";
+					player.addTempSkill(effect);
+					player.markAuto(
+						effect,
+						trigger.cards.map(card => get.suit(card, player))
+					);
+					player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, suit) => str + get.translation(suit), ""));
+				},
+			},
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				intro: { content: "当前已使用花色：$" },
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.getStorage("rejingce_effect").length;
+					},
+				},
 			},
 		},
 	},
@@ -10208,52 +10210,43 @@ const skills = {
 	qiuyuan: {
 		audio: 2,
 		trigger: { target: "useCardToTarget" },
-		direct: true,
 		filter(event, player) {
 			return (
 				event.card.name == "sha" &&
-				game.hasPlayer(function (current) {
+				game.hasPlayer(current => {
 					return current != player && !event.targets.includes(current) && lib.filter.targetEnabled(event.card, event.player, current);
 				})
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("qiuyuan"), function (card, player, target) {
-					var evt = _status.event.getTrigger();
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					const evt = get.event().getTrigger();
 					return target != player && !evt.targets.includes(target) && lib.filter.targetEnabled(evt.card, evt.player, target);
 				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, trigger.player, player) + 0.1;
+				.set("ai", target => {
+					const evt = get.event().getTrigger();
+					const player = get.player();
+					return get.effect(target, evt.card, evt.player, player) + 0.1;
 				})
-				.set("targets", trigger.targets)
-				.set("playerx", trigger.player);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("qiuyuan", target);
-				event.target = target;
-				target
-					.chooseCard({ name: "shan" }, "交给" + get.translation(player) + "一张闪，或成为此杀的额外目标")
-					.set("ai", function (card) {
-						return get.attitude(target, _status.event.sourcex) >= 0 ? 1 : -1;
-					})
-					.set("sourcex", player);
-				game.delay();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				target.give(result.cards, player);
-				game.delay();
-			} else {
-				trigger.getParent().targets.push(event.target);
-				trigger.getParent().triggeredTargets2.push(event.target);
-				game.log(event.target, "成为了额外目标");
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const { card } = trigger;
+			const bool = await target
+				.chooseToGive({ name: "shan" }, `交给${get.translation(player)}一张【闪】，或成为${get.translation(card)}的额外目标`, player)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					return get.attitude(player, target) >= 0 ? 1 : -1;
+				})
+				.forResultBool();
+			if (!bool) {
+				trigger.getParent().targets.push(target);
+				trigger.getParent().triggeredTargets2.push(target);
+				game.log(target, "成为了", card, "的额外目标");
 			}
 		},
 		ai: {
