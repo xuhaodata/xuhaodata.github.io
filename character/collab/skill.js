@@ -2,6 +2,228 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//夏侯恩
+	olyinfeng: {
+		audio: 2,
+		trigger: { global: ["gainAfter", "loseAsyncAfter"] },
+		getIndex(event, player) {
+			return game
+				.filterPlayer(current => {
+					if (current == player) return false;
+					const cards = event.getg?.(current);
+					if (!cards?.length) return false;
+					return event.getl?.(player)?.hs?.some(card => cards.includes(card)) && (cards.some(card => card.name == "chixueqingfeng") || player.countCards("h", { name: "chixueqingfeng" }));
+				})
+				.sortBySeat();
+		},
+		filter(event, player, name, target) {
+			if (event.name === "loseAsync" && event.type !== "gain") return false;
+			return target?.isIn();
+		},
+		forced: true,
+		logTarget: (event, player, name, target) => target,
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			if (player.countCards("h", { name: "chixueqingfeng" })) await target.damage();
+			if (trigger.getg(target).some(card => card.name == "chixueqingfeng")) await player.damage(target);
+		},
+		group: "olyinfeng_gain",
+		subSkill: {
+			gain: {
+				audio: "yinfeng",
+				trigger: {
+					global: ["phaseBefore", "loseAfter", "loseAsyncAfter"],
+					player: "enterGame",
+				},
+				forced: true,
+				filter(event, player) {
+					if (event.name.indexOf("lose") == 0) {
+						if (event.type != "discard" || event.getlx === false || event.position != ui.discardPile) return false;
+						return event.getd().some(card => card.name == "chixueqingfeng" && get.position(card, true) == "d");
+					}
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				async content(event, trigger, player) {
+					if (trigger.name.indexOf("lose") == 0) {
+						await player.loseHp();
+						const cards = trigger.getd().filter(card => card.name == "chixueqingfeng" && get.position(card, true) == "d");
+						if (cards.length) await player.gain(cards, "gain2");
+					} else await player.gain(game.createCard2("chixueqingfeng", "spade", 6), "gain2");
+				},
+			},
+		},
+	},
+	olfulu: {
+		audio: 2,
+		trigger: { global: "useCardAfter" },
+		filter(event, player) {
+			const { card, player: target, targets } = event;
+			if (card.name != "sha" || !target.countCards("h")) return false;
+			if (player == target) return targets.some(i => i.isIn());
+			return event.olfulu_map?.[player.playerid] && targets.includes(player);
+		},
+		async cost(event, trigger, player) {
+			const { player: target } = trigger;
+			if (player == target) {
+				event.result = await player
+					.chooseCardTarget({
+						prompt: get.prompt(event.skill),
+						prompt2: "交给其中一名角色一张手牌，然后获得其至多两张手牌",
+						filterCard: true,
+						filterTarget(card, player, target) {
+							return get.event("targets").includes(target);
+						},
+						ai1(card) {
+							const { player, targets } = get.event();
+							if (player.countCards("h", { name: "chixueqingfeng" }) && player.hasSkill("olyinfeng") && targets.some(target => get.damageEffect(target, player, player) > 0)) {
+								if (card.name == "chixueqingfeng") return 0;
+								return 6.5 - get.value(card);
+							}
+							if (targets.some(target => get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) > 0)) return 6.5 - get.value(card);
+							return 0;
+						},
+						ai2(target) {
+							const { player, targets } = get.event();
+							const cards = ui.selected.cards;
+							if (!cards.length) return 0;
+							const { name } = cards[0];
+							const eff = get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) * Math.min(2, target.countCards("h"));
+							if (player.countCards("h", { name: "chixueqingfeng" }) && name != "chixueqingfeng" && player.hasSkill("olyinfeng")) {
+								return get.damageEffect(target, player, player) + eff;
+							}
+							return eff;
+						},
+					})
+					.set(
+						"targets",
+						trigger.targets.filter(i => i.isIn())
+					)
+					.forResult();
+			} else {
+				event.result = await target
+					.chooseCard("h", get.prompt(event.skill), `交给${get.translation(player)}一张手牌，然后获得其至多两张手牌`)
+					.set("ai", card => {
+						const { player, target } = get.event();
+						const att = get.attitude(player, target);
+						if (att > 0) {
+							const bool = target.countCards("h", { name: "chixueqingfeng" });
+							if (!target.countCards("h")) return 0;
+							return !bool && player.needsToDiscard() ? 6 - get.value(card) : 0;
+						}
+						return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) > 0 ? 6 - get.value(card) : 0;
+					})
+					.set("target", player)
+					.forResult();
+			}
+		},
+		async content(event, trigger, player) {
+			const { player: target } = trigger;
+			const { cards, targets } = event;
+			if (player == target) {
+				const [target] = targets;
+				await player.give(cards, target);
+				if (target.countGainableCards(player, "h")) await player.gainPlayerCard(target, "h", [1, 2], true);
+			} else {
+				await target.give(cards, player);
+				if (player.countGainableCards(target, "h")) await target.gainPlayerCard(player, "h", [1, 2], true);
+			}
+		},
+		group: "olfulu_record",
+		subSkill: {
+			record: {
+				trigger: { global: "useCard1" },
+				silent: true,
+				forced: true,
+				popup: false,
+				firstDo: true,
+				filter(event, player) {
+					const { card, player: target } = event;
+					if (card.name != "sha") return false;
+					return target != player && target.getHp() < player.getHp();
+				},
+				content() {
+					if (!trigger.olfulu_map) trigger.olfulu_map = {};
+					trigger.olfulu_map[player.playerid] = true;
+				},
+			},
+		},
+	},
+	//韩氏芜湖
+	oljuejue: {
+		audio: 2,
+		trigger: {
+			player: "useCard",
+		},
+		forced: true,
+		filter(event, player) {
+			if (!["sha", "shan", "tao", "jiu"].includes(get.name(event.card))) return false;
+			return player.getAllHistory("useCard", evt => get.name(evt.card) === get.name(event.card)).indexOf(event) == 0;
+		},
+		content() {
+			trigger.baseDamage++;
+			trigger.addCount = false;
+			const stat = player.getStat().card,
+				name = trigger.card.name;
+			if (typeof stat[name] === "number") stat[name]--;
+			trigger.set(event.name, true);
+			player
+				.when({ player: "useCardAfter" })
+				.filter((evt, player, name) => evt.card === trigger.card && evt.oljuejue)
+				.then(() => {
+					if (trigger.cards.filterInD().length) player.gain(trigger.cards.filterInD(), "gain2");
+				});
+		},
+	},
+	olpimi: {
+		audio: 2,
+		trigger: {
+			player: "useCardToPlayered",
+			target: "useCardToTargeted",
+		},
+		filter(event, player) {
+			if (!event.card || event.targets.length != 1 || !event.player.isIn()) return false;
+			return (event.player !== player && player === event.targets[0] && event.player.hasCard(card => lib.filter.canBeDiscarded(card, player, event.player), "he")) || (event.player === player && player !== event.targets[0] && player.hasCard(card => lib.filter.cardDiscardable(card, player, "olpimi"), "he"));
+		},
+		async cost(event, trigger, player) {
+			let result,
+				str = "的一张牌使此牌伤害或回复值+1且不计入次数限制，若使用者的手牌最多或最少，你摸一张牌且此技能本回合失效。";
+			if (player === trigger.player)
+				result = player.chooseToDiscard("he", get.prompt("olpimi") + "弃置" + get.translation(trigger.player) + str, "chooseonly").set("ai", card => {
+					const player = get.player();
+					let val = player.getUseValue(card);
+					const evt = get.event().getTrigger();
+					const att = get.attitude(player, evt.targets[0]);
+					if (att > 0 && !["tao", "jiu"].includes(get.name(evt.card))) return false;
+					if (get.name(card) === "sha" && player.getUseValue(card) > 0) val += 5;
+					return 20 - val;
+				});
+			else
+				result = player
+					.discardPlayerCard("he", trigger.player)
+					.set("chooseonly", true)
+					.set("prompt", get.prompt("olpimi") + "弃置" + get.translation(trigger.player) + str)
+					.set("ai", card => {
+						const player = get.player();
+						const evt = get.event().getTrigger();
+						if ((player.countCards("h", { name: "shan" }) < 2 && get.name(evt.card) === "sha") || (get.tag(evt.card, "damage") > 0.5 && player.countCards("h", { name: "wuxie" }) < 2 && player.getHp() < 3)) return false;
+					});
+			event.result = await result.forResult();
+		},
+		logTarget: "player",
+		async content(event, trigger, player) {
+			let next = trigger.player.discard(event.cards);
+			if (player !== trigger.player) next.notBySelf = true;
+			next.discarder = player;
+			await next;
+			trigger.getParent().baseDamage++;
+			if (trigger.player.isMinHandcard() || trigger.player.isMaxHandcard()) {
+				await player.draw();
+				player.tempBanSkill(event.name);
+			}
+		},
+	},
 	//食岑昏
 	dcbaoshi: {
 		audio: 2,
@@ -108,7 +330,7 @@ const skills = {
 						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
@@ -140,7 +362,7 @@ const skills = {
 			if (cost) game.changeCoin(coinMap.get(player));
 			game.log(winner, "为本次", "#y拼手气", "中手气最好的角色");
 			game.broadcastAll(
-				(player, id, list) => {
+				(player, id, list, cost) => {
 					const dialog = ui.create.dialog(get.translation(player) + "发起了拼手气红包");
 					dialog.videoId = id;
 					dialog.classList.add("fullheight");
@@ -174,7 +396,8 @@ const skills = {
 				},
 				player,
 				videoId,
-				list
+				list,
+				cost
 			);
 			await game.delay(3);
 			game.broadcastAll("closeDialog", videoId);

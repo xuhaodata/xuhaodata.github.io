@@ -774,6 +774,9 @@ window.noname_character_rank = {
 		"yue_zhouyu",
 	],
 	bp: [
+		"ol_guohuai",
+		"ol_fuhuanghou",
+		"yj_yongkai",
 		"ol_zishu",
 		"ol_chouniu",
 		"ol_yinhu",
@@ -1357,6 +1360,7 @@ window.noname_character_rank = {
 		"ol_jsrg_lvbu",
 	],
 	b: [
+		"ol_xiahouen",
 		"friend_pangtong",
 		"wu_lukang",
 		"huan_huanggai",
@@ -1955,7 +1959,6 @@ window.noname_character_rank = {
 		legend: [
 			"tw_sb_sp_zhugeliang",
 			"tw_sb_caopi",
-			"ol_nianshou",
 			"shen_taishici",
 			"pot_taishici",
 			"zhugejing",
@@ -2173,6 +2176,7 @@ window.noname_character_rank = {
 			"ol_sb_dongzhuo",
 		],
 		epic: [
+			"ol_xiahouen",
 			"xuxin",
 			"houcheng",
 			"hanshiwuhu",
@@ -2572,6 +2576,9 @@ window.noname_character_rank = {
 			"niufu",
 		],
 		rare: [
+			"ol_guohuai",
+			"ol_fuhuanghou",
+			"yj_yongkai",
 			"lvju",
 			"panghong",
 			"ol_sb_zhangfei",

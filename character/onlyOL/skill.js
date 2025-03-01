@@ -2,6 +2,89 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL界伏皇后
+	olqiuyuan: {
+		inherit: "qiuyuan",
+		filter(event, player) {
+			const { card } = event;
+			return (
+				(card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5)) &&
+				game.hasPlayer(current => {
+					return current != player && !event.targets.includes(current) && lib.filter.targetEnabled(card, event.player, current);
+				})
+			);
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const { card } = trigger;
+			const name = get.name(card),
+				type = get.type2(card);
+			const bool = await target
+				.chooseToGive(
+					(card, player) => {
+						const name = get.name(card, player);
+						return name != get.event("name") && get.type2(name) == get.event("type");
+					},
+					`交给${get.translation(player)}一张不为【${get.translation(name)}】的${get.translation(type)}牌，或成为${get.translation(card)}的额外目标`,
+					player
+				)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					return get.attitude(player, target) >= 0 ? 1 : -1;
+				})
+				.set("name", name)
+				.set("type", type)
+				.forResultBool();
+			if (!bool) {
+				trigger.getParent().targets.push(target);
+				trigger.getParent().triggeredTargets2.push(target);
+				game.log(target, "成为了", card, "的额外目标");
+			}
+		},
+	},
+	//OL界郭淮
+	oljingce: {
+		audio: 2,
+		inherit: "rejingce",
+		trigger: { global: "phaseUseEnd" },
+		group: "oljingce_add",
+		subSkill: {
+			add: {
+				trigger: { player: "loseEnd" },
+				silent: true,
+				firstDo: true,
+				filter(event, player) {
+					if (event.getParent().name != "useCard") return false;
+					const list = player.getStorage("oljingce_effect");
+					return event.cards.some(card => !list.includes(get.suit(card, player)));
+				},
+				async content(event, trigger, player) {
+					const effect = "oljingce_effect";
+					player.addTempSkill(effect);
+					player.markAuto(
+						effect,
+						trigger.cards.map(card => get.suit(card, player))
+					);
+					player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, suit) => str + get.translation(suit), ""));
+				},
+			},
+			effect: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				intro: { content: "当前已使用花色：$" },
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.getStorage("oljingce_effect").length;
+					},
+				},
+			},
+		},
+	},
 	//OL谋张绣
 	olsbchoulie: {
 		audio: 2,
@@ -1337,7 +1420,7 @@ const skills = {
 			let humans = targets.filter(current => current === game.me || current.isOnline());
 			locals.removeArray(humans);
 			const eventId = get.id();
-			const send = (current, eventId) => {
+			const send = (current, targets, eventId) => {
 				lib.skill.olsbbojue.chooseCard(current, targets, eventId);
 				game.resume();
 			};
@@ -1348,17 +1431,15 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result?.bool && result.cards?.length) {
-							map[player.playerid] = result.cards[0];
-							resolve();
-						} else reject();
+						if (result?.bool && result.cards?.length) map[player.playerid] = result.cards[0];
+						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
-								current.send(send, current, eventId);
+								current.send(send, current, targets, eventId);
 								current.wait(solve(resolve, reject));
 							} else {
 								const next = lib.skill.olsbbojue.chooseCard(current, targets, eventId);
@@ -2157,7 +2238,7 @@ const skills = {
 			let humans = targets.filter(current => current === game.me || current.isOnline());
 			locals.removeArray(humans);
 			const eventId = get.id();
-			const send = (current, eventId) => {
+			const send = (current, targets, eventId) => {
 				lib.skill.oljianmie.chooseControl(current, targets, eventId);
 				game.resume();
 			};
@@ -2168,17 +2249,15 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result && result.control) {
-							map[player.playerid] = result.control == "none2" ? "none" : result.control;
-							resolve();
-						} else reject();
+						if (result?.control) map[player.playerid] = result.control == "none2" ? "none" : result.control;
+						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
-								current.send(send, current, eventId);
+								current.send(send, current, targets, eventId);
 								current.wait(solve(resolve, reject));
 							} else {
 								const next = lib.skill.oljianmie.chooseControl(current, targets, eventId);
@@ -2359,7 +2438,7 @@ const skills = {
 			let locals = targets.slice();
 			locals.removeArray(humans);
 			const eventId = get.id();
-			const send = (current, eventId) => {
+			const send = (current, trigger, eventId) => {
 				lib.skill.olsbzhengyi.chooseBool(current, trigger, eventId);
 				game.resume();
 			};
@@ -2371,17 +2450,15 @@ const skills = {
 			if (humans.length > 0) {
 				const solve = function (resolve, reject) {
 					return function (result, player) {
-						if (result && result.bool) {
-							choices.push(player);
-							resolve();
-						} else reject();
+						if (result?.bool) choices.push(player);
+						resolve();
 					};
 				};
-				await Promise.any(
+				await Promise.all(
 					humans.map(current => {
 						return new Promise(async (resolve, reject) => {
 							if (current.isOnline()) {
-								current.send(send, current, eventId);
+								current.send(send, current, trigger, eventId);
 								current.wait(solve(resolve, reject));
 							} else {
 								const next = lib.skill.olsbzhengyi.chooseBool(current, trigger, eventId);
@@ -2399,7 +2476,7 @@ const skills = {
 			if (locals.length > 0) {
 				for (const current of locals) {
 					const result = await lib.skill.olsbzhengyi.chooseBool(current, trigger).forResult();
-					if (result && result.bool) choices.push(current);
+					if (result?.bool) choices.push(current);
 				}
 			}
 			delete event._global_waiting;
@@ -2435,9 +2512,7 @@ const skills = {
 				.set("id", eventId)
 				.set("_global_waiting", true);
 		},
-		ai: {
-			combo: "olsbliwen",
-		},
+		ai: { combo: "olsbliwen" },
 	},
 	//OL界吴国太
 	olganlu: {

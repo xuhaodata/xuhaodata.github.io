@@ -12991,87 +12991,31 @@ const skills = {
 	},
 	xinzhuikong2: { charlotte: true },
 	xinqiuyuan: {
-		audio: 2,
-		trigger: { target: "useCardToTarget" },
-		direct: true,
-		filter(event, player) {
-			return (
-				event.card.name == "sha" &&
-				game.hasPlayer(function (current) {
-					return current != player && !event.targets.includes(current) && lib.filter.targetEnabled(event.card, event.player, current);
+		inherit: "qiuyuan",
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const { card } = trigger;
+			const bool = await target
+				.chooseToGive(
+					(card, player) => {
+						const name = get.name(card, player);
+						return name != "sha" && get.type(name) == "basic";
+					},
+					`交给${get.translation(player)}一张不为【杀】的基本牌，或成为${get.translation(card)}的额外目标`,
+					player
+				)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					return get.attitude(player, target) >= 0 ? 1 : -1;
 				})
-			);
-		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("xinqiuyuan"), function (card, player, target) {
-					var evt = _status.event.getTrigger();
-					return target != player && !evt.targets.includes(target) && lib.filter.targetEnabled(evt.card, evt.player, target);
-				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, trigger.player, player) + 0.1;
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("xinqiuyuan", target);
-				event.target = target;
-				target
-					.chooseCard(
-						function (card, player) {
-							var name = get.name(card, player);
-							return name != "sha" && get.type(name) == "basic";
-						},
-						"h",
-						"交给" + get.translation(player) + "一张不为【杀】的基本牌，或成为此杀的额外目标"
-					)
-					.set("ai", function (card) {
-						return get.attitude(target, _status.event.sourcex) >= 0 ? 1 : -1;
-					})
-					.set("sourcex", player);
-				game.delay();
-			} else {
-				event.finish();
+				.forResultBool();
+			if (!bool) {
+				trigger.getParent().targets.push(target);
+				trigger.getParent().triggeredTargets2.push(target);
+				game.log(target, "成为了", card, "的额外目标");
 			}
-			"step 2";
-			if (result.bool) {
-				target.give(result.cards, player);
-				game.delay();
-			} else {
-				trigger.getParent().targets.push(event.target);
-				trigger.getParent().triggeredTargets2.push(event.target);
-				game.log(event.target, "成为了", trigger.card, "的额外目标");
-			}
-		},
-		ai: {
-			expose: 0.2,
-			effect: {
-				target_use(card, player, target) {
-					if (card.name != "sha") return;
-					var players = game.filterPlayer();
-					if (get.attitude(player, target) <= 0) {
-						for (var i = 0; i < players.length; i++) {
-							var target2 = players[i];
-							if (player != target2 && target != target2 && player.canUse(card, target2, false) && get.effect(target2, { name: "shacopy", nature: card.nature, suit: card.suit }, player, target) > 0 && get.effect(target2, { name: "shacopy", nature: card.nature, suit: card.suit }, player, player) < 0) {
-								if (target.hp == target.maxHp) return 0.3;
-								return 0.6;
-							}
-						}
-					} else {
-						for (var i = 0; i < players.length; i++) {
-							var target2 = players[i];
-							if (player != target2 && target != target2 && player.canUse(card, target2, false) && get.effect(target2, { name: "shacopy", nature: card.nature, suit: card.suit }, player, player) > 0) {
-								if (player.canUse(card, target2)) return;
-								if (target.hp == target.maxHp) return [0, 1];
-								return [0, 0];
-							}
-						}
-					}
-				},
-			},
 		},
 	},
 	//界潘璋马忠

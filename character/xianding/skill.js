@@ -262,7 +262,7 @@ const skills = {
 					.filter(c => c.targets && c.targets.length)
 					.at(-1);
 			if (!history) return false;
-			return history.targets.includes(player);
+			return history.targets.length == 1;
 		},
 		mod: {
 			aiOrder(player, card, num) {
@@ -346,12 +346,26 @@ const skills = {
 		audio: 2,
 		usable: 1,
 		enable: "phaseUse",
+		position: "he",
+		filterCard: lib.filter.cardDiscardable,
+		check(card) {
+			const player = get.player();
+			if (card.hasGaintag("dcxiaowu") && !player.hasValueTarget(card)) return 4;
+			return 6 - get.value(card);
+		},
 		content() {
 			player.addSkill("dcxiaowu_effect");
-			let card = get.cardPile2(card => {
-				return card.name == "sha" || lib.skill.shencai.getStr(card).includes("【杀】");
-			});
-			if (card) player.gain(card, "draw").gaintag.add("dcxiaowu");
+			const cards = [];
+			const num = player.hasHistory("custom", evt => evt.dcxiaowu) ? 2 : 1;
+			while (cards.length < num) {
+				let card = get.cardPile2(card => {
+					if (cards.includes(card)) return false;
+					return card.name == "sha" || lib.skill.shencai.getStr(card).includes("【杀】");
+				});
+				if (card) cards.push(card);
+				else break;
+			}
+			if (cards.length) player.gain(cards, "gain2").gaintag.add("dcxiaowu");
 			else player.chat("孩子们怎么没有牌");
 			player
 				.when({ source: "damageSource" })
@@ -359,6 +373,7 @@ const skills = {
 				.then(() => {
 					delete player.getStat().skill.dcxiaowu;
 					game.log(player, "重置了", "#g【骁武】");
+					player.getHistory("custom").push({ dcxiaowu: true });
 				});
 		},
 		locked: false,

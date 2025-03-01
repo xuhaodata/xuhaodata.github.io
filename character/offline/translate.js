@@ -1077,6 +1077,15 @@ const translates = {
 	yyyaoming_info: "出牌阶段各限一次，或当你受到伤害后，你可以：①弃置一名手牌数大于等于你的其他角色的一张牌；②令一名手牌数小于等于你的角色摸一张牌。",
 	yjqingjiao: "轻狡",
 	yjqingjiao_info: "主公技，锁定技。结束阶段，若你本回合对其他群势力角色造成过伤害，你摸一张牌。",
+	yj_yongkai: "雍闿",
+	psxiaofan: "嚣反",
+	psxiaofan_info: "一名蜀/吴/群势力角色不因〖嚣反〗受到伤害后/失去装备后/造成伤害后，你可以对其造成1点伤害/与其各摸一张牌/获得造成此伤害的牌，然后你变更势力至吴/群/蜀。",
+	psjiaohu: "骄扈",
+	psjiaohu_info: "蜀势力技，锁定技。摸牌阶段，你多摸X张牌（X为一号位的已损失体力值+1）。",
+	psquanpan: "劝叛",
+	psquanpan_info: "吴势力技，当你获得装备牌后，你可以展示其中一张牌并交给一名其他角色。",
+	pshuoluan: "惑乱",
+	pshuoluan_info: "群势力技，锁定技。你与蜀势力角色互相对对方造成的伤害+1。",
 };
 
 export default translates;

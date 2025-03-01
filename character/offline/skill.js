@@ -2,6 +2,132 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	// 雍闿
+	// 你也有xiaofan？
+	psxiaofan: {
+		trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "damageEnd"] },
+		filter(event, player, name, target) {
+			if (!target?.isIn()) return false;
+			if (event.name == "damage") return target.group == "shu" && event.getParent().name != "psxiaofan";
+			return true;
+		},
+		getIndex(event, player, name) {
+			if (event.name == "damage") return [event.player];
+			return game
+				.filterPlayer(current => {
+					if (current.group != "wu") return false;
+					return event.getl?.(current)?.cards2?.some(card => get.type(card) == "equip");
+				})
+				.sortBySeat();
+		},
+		logTarget: (event, player, triggername, target) => target,
+		check(event, player, triggername, target) {
+			if (event.name == "damage") return get.damageEffect(target, player, player) > 0;
+			return [player, target].reduce((sum, i) => sum + get.effect(i, { name: "draw" }, player, player), 0) > 0;
+		},
+		prompt2(event, player, triggername, target) {
+			if (event.name == "damage") return `对${get.translation(target)}造成1点伤害${player.group != "wu" ? "，然后你变更势力至吴" : ""}`;
+			return `与${get.translation(target)}各摸一张牌${player.group != "qun" ? "，然后你变更势力至群" : ""}`;
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			if (trigger.name == "damage") {
+				await target.damage();
+				if (player.group != "wu") await player.changeGroup("wu");
+			} else {
+				await game.asyncDraw([player, target].sortBySeat());
+				if (player.group != "qun") await player.changeGroup("qun");
+			}
+		},
+		group: "psxiaofan_source",
+		subSkill: {
+			source: {
+				trigger: { global: "damageSource" },
+				filter(event, player) {
+					return event.source?.group === "qun" && event.cards?.someInD();
+				},
+				prompt2(event, player) {
+					return `获得${get.translation(event.cards.filterInD())}${player.group != "shu" ? "，然后你变更势力至蜀" : ""}`;
+				},
+				async content(event, trigger, player) {
+					if (trigger.cards?.someInD()) await player.gain(trigger.cards.filterInD(), "gain2");
+					if (player.group != "shu") await player.changeGroup("shu");
+				},
+			},
+		},
+	},
+	psjiaohu: {
+		groupSkill: "shu",
+		trigger: { player: "phaseDrawBegin2" },
+		filter(event, player) {
+			return !event.numFixed && player.group == "shu";
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const target = game.findPlayer(current => get.info("jsrgzhenglve").isFirst(current));
+			let num = 1;
+			if (target?.getDamagedHp()) num += target.getDamagedHp();
+			trigger.num += num;
+		},
+	},
+	psquanpan: {
+		groupSkill: "wu",
+		trigger: {
+			player: "gainAfter",
+			global: "loseAsyncAfter",
+		},
+		filter(event, player) {
+			if (!game.hasPlayer(current => current != player) || player.group != "wu") return false;
+			return event.getg?.(player).some(card => get.owner(card) == player && get.position(card) == "h" && get.type(card) == "equip");
+		},
+		async cost(event, trigger, player) {
+			const cards = trigger.getg(player).filter(card => get.owner(card) == player && get.position(card) == "h" && get.type(card) == "equip");
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "展示并交给一名其他角色其中一张牌",
+					filterCard(card) {
+						return get.event("cards").includes(card);
+					},
+					filterTarget: lib.filter.notMe,
+					ai1(card) {
+						return 3 / (Math.abs(get.value(card)) + 0.1);
+					},
+					ai2(target) {
+						const player = get.player();
+						return get.value(ui.selected.cards, target) * get.attitude(player, target);
+					},
+				})
+				.set("cards", cards)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				cards,
+				targets: [target],
+			} = event;
+			await player.showCards(cards, `${get.translation(player)}发动了【${get.translation(event.name)}】`);
+			await player.give(cards, target);
+		},
+	},
+	pshuoluan: {
+		groupSkill: "qun",
+		trigger: { global: "damageBegin1" },
+		filter(event, player) {
+			const { player: target, source } = event;
+			if (!source) return false;
+			const list = [target, source];
+			if (!list.includes(player) || player.group != "qun") return false;
+			if (player == source) list.reverse();
+			return list[1].group == "shu";
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			trigger.num++;
+		},
+	},
 	//【众】
 	hm_zhong_heart_skill: {
 		equipSkill: true,
@@ -9828,6 +9954,7 @@ const skills = {
 			},
 			respondSha: true,
 		},
+		subSkill: { backup: {} },
 	},
 	//神曹仁
 	jxjushou: {

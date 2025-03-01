@@ -9972,7 +9972,7 @@ const skills = {
 	jsrgzhenglve: {
 		audio: 4,
 		trigger: { global: "phaseEnd" },
-		filter(event, player) {
+		isFirst(player) {
 			let bool = function (target) {
 				if (game.hasPlayer(current => current.getSeatNum() > 0)) return target.getSeatNum() == 1;
 				return target == _status.roundStart;
@@ -9995,46 +9995,45 @@ const skills = {
 							return bool(target);
 					}
 				})
-				.includes(event.player);
+				.includes(player);
+		},
+		filter(event, player) {
+			return get.info("jsrgzhenglve").isFirst(event.player);
 		},
 		locked: false,
 		group: "jsrgzhenglve_damage",
 		prompt2(event, player) {
-			var num = Math.min(
-				event.player.getHistory("sourceDamage").length > 0 ? 1 : 2,
-				game.countPlayer(current => {
-					return !current.hasMark("jsrgzhenglve_mark");
-				})
+			const num = Math.min(
+				event.player.hasHistory("sourceDamage") ? 1 : 2,
+				game.countPlayer(current => !current.hasMark("jsrgzhenglve_mark"))
 			);
-			if (num == 0) return "你可以摸一张牌";
-			return "你可以摸一张牌并令" + get.cnNumber(num) + "名角色获得“猎”标记";
+			let str = "你可以摸一张牌";
+			if (num) str += `并令${get.cnNumber(num)}名角色获得“猎”标记`;
+			return str;
 		},
 		logAudio: () => 2,
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
-			var damaged = trigger.player.getHistory("sourceDamage").length > 0;
-			var num = damaged ? 1 : 2;
-			var targets = game.filterPlayer(current => {
-				return !current.hasMark("jsrgzhenglve_mark");
-			});
-			if (!targets.length) event.finish();
-			else if (targets.length <= num) event._result = { bool: true, targets: targets };
-			else
-				player
-					.chooseTarget("令" + (num > 1 ? "至多" : "") + get.cnNumber(num) + "名角色获得“猎”标记", true, [1, num], (card, player, target) => {
-						return !target.hasMark("jsrgzhenglve_mark");
-					})
-					.set("ai", target => {
-						var att = get.attitude(_status.event.player, target);
-						return 100 - att;
-					});
-			"step 2";
+		async content(event, trigger, player) {
+			await player.draw();
+			const damaged = trigger.player.hasHistory("sourceDamage");
+			const num = damaged ? 1 : 2;
+			const targets = game.filterPlayer(current => !current.hasMark("jsrgzhenglve_mark"));
+			if (!targets.length) return;
+			const result =
+				targets.length <= num
+					? { bool: true, targets: targets }
+					: await player
+							.chooseTarget("令" + (num > 1 ? "至多" : "") + get.cnNumber(num) + "名角色获得“猎”标记", true, [1, num], (card, player, target) => {
+								return !target.hasMark("jsrgzhenglve_mark");
+							})
+							.set("ai", target => {
+								const att = get.attitude(get.player(), target);
+								return 100 - att;
+							})
+							.forResult();
 			if (result.bool) {
-				var targets = result.targets;
+				const { targets } = result;
 				player.line(targets);
-				targets.forEach(i => i.addMark("jsrgzhenglve_mark", 1));
+				targets.forEach(target=> target.addMark("jsrgzhenglve_mark", 1));
 			}
 		},
 		mod: {
@@ -10057,13 +10056,9 @@ const skills = {
 					var cards = event.cards || [];
 					return "摸一张牌" + (cards.filterInD().length ? "并获得" + get.translation(event.cards.filterInD()) : "");
 				},
-				content() {
-					"step 0";
-					player.draw();
-					var cards = trigger.cards;
-					if (cards && cards.filterInD().length) {
-						player.gain(cards.filterInD(), "gain2");
-					}
+				async content(event, trigger, player) {
+					await player.draw();
+					if (trigger.cards?.someInD()) await player.gain(trigger.cards.filterInD(), "gain2");
 				},
 			},
 			mark: {
