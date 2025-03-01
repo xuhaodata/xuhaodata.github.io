@@ -586,15 +586,19 @@ const skills = {
 		},
 		*/
 		async content(event, trigger, player) {
+			let cards = [];
 			const cardPile = Array.from(ui.cardPile.childNodes).reverse();
-			const cards = [];
-			const number = 3; //event.cost_data;
 			for (const card of cardPile) {
 				if (get.color(card) == "red") {
 					cards.push(card);
-					if (cards.length >= number) break;
+					if (cards.length >= 3/*event.cost_data*/) break;
 				} else break;
 			}
+			if (!cards.length) return;
+			const next = game.cardsGotoOrdering(cards);
+			await next;
+			cards = next.cards.slice();
+			if (!cards.length) return;
 			await player.showCards(cards, get.translation(player) + "发动了【思泣】");
 			while (cards.length) {
 				if (
@@ -624,7 +628,7 @@ const skills = {
 						lib.skill.olsiqi_backup.viewAs.cards = [card];
 					}, card);
 					const next = player.chooseToUse();
-					next.set("openskilldialog", `思泣：是否使用${get.translation(card)}？`);
+					next.set("openskilldialog", `思泣：请选择${get.translation(card)}的目标`);
 					next.set("forced", true);
 					next.set("norestore", true);
 					next.set("_backupevent", "olsiqi_backup");
@@ -646,10 +650,7 @@ const skills = {
 				}
 				break;
 			}
-			if (cards.length) {
-				await game.cardsDiscard(cards);
-				await player.draw(cards.length);
-			}
+			if (cards.length) await player.draw(cards.length);
 		},
 		mod: {
 			selectTarget(card, player, range) {
@@ -747,7 +748,7 @@ const skills = {
 			const videoId = lib.status.videoId++;
 			game.broadcastAll(
 				(player, id, cards) => {
-					const dialog = ui.create.dialog("巧织" + (player == game.me && !_status.auto ? "：选择获得其中一张牌" : ""), cards);
+					const dialog = ui.create.dialog(get.translation(player) + "发动了【巧织】", cards);
 					dialog.videoId = id;
 				},
 				player,
@@ -755,8 +756,16 @@ const skills = {
 				cards
 			);
 			const time = get.utc();
-			game.addVideo("showCards", player, ["巧织", get.cardsInfo(cards)]);
-			game.addVideo('delay', null, 2);
+			game.addVideo("showCards", player, [get.translation(player) + "发动了【巧织】", get.cardsInfo(cards)]);
+			await game.delay(2.5);
+			game.broadcastAll(
+				(player, id) => {
+					const dialog = get.idDialog(id);
+					if (player === game.me && !_status.auto) dialog.content.childNodes[0].textContent = "巧织：选择获得其中一张牌";
+				},
+				player,
+				videoId
+			);
 			const {
 				result: { links },
 			} = await player
