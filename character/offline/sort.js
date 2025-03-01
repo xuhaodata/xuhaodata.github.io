@@ -1,5 +1,5 @@
 const characterSort = {
-	offline_hanmo: ["hm_bairao", "hm_shen_luzhi", "hm_shen_huangfusong", "hm_shen_zhangjiao", "hm_shen_zhangbao", "hm_shen_zhangliang", "hm_shen_zhujun", "hm_guigu", "hm_bosi", "hm_nanhualaoxian", "hm_yudu", "hm_taosheng", "hm_fuyun", "hm_tangzhou", "hm_chengyuanzhi", "hm_gaosheng", "hm_heman", "hm_zhangkai", "hm_yanzheng", "hm_bocai", "hm_dengmao"],
+	offline_hanmo: ["hm_bairao", "hm_shen_luzhi", "hm_shen_huangfusong", "hm_shen_zhangjiao", "hm_shen_zhangbao", "hm_shen_zhangliang", "hm_shen_zhujun", "hm_guigu", "hm_bosi", "hm_nanhualaoxian", "hm_yudu", "hm_taosheng", "hm_fuyun", "hm_tangzhou", "hm_chengyuanzhi", "hm_gaosheng", "hm_heman", "hm_yanzheng", "hm_bocai", "hm_dengmao"],
 	offline_scl: ["scl_pangdegong", "scl_sunhanhua", "scl_miheng", "scl_peixiu", "scl_caoying", "scl_luotong"],
 	offline_star: ["jsp_ganfuren", "sp_xiahoushi", "jsp_zhaoyun", "huangjinleishi", "sp_pangtong", "sp_daqiao", "sp_ganning", "sp_xiahoudun", "sp_lvmeng", "sp_zhangfei", "sp_liubei", "old_machao", "zhangliang", "jsp_caoren"],
 	offline_sticker: ["sp_gongsunzan", "sp_simazhao", "sp_wangyuanji", "sp_xinxianying", "sp_liuxie"],
