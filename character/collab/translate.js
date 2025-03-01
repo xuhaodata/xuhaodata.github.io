@@ -8,7 +8,7 @@ const translates = {
 	spfengyin: "奉印",
 	spfengyin_info: "其他角色的回合开始时，若其体力值不少于你，你可以交给其一张【杀】，令其跳过出牌阶段和弃牌阶段。",
 	spchizhong: "持重",
-	spchiol_jsrg_info: "锁定技，你的手牌上限等于体力上限；其他角色死亡时，你加1点体力上限。",
+	spchizhong_info: "锁定技，你的手牌上限等于体力上限；其他角色死亡时，你加1点体力上限。",
 	sp_fuhuanghou: "SP伏寿",
 	sp_fuhuanghou_prefix: "SP",
 	spcangni: "藏匿",

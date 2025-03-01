@@ -79,7 +79,7 @@ const characters = {
 		skills: ["scls_qinzheng"],
 		dieAudios: ["luotong"],
 	},
-	ty_anyingx: ["male", "qun", 4, ["tyzhuiling", "tyxihun", "tyxianqi", "tyfansheng"], ["name:null|null"]],
+	ty_anyingx: ["male", "qun", 4, ["tyliupo", "tyzhuiling", "tyxihun", "tyxianqi", "tyfansheng"], ["name:null|null"]],
 	ty_anying: ["male", "qun", 4, ["tyliupo", "tyzhuiling", "tyxihun", "tyxianqi"], ["name:null|null"]],
 	ty_wuque: ["male", "qun", 4, ["tyansha", "tycangshen", "tyxiongren"], ["name:null|null"]],
 	ty_yanque: ["male", "qun", 4, ["tysiji", "tycangshen"], ["name:null|null"]],
