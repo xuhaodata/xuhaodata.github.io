@@ -559,13 +559,15 @@ const skills = {
 			const cardPile = Array.from(ui.cardPile.childNodes).reverse();
 			return cardPile[0] && get.color(cardPile[0]) === "red";
 		},
+		frequent: true,
+		/*
 		async cost(event, trigger, player) {
 			const cardPile = Array.from(ui.cardPile.childNodes).reverse();
 			const redCards = [];
 			for (const card of cardPile) {
 				if (get.color(card) == "red") {
 					redCards.push(card);
-					if (redCards.length >= 4) break;
+					if (redCards.length >= 3) break;
 				} else break;
 			}
 			const { result } = await player
@@ -582,10 +584,11 @@ const skills = {
 				};
 			}
 		},
+		*/
 		async content(event, trigger, player) {
 			const cardPile = Array.from(ui.cardPile.childNodes).reverse();
 			const cards = [];
-			const number = event.cost_data;
+			const number = 3; //event.cost_data;
 			for (const card of cardPile) {
 				if (get.color(card) == "red") {
 					cards.push(card);
@@ -726,41 +729,53 @@ const skills = {
 	},
 	olqiaozhi: {
 		audio: 2,
-		trigger: {
-			player: "loseAfter",
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
+		enable: "phaseUse",
 		filter(event, player) {
-			const evt = event.getl(player);
-			for (var i in evt.gaintag_map) {
-				if (evt.gaintag_map[i].includes("olqiaozhi")) return true;
-			}
-			return false;
+			if (!player.hasCard(card => lib.filter.cardDiscardable(card, player), "he")) return false;
+			return !player.hasCard(card => card.hasGaintag("olqiaozhi"), "h");
 		},
-		silent: true,
-		locked: false,
+		filterCard: lib.filter.cardDiscardable,
+		position: "he",
+		check(card) {
+			const player = get.player();
+			return 7 - get.value(card) + (player.hasSkill("olshqi") && get.color(card) === "red" ? 3 : 0);
+		},
 		async content(event, trigger, player) {
-			delete player.storage[`temp_ban_olqiaozhi_use`];
-		},
-		group: "olqiaozhi_use",
-		subSkill: {
-			use: {
-				audio: "olqiaozhi",
-				enable: "phaseUse",
-				filterCard: true,
-				prompt: "请弃置一张牌",
-				position: "he",
-				async content(event, trigger, player) {
-					const cards = get.cards(2);
-					await player.showCards(cards);
-					const {
-						result: { links },
-					} = await player.chooseCardButton("【巧织】：获得其中一张牌", cards, true);
-					await player.gain(links);
-					links[0].addGaintag("olqiaozhi");
-					player.tempBanSkill("olqiaozhi_use", "forever");
+			const next = game.cardsGotoOrdering(get.cards(2));
+			await next;
+			const cards = next.cards;
+			const videoId = lib.status.videoId++;
+			game.broadcastAll(
+				(player, id, cards) => {
+					const dialog = ui.create.dialog("巧织" + (player == game.me && !_status.auto ? "：选择获得其中一张牌" : ""), cards);
+					dialog.videoId = id;
 				},
-			},
+				player,
+				videoId,
+				cards
+			);
+			const time = get.utc();
+			game.addVideo("showCards", player, ["巧织", get.cardsInfo(cards)]);
+			game.addVideo('delay', null, 2);
+			const {
+				result: { links },
+			} = await player
+				.chooseButton([1, 1], true)
+				.set("ai", button => {
+					return Math.max(get.value(button.link), get.useful(button.link));
+				})
+				.set("dialog", videoId);
+			const time2 = 1000 - (get.utc() - time);
+			if (time2 > 0) await game.delay(0, time2);
+			game.broadcastAll("closeDialog", videoId);
+			if (!links?.length) return;
+			const next2 = player.gain(links, "gain2");
+			next2.gaintag.add("olqiaozhi");
+			await next2;
+		},
+		ai: {
+			order: 1,
+			result: { player: 1 },
 		},
 	},
 	//OL郭照
@@ -2188,11 +2203,15 @@ const skills = {
 		//清理
 		tianshuClear(skill, player, num = 1) {
 			if (num > 0 && get.info(skill)?.nopop) {
-				game.broadcastAll((player, skill) => {
-					delete lib.skill[skill].nopop;
-					lib.skill[skill].markimage = "image/card/tianshu1.png";
-					if (player.marks[skill]) player.marks[skill].setBackgroundImage(lib.skill[skill].markimage);
-				}, player, skill);
+				game.broadcastAll(
+					(player, skill) => {
+						delete lib.skill[skill].nopop;
+						lib.skill[skill].markimage = "image/card/tianshu1.png";
+						if (player.marks[skill]) player.marks[skill].setBackgroundImage(lib.skill[skill].markimage);
+					},
+					player,
+					skill
+				);
 				player.update();
 			}
 			player.storage[skill][0] -= num;
