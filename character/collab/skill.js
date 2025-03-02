@@ -32,7 +32,7 @@ const skills = {
 		group: "olyinfeng_gain",
 		subSkill: {
 			gain: {
-				audio: "yinfeng",
+				audio: "olyinfeng",
 				trigger: {
 					global: ["phaseBefore", "loseAfter", "loseAsyncAfter"],
 					player: "enterGame",
@@ -190,7 +190,7 @@ const skills = {
 			let result,
 				str = "的一张牌使此牌伤害或回复值+1且不计入次数限制，若使用者的手牌最多或最少，你摸一张牌且此技能本回合失效。";
 			if (player === trigger.player)
-				result = player.chooseToDiscard("he", get.prompt("olpimi") + "弃置" + get.translation(trigger.player) + str, "chooseonly").set("ai", card => {
+				result = player.chooseToDiscard("he", get.prompt("olpimi"), "弃置" + get.translation(trigger.player) + str, "chooseonly").set("ai", card => {
 					const player = get.player();
 					let val = player.getUseValue(card);
 					const evt = get.event().getTrigger();
@@ -203,11 +203,18 @@ const skills = {
 				result = player
 					.discardPlayerCard("he", trigger.player)
 					.set("chooseonly", true)
-					.set("prompt", get.prompt("olpimi") + "弃置" + get.translation(trigger.player) + str)
-					.set("ai", card => {
-						const player = get.player();
-						const evt = get.event().getTrigger();
-						if ((player.countCards("h", { name: "shan" }) < 2 && get.name(evt.card) === "sha") || (get.tag(evt.card, "damage") > 0.5 && player.countCards("h", { name: "wuxie" }) < 2 && player.getHp() < 3)) return false;
+					.set("prompt", get.prompt("olpimi"))
+					.set("prompt2", "弃置" + get.translation(trigger.player) + str)
+					.set("ai", button => {
+						const player = get.player(),
+							card = button.link;
+						const event = get.event().getTrigger(),
+							target = event.player;
+						if (get.attitude(player, target) > 0) return 0;
+						let eff = get.effect(target, { name: "guohe_copy2" }, player, player);
+						if (eff <= 0) return 0;
+						if (get.tag(event.card, "damage")) eff += get.effect(player, event.card, target, player);
+						return eff > 0 ? get.value(card) * (1 + Math.random()) : 0;
 					});
 			event.result = await result.forResult();
 		},

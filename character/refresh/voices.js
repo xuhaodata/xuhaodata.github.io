@@ -1,4 +1,11 @@
 export default {
+	"#regongao1": "百战余生者，唯我大魏虎贲！",
+	"#regongao2": "大魏凭武立国，当以骨血为饲！",
+	"#rejuyi1": "举义旗，兴王师，伐不臣！",
+	"#rejuyi2": "逆贼篡国，天下义士当共讨之！",
+	"#reweizhong1": "食君之禄，当忠君之事。",
+	"#benghuai_re_zhugedan1": "粮尽，援绝，天不佑我。",
+	"#re_zhugedan:die": "大魏危矣，社稷危矣。",
 	"#reqicai1": "吾之才学，不逊先生分毫。",
 	"#reqicai2": "女子之才，蕙质兰心。",
 	"#reyiji_yj_sb_guojia1": "算无遗策，方能决胜于千里。",
