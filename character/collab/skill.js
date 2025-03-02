@@ -32,7 +32,7 @@ const skills = {
 		group: "olyinfeng_gain",
 		subSkill: {
 			gain: {
-				audio: "yinfeng",
+				audio: "olyinfeng",
 				trigger: {
 					global: ["phaseBefore", "loseAfter", "loseAsyncAfter"],
 					player: "enterGame",
