@@ -56,6 +56,7 @@ const skills = {
 				silent: true,
 				firstDo: true,
 				filter(event, player) {
+					if (_status.currentPhase !== player) return false;
 					if (event.getParent().name != "useCard") return false;
 					const list = player.getStorage("oljingce_effect");
 					return event.cards.some(card => !list.includes(get.suit(card, player)));
