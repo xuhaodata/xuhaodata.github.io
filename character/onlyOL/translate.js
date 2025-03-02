@@ -216,7 +216,7 @@ const translates = {
 	ol_guohuai: "OL界郭淮",
 	ol_guohuai_prefix: "OL界",
 	oljingce: "精策",
-	oljingce_info: "当你于一回合内首次使用某种花色的手牌时，你的手牌上限+1。一名角色的出牌阶段结束时，你可以摸X张牌（X为你本阶段内使用过的牌的类型数）。",
+	oljingce_info: "当你于回合内首次使用某种花色的手牌时，你的手牌上限+1。一名角色的出牌阶段结束时，你可以摸X张牌（X为你本阶段内使用过的牌的类型数）。",
 	ol_fuhuanghou: "OL界伏寿",
 	ol_fuhuanghou_prefix: "OL界",
 	olqiuyuan: "求援",
