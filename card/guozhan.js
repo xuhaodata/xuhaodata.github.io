@@ -191,8 +191,7 @@ game.import("card", function () {
 					while (
 						game.hasPlayer(function (current) {
 							return current != target && current[judge] == "wu" && !give_list.includes(current);
-						}) &&
-						give_cards.length
+						})
 					) {
 						const result2 = await target.chooseButton(["是否将弃置的牌交给其他吴势力角色？", give_cards], [1, 2]).forResult();
 						if (result2.bool) {
@@ -562,7 +561,7 @@ game.import("card", function () {
 							})
 							.set("prompt", "水淹七军")
 							.set("prompt2", "请选择一项：⒈弃置装备区里的所有牌；⒉受到" + get.translation(player) + "造成的1点雷电伤害。");
-					("step 1");
+					"step 1";
 					if (result.control == "discard_card") {
 						target.discard(
 							target.getCards("e", function (card) {
@@ -757,7 +756,7 @@ game.import("card", function () {
 							target.draw();
 						}
 					}
-					("step 1");
+					"step 1";
 					if (target != player) target.link(false);
 					else if (typeof result.control == "string") {
 						var index = result.control.indexOf("回");
@@ -828,7 +827,7 @@ game.import("card", function () {
 						choiceList.push("弃置一张装备牌");
 					}
 					target.chooseControl(lib.card.chiling.chooseai).set("prompt", "敕令").set("choiceList", choiceList);
-					("step 1");
+					"step 1";
 					var index = result.index;
 					if (event.nomingzhi) {
 						index++;
@@ -846,7 +845,7 @@ game.import("card", function () {
 						target.chooseToDiscard("he", { type: "equip" }, true);
 						event.finish();
 					}
-					("step 2");
+					"step 2";
 					if (result.index == 0) {
 						target.showCharacter(0);
 					} else {
@@ -1091,7 +1090,7 @@ game.import("card", function () {
 						});
 					}
 					if (controls.length == 0) event.finish();
-					("step 1");
+					"step 1";
 					var content;
 					var str = get.translation(target) + "的";
 					if (result.control) {
@@ -1260,7 +1259,7 @@ game.import("card", function () {
 					var cards = player.getExpansions("zhaoshu_cards");
 					player.loseToDiscardpile(cards);
 					game.delayx();
-					("step 1");
+					"step 1";
 					var list = [
 						["spade", 12, "gz_haolingtianxia"],
 						["diamond", 1, "gz_kefuzhongyuan"],
@@ -1365,7 +1364,7 @@ game.import("card", function () {
 				content() {
 					"step 0";
 					target.addToExpansion(cards, player, "give").gaintag.add("zhaoshu_cards");
-					("step 1");
+					"step 1";
 					target.markSkill("zhaoshu_skill");
 				},
 				ai: {
@@ -1617,7 +1616,7 @@ game.import("card", function () {
 						event.directresult = list.randomGet();
 					}
 					event.list = list;
-					("step 1");
+					"step 1";
 					game.uncheck();
 					if (!event.directresult) {
 						if (event.resultOL) {
@@ -1812,7 +1811,7 @@ game.import("card", function () {
 					player.chooseToDiscard("h", "是否弃置一张手牌并获得一个额外回合？").set("ai", function (card) {
 						return 10 - get.value(card);
 					});
-					("step 1");
+					"step 1";
 					if (result.bool) {
 						player.insertPhase();
 					}
@@ -1834,7 +1833,7 @@ game.import("card", function () {
 					});
 					targets.sort(lib.sort.seat);
 					event.targets = targets;
-					("step 1");
+					"step 1";
 					if (event.targets.length) {
 						var target = event.targets.shift();
 						event.current = target;
@@ -1846,7 +1845,7 @@ game.import("card", function () {
 					} else {
 						event.finish();
 					}
-					("step 2");
+					"step 2";
 					var target = event.current;
 					if (result.control == "选项一") {
 						target
@@ -1861,7 +1860,7 @@ game.import("card", function () {
 						target.chooseToDiscard("he", { type: "equip" }, true);
 						event.goto(1);
 					}
-					("step 3");
+					"step 3";
 					var target = event.current;
 					if (result.index == 0) {
 						target.showCharacter(0);
@@ -1974,7 +1973,7 @@ game.import("card", function () {
 							prompt: get.prompt("sanjian"),
 						})
 						.set("damaged", damaged);
-					("step 1");
+					"step 1";
 					if (result.bool) {
 						player.logSkill("sanjian_skill", result.targets);
 						player.discard(result.cards);
