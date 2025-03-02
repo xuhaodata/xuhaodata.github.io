@@ -3384,7 +3384,7 @@ export class Player extends HTMLDivElement {
 		}
 		if (node) {
 			if (name === name2) {
-				var skinName = this.name == name ? this.skin?.name : this.skin?.name2;
+				var skinName = this.name2 != name ? this.skin?.name : this.skin?.name2;
 				if (!skinName || skinName === name2) node.setBackground(name2, "character");
 				else node.setBackground(skinName, "character");
 			} else node.setBackground(name2, "character");
