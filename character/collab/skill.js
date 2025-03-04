@@ -1944,11 +1944,9 @@ const skills = {
 		subSkill: {
 			remove: {
 				audio: "olhuyi",
-				trigger: {
-					player: "phaseEnd",
-				},
+				trigger: { player: "phaseEnd" },
 				filter(event, player) {
-					return player.additionalSkills.olhuyi && player.additionalSkills.olhuyi.length;
+					return player.additionalSkills?.olhuyi?.length;
 				},
 				async cost(event, trigger, player) {
 					const skills = player.additionalSkills.olhuyi;
@@ -1988,6 +1986,32 @@ const skills = {
 						additionalSkills.removeArray(removeSkills);
 						if (!additionalSkills.length) delete player.additionalSkills.olhuyi;
 					});
+					if (game.hasPlayer(t => t !== player && t.countCards("h"))) {
+						const result = await player
+							.chooseTarget("是否观看一名其他角色的随机三张手牌并获得其中一张？", (card, player, target) => {
+								return target !== player && target.countCards("h");
+							})
+							.set("ai", target => {
+								const player = get.player();
+								return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
+							})
+							.forResult();
+						if (result?.bool && result.targets?.length) {
+							player.line(result.targets);
+							const cards = result.targets[0].getCards("h").randomGets(3);
+							const gains = await player
+								.chooseButton(["虎翼：选择获得其中一张牌", cards])
+								.set("ai", button => get.value(button.link))
+								.set(
+									"forced",
+									cards.some(card => {
+										return lib.filter.canBeGained(result.targets[0], player, target);
+									})
+								)
+								.forResult("links");
+							if (gains?.length) await player.gain(gains, "give");
+						}
+					}
 				},
 			},
 		},
