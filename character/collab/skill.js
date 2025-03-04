@@ -1852,25 +1852,24 @@ const skills = {
 			return skills;
 		},
 		getBasic(event, player) {
-			const name = event.card.name,
-				skills = get
-					.info("olhuyi")
-					.getList()
-					.filter(skill => {
-						const translation = get.skillInfoTranslation(skill, player);
-						if (!translation) return false;
-						const info = get.plainText(translation);
-						const reg = `【${get.translation(name)}】`;
-						if (name == "sha") {
-							for (let nature of lib.inpile_nature) {
-								const reg1 = `【${get.translation(nature) + get.translation(name)}】`,
-									reg2 = `${get.translation(nature)}【${get.translation(name)}】`;
-								if (info.includes(reg1) || info.includes(reg2)) return true;
-							}
+			const name = event.card.name;
+			return get
+				.info("olhuyi")
+				.getList()
+				.filter(skill => {
+					const translation = get.skillInfoTranslation(skill, player);
+					if (!translation) return false;
+					const info = get.plainText(translation);
+					const reg = `【${get.translation(name)}】`;
+					if (name == "sha") {
+						for (let nature of lib.inpile_nature) {
+							const reg1 = `【${get.translation(nature) + get.translation(name)}】`,
+								reg2 = `${get.translation(nature)}【${get.translation(name)}】`;
+							if (info.includes(reg1) || info.includes(reg2)) return true;
 						}
-						return info.includes(reg);
-					});
-			return skills;
+					}
+					return info.includes(reg);
+				});
 		},
 		prioritySkills: ["boss_juejing", "xinlonghun", "relonghun", "sbwusheng", "jsrgnianen", "jsrgguanjue", "shencai", "sbpaoxiao", "sbliegong", "pshengwu"],
 		trigger: {
@@ -1895,9 +1894,7 @@ const skills = {
 		locked: false,
 		async cost(event, trigger, player) {
 			if (["useCard", "respond"].includes(trigger.name)) {
-				event.result = {
-					bool: true,
-				};
+				event.result = { bool: true };
 			} else {
 				const skills = get
 					.info("olhuyi")
@@ -1924,10 +1921,7 @@ const skills = {
 					})[0]
 				);
 				const links = await next.forResultLinks();
-				event.result = {
-					bool: true,
-					cost_data: links,
-				};
+				event.result = { bool: true, cost_data: links };
 			}
 		},
 		async content(event, trigger, player) {
@@ -1954,19 +1948,15 @@ const skills = {
 					for (const skill of skills) {
 						list.push([skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
 					}
-					const next = player.chooseButton(['###虎翼###<div class="text center">你可以失去其中一个技能，然后你可以观看一名其他角色的随机三张手牌并获得其中一张</div>', [list, "textbutton"]]);
+					const next = player.chooseButton(['###虎翼###<div class="text center">你可以失去其中一个技能，然后观看一名其他角色的随机三张手牌并获得其中一张</div>', [list, "textbutton"]]);
 					next.set("ai", button => {
 						const player = get.player();
+						const targets = game.filterPlayer(t => t !== player && t.countGainableCards(player, "h"));
 						return (
-							Math.max(
-								...[0].concat(
-									game
-										.filterPlayer(t => {
-											return t !== player && t.countGainableCards(player, "h");
-										})
-										.map(target => get.effect(target, { name: "shunshou_copy", position: "h" }, player, player))
-								)
-							) +
+							(() => {
+								if (!targets.length) return 0;
+								return Math.max(...targets.map(target => get.effect(target, { name: "shunshou_copy", position: "h" }, player, player)));
+							})() +
 							(() => {
 								const skill = button.link;
 								let skills = get.event("skills").slice(0);
@@ -2002,9 +1992,13 @@ const skills = {
 					});
 					if (game.hasPlayer(t => t !== player && t.countCards("h"))) {
 						const result = await player
-							.chooseTarget("虎翼：是否观看一名其他角色的随机三张手牌并获得其中一张？", (card, player, target) => {
-								return target !== player && target.countCards("h");
-							})
+							.chooseTarget(
+								"虎翼：观看一名其他角色的随机三张手牌并获得其中一张",
+								(card, player, target) => {
+									return target !== player && target.countCards("h");
+								},
+								true
+							)
 							.set("ai", target => {
 								const player = get.player();
 								return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
