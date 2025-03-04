@@ -1954,14 +1954,28 @@ const skills = {
 					for (const skill of skills) {
 						list.push([skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
 					}
-					const next = player.chooseButton(["虎翼：你可以失去其中一个技能", [list, "textbutton"]]);
+					const next = player.chooseButton(['###虎翼###<div class="text center">你可以失去其中一个技能，然后你可以观看一名其他角色的随机三张手牌并获得其中一张</div>', [list, "textbutton"]]);
 					next.set("ai", button => {
-						const skill = button.link;
-						let skills = get.event("skills").slice(0);
-						skills.removeArray(get.info("olhuyi").prioritySkills);
-						if (skills.length < 4) return 0;
-						if (skills.includes(skill)) return 2;
-						return Math.random();
+						const player = get.player();
+						return (
+							Math.max(
+								...[0].concat(
+									game
+										.filterPlayer(t => {
+											return t !== player && t.countGainableCards(player, "h");
+										})
+										.map(target => get.effect(target, { name: "shunshou_copy", position: "h" }, player, player))
+								)
+							) +
+							(() => {
+								const skill = button.link;
+								let skills = get.event("skills").slice(0);
+								skills.removeArray(get.info("olhuyi").prioritySkills);
+								if (skills.length < 4) return 0;
+								if (skills.includes(skill)) return 2;
+								return Math.random();
+							})()
+						);
 					});
 					next.set("skills", skills);
 					const {
@@ -1988,7 +2002,7 @@ const skills = {
 					});
 					if (game.hasPlayer(t => t !== player && t.countCards("h"))) {
 						const result = await player
-							.chooseTarget("是否观看一名其他角色的随机三张手牌并获得其中一张？", (card, player, target) => {
+							.chooseTarget("虎翼：是否观看一名其他角色的随机三张手牌并获得其中一张？", (card, player, target) => {
 								return target !== player && target.countCards("h");
 							})
 							.set("ai", target => {
@@ -2005,7 +2019,7 @@ const skills = {
 								.set(
 									"forced",
 									cards.some(card => {
-										return lib.filter.canBeGained(result.targets[0], player, target);
+										return lib.filter.canBeGained(card, player, result.targets[0]);
 									})
 								)
 								.forResult("links");
