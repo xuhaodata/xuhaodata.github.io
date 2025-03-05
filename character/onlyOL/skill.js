@@ -68,6 +68,7 @@ const skills = {
 						effect,
 						trigger.cards.map(card => get.suit(card, player))
 					);
+					player.storage[effect].sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 					player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, suit) => str + get.translation(suit), ""));
 				},
 			},

@@ -1492,7 +1492,7 @@ const skills = {
 				const player = get.player();
 				const bottom = player.storage.dcshicao_bottom,
 					aiStorage = player.getStorage("dcshicao_aiRecord");
-				if (bottom && aiStorage.length > 0 && get.name(ui.cardPile.lastChild, false) === get.name(aiStorage.lastItem, false)) {
+				if (bottom && aiStorage.length > 0 && ui.cardPile.lastChild && get.name(ui.cardPile.lastChild, false) === get.name(aiStorage.lastItem, false)) {
 					if (button.link === "牌堆底" || button.link === get.type2(aiStorage.lastItem, false)) return 20;
 				}
 				if (button.link === "牌堆顶" || button.link === "basic") return 10;
