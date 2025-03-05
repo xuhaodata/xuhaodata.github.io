@@ -22,7 +22,7 @@ export default () => {
 				}
 			}
 			for (var i in lib.character) {
-				if (lib.character[i].group == "shen" || lib.character[i].group == "western") {
+				if (lib.character[i].group == "shen") {
 					lib.character[i].group = lib.character[i].groupInGuozhan || "qun";
 				}
 			}
