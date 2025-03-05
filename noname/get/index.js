@@ -669,11 +669,16 @@ export class Get extends GetCompatible {
 		return list;
 	}
 	/**
-	 * 返回本回合在进入弃牌堆且还在弃牌堆的牌
+	 * 返回本回合进入[过]弃牌堆的牌
 	 * @returns { Card[] }
 	 */
 	discarded() {
-		return _status.discarded.filter(item => item.parentNode == ui.discardPile);
+		return game
+			.getGlobalHistory("everything", evt => {
+				if (!evt.cards?.length) return false;
+				return evt.name === "cardsDiscard" || evt.position == ui.discardPile;
+			})
+			.reduce((cards, evt) => cards.addArray(evt.cards), []);
 	}
 	cardOffset() {
 		var x = ui.arena.getBoundingClientRect();
