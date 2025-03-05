@@ -8720,9 +8720,9 @@ const skills = {
 			var target = get.translation(trigger.player);
 			var choiceList = ["令" + target + "获得牌堆里的一张【杀】", "令" + target + "将一张牌交给另一名角色，然后" + target + "摸两张牌", "背水！" + (trigger.player != player ? "将所有手牌交给" + target + "，然后" : "") + "依次执行以上所有选项"];
 			var list = ["选项一"];
-			if (trigger.player.countCards("h")) list.push("选项二");
+			if (trigger.player.countCards("h") && game.hasPlayer(t => t !== trigger.player)) list.push("选项二");
 			else choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
-			if (player.countCards("h")) list.push("背水！");
+			if (player.countCards("h") && player !== trigger.player) list.push("背水！");
 			else choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "</span>";
 			player
 				.chooseControl(list)
@@ -8752,7 +8752,7 @@ const skills = {
 			}
 			"step 3";
 			if (event.choice != "选项一") {
-				if (trigger.player.countCards("h"))
+				if (trigger.player.countCards("h") && game.hasPlayer(t => t !== trigger.player))
 					trigger.player.chooseCardTarget({
 						prompt: "将一张手牌交给另一名其他角色并摸两张牌",
 						filterCard: true,
@@ -8771,6 +8771,7 @@ const skills = {
 				else event.finish();
 			}
 			"step 4";
+			if (!result?.bool || !result.cards?.length || !!result.targets?.length) return;
 			var target = result.targets[0];
 			trigger.player.line(target);
 			trigger.player.give(result.cards, target);
