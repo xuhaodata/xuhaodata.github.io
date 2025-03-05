@@ -57,6 +57,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
+			if (!get.discarded().length) return false;
 			return (
 				player
 					.getHistory("lose", evt => {
@@ -68,11 +69,11 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			let num = player.hasSkill("friendpangtonggongli") && get.info("friendgongli").isFriendOf(player, "friend_zhugeliang") ? 1 : 0;
-			num += _status.discarded.map(c => get.suit(c)).unique().length;
+			num += get.discarded().map(c => get.suit(c)).unique().length;
 			const next = game.cardsGotoOrdering(get.cards(num));
 			await next;
 			let cards = next.cards;
-			await player.showCards(cards, get.translation(player) + "发动了" + get.translation(event.name));
+			await player.showCards(cards, get.translation(player) + "发动了【" + get.translation(event.name) + "】");
 			while (cards.some(card => player.hasUseTarget(card))) {
 				const { result: result2 } = await player
 					.chooseCardButton(cards, "养名：请选择要使用的牌")

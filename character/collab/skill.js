@@ -263,7 +263,7 @@ const skills = {
 		filter: event => event.dcshixinggong_cards?.length,
 		onChooseToUse: event => {
 			if (game.online || event.type !== "phase" || event.dcshixinggong_cards) return;
-			event.set("dcshixinggong_cards", get.discarded());
+			event.set("dcshixinggong_cards", _status.discarded);
 		},
 		usable: 1,
 		chooseButton: {

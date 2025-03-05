@@ -6808,7 +6808,7 @@ const skills = {
 		},
 		getNum() {
 			const list = lib.suit.slice();
-			const suit = _status.discarded.map(c => get.suit(c, false));
+			const suit = get.discarded().map(c => get.suit(c, false));
 			list.removeArray(suit);
 			return list.length;
 		},
