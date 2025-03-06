@@ -174,6 +174,7 @@ const skills = {
 		},
 		subSkill: {
 			buff: {
+				audio: "stardangchen",
 				charlotte: true,
 				onremove: true,
 				filter(event, player) {

@@ -426,12 +426,13 @@ const skills = {
 		},
 	},
 	reweizhong: {
-		audio: 2,
+		audio: 1,
 		inherit: "weizhong",
 		content() {
 			player.draw(2);
 		},
 	},
+	benghuai_re_zhugedan: { audio: 1 },
 	//堪比界曹冲的界曹叡
 	remingjian: {
 		inherit: "mingjian",
