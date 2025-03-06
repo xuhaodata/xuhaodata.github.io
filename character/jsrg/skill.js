@@ -9415,14 +9415,12 @@ const skills = {
 					break;
 				}
 			}
-			if (!target2) return;
+			if (!target2?.isIn()) return;
 			target2.logSkill("jsrgzhengyi", player);
 			trigger.cancel();
-			await target.damage(trigger.source, trigger.nature, trigger.num).set("card", trigger.card).set("cards", trigger.cards);
+			await target2.damage(trigger.source, trigger.nature, trigger.num).set("card", trigger.card).set("cards", trigger.cards);
 		},
-		ai: {
-			combo: "jsrglirang",
-		},
+		ai: { combo: "jsrglirang" },
 	},
 	//朱儁
 	jsrgfendi: {
