@@ -4000,9 +4000,7 @@ const skills = {
 						}
 						game.delayx();
 					},
-					ai: {
-						order: 10,
-					},
+					ai: { order: 10 },
 				};
 			},
 			prompt(links, player) {
@@ -4038,9 +4036,7 @@ const skills = {
 			backup2: {
 				filterCard: () => false,
 				selectCard: -1,
-				precontent() {
-					delete event.result.skill;
-				},
+				log: false,
 			},
 		},
 	},
@@ -5940,14 +5936,14 @@ const skills = {
 						name: links[0][2],
 						isCard: true,
 					},
+					log: false,
 					popname: true,
 					precontent() {
 						"step 0";
 						player.logSkill("dcgue");
 						player.addTempSkill("dcgue_blocker");
 						if (player.countCards("h")) player.showHandcards();
-						delete event.result.skill;
-						"step 1";
+						("step 1");
 						if (player.countCards("h", { name: ["sha", "shan"] }) > 1) {
 							var evt = event.getParent();
 							evt.set("dcgue", true);
