@@ -28,7 +28,7 @@ window.noname_character_replace = {
 	caoanmin: ["caoanmin", "ns_caoanmin"],
 	caocao: ["caocao", "re_caocao", "sp_ol_caocao", "ol_jsrg_caocao", "dc_caocao", "sb_caocao", "tw_caocao", "jsrg_caocao", "jd_sb_caocao", "yj_caocao", "ns_caocao", "ns_caocaosp"],
 	caochong: ["caochong", "ol_caochong", "re_caochong", "old_caochong"],
-	caochun: ["caochun", "old_caochun"],
+	caochun: ["caochun", "dc_caochun", "old_caochun"],
 	caofang: ["caofang", "jsrg_caofang"],
 	caohong: ["caohong", "tw_re_caohong", "tw_caohong", "yj_caohong"],
 	caomao: ["caomao", "mb_caomao", "ddd_caomao"],
@@ -391,4 +391,5 @@ window.noname_character_replace = {
 	jin_xiahouhui: ["jin_xiahouhui", "jd_jin_xiahouhui"],
 	jsrg_limi: ["jsrg_limi", "ns_limi"],
 	pot_lougui: ["pot_lougui", "jsrg_lougui"],
+	ol_zhaozhong: ["ol_zhaozhong", "zhaozhong"],
 };
