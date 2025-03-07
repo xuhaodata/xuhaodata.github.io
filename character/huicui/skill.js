@@ -792,7 +792,7 @@ const skills = {
 	dcretanluan: {
 		init(player, skill) {
 			if (typeof player.getStat("skill")?.[skill] === "number") {
-				delete typeof player.getStat("skill")[skill];
+				delete player.getStat("skill")[skill];
 			}
 		},
 		onChooseToUse(event) {
