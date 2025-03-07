@@ -7395,7 +7395,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { player: target } = trigger;
-			const { result } = player.chooseToCompare(target).set("small", player.hp > 1 && get.effect(player, { name: "sha" }, target, player) > 0 && Math.random() < 0.9);
+			const { result } = await player.chooseToCompare(target).set("small", player.hp > 1 && get.effect(player, { name: "sha" }, target, player) > 0 && Math.random() < 0.9);
 			if (result.bool) target.addTempSkill("zishou2");
 			else {
 				if (result.target && get.position(result.target) == "d") await player.gain(result.target, "gain2", "log");
