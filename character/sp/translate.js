@@ -1189,7 +1189,7 @@ const translates = {
 	oldwuji: "武继",
 	oldwuji_info: "觉醒技，结束阶段，若你本回合造成了3点或更多伤害，你加1点体力上限并回复1点体力，并失去技能〖虎啸〗。",
 	olfeiyang: "飞扬",
-	olfeiyang_info: "限定技，准备阶段，你可以弃置两张牌，然后弃置判定区的一张牌",
+	olfeiyang_info: "限定技，准备阶段，你可以弃置两张手牌，然后弃置判定区的一张牌",
 	//olfeiyang_info: "准备阶段，你可以弃置三张牌，然后弃置判定区的一张牌。",
 	caoyu: "曹宇",
 	olgongjie: "恭节",
