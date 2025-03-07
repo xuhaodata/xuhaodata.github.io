@@ -144,7 +144,7 @@ const skills = {
 							num += max * (goon ? 1 : 0.2);
 						}
 					}
-					return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) + get.recoverEffect(target, player, player);
+					return num + get.effect(target, { name: "shunshou_copy", position: "h" }, player, player) + get.recoverEffect(target, player, player);
 				},
 			},
 		},

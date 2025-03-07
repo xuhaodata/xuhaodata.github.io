@@ -328,6 +328,7 @@ const skills = {
 			}
 		},
 		async content(event, trigger, player) {
+			trigger.cancel();
 			if (event.cards?.length) await player.discard(event.cards);
 			if (event.targets?.length) {
 				const [target] = event.targets;

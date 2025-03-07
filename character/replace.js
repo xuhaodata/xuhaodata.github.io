@@ -315,7 +315,7 @@ window.noname_character_replace = {
 	zhangliao: ["zhangliao", "re_zhangliao", "sp_zhangliao", "v_zhangliao", "yj_zhangliao", "sb_zhangliao", "jsrg_zhangliao"],
 	zhangmiao: ["zhangmiao", "ddd_zhangmiao"],
 	zhangning: ["zhangning", "tw_zhangning", "ns_zhangning"],
-	zhangrang: ["ol_zhangrang", "zhangrang", "junk_zhangrang"],
+	zhangrang: ["ol_zhangrang", "zhangrang", "ol_sb_zhangrang", "junk_zhangrang"],
 	zhangsong: ["zhangsong", "re_zhangsong"],
 	zhangwen: ["zhangwen", "sp_zhangwen"],
 	zhangxingcai: ["zhangxingcai", "old_zhangxingcai"],
