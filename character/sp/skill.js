@@ -6452,9 +6452,8 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
 			return (
-				player.countCards("he", card => {
-					if (_status.connectMode && get.position(card) == "h") return true;
-					return lib.filter.cardDiscardable(card, player);
+				player.countCards("h", card => {
+					return _status.connectMode || lib.filter.cardDiscardable(card, player);
 				}) >= lib.skill.olfeiyang.getNum && player.countCards("j")
 			);
 		},
@@ -6466,7 +6465,7 @@ const skills = {
 		content() {
 			"step 0";
 			player
-				.chooseToDiscard(get.prompt2("olfeiyang"), "he", lib.skill.olfeiyang.getNum)
+				.chooseToDiscard(get.prompt2("olfeiyang"), lib.skill.olfeiyang.getNum)
 				.set("ai", function (card) {
 					var player = _status.event.player;
 					if (
