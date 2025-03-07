@@ -399,6 +399,7 @@ const skills = {
 		prompt() {
 			return lib.translate["potjiyu_info"].split("②")[0].slice(1);
 		},
+		usable: 1,
 		content() {
 			let gains = [];
 			let types = [get.type2(cards[0])];

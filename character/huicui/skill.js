@@ -822,8 +822,7 @@ const skills = {
 		chooseButton: {
 			dialog(event, player) {
 				const dialog = ui.create.dialog('###探乱###<div class="text center">' + lib.translate.dcretanluan_info + "</div>");
-				dialog.add(event.retanluan);
-				dialog.direct = true;
+				dialog.add(event.dcretanluan);
 				return dialog;
 			},
 			filter(button, player) {
@@ -849,7 +848,7 @@ const skills = {
 						const card = get.info("dcretanluan_backup").card;
 						event.result.cards = [card];
 						event.result.card = get.autoViewAs(card, [card]);
-						event.result.card.set("dcretanluan", true);
+						event.result.card.dcretanluan = true;
 					},
 				};
 			},
@@ -868,7 +867,7 @@ const skills = {
 				content() {
 					delete player.getStat("skill")["dcremanhou"];
 					player.popup("dcremanhou");
-					game.log(player, "重置了技能", "【" + get.cnNumber("dcremanhou") + "】");
+					game.log(player, "重置了技能", "【" + get.translation("dcremanhou") + "】");
 				},
 			},
 		},
