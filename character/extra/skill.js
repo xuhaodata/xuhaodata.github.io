@@ -32,10 +32,10 @@ const skills = {
 						if (card.hasGaintag("luansuo_debuff")) return false;
 					},
 					cardDiscardable(card, player) {
-						if (get.position(card) === "h" && card.hasGaintag("luansuo_debuff")) return false;
+						if (get.position(card) === "h") return false;
 					},
 					canBeDiscarded(card, player) {
-						if (get.position(card) === "h" && card.hasGaintag("luansuo_debuff")) return false;
+						if (get.position(card) === "h") return false;
 					},
 					aiOrder(player, card, num) {
 						if (num > 0 && get.name(card, player) === "huogong") return 0;

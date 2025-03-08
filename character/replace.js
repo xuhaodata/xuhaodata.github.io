@@ -297,7 +297,7 @@ window.noname_character_replace = {
 	yuejin: ["yuejin", "std_yuejin"],
 	yuejiu: ["dc_yuejiu", "yuejiu"],
 	yufan: ["yufan", "ol_yufan", "xin_yufan", "re_yufan"],
-	yuji: ["xin_yuji", "re_yuji", "yuji", "diy_yuji", "ns_yuji", "ns_yujisp"],
+	yuji: ["xin_yuji", "re_yuji", "yuji", "pot_yuji", "diy_yuji", "ns_yuji", "ns_yujisp"],
 	yujin: ["yujin", "ol_yujin", "yujin_yujin", "sb_yujin", "tw_yujin", "jd_sb_yujin", "ddd_yujin", "xin_yujin", "re_yujin"],
 	zangba: ["zangba", "tw_zangba"],
 	zhangbao: ["zhangbao", "re_zhangbao", "std_zhangbao", "ns_zhangbao"],
