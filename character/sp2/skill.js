@@ -145,7 +145,8 @@ const skills = {
 				player.getRoundHistory("sourceDamage", evt => {
 					return trigger.player == evt.player;
 				}).length > 0
-			) await player.draw();
+			)
+				await player.draw();
 		},
 	},
 	//丁奉
@@ -166,17 +167,24 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			const { result } = await target.chooseToGive(player).set("selectCard", [1, Infinity]).set("forced", true).set("position", "he");
+			const { result } = await target.chooseToGive(player, "he", true, [1, Infinity]);
 			if (result?.bool && result.cards?.length) {
+				const num = result.cards.length;
+				const next = player.chooseToDiscard("he", num);
+				next.set("prompt", "荡尘：是否弃置" + get.cnNumber(num) + "张牌并获得后续效果？");
+				next.set("prompt2", "当你于本回合使用基本牌或普通锦囊牌时，可以进行一次判定，若判定的点数为" + num + "的倍数，则此牌额外结算一次");
+				const bool = await next.forResult("bool");
+				if (!bool) return;
 				player.addTempSkill("stardangchen_buff");
-				player.addMark("stardangchen_buff", result.cards.length, false);
+				player.addMark("stardangchen_buff", num, false);
 			}
 		},
 		subSkill: {
 			buff: {
-				audio: "stardangchen",
 				charlotte: true,
 				onremove: true,
+				audio: "stardangchen",
+				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (!lib.skill.dcshixian.filterx(event) || !player.hasMark("stardangchen_buff")) return false;
 					return typeof get.number(event.card) === "number";
@@ -184,7 +192,6 @@ const skills = {
 				check(event, player) {
 					return !get.tag(event.card, "norepeat") ^ (event.targets?.reduce((sum, i) => sum + get.effect(event.card, i, player, player), 0) < 0);
 				},
-				trigger: { player: "useCard" },
 				prompt2(event, player) {
 					return "进行一次判定，若判定结果为" + player.countMark("stardangchen_buff") + "的倍数，则" + get.translation(event.card) + "额外结算一次";
 				},
@@ -201,6 +208,7 @@ const skills = {
 						game.log(trigger.card, "额外结算一次");
 					}
 				},
+				intro: { content: "使用基本牌或普通锦囊牌时可以进行一次判定，若判定的点数为#的倍数，则此牌额外结算一次" },
 			},
 		},
 	},
