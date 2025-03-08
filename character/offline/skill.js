@@ -5778,17 +5778,15 @@ const skills = {
 		},
 	},
 	tysheju: {
-		trigger: {
-			player: "useCardAfter",
-		},
+		trigger: { player: "useCardAfter" },
 		filter(event, player) {
 			if (event.card.name != "sha") return false;
-			return event.targets?.some(current => current.isIn() && current.countCards("he"));
+			return event.targets?.some(current => current.isIn() && current.countDiscardableCards(player, "he"));
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("tysheju"), function (card, player, target) {
-					return _status.event.getTrigger().targets.includes(target) && target.countCards("he");
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return get.event().getTrigger().targets.includes(target) && target.countDiscardableCards(player, "he");
 				})
 				.set("ai", target => {
 					return get.effect(target, { name: "guohe_copy2" }, get.player(), get.player());
@@ -5798,7 +5796,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const result = await player.discardPlayerCard(target, "he", true).forResult();
-			if (!result.bool || !result.links) return;
+			if (!result?.bool || !result?.links?.length) return;
 			let subtype = get.subtype(result.links[0]);
 			if (subtype && ["equip3", "equip4", "equip6"].includes(subtype)) return;
 			target.addTempSkill("tysheju_range");
@@ -5823,9 +5821,7 @@ const skills = {
 				charlotte: true,
 				onremove: true,
 				mark: true,
-				intro: {
-					content: "本回合攻击范围+#",
-				},
+				intro: { content: "本回合攻击范围+#" },
 				mod: {
 					attackFrom(from, to, distance) {
 						return distance - from.countMark("tysheju_range");
