@@ -115,6 +115,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target.countCards("h") && target !== player;
 		},
+		usable: 1,
 		async content(event, trigger, player) {
 			const target = event.target;
 			await target.chooseToGive(player, "h", true);
@@ -236,6 +237,12 @@ const skills = {
 							return evt.cards2.some(card => get.type(card, player) !== "equip");
 						});
 					}
+					if (
+						!player.hasHistory("lose", evt => {
+							return evt.getParent() === event && evt.hs.length > 0;
+						})
+					)
+						return false;
 					const num = storage.get(event.getParent("phaseUse"));
 					return typeof num === "number" && num > 0;
 				},
