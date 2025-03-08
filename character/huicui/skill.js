@@ -368,7 +368,6 @@ const skills = {
 							return num + 0.1;
 					},
 				},
-				locked: false,
 				charlotte: true,
 				onremove: (player, skill) => player.removeGaintag(skill),
 			},
