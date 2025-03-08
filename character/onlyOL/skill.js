@@ -56,6 +56,7 @@ const skills = {
 				silent: true,
 				firstDo: true,
 				filter(event, player) {
+					if (_status.currentPhase !== player) return false;
 					if (event.getParent().name != "useCard") return false;
 					const list = player.getStorage("oljingce_effect");
 					return event.cards.some(card => !list.includes(get.suit(card, player)));
@@ -67,6 +68,7 @@ const skills = {
 						effect,
 						trigger.cards.map(card => get.suit(card, player))
 					);
+					player.storage[effect].sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
 					player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, suit) => str + get.translation(suit), ""));
 				},
 			},
@@ -809,11 +811,11 @@ const skills = {
 					global: "phaseJieshuBegin",
 				},
 				filter(event, player) {
-					return get.discarded().length > 0;
+					return _status.discarded.length > 0;
 				},
 				async cost(event, trigger, player) {
 					const xs = player.getExpansions("olsbxutu");
-					const discardPile = get.discarded();
+					const discardPile = _status.discarded;
 					const dialog = ["徐图：选择要交换的牌", '<div class="text center">“资”</div>', xs, '<div class="text center">弃牌堆</div>', discardPile];
 					const { result } = await player
 						.chooseButton(dialog, 2)

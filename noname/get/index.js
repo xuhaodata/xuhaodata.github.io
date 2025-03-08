@@ -32,8 +32,8 @@ export class Get extends GetCompatible {
 		const playername = get.slimName(player?.name);
 		const SeatNum = player.getSeatNum();
 		const addSeat = game.hasPlayer2(current => current != player && get.slimName(current?.name) == playername, true) && typeof SeatNum == "number";
-		let border = get.groupnature(get.bordergroup(player?.name), "raw");
-		let eventInfo = `<span style="font-weight:700"><span data-nature=${border}>${playername}${addSeat ? "[" + SeatNum + "]" : ""}</span><br/><span style="color:#FFD700">`;
+		let border = get.groupnature(get.bordergroup(player?.name));
+		let eventInfo = `<span style="font-weight:700"><span data-nature=${border}><span style="letter-spacing:0.1em">${playername}${addSeat ? "[" + SeatNum + "]" : ""}</span></span><br/><span style="color:#FFD700">`;
 		let name1 = name,
 			name2 = _status.event.getParent().name,
 			th_skill = false,
@@ -71,7 +71,7 @@ export class Get extends GetCompatible {
 			if ((name2 == "chooseToUse" || name2 == "chooseToRespond" || name2 == "_wuxie") && evt2.childEvents) {
 				let tempEvt;
 				for (let key of evt2.childEvents) {
-					if (key.name.indexOf("pre_") == 0 && key.name.indexOf("_backup") != -1) {
+					if (key.name.indexOf("pre_") == 0) {
 						tempEvt = key;
 						break;
 					}
@@ -669,11 +669,16 @@ export class Get extends GetCompatible {
 		return list;
 	}
 	/**
-	 * 返回本回合在进入弃牌堆且还在弃牌堆的牌
+	 * 返回本回合进入[过]弃牌堆的牌
 	 * @returns { Card[] }
 	 */
 	discarded() {
-		return _status.discarded.filter(item => item.parentNode == ui.discardPile);
+		return game
+			.getGlobalHistory("everything", evt => {
+				if (!evt.cards?.length) return false;
+				return evt.name === "cardsDiscard" || evt.position == ui.discardPile;
+			})
+			.reduce((cards, evt) => cards.addArray(evt.cards), []);
 	}
 	cardOffset() {
 		var x = ui.arena.getBoundingClientRect();

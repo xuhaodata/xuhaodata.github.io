@@ -6342,7 +6342,7 @@ const skills = {
 			}
 			"step 5";
 			if (result.bool) {
-				var discarded = get.discarded();
+				var discarded = _status.discarded;
 				if (discarded.length) {
 					event.current.chooseCardButton("选择一张获得之", discarded, true).set("ai", function (button) {
 						return get.value(button.link);

@@ -25,18 +25,18 @@ const skills = {
 				mod: {
 					cardname(card, player) {
 						if (get.itemtype(card) !== "card" || get.position(card) !== "h") return;
-						if (card.hasGaintag("luansuo_debuff") && !player.getStorage("luansuo_debuff").includes(get.suit(card))) return "tiesuo";
+						if (card.hasGaintag("luansuo_debuff")) return "tiesuo";
 					},
 					cardnature(card, player) {
 						if (get.itemtype(card) !== "card" || get.position(card) !== "h") return;
-						if (card.hasGaintag("luansuo_debuff") && !player.getStorage("luansuo_debuff").includes(get.suit(card))) return false;
+						if (card.hasGaintag("luansuo_debuff")) return false;
 					},
 					cardDiscardable(card, player) {
-						if (get.position(card) === "h") return false;
+						if (get.position(card) === "h" && card.hasGaintag("luansuo_debuff")) return false;
 					},
-					//canBeDiscarded(card, player) {
-					//	if (get.position(card) === "h") return false;
-					//},
+					canBeDiscarded(card, player) {
+						if (get.position(card) === "h" && card.hasGaintag("luansuo_debuff")) return false;
+					},
 					aiOrder(player, card, num) {
 						if (num > 0 && get.name(card, player) === "huogong") return 0;
 					},
@@ -49,7 +49,6 @@ const skills = {
 				},
 				charlotte: true,
 				onremove(player, skill) {
-					delete player.storage[skill];
 					player.removeGaintag(skill);
 				},
 				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter", "cardsDiscardAfter"] },

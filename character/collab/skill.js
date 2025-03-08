@@ -188,7 +188,7 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			let result,
-				str = "的一张牌使此牌伤害或回复值+1且不计入次数限制，若使用者的手牌最多或最少，你摸一张牌且此技能本回合失效。";
+				str = "的一张牌使此牌伤害或回复值+1，若使用者的手牌最多或最少，你摸一张牌且此技能本回合失效。";
 			if (player === trigger.player)
 				result = player.chooseToDiscard("he", get.prompt("olpimi"), "弃置" + get.translation(trigger.player) + str, "chooseonly").set("ai", card => {
 					const player = get.player();
@@ -263,7 +263,7 @@ const skills = {
 		filter: event => event.dcshixinggong_cards?.length,
 		onChooseToUse: event => {
 			if (game.online || event.type !== "phase" || event.dcshixinggong_cards) return;
-			event.set("dcshixinggong_cards", get.discarded());
+			event.set("dcshixinggong_cards", _status.discarded);
 		},
 		usable: 1,
 		chooseButton: {
@@ -1852,25 +1852,24 @@ const skills = {
 			return skills;
 		},
 		getBasic(event, player) {
-			const name = event.card.name,
-				skills = get
-					.info("olhuyi")
-					.getList()
-					.filter(skill => {
-						const translation = get.skillInfoTranslation(skill, player);
-						if (!translation) return false;
-						const info = get.plainText(translation);
-						const reg = `【${get.translation(name)}】`;
-						if (name == "sha") {
-							for (let nature of lib.inpile_nature) {
-								const reg1 = `【${get.translation(nature) + get.translation(name)}】`,
-									reg2 = `${get.translation(nature)}【${get.translation(name)}】`;
-								if (info.includes(reg1) || info.includes(reg2)) return true;
-							}
+			const name = event.card.name;
+			return get
+				.info("olhuyi")
+				.getList()
+				.filter(skill => {
+					const translation = get.skillInfoTranslation(skill, player);
+					if (!translation) return false;
+					const info = get.plainText(translation);
+					const reg = `【${get.translation(name)}】`;
+					if (name == "sha") {
+						for (let nature of lib.inpile_nature) {
+							const reg1 = `【${get.translation(nature) + get.translation(name)}】`,
+								reg2 = `${get.translation(nature)}【${get.translation(name)}】`;
+							if (info.includes(reg1) || info.includes(reg2)) return true;
 						}
-						return info.includes(reg);
-					});
-			return skills;
+					}
+					return info.includes(reg);
+				});
 		},
 		prioritySkills: ["boss_juejing", "xinlonghun", "relonghun", "sbwusheng", "jsrgnianen", "jsrgguanjue", "shencai", "sbpaoxiao", "sbliegong", "pshengwu"],
 		trigger: {
@@ -1895,9 +1894,7 @@ const skills = {
 		locked: false,
 		async cost(event, trigger, player) {
 			if (["useCard", "respond"].includes(trigger.name)) {
-				event.result = {
-					bool: true,
-				};
+				event.result = { bool: true };
 			} else {
 				const skills = get
 					.info("olhuyi")
@@ -1924,10 +1921,7 @@ const skills = {
 					})[0]
 				);
 				const links = await next.forResultLinks();
-				event.result = {
-					bool: true,
-					cost_data: links,
-				};
+				event.result = { bool: true, cost_data: links };
 			}
 		},
 		async content(event, trigger, player) {
@@ -1944,11 +1938,9 @@ const skills = {
 		subSkill: {
 			remove: {
 				audio: "olhuyi",
-				trigger: {
-					player: "phaseEnd",
-				},
+				trigger: { player: "phaseEnd" },
 				filter(event, player) {
-					return player.additionalSkills.olhuyi && player.additionalSkills.olhuyi.length;
+					return player.additionalSkills?.olhuyi?.length;
 				},
 				async cost(event, trigger, player) {
 					const skills = player.additionalSkills.olhuyi;
@@ -1956,14 +1948,24 @@ const skills = {
 					for (const skill of skills) {
 						list.push([skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
 					}
-					const next = player.chooseButton(["虎翼：你可以失去其中一个技能", [list, "textbutton"]]);
+					const next = player.chooseButton(['###虎翼###<div class="text center">你可以失去其中一个技能，然后观看一名其他角色的随机三张手牌并获得其中一张</div>', [list, "textbutton"]]);
 					next.set("ai", button => {
-						const skill = button.link;
-						let skills = get.event("skills").slice(0);
-						skills.removeArray(get.info("olhuyi").prioritySkills);
-						if (skills.length < 4) return 0;
-						if (skills.includes(skill)) return 2;
-						return Math.random();
+						const player = get.player();
+						const targets = game.filterPlayer(t => t !== player && t.countGainableCards(player, "h"));
+						return (
+							(() => {
+								if (!targets.length) return 0;
+								return Math.max(...targets.map(target => get.effect(target, { name: "shunshou_copy", position: "h" }, player, player)));
+							})() +
+							(() => {
+								const skill = button.link;
+								let skills = get.event("skills").slice(0);
+								skills.removeArray(get.info("olhuyi").prioritySkills);
+								if (skills.length < 4) return 0;
+								if (skills.includes(skill)) return 2;
+								return Math.random();
+							})()
+						);
 					});
 					next.set("skills", skills);
 					const {
@@ -1988,6 +1990,36 @@ const skills = {
 						additionalSkills.removeArray(removeSkills);
 						if (!additionalSkills.length) delete player.additionalSkills.olhuyi;
 					});
+					if (game.hasPlayer(t => t !== player && t.countCards("h"))) {
+						const result = await player
+							.chooseTarget(
+								"虎翼：观看一名其他角色的随机三张手牌并获得其中一张",
+								(card, player, target) => {
+									return target !== player && target.countCards("h");
+								},
+								true
+							)
+							.set("ai", target => {
+								const player = get.player();
+								return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
+							})
+							.forResult();
+						if (result?.bool && result.targets?.length) {
+							player.line(result.targets);
+							const cards = result.targets[0].getCards("h").randomGets(3);
+							const gains = await player
+								.chooseButton(["虎翼：选择获得其中一张牌", cards])
+								.set("ai", button => get.value(button.link))
+								.set(
+									"forced",
+									cards.some(card => {
+										return lib.filter.canBeGained(card, player, result.targets[0]);
+									})
+								)
+								.forResult("links");
+							if (gains?.length) await player.gain(gains, "give");
+						}
+					}
 				},
 			},
 		},

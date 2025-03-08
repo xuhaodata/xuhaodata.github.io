@@ -236,7 +236,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = game.findPlayer2(target => target.hasHistory("damage"));
-			const discarded = get.discarded().filter(c => c.name == "sha");
+			const discarded = _status.discarded.filter(c => c.name == "sha");
 			const bool = discarded.some(c => target.hasUseTarget(c));
 			const result = bool
 				? await target

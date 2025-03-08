@@ -7395,7 +7395,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { player: target } = trigger;
-			const { result } = player.chooseToCompare(target).set("small", player.hp > 1 && get.effect(player, { name: "sha" }, target, player) > 0 && Math.random() < 0.9);
+			const { result } = await player.chooseToCompare(target).set("small", player.hp > 1 && get.effect(player, { name: "sha" }, target, player) > 0 && Math.random() < 0.9);
 			if (result.bool) target.addTempSkill("zishou2");
 			else {
 				if (result.target && get.position(result.target) == "d") await player.gain(result.target, "gain2", "log");
@@ -15374,26 +15374,6 @@ const skills = {
 		},
 	},
 	rezaiqi: {
-		count() {
-			var num = 0;
-			game.countPlayer2(function (current) {
-				current.getHistory("lose", function (evt) {
-					if (evt.position == ui.discardPile) {
-						for (var i = 0; i < evt.cards.length; i++) {
-							if (get.color(evt.cards[i]) == "red") num++;
-						}
-					}
-				});
-			});
-			game.getGlobalHistory("cardMove", function (evt) {
-				if (evt.name == "cardsDiscard") {
-					for (var i = 0; i < evt.cards.length; i++) {
-						if (get.color(evt.cards[i]) == "red") num++;
-					}
-				}
-			});
-			return num;
-		},
 		audio: 2,
 		direct: true,
 		filter(event, player) {
@@ -15434,6 +15414,7 @@ const skills = {
 			game.delay();
 			if (targets.length) event.goto(2);
 		},
+		count: () => get.discarded().filter(card => get.color(card) === "red").length,
 	},
 };
 

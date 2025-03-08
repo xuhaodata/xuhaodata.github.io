@@ -57,6 +57,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
+			if (!get.discarded().length) return false;
 			return (
 				player
 					.getHistory("lose", evt => {
@@ -68,11 +69,11 @@ const skills = {
 		frequent: true,
 		async content(event, trigger, player) {
 			let num = player.hasSkill("friendpangtonggongli") && get.info("friendgongli").isFriendOf(player, "friend_zhugeliang") ? 1 : 0;
-			num += _status.discarded.map(c => get.suit(c)).unique().length;
+			num += get.discarded().map(c => get.suit(c)).unique().length;
 			const next = game.cardsGotoOrdering(get.cards(num));
 			await next;
 			let cards = next.cards;
-			await player.showCards(cards, get.translation(player) + "发动了" + get.translation(event.name));
+			await player.showCards(cards, get.translation(player) + "发动了【" + get.translation(event.name) + "】");
 			while (cards.some(card => player.hasUseTarget(card))) {
 				const { result: result2 } = await player
 					.chooseCardButton(cards, "养名：请选择要使用的牌")
@@ -5208,7 +5209,7 @@ const skills = {
 			var target = get.translation(trigger.player);
 			var choiceList = ["令" + target + "获得牌堆里的一张【杀】", "令" + target + "将一张牌交给另一名角色，然后" + target + "摸一张牌"];
 			var list = ["选项一"];
-			if (trigger.player.countCards("h")) list.push("选项二");
+			if (trigger.player.countCards("h") && game.hasPlayer(t => t !== trigger.player)) list.push("选项二");
 			else choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
 			player
 				.chooseControl(list)
@@ -5236,7 +5237,7 @@ const skills = {
 			}
 			"step 3";
 			if (event.choice != "选项一") {
-				if (trigger.player.countCards("h"))
+				if (trigger.player.countCards("h") && game.hasPlayer(t => t !== trigger.player))
 					trigger.player.chooseCardTarget({
 						prompt: "毅谋：将一张手牌交给另一名其他角色",
 						filterCard: true,
@@ -5255,6 +5256,7 @@ const skills = {
 				else event.finish();
 			}
 			"step 4";
+			if (!result?.bool || !result.cards?.length || !!result.targets?.length) return;
 			var target = result.targets[0];
 			trigger.player.line(target);
 			trigger.player.give(result.cards, target);

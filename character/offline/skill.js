@@ -884,18 +884,13 @@ const skills = {
 			global: "useCardToPlayered",
 		},
 		filter(event, player) {
-			if (_status.currentPhase != player) {
-				return false;
-			}
-			if (_status.discarded?.length == 0) {
-				return false;
-			}
+			if (_status.currentPhase != player || !get.discarded().length) return false;
 			return event.card.name == "sha" && event.card.hasNature();
 		},
 		forced: true,
 		async content(event, trigger, player) {
 			const { target } = trigger;
-			const discarded = _status.discarded;
+			const discarded = get.discarded();
 			const min = Math.max(0, discarded.length);
 			const next = target.chooseCard("he", [min, Infinity], true);
 			next.set("prompt2", "置于武将牌上直到回合结束");

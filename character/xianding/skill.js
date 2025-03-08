@@ -421,11 +421,11 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseEnd" },
 		filter(event, player) {
-			return event.player != player && get.discarded().length > 0;
+			return event.player != player && _status.discarded.length > 0;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const discardPile = get.discarded();
+			const discardPile = _status.discarded;
 			let maxNumber = Math.max(...discardPile.map(c => get.number(c)));
 			await player.gain(discardPile.filter(c => get.number(c) === maxNumber).randomGets(1), "gain2");
 		},
