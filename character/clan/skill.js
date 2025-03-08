@@ -1631,7 +1631,7 @@ const skills = {
 			} else {
 				player.gainPlayerCard(target, "h", true);
 			}
-			("step 1");
+			"step 1";
 			var evtx = event.getParent("phaseUse");
 			if (
 				player.countCards("h") == target.countCards("h") &&
@@ -1669,7 +1669,7 @@ const skills = {
 					});
 				} else event.finish();
 			} else event.finish();
-			("step 2");
+			"step 2";
 			if (result.bool) {
 				var card = {
 					name: result.links[0][2],
@@ -3225,7 +3225,7 @@ const skills = {
 							nature: button.link[3],
 						});
 					});
-					("step 1");
+					"step 1";
 					if (result.bool) {
 						var name = result.links[0][2],
 							nature = result.links[0][3];

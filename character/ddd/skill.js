@@ -1163,12 +1163,12 @@ const skills = {
 			player.draw(lib.skill.dddbingjian_backup.draw);
 			player.addTempSkill("dddbingjian_used");
 			player.addMark("dddbingjian_used", 1, false);
-			("step 1");
+			"step 1";
 			player.chooseTarget("是否令一名其他角色摸等量的牌？", lib.filter.notMe).set("ai", target => {
 				var player = get.player();
 				return get.effect(target, { name: "draw" }, player, player);
 			});
-			("step 2");
+			"step 2";
 			if (result.bool) {
 				var target = result.targets[0];
 				player.line(target, "green");
@@ -1187,7 +1187,7 @@ const skills = {
 				isCard: true,
 			};
 			event.result.cards = [];
-			("step 1");
+			"step 1";
 			player
 				.chooseTarget("是否弃置一名其他角色等量的牌？", lib.filter.notMe)
 				.set("ai", target => {
@@ -1199,7 +1199,7 @@ const skills = {
 					return eff / num;
 				})
 				.set("num", event.num);
-			("step 2");
+			"step 2";
 			if (result.bool) {
 				var target = result.targets[0];
 				player.line(target, "fire");
@@ -1211,12 +1211,12 @@ const skills = {
 			player.logSkill("dddbingjian");
 			player.addTempSkill("dddbingjian_round", "roundStart");
 			player.draw(lib.skill.dddbingjian_backup.draw);
-			("step 1");
+			"step 1";
 			player.chooseTarget("是否令一名角色本轮内不能使用或打出" + get.translation(event.result.card) + "？").set("ai", function (target) {
 				var player = _status.event.player;
 				return -get.attitude(player, target) * get.threaten(target, player) * Math.sqrt(1 + target.countCards("h"));
 			});
-			("step 2");
+			"step 2";
 			if (result.bool) {
 				var target = result.targets[0];
 				player.line(target, "fire");
@@ -1235,7 +1235,7 @@ const skills = {
 				isCard: true,
 			};
 			event.result.cards = [];
-			("step 1");
+			"step 1";
 			var hs = player.countCards("h");
 			if (!game.hasPlayer(current => current.countCards("h") != hs)) {
 				event.finish();
@@ -1251,7 +1251,7 @@ const skills = {
 						return -get.attitude(player, target) * Math.sqrt(-num);
 					});
 			}
-			("step 2");
+			"step 2";
 			if (result.bool) {
 				var target = result.targets[0];
 				player.line(target, "fire");
@@ -2795,7 +2795,7 @@ const skills = {
 						event.result.card.storage._dddfusi_owner = event.source;
 						player.logSkill("dddfusi_global", event.source);
 						if (player.hasSkill("dddfusi_allowed")) event.finish();
-						("step 1");
+						"step 1";
 						if (event.result.targets && event.result.targets.length) player.line(event.result.targets, event.result.card.nature);
 						player.showCards([card], get.translation(player) + "向" + get.translation(source) + "发动【腹笥】");
 						source
@@ -2816,7 +2816,7 @@ const skills = {
 								true
 							)
 							.set("forceAuto", true);
-						("step 2");
+						"step 2";
 						if (result.links[0].indexOf("不同意") == -1) {
 							source.chat("同意");
 							if (result.links[0].indexOf("本回合内不再提示") > 0) player.addTempSkill("dddfusi_allowed");
