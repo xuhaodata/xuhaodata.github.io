@@ -2108,10 +2108,10 @@ const skills = {
 						return !player.getStorage("starlifeng_count").includes(get.color(card, player));
 					},
 					precontent() {
-						delete event.result.skill;
 						player.logSkill("starlifeng");
 						event.getParent().addCount = false;
 					},
+					log: false,
 					popname: true,
 					viewAs: {
 						name: links[0][2],
@@ -4043,7 +4043,6 @@ const skills = {
 	dcbingji: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 4,
 		filter(event, player) {
 			var hs = player.getCards("h"),
 				suits = player.getStorage("dcbingji_used");
@@ -4110,9 +4109,9 @@ const skills = {
 					selectTarget: 1,
 					ignoreMod: true,
 					filterOk: () => true,
+					log: false,
 					precontent() {
 						player.logSkill("dcbingji");
-						delete event.result.skill;
 						var hs = player.getCards("h");
 						event.getParent().addCount = false;
 						player.showCards(hs, get.translation(player) + "发动了【秉纪】");
@@ -5436,9 +5435,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				trigger: {
-					global: ["damageSource", "damageEnd"],
-				},
+				trigger: { global: ["damageSource", "damageEnd"] },
 				filter(event, player, name) {
 					if (!event.card || event.card.name != "juedou") return false;
 					let evt = event.getParent(2);
@@ -5472,9 +5469,6 @@ const skills = {
 					return 5.5 - get.value(card);
 				},
 				log: false,
-				precontent() {
-					delete event.result.skill;
-				},
 			},
 		},
 		ai: {
@@ -5695,9 +5689,6 @@ const skills = {
 				selectCard: 1,
 				check: card => 6 - get.value(card),
 				log: false,
-				precontent() {
-					delete event.result.skill;
-				},
 			},
 			add: {
 				trigger: { global: "useCard2" },

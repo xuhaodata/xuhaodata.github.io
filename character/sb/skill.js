@@ -5558,9 +5558,9 @@ const skills = {
 				filterCard: () => false,
 				selectCard: -1,
 				popname: true,
+				log: false,
 				precontent() {
 					player.logSkill("sbrende_use");
-					delete event.result.skill;
 					player.removeMark("sbrende", 2);
 					player.addTempSkill("sbrende_used");
 				},
