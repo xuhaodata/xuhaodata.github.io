@@ -262,7 +262,7 @@ window.noname_character_replace = {
 	xiahoudun: ["xiahoudun", "re_xiahoudun", "xin_xiahoudun", "sb_xiahoudun", "xia_xiahoudun", "sp_xiahoudun"],
 	xiahoushi: ["xiahoushi", "re_xiahoushi", "sb_xiahoushi", "sp_xiahoushi"],
 	xiahouxuan: ["xiahouxuan", "ddd_xiahouxuan"],
-	xiahouyuan: ["re_xiahouyuan", "ol_xiahouyuan", "xiahouyuan"],
+	xiahouyuan: ["re_xiahouyuan", "ol_xiahouyuan", "sb_xiahouyuan", "xiahouyuan"],
 	xianglang: ["xianglang", "mb_xianglang", "ddd_xianglang"],
 	xiaoqiao: ["xiaoqiao", "ol_xiaoqiao", "yue_xiaoqiao", "re_xiaoqiao", "sb_xiaoqiao", "jd_sb_xiaoqiao", "old_xiaoqiao"],
 	xinpi: ["xinpi", "sp_xinpi"],

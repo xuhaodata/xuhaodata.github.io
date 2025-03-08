@@ -592,6 +592,7 @@ window.noname_character_rank = {
 		"re_lvbu",
 		"caoren",
 		"ol_xiahouyuan",
+		"sb_xiahouyuan",
 		"re_huangzhong",
 		"ol_huangzhong",
 		"ol_weiyan",
@@ -2586,6 +2587,7 @@ window.noname_character_rank = {
 			"niufu",
 		],
 		rare: [
+			"re_xiahouyuan",
 			"ol_guohuai",
 			"ol_fuhuanghou",
 			"yj_yongkai",
@@ -2932,6 +2934,7 @@ window.noname_character_rank = {
 			"caoren",
 			"ol_weiyan",
 			"ol_xiahouyuan",
+			"sb_xiahouyuan",
 			"re_huangzhong",
 			"ol_xiaoqiao",
 			"xin_yuji",
