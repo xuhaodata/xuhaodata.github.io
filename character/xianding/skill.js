@@ -8302,9 +8302,9 @@ const skills = {
 					check(card) {
 						return 6.5 - get.value(card);
 					},
+					log: false,
 					precontent() {
 						player.logSkill("dcposuo");
-						delete event.result.skill;
 						player.addTempSkill("dcposuo_suits", "phaseUseAfter");
 						player.markAuto("dcposuo_suits", [get.suit(event.result.cards[0])]);
 					},
@@ -13422,12 +13422,12 @@ const skills = {
 						name: links[0][2],
 						storage: { dcfengying: true },
 					},
+					log: false,
 					precontent() {
 						player.logSkill("dcfengying");
 						player.addTempSkill("dcfengying_used");
 						player.markAuto("dcfengying_used", [event.result.card.name]);
 						event.getParent().addCount = false;
-						delete event.result.skill;
 					},
 				};
 			},
@@ -13437,10 +13437,10 @@ const skills = {
 		},
 		mod: {
 			targetInRange(card) {
-				if (card.storage && card.storage.dcfengying) return true;
+				if (card.storage?.dcfengying) return true;
 			},
 			cardUsable(card, player) {
-				if (card.storage && card.storage.dcfengying) return Infinity;
+				if (card.storage?.dcfengying) return Infinity;
 			},
 		},
 		ai: {
@@ -13478,9 +13478,7 @@ const skills = {
 			used: {
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "已使用过$",
-				},
+				intro: { content: "已使用过$" },
 			},
 		},
 	},

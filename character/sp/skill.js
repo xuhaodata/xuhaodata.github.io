@@ -591,7 +591,7 @@ const skills = {
 			for (const card of cardPile) {
 				if (get.color(card) == "red") {
 					cards.push(card);
-					if (cards.length >= 3/*event.cost_data*/) break;
+					if (cards.length >= 3 /*event.cost_data*/) break;
 				} else break;
 			}
 			if (!cards.length) return;
@@ -700,8 +700,8 @@ const skills = {
 				filterCard: () => false,
 				selectCard: -1,
 				filterTarget: lib.filter.targetEnabled2,
+				log: false,
 				precontent() {
-					delete event.result.skill;
 					const name = event.result.card.name,
 						cards = event.result.card.cards.slice(),
 						rcard = cards[0];
@@ -4593,9 +4593,6 @@ const skills = {
 					return 5 - get.value(card);
 				},
 				log: false,
-				precontent() {
-					delete event.result.skill;
-				},
 			},
 		},
 		ai: {
@@ -5131,9 +5128,7 @@ const skills = {
 				viewAs: { name: "juedou" },
 				position: "h",
 				check: () => 1 + Math.random(),
-				precontent() {
-					delete event.result.skill;
-				},
+				log: false,
 			},
 			buff: {
 				charlotte: true,
@@ -5770,8 +5765,8 @@ const skills = {
 					},
 					filterCard: () => false,
 					selectCard: -1,
+					log: false,
 					*precontent(event, map) {
-						delete event.result.skill;
 						const player = map.player;
 						let stop = false;
 						const result = yield player
@@ -6901,13 +6896,10 @@ const skills = {
 		trigger: { global: "phaseUseBegin" },
 		filter(event, player) {
 			if (!event.player.isDamaged()) return false;
-			return (
-				(_status.connectMode && player.countCards("hes")) ||
-				(!_status.connectMode &&
-					player.hasCard(card => {
-						return get.color(card) == "black";
-					}, "hes"))
-			);
+			return player.hasCard(card => {
+				if (_status.connectMode) return true;
+				return get.color(card) == "black";
+			}, "hes");
 		},
 		direct: true,
 		async content(event, trigger, player) {
@@ -6927,7 +6919,7 @@ const skills = {
 				if (
 					trigger.player.isIn() &&
 					trigger.player.hasHistory("damage", evt => {
-						return evt.card && evt.card.storage && evt.card.storage.olsuji;
+						return evt.card?.storage?.olsuji;
 					}) &&
 					trigger.player.countGainableCards(player, "he")
 				)
@@ -6948,9 +6940,7 @@ const skills = {
 				ai1(card) {
 					return 5 - get.value(card);
 				},
-				precontent() {
-					delete event.result.skill;
-				},
+				log: false,
 			},
 		},
 	},
@@ -7771,11 +7761,11 @@ const skills = {
 								name: "sha",
 								isCard: true,
 							},
+							log: false,
 							precontent() {
 								var cards = lib.skill.olfushi_wusheng_backup.cards.slice();
 								var controls = lib.skill.olfushi_wusheng_backup.controls.slice();
 								player.logSkill("olfushi");
-								delete event.result.skill;
 								event.result.card = new lib.element.VCard(lib.skill.olfushi_wusheng_backup.viewAs);
 								event.result.cards = [];
 								player.loseToDiscardpile(cards);
@@ -12970,9 +12960,7 @@ const skills = {
 	//张芝
 	olbixin: {
 		audio: 2,
-		trigger: {
-			global: ["phaseZhunbeiBegin", "phaseJieshuBegin"],
-		},
+		trigger: { global: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		direct: true,
 		onremove: ["olbixin", "olbixin_basic", "olbixin_trick", "olbixin_equip"],
 		group: "olbixin_full",
@@ -13152,12 +13140,12 @@ const skills = {
 							selectCard: -1,
 							type: lib.skill.olbixin.map[links[0]],
 							viewAs: { name: links[1][2], nature: links[1][3] },
+							log: false,
 							precontent() {
 								"step 0";
 								player.logSkill("olbixin");
 								var type = lib.skill.olbixin_full_backup.type;
 								game.log(player, "声明了", type, "牌");
-								delete event.result.skill;
 								player.addMark("olbixin_" + type, 1, false);
 								player.draw(player.countMark("olbixin") >= 3 ? 1 : 3);
 								"step 1";
@@ -14579,6 +14567,7 @@ const skills = {
 					color: color,
 					selectCard: -1,
 					filterCard: () => false,
+					log: false,
 					precontent() {
 						player.addTempSkill("liangyuan_used", "roundStart");
 						player.markAuto("liangyuan_used", event.result.card.name);
@@ -14598,7 +14587,6 @@ const skills = {
 							}
 						});
 						event.result.cards = cards;
-						delete event.result.skill;
 						event.result._apply_args = { throw: false };
 						game.loseAsync({
 							lose_list: list,
@@ -14612,9 +14600,7 @@ const skills = {
 				return "将场上所有的“" + color + "”当做【" + get.translation(name) + "】使用";
 			},
 		},
-		subSkill: {
-			used: { charlotte: true, onremove: true },
-		},
+		subSkill: { used: { charlotte: true, onremove: true } },
 		ai: {
 			order(item, player) {
 				if (!player) player = _status.event.player;
@@ -19488,6 +19474,7 @@ const skills = {
 							return 0;
 						return Math.min(0.01, 6 - get.value(card));
 					},
+					log: false,
 					precontent() {
 						player.logSkill("jinzhi");
 						player.addTempSkill("jinzhi_used", "roundStart");
@@ -19501,7 +19488,6 @@ const skills = {
 							isCard: true,
 						};
 						event.result.cards = [];
-						delete event.result.skill;
 						if (cards.length > 1) {
 							var color = get.color(cards[0], player);
 							for (var i = 1; i < cards.length; i++) {
@@ -19543,9 +19529,7 @@ const skills = {
 			used: {
 				charlotte: true,
 				onremove: true,
-				intro: {
-					content: "本轮已发动过#次",
-				},
+				intro: { content: "本轮已发动过#次" },
 			},
 		},
 	},
@@ -20012,10 +19996,10 @@ const skills = {
 						isCard: true,
 					},
 					popname: true,
+					log: false,
 					precontent() {
 						player.logSkill("youlong");
 						player.disableEquip(lib.skill.youlong_backup.equip);
-						delete event.result.skill;
 						player.addTempSkill("youlong_" + (player.storage.youlong || false), "roundStart");
 						player.changeZhuanhuanji("youlong");
 						player.storage.youlong2.add(event.result.card.name);
@@ -20068,9 +20052,11 @@ const skills = {
 				},
 			},
 		},
+		subSkill: {
+			true: { charlotte: true },
+			false: { charlotte: true },
+		},
 	},
-	youlong_true: { charlotte: true },
-	youlong_false: { charlotte: true },
 	luanfeng: {
 		audio: 2,
 		audioname: ["key_sakuya"],
@@ -31018,7 +31004,6 @@ const skills = {
 					evt.set("openskilldialog", "请选择" + get.translation(card) + "的目标");
 					evt.backup("aocai_backup");
 				} else {
-					delete evt.result.skill;
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(card);
 					if (aozhan) evt.result.card.name = name;
@@ -31049,7 +31034,6 @@ const skills = {
 		subSkill: {
 			backup: {
 				precontent() {
-					delete event.result.skill;
 					var name = event.result.card.name,
 						cards = event.result.card.cards.slice(0);
 					event.result.cards = cards;
@@ -31061,6 +31045,7 @@ const skills = {
 				},
 				filterCard: () => false,
 				selectCard: -1,
+				log: false,
 			},
 		},
 	},

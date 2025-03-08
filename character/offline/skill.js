@@ -11873,7 +11873,6 @@ const skills = {
 						replace: { window() {} },
 					});
 				} else {
-					delete evt.result.skill;
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(
 						{
@@ -11925,9 +11924,7 @@ const skills = {
 					game.setNature(trigger, "thunder");
 				},
 				marktext: "⚡",
-				intro: {
-					content: "受到的伤害+1且改为雷属性",
-				},
+				intro: { content: "受到的伤害+1且改为雷属性" },
 				ai: {
 					effect: {
 						target: (card, player, target) => {
@@ -12011,9 +12008,7 @@ const skills = {
 				},
 			},
 			remove: {
-				trigger: {
-					global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"],
-				},
+				trigger: { global: ["loseAfter", "loseAsyncAfter", "cardsDiscardAfter", "equipAfter"] },
 				forced: true,
 				charlotte: true,
 				popup: false,
@@ -12040,32 +12035,29 @@ const skills = {
 					}
 				},
 			},
+			backup: {
+				precontent() {
+					"step 0";
+					event.result._apply_args = { throw: false };
+					var cards = event.result.card.cards;
+					event.result.cards = cards;
+					var owner = get.owner(cards[0]);
+					event.target = owner;
+					owner.$throw(cards[0]);
+					player.popup(event.result.card.name, "metal");
+					game.delayx();
+					event.getParent().addCount = false;
+					"step 1";
+					if (player != target) target.addTempSkill("fengyin");
+					target.addTempSkill("psshouli_thunder");
+					player.addTempSkill("psshouli_thunder");
+				},
+				filterCard: () => false,
+				prompt: "请选择【杀】的目标",
+				selectCard: -1,
+				log: false,
+			},
 		},
-	},
-	psshouli_backup: {
-		sourceSkill: "psshouli",
-		precontent() {
-			"step 0";
-			delete event.result.skill;
-			event.result._apply_args = { throw: false };
-			var cards = event.result.card.cards;
-			event.result.cards = cards;
-			var owner = get.owner(cards[0]);
-			event.target = owner;
-			owner.$throw(cards[0]);
-			player.popup(event.result.card.name, "metal");
-			game.delayx();
-			event.getParent().addCount = false;
-			"step 1";
-			if (player != target) target.addTempSkill("fengyin");
-			target.addTempSkill("psshouli_thunder");
-			player.addTempSkill("psshouli_thunder");
-		},
-		filterCard() {
-			return false;
-		},
-		prompt: "请选择【杀】的目标",
-		selectCard: -1,
 	},
 	pshengwu: {
 		audio: "hengwu",
@@ -12724,7 +12716,6 @@ const skills = {
 					evt.set("_backupevent", "psqichu_backup");
 					evt.backup("psqichu_backup");
 				} else {
-					delete evt.result.skill;
 					delete evt.result.used;
 					evt.result.card = get.autoViewAs(result.links[0]);
 					if (aozhan) evt.result.card.name = name;
@@ -12756,16 +12747,14 @@ const skills = {
 		subSkill: {
 			backup: {
 				precontent() {
-					delete event.result.skill;
 					var name = event.result.card.name;
 					event.result.cards = event.result.card.cards;
 					event.result.card = get.autoViewAs(event.result.cards[0]);
 					event.result.card.name = name;
 				},
-				filterCard() {
-					return false;
-				},
+				filterCard: () => false,
 				selectCard: -1,
+				log: false,
 			},
 			used: { charlotte: true },
 		},
@@ -18157,8 +18146,6 @@ const skills = {
 			},
 			backup: {
 				precontent() {
-					"step 0";
-					delete event.result.skill;
 					var cards = event.result.card.cards;
 					event.result.cards = cards;
 					var owner = get.owner(cards[0]);
@@ -18168,11 +18155,10 @@ const skills = {
 					game.delayx();
 					event.getParent().addCount = false;
 				},
-				filterCard() {
-					return false;
-				},
+				filterCard: () => false,
 				prompt: "请选择【杀】的目标",
 				selectCard: -1,
+				log: false,
 			},
 		},
 	},
