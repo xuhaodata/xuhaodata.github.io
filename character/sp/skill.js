@@ -8877,25 +8877,19 @@ const skills = {
 		audio: "niluan",
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			return (
-				event.player.getHp() > player.getHp() &&
-				event.player.getHistory("useCard", function (card) {
-					return card.card.name == "sha";
-				}).length &&
-				player.countCards("hes", card => get.color(card, player) == "black" && player.canUse(get.autoViewAs({ name: "sha" }, [card]), event.player, false))
-			);
+			return event.player.getHp() > player.getHp() && event.player.getHistory("useCard", card => card.card.name == "sha").length && player.countCards("hes", card => get.color(card, player) == "black" && player.canUse(get.autoViewAs({ name: "sha" }, [card]), event.player, false));
 		},
 		direct: true,
 		content() {
 			var next = player.chooseToUse();
 			next.set("openskilldialog", "逆乱：是否将一张黑色牌当作【杀】对" + get.translation(trigger.player) + "使用？");
 			next.set("norestore", true);
-			next.set("_backupevent", "niluanx");
+			next.set("_backupevent", `${event.name}_backup`);
 			next.set("custom", {
 				add: {},
 				replace: { window() {} },
 			});
-			next.backup("niluanx");
+			next.backup(`${event.name}_backup`);
 			next.set("targetRequired", true);
 			next.set("complexSelect", true);
 			next.set("filterTarget", function (card, player, target) {
@@ -8905,6 +8899,17 @@ const skills = {
 			next.set("sourcex", trigger.player);
 			next.set("addCount", false);
 			next.logSkill = "olniluan";
+		},
+		subSkill: {
+			backup: {
+				viewAs: { name: "sha" },
+				filterCard: { color: "black" },
+				position: "hes",
+				selectCard: 1,
+				check(card) {
+					return 5 - get.value(card);
+				},
+			},
 		},
 	},
 	olxiaoxi: {
@@ -20209,27 +20214,22 @@ const skills = {
 			return player.countCards("hes", lib.skill.spniluan.filterCard) > 0;
 		},
 		group: "spniluan_clear",
-	},
-	spniluan_clear: {
-		trigger: { player: "useCardAfter" },
-		forced: true,
-		silent: true,
-		charlotte: true,
-		sourceSkill: "spniluan",
-		filter(event, player) {
-			return (
-				event.skill == "spniluan" &&
-				event.addCount !== false &&
-				player.getHistory("sourceDamage", function (card) {
-					return card.card == event.card;
-				}).length == 0
-			);
-		},
-		content() {
-			trigger.addCount = false;
-			if (player.stat[player.stat.length - 1].card.sha > 0) {
-				player.stat[player.stat.length - 1].card.sha--;
-			}
+		subSkill: {
+			clear: {
+				trigger: { player: "useCardAfter" },
+				forced: true,
+				silent: true,
+				charlotte: true,
+				filter(event, player) {
+					return event.skill == "spniluan" && event.addCount !== false && player.getHistory("sourceDamage", card => card.card == event.card).length == 0;
+				},
+				content() {
+					trigger.addCount = false;
+					if (player.stat[player.stat.length - 1].card.sha > 0) {
+						player.stat[player.stat.length - 1].card.sha--;
+					}
+				},
+			},
 		},
 	},
 	spweiwu: {
@@ -21356,13 +21356,7 @@ const skills = {
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },
 		filter(event, player) {
-			return (
-				event.player != player &&
-				(event.player.hp > player.hp ||
-					event.player.getHistory("useCard", function (card) {
-						return card.card.name == "sha";
-					}).length > 0)
-			);
+			return event.player != player && (event.player.hp > player.hp || event.player.getHistory("useCard", card => card.card.name == "sha").length > 0);
 		},
 		direct: true,
 		content() {
@@ -21370,22 +21364,23 @@ const skills = {
 			next.logSkill = "niluan";
 			next.set("openskilldialog", get.prompt2("niluan"));
 			next.set("norestore", true);
-			next.set("_backupevent", "niluanx");
+			next.set("_backupevent", `${event.name}_backup`);
 			next.set("custom", {
 				add: {},
 				replace: { window() {} },
 			});
-			next.backup("niluanx");
+			next.backup(`${event.name}_backup`);
 		},
-	},
-	niluanx: {
-		viewAs: { name: "sha" },
-		filterCard: { color: "black" },
-		position: "hes",
-		selectCard: 1,
-		sourceSkill: "niluan",
-		check(card) {
-			return 5 - get.value(card);
+		subSkill: {
+			backup: {
+				viewAs: { name: "sha" },
+				filterCard: { color: "black" },
+				position: "hes",
+				selectCard: 1,
+				check(card) {
+					return 5 - get.value(card);
+				},
+			},
 		},
 	},
 	cuorui: {
@@ -27916,63 +27911,50 @@ const skills = {
 	mozhi: {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
-		direct: true,
 		filter(event, player) {
-			return (
-				player.getHistory("useCard", function (evt) {
-					return evt.isPhaseUsing() && ["basic", "trick"].includes(get.type(evt.card));
-				}).length > 0 && player.countCards("hs") > 0
-			);
+			return player.getHistory("useCard", evt => evt.isPhaseUsing() && ["basic", "trick"].includes(get.type(evt.card))).length > 0 && player.countCards("hs") > 0;
 		},
-		content() {
-			"step 0";
-			event.count = 2;
-			event.history = player.getHistory("useCard", function (evt) {
-				return evt.isPhaseUsing() && ["basic", "trick"].includes(get.type(evt.card));
-			});
-			"step 1";
-			event._result = {};
-			if (event.count && event.history.length && player.countCards("hs")) {
-				event.count--;
-				var card = event.history.shift().card;
+		direct: true,
+		async content(event, trigger, player) {
+			let count = 2;
+			let history = player.getHistory("useCard", evt => evt.isPhaseUsing() && ["basic", "trick"].includes(get.type(evt.card)));
+			while (count-- && history.length && player.countCards("hs")) {
+				let card = history.shift().card;
 				card = { name: card.name, nature: card.nature };
 				if (player.hasUseTarget(card, true, true)) {
-					if (
-						game.hasPlayer(function (current) {
-							return player.canUse(card, current);
-						})
-					) {
-						lib.skill.mozhix.viewAs = card;
-						var next = player.chooseToUse();
-						if (next.isOnline()) {
-							player.send(function (card) {
-								lib.skill.mozhix.viewAs = card;
-							}, card);
-						}
-						next.logSkill = "mozhi";
-						next.set("openskilldialog", "默识：将一张手牌当" + get.translation(card) + "使用");
-						next.set("norestore", true);
-						next.set("_backupevent", "mozhix");
-						next.set("custom", {
-							add: {},
-							replace: { window() {} },
-						});
-						next.backup("mozhix");
-					}
+					const name = `${event.name}_backup`;
+					game.broadcastAll(
+						(name, card) => {
+							lib.skill[name].viewAs = card;
+						},
+						name,
+						card
+					);
+					const next = player.chooseToUse();
+					next.logSkill = event.name;
+					next.set("openskilldialog", `默识：将一张手牌当${get.translation(card)}使用`);
+					next.set("norestore", true);
+					next.set("_backupevent", name);
+					next.set("custom", {
+						add: {},
+						replace: { window() {} },
+					});
+					next.backup(name);
+					await next;
 				}
 			}
-			"step 2";
-			if (result && result.bool) event.goto(1);
 		},
-	},
-	mozhix: {
-		filterCard(card) {
-			return get.itemtype(card) == "card";
+		subSkill: {
+			backup: {
+				ilterCard(card) {
+					return get.itemtype(card) == "card";
+				},
+				selectCard: 1,
+				position: "hs",
+				popname: true,
+				log: false,
+			},
 		},
-		selectCard: 1,
-		position: "hs",
-		popname: true,
-		sourceSkill: "mozhi",
 	},
 	ranshang: {
 		audio: 2,
