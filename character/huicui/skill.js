@@ -5943,7 +5943,7 @@ const skills = {
 						player.logSkill("dcgue");
 						player.addTempSkill("dcgue_blocker");
 						if (player.countCards("h")) player.showHandcards();
-						("step 1");
+						"step 1";
 						if (player.countCards("h", { name: ["sha", "shan"] }) > 1) {
 							var evt = event.getParent();
 							evt.set("dcgue", true);
