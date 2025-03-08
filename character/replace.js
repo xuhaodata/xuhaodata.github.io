@@ -392,4 +392,5 @@ window.noname_character_replace = {
 	jsrg_limi: ["jsrg_limi", "ns_limi"],
 	pot_lougui: ["pot_lougui", "jsrg_lougui"],
 	ol_zhaozhong: ["ol_zhaozhong", "zhaozhong"],
+	friend_shitao: ["friend_shitao", "xia_shitao"],
 };

@@ -978,6 +978,22 @@ const translates = {
 	potdaozhuan_info: "每轮每种牌名限一次，你可以将你与当前回合角色的共X张牌置入弃牌堆（X为本回合所有角色使用牌的类别数，X为0则跳过此步骤），视为使用一张基本牌。若X不为0且当前回合角色因此失去了X张牌，则本轮此技能失效。",
 	potfuji: "符济",
 	potfuji_info: "出牌阶段限一次，你可以展示全场共计Y张手牌并令等量角色获得之（Y为场上其他角色数）。因此获得【杀】的角色使用【杀】造成的伤害+1直到你的下个回合开始；因此获得【闪】的角色使用【闪】结算完毕后摸一张牌直到你的下个回合开始。然后若你的手牌数为全场最低，则你获得摸两张牌，获得这两项效果直到你的下个回合开始。",
+	friend_cuijun: "友崔均",
+	friend_cuijun_prefix: "友",
+	friendshunyi: "顺逸",
+	friendshunyi_info: "当你使用点数唯一最小的手牌时，若此牌为红桃且此牌点数大于你本回合发动此技能的次数，则你可以将所有与此花色相同的手牌扣置于武将牌上直到回合结束，然后摸一张牌。",
+	friendbiwei: "鄙位",
+	friendbiwei_info: "出牌阶段限一次，你可以弃置手牌中点数唯一最大的手牌并令一名其他角色弃置大于等于此牌点数的所有手牌，若其未因此弃牌，则你重置此技能。",
+	friendgongli_cuijun: "共砺",
+	friendgongli_cuijun_info: "锁定技，游戏开始时，你为〖顺逸〗增加X个可触发花色（X为场上的友系列武将数）。",
+	friend_shitao: "友石韬",
+	friend_shitao_prefix: "友",
+	friendqinying: "钦英",
+	friendqinying_info: "出牌阶段限一次，你可以重铸任意张牌，视为使用一张【决斗】。此【决斗】结算流程中限X次（X为你以此法重铸的牌数），你或目标角色可以弃置自己区域里的一张牌，视为打出一张【杀】。",
+	friendlunxiong: "论雄",
+	friendlunxiong_info: "当你造成或受到伤害后，你可以弃置手牌中点数唯一最大的牌并摸三张牌，本局游戏你再次发动此技能弃置牌的点数须大于此牌的点数。",
+	friendgongli_shitao: "共砺",
+	friendgongli_shitao_info: "锁定技，游戏开始时，你为〖钦英〗减少X个可弃置类别（X为场上的友系列武将数）。",
 };
 
 export default translates;

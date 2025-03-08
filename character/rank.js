@@ -414,6 +414,7 @@ window.noname_character_rank = {
 		"ol_sb_dongzhuo",
 		"ol_sb_dengai",
 		"ol_qinlang",
+		"chentai",
 	],
 	am: [
 		"xuxin",
@@ -1367,6 +1368,7 @@ window.noname_character_rank = {
 		"re_huaxiong",
 		"ol_sb_huaxiong",
 		"ol_jsrg_lvbu",
+		"friend_cuijun",
 	],
 	b: [
 		"ol_xiahouen",
@@ -1719,7 +1721,6 @@ window.noname_character_rank = {
 		"vtb_xiaoshan",
 		"vtb_xiaotao",
 		"zhangchu",
-		"chentai",
 		"clan_zhongyan",
 		"sb_zhurong",
 		"haopu",
@@ -2587,8 +2588,11 @@ window.noname_character_rank = {
 			"jsrg_tufashujineng",
 			"jsrg_lukang",
 			"niufu",
+			"friend_cuijun",
+			"chentai",
 		],
 		rare: [
+			"friend_shitao",
 			"re_xiahouyuan",
 			"ol_guohuai",
 			"ol_fuhuanghou",

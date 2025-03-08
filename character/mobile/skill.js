@@ -2,6 +2,362 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//牢又寄双雄
+	//友崔均
+	friendshunyi: {
+		audio: 2,
+		trigger: { player: "useCard" },
+		getIndex(event, player) {
+			const evt = player.getHistory("lose", evt => evt.getParent() === event)[0];
+			return evt?.hs ?? [];
+		},
+		filter(event, player, name, card) {
+			const hs = player.getHistory("lose", evt => evt.getParent() === event)[0].hs;
+			const suit = get.suit(card, player),
+				number = get.number(card, player);
+			if (!["heart"].concat(player.getStorage("friendgongli_cuijun_shunyi")).includes(suit)) return false;
+			if (typeof number !== "number" || number <= (player.storage.counttrigger?.friendshunyi ?? 0)) return false;
+			if (!player.hasCard({ suit: suit }, "h")) return false;
+			const cards = [...hs, ...player.getCards("h")].unique().filter(i => {
+				return i !== card && typeof get.number(i, player) === "number";
+			});
+			return !cards.length || number < Math.min(...cards.map(i => get.number(i, player)));
+		},
+		prompt2(event, player, name, card) {
+			return "将所有" + get.translation(get.suit(card, player)) + "的牌扣置于武将牌上直到回合结束，然后摸一张牌";
+		},
+		check(event, player, name, card) {
+			const suit = get.suit(card, player),
+				names = player
+					.getCards("h", i => get.suit(i, player) === suit)
+					.map(i => get.name(i, player))
+					.unique();
+			let used = [];
+			for (const name of names) {
+				let cards = player.getCards("h", { name: name });
+				cards.sort((a, b) => player.getUseValue(b) - player.getUseValue(a));
+				used.addArray(cards.slice(0, player.getCardUsable(name)));
+			}
+			return get.effect(player, { name: "draw" }, player, player) >= used.reduce((sum, i) => sum + player.getUseValue(i), 0);
+		},
+		content() {
+			player.addTempSkill("friendshunyi_effect");
+			player.addToExpansion(player.getCards("h", { suit: get.suit(event.indexedData) }), player, "giveAuto").gaintag.add("friendshunyi_effect");
+			player.draw();
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				trigger: { global: "phaseEnd" },
+				filter(event, player) {
+					return player.getExpansions("friendshunyi_effect").length > 0;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const cards = player.getExpansions(event.name);
+					await player.gain(cards, "draw");
+					game.log(player, "收回了" + get.cnNumber(cards.length) + "张牌");
+					player.removeSkill(event.name);
+				},
+				intro: {
+					markcount: "expansion",
+					mark(dialog, storage, player) {
+						const cards = player.getExpansions("friendshunyi_effect");
+						if (player.isUnderControl(true)) dialog.addAuto(cards);
+						else return "共有" + get.cnNumber(cards.length) + "张牌";
+					},
+				},
+			},
+		},
+	},
+	friendbiwei: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			const info = get.info("friendbiwei");
+			return player.hasCard(card => info.filterCard(card, player), "h") && game.hasPlayer(target => info.filterTarget(null, player, target));
+		},
+		filterCard(card, player) {
+			const number = get.number(card, player);
+			if (!lib.filter.cardDiscardable(card, player) || typeof number !== "number") return false;
+			const cards = player.getCards("h", i => i !== card && typeof get.number(i, player) === "number");
+			return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+		},
+		position: "h",
+		filterTarget(card, player, target) {
+			return target !== player && target.countCards("h");
+		},
+		usable: 1,
+		check: card => 10 - get.value(card),
+		async content(event, trigger, player) {
+			const {
+					cards: [card],
+					target,
+				} = event,
+				number = get.number(card, player);
+			const cards = target.getDiscardableCards(target, "h", i => typeof get.number(i) === "number" && get.number(i) >= number);
+			if (cards.length) await target.discard(cards);
+			else delete player.getStat("skill")[event.name];
+		},
+		ai: {
+			order: 10,
+			result: {
+				player(player, target) {
+					return get.effect(target, { name: "guohe_copy", position: "h" }, player, player);
+				},
+			},
+		},
+	},
+	friendgongli_cuijun: {
+		audio: 2,
+		trigger: {
+			global: "phaseBefore",
+			player: "enterGame",
+		},
+		filter(event, player) {
+			if (lib.suit.every(suit => suit === "heart" || player.getStorage("friendgongli_cuijun_shunyi").includes(suit))) return false;
+			if (!game.hasPlayer(target => lib.characterSort?.mobile?.mobile_laoyouji?.some(name => get.is.playerNames(target, name)))) return false;
+			return event.name !== "phase" || game.phaseNumber === 0;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const num = game.countPlayer(target => lib.characterSort?.mobile?.mobile_laoyouji?.some(name => get.is.playerNames(target, name)));
+			const suits = lib.suit
+				.filter(suit => !(suit === "heart" || player.getStorage("friendgongli_cuijun_shunyi").includes(suit)))
+				.reverse()
+				.map(suit => "lukai_" + suit);
+			const choices =
+				suits.length > num
+					? await player
+							.chooseButton(["共砺：请选择可令〖顺逸〗触发的额外花色", [suits, "vcard"]], true, [1, num])
+							.set("ai", () => 1 + Math.random())
+							.forResult("links")
+					: suits.map(suit => ["", "", suit]);
+			if (choices?.length) {
+				player.addSkill("friendgongli_cuijun_shunyi");
+				player.markAuto(
+					"friendgongli_cuijun_shunyi",
+					choices.map(i => i[2].slice("lukai_".length))
+				);
+			}
+		},
+		subSkill: {
+			shunyi: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "可因$花色触发〖顺逸〗" },
+			},
+		},
+		ai: { combo: "friendshunyu" },
+	},
+	//友石韬
+	friendqinying: {
+		inherit: "dcctjiuxian",
+		selectCard: [1, Infinity],
+		async content(event, trigger, player) {
+			await player.recast(event.cards);
+			player.addTempSkill("friendqinying_effect");
+			const card = new lib.element.VCard({ name: "juedou", isCard: true, storage: { friendqinying: event.cards.length } });
+			await player.chooseUseTarget(card, true);
+		},
+		ai: {
+			order(item, player) {
+				return 0.9 * get.order({ name: "juedou" }, player);
+			},
+			tag: {
+				respond: 2,
+				respondSha: 2,
+				damage: 1,
+			},
+			result: {
+				player(player) {
+					const card = new lib.element.VCard({ name: "juedou", isCard: true, storage: { friendqinying: true } });
+					let target = null,
+						maxval = 0;
+					for (let i of game.filterPlayer()) {
+						if (!player.canUse(card, i)) continue;
+						let jdeff = get.effect(i, card, player, player);
+						if (jdeff < 0) continue;
+						if (jdeff / 5 > maxval) {
+							target = i;
+							maxval = jdeff / 5;
+						}
+					}
+					if (target) return maxval / 80;
+					return 0;
+				},
+			},
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				global: "friendqinying_global",
+			},
+			global: {
+				charlotte: true,
+				enable: "chooseToRespond",
+				filter(event, player) {
+					if (event.friendqinying || !(Array.isArray(event.respondTo) && (event.respondTo[1]?.storage?.friendqinying ?? 0) > 0)) return false;
+					const source = event.respondTo[0],
+						types = source.getStorage("friendgongli_shitao_qinying");
+					return player.hasCard(card => lib.filter.cardDiscardable(card, player) && !types.includes(get.type2(card)), "hej");
+				},
+				filterCard: () => false,
+				selectCard: [-2, -1],
+				prompt() {
+					const event = get.event();
+					const source = event.respondTo[0],
+						types = source.getStorage("friendgongli_shitao_qinying");
+					return '<span class="text center">' + ["此流程还可发动" + event.respondTo[1].storage.friendqinying + "次本效果", "弃置区域里的一张" + (types.length > 0 ? "非" + get.translation(types) : "") + "牌，视为打出【杀】"].map(str => "※" + str).join("<br>") + "</span>";
+				},
+				log: false,
+				viewAs: { name: "sha" },
+				async precontent(evt, trigger, player) {
+					const event = evt.getParent(),
+						types = event.respondTo[0].getStorage("friendgongli_shitao_qinying");
+					const bool = await player
+						.discardPlayerCard(player, "hej", true)
+						.set("types", types)
+						.set(
+							"prompt",
+							(() => {
+								return '###钦英###<div class="text center">弃置区域里的一张' + (types.length > 0 ? "非" + get.translation(types) : "") + "牌，视为打出【杀】</div>";
+							})()
+						)
+						.set("filterButton", button => !get.event().types.includes(get.type2(button.link)))
+						.forResult("bool");
+					if (bool) {
+						event.respondTo[1].storage.friendqinying--;
+						game.broadcastAll(
+							(card, storage) => {
+								card.storage = storage;
+							},
+							event.respondTo[1],
+							event.respondTo[1].storage
+						);
+					} else {
+						event.set("friendqinying", true);
+						event.goto(0);
+					}
+				},
+				ai: {
+					order(item, player) {
+						const card = new lib.element.VCard({ name: "shunshou" });
+						return get.effect(player, card, player, player) > 0 ? get.order(card, player) : 0.1;
+					},
+					respondSha: true,
+					skillTagFilter(player, tag, arg) {
+						if (arg !== "respond") return false;
+						const event = get.event();
+						if (event.friendqinying || !(Array.isArray(event?.respondTo) && (event.respondTo[1]?.storage?.friendqinying ?? 0) > 0)) return false;
+						const source = event.respondTo[0],
+							types = source.getStorage("friendgongli_shitao_qinying");
+						return player.hasCard(card => lib.filter.cardDiscardable(card, player) && !types.includes(get.type2(card)), "hej");
+					},
+				},
+			},
+		},
+	},
+	friendlunxiong: {
+		audio: 2,
+		trigger: {
+			player: "damageEnd",
+			source: "damageSource",
+		},
+		filter(event, player) {
+			const cardx = player.getCards("h", card => typeof get.number(card, player) === "number");
+			if (!cardx.length) return false;
+			return cardx.some(card => {
+				if (!lib.filter.cardDiscardable(card, player)) return false;
+				const number = get.number(card, player);
+				if (number <= (player.storage?.friendqinying ?? 0)) return false;
+				const cards = cardx.slice().remove(card);
+				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+			});
+		},
+		prompt2(event, player) {
+			const cardx = player.getCards("h", card => typeof get.number(card, player) === "number");
+			const card = cardx.find(card => {
+					if (!lib.filter.cardDiscardable(card, player)) return false;
+					const number = get.number(card, player);
+					if (number <= (player.storage?.friendqinying ?? 0)) return false;
+					const cards = cardx.slice().remove(card);
+					return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+				}),
+				number = get.number(card, player);
+			return "弃置" + get.translation(card) + "并摸三张牌，本局游戏发动此技能弃置牌的点数须大于" + number;
+		},
+		check(event, player) {
+			const cardx = player.getCards("h", card => typeof get.number(card, player) === "number");
+			const card = cardx.find(card => {
+				if (!lib.filter.cardDiscardable(card, player)) return false;
+				const number = get.number(card, player);
+				if (number <= (player.storage?.friendqinying ?? 0)) return false;
+				const cards = cardx.slice().remove(card);
+				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+			});
+			return get.effect(player, { name: "draw" }, player, player) * 3 > get.value(card, player);
+		},
+		async content(event, trigger, player) {
+			const cardx = player.getCards("h", card => typeof get.number(card, player) === "number");
+			if (!cardx.length) return;
+			const card = cardx.find(card => {
+				if (!lib.filter.cardDiscardable(card, player)) return false;
+				const number = get.number(card, player);
+				if (number <= (player.storage?.friendqinying ?? 0)) return false;
+				const cards = cardx.slice().remove(card);
+				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
+			});
+			if (card) {
+				const number = get.number(card, player);
+				await player.discard(card);
+				await player.draw(3);
+				player.storage[event.name] = number;
+				player.markSkill(event.name);
+			}
+		},
+		intro: { content: "发动〖论雄〗弃置牌的点数须大于#" },
+	},
+	friendgongli_shitao: {
+		audio: 2,
+		trigger: {
+			global: "phaseBefore",
+			player: "enterGame",
+		},
+		filter(event, player) {
+			if (lib.inpile.map(i => get.type2(i)).every(type => player.getStorage("friendgongli_shitao_qinying").includes(type))) return false;
+			if (!game.hasPlayer(target => lib.characterSort?.mobile?.mobile_laoyouji?.some(name => get.is.playerNames(target, name)))) return false;
+			return event.name !== "phase" || game.phaseNumber === 0;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			const num = game.countPlayer(target => lib.characterSort?.mobile?.mobile_laoyouji?.some(name => get.is.playerNames(target, name)));
+			const types = lib.inpile
+				.map(i => get.type2(i))
+				.unique()
+				.filter(type => !player.getStorage("friendgongli_shitao_qinying").includes(type));
+			const choices =
+				types.length > num
+					? await player
+							.chooseButton(["共砺：请选择不可令〖钦英〗弃置的类别", [types.map(type => [type, get.translation(type)]), "tdnodes"]], true, [1, num])
+							.set("ai", () => 1 + Math.random())
+							.forResult("links")
+					: types;
+			if (choices?.length) {
+				player.addSkill("friendgongli_shitao_qinying");
+				player.markAuto("friendgongli_shitao_qinying", choices);
+			}
+		},
+		subSkill: {
+			qinying: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "不可令〖钦英〗弃置$类别的牌" },
+			},
+		},
+		ai: { combo: "friendqinying" },
+	},
 	//孩子们，我来上班了
 	//清河公主
 	mbzengou: {
@@ -929,6 +1285,7 @@ const skills = {
 	friendpangtonggongli: {
 		audio: 2,
 		locked: true,
+		ai: { combo: "friendyangming" },
 	},
 	//牢又寄 —— 徐庶
 	friendxiaxing: {
@@ -1086,6 +1443,7 @@ const skills = {
 	friendxushugongli: {
 		audio: 2,
 		locked: true,
+		ai: { combo: "friendxiaxing" },
 	},
 	xuanjian_skill: {
 		equipSkill: true,
@@ -1365,6 +1723,7 @@ const skills = {
 	friendzhugelianggongli: {
 		audio: 2,
 		locked: true,
+		ai: { combo: "friendyance" },
 	},
 	//共励
 	friendgongli: {
