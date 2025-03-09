@@ -2,6 +2,111 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL谋文丑
+	olsblunzhan: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			const nums = Array.from({ length: 5 })
+				.map((_, i) => i + 1)
+				.removeArray(player.getStorage("olsblunzhan_used"));
+			return nums.length > 0 && player.countCards("he") >= Math.min(...nums);
+		},
+		filterCard: true,
+		selectCard: () => [1, 5],
+		filterOk: () => !get.player().getStorage("olsblunzhan_used").includes(ui.selected.cards.length),
+		viewAs: { name: "juedou", storage: { olsblunzhan: true } },
+		precontent() {
+			player.addTempSkill("olsblunzhan_used");
+			player.markAuto("olsblunzhan_used", event.result.cards.length);
+			player.addTempSkill("olsblunzhan_effect");
+		},
+		ai: {
+			order(item, player) {
+				return get.order({ name: "juedou" }, player) - 0.1;
+			},
+		},
+		locked: false,
+		mod: {
+			playerEnabled(card, player, target) {
+				if (card.storage?.olsblunzhan && player.getStorage("olsblunzhan_ban").includes(target)) return false;
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+			ban: {
+				charlotte: true,
+				onremove: true,
+			},
+			effect: {
+				charlottte: true,
+				audio: "olsblunzhan",
+				trigger: { source: "damageSource" },
+				filter(event, player) {
+					const evt = event.getParent(2);
+					if (!evt || evt.name !== "useCard" || evt.player !== player || !evt.card?.storage?.olsblunzhan) return false;
+					return evt.targets?.length === 1 && evt.targets[0] === event.player;
+				},
+				prompt2(event, player) {
+					const num = player.getHistory("useCard", evt => evt.targets?.includes(event.player)).length;
+					return "摸" + get.cnNumber(num) + "张牌，本回合不能再对其发动〖轮战〗";
+				},
+				logTarget: "player",
+				async content(event, trigger, player) {
+					await player.draw(player.getHistory("useCard", evt => evt.targets?.includes(trigger.player)).length);
+					player.addTempSkill("olsblunzhan_ban");
+					player.markAuto("olsblunzhan_ban", [trigger.player]);
+				},
+			},
+		},
+	},
+	olsbjuejue: {
+		audio: 2,
+		trigger: { player: "useCardToPlayer" },
+		filter(event, player) {
+			if (_status.currentPhase !== player) return false;
+			if (!event.isFirstTarget || event.targets.length !== 1 || event.target === player) return false;
+			return (
+				player
+					.getHistory("useCard", evt => {
+						if (!evt.olsbjuejue) return false;
+						return (evt.targets ?? []).length === 1 && evt.targets[0] !== player;
+					})
+					.indexOf(event.getParent()) === 0
+			);
+		},
+		forced: true,
+		logTarget: "target",
+		content() {
+			const { target } = trigger;
+			target.chooseToDiscard("he", true, player.getHistory("useCard", evt => evt.targets?.includes(target)).length);
+		},
+		group: "olsbjuejue_mark",
+		subSkill: {
+			mark: {
+				charlotte: true,
+				trigger: {
+					player: "loseEnd",
+					global: ["equipEnd", "addJudgeEnd", "gainEnd", "loseAsyncEnd", "addToExpansionEnd"],
+				},
+				filter(event, player) {
+					if (_status.currentPhase !== player) return false;
+					if (player.countCards("h") || event.getParent().name !== "useCard") return false;
+					const evt = event.getl(player);
+					return evt?.player == player && evt.hs?.length > 0;
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				content() {
+					trigger.getParent().set("olsbjuejue", true);
+				},
+			},
+		},
+	},
 	//OL谋张让
 	olsblucun: {
 		audio: 2,
