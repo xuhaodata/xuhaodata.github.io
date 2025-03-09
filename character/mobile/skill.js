@@ -6419,7 +6419,7 @@ const skills = {
 				else event.finish();
 			}
 			"step 4";
-			if (!result?.bool || !result.cards?.length || !!result.targets?.length) return;
+			if (!result?.bool || !result.cards?.length || !result.targets?.length) return;
 			var target = result.targets[0];
 			trigger.player.line(target);
 			trigger.player.give(result.cards, target);
@@ -20584,19 +20584,14 @@ const skills = {
 		forced: true,
 		filter(event, player) {
 			if (!lib.inpile.includes("ly_piliche")) return true;
-			return !!get.cardPile(function (card) {
-				return card.name == "ly_piliche";
-			});
+			return get.cardPile(card => card.name == "ly_piliche");
 		},
 		content() {
 			var card;
 			if (!lib.inpile.includes("ly_piliche")) {
 				card = game.createCard2("ly_piliche", "diamond", 1);
 				lib.inpile.push("ly_piliche");
-			} else
-				card = get.cardPile(function (card) {
-					return card.name == "ly_piliche";
-				});
+			} else card = get.cardPile(card => card.name == "ly_piliche");
 			player.chooseUseTarget(card, true, "nopopup");
 		},
 		group: "polu_damage",
