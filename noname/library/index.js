@@ -179,7 +179,7 @@ export class Library {
 		xiaojiu_emotion: 20,
 		biexiao_emotion: 18,
 		chaijun_emotion: 43,
-		huangdou_emotion: 20,
+		huangdou_emotion: 50,
 		maoshu_emotion: 18,
 	};
 	animate = {
