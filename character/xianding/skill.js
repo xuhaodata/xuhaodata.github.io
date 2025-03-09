@@ -2829,61 +2829,63 @@ const skills = {
 					break;
 				}
 			}
-			if (useCard && target.hasUseTarget(useCard)) {
-				const result = await target
-					.chooseControl("使用牌", "交换牌")
-					.set("choiceList", [`使用${get.translation(useCard)}`, `使用任意张手牌与${get.translation(showCards)}中的等量牌交换`])
-					.set("ai", () => {
-						if (_status.event.useValue > 2) return "使用牌";
-						return "交换牌";
-					})
-					.set("useValue", target.getUseValue(useCard))
-					.forResult();
-				if (result.control == "使用牌") {
-					await target.chooseUseTarget(useCard, true);
-					return;
-				}
-			}
-			if (!target.countCards("h") || !showCards.length) return;
-			const result = await target
-				.chooseToMove("告谏：是否交换其中任意张牌？")
-				.set("list", [
-					["你的手牌", target.getCards("h"), "dcgaojian_tag"],
-					["展示牌", showCards],
-				])
-				.set("filterMove", (from, to) => {
-					return typeof to != "number";
+			const goon1 = useCard && target.hasUseTarget(useCard);
+			const goon2 = showCards.length > 0 && target.countCards("h") > 0;
+			if (!goon1 && !goon2) return;
+			let resultx;
+			if (!goon1) resultx = { control: "交换牌" };
+			else if (!goon2) resultx = { control: "使用牌" };
+			else resultx = await target
+				.chooseControl("使用牌", "交换牌")
+				.set("choiceList", [`使用${get.translation(useCard)}`, `使用任意张手牌与${get.translation(showCards)}中的等量牌交换`])
+				.set("ai", () => {
+					if (_status.event.useValue > 2) return "使用牌";
+					return "交换牌";
 				})
-				.set("filterOk", moved => {
-					return moved[1].some(card => get.owner(card));
-				})
-				.set("processAI", list => {
-					const num = Math.min(list[0][1].length, list[1][1].length);
-					const player = get.event("player");
-					const cards1 = list[0][1].slice().sort((a, b) => get.value(a, "raw") - get.value(b, "raw"));
-					const cards2 = list[1][1].slice().sort((a, b) => get.value(b, "raw") - get.value(a, "raw"));
-					return [cards1.slice().addArray(cards2.slice(0, num)), cards2.slice().addArray(cards1.slice(0, num))];
-				})
+				.set("useValue", target.getUseValue(useCard))
 				.forResult();
-			if (result.bool) {
-				const lose = result.moved[1].slice();
-				const gain = result.moved[0].slice().filter(i => !get.owner(i));
-				if (lose.some(i => get.owner(i)))
-					await target.lose(
-						lose.filter(i => get.owner(i)),
-						ui.special
-					);
-				for (let i = lose.length - 1; i--; i >= 0) {
-					ui.cardPile.insertBefore(lose[i], ui.cardPile.firstChild);
-				}
-				game.updateRoundNumber();
-				if (gain.length) await target.gain(gain, "draw");
+			if (resultx.control == "使用牌") {
+				await target.chooseUseTarget(useCard, true);
 			} else {
-				if (!topCards.length) return;
-				for (let i = topCards.length - 1; i--; i >= 0) {
-					ui.cardPile.insertBefore(topCards[i], ui.cardPile.firstChild);
+				const result = await target
+					.chooseToMove("告谏：是否交换其中任意张牌？")
+					.set("list", [
+						["你的手牌", target.getCards("h"), "dcgaojian_tag"],
+						["展示牌", showCards],
+					])
+					.set("filterMove", (from, to) => {
+						return typeof to != "number";
+					})
+					.set("filterOk", moved => {
+						return moved[1].some(card => get.owner(card));
+					})
+					.set("processAI", list => {
+						const num = Math.min(list[0][1].length, list[1][1].length);
+						const cards1 = list[0][1].slice().sort((a, b) => get.value(a, "raw") - get.value(b, "raw"));
+						const cards2 = list[1][1].slice().sort((a, b) => get.value(b, "raw") - get.value(a, "raw"));
+						return [cards1.slice().addArray(cards2.slice(0, num)), cards2.slice().addArray(cards1.slice(0, num))];
+					})
+					.forResult();
+				if (result.bool) {
+					const lose = result.moved[1].slice();
+					const gain = result.moved[0].slice().filter(i => !get.owner(i));
+					if (lose.some(i => get.owner(i)))
+						await target.lose(
+							lose.filter(i => get.owner(i)),
+							ui.special
+						);
+					for (let i = lose.length - 1; i--; i >= 0) {
+						ui.cardPile.insertBefore(lose[i], ui.cardPile.firstChild);
+					}
+					game.updateRoundNumber();
+					if (gain.length) await target.gain(gain, "draw");
+				} else {
+					if (!showCards.length) return;
+					for (let i = showCards.length - 1; i--; i >= 0) {
+						ui.cardPile.insertBefore(showCards[i], ui.cardPile.firstChild);
+					}
+					game.updateRoundNumber();
 				}
-				game.updateRoundNumber();
 			}
 		},
 	},

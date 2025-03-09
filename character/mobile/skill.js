@@ -227,7 +227,7 @@ const skills = {
 								return '###钦英###<div class="text center">弃置区域里的一张' + (types.length > 0 ? "非" + get.translation(types) : "") + "牌，视为打出【杀】</div>";
 							})()
 						)
-						.set("logSkill", ["friendqinying", null, null, null, [3, 4]])
+						.set("logSkill", ["friendqinying", null, null, null, [get.rand(3, 4)]])
 						.set("filterButton", button => !get.event().types.includes(get.type2(button.link)))
 						.forResult("bool");
 					if (bool) {
