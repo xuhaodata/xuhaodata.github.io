@@ -1382,6 +1382,7 @@ export default () => {
 							return get.event().getTrigger().targets.includes(target) && target.countCards("he");
 						})
 						.set("ai", target => {
+							if (_status.event.player === target) return 0;
 							var att = get.attitude(_status.event.player, target);
 							if (att > 0) return Math.sqrt(att) / 10;
 							return 5 - att;
@@ -1390,7 +1391,7 @@ export default () => {
 				},
 				async content(event, trigger, player) {
 					const result = await event.targets[0]
-						.chooseToGive(player, "he", true, "give")
+						.chooseToGive(player, "he", true, `承赏：交给${get.translation(player)}一张牌，若为${get.translation(trigger.card.suit)}${get.strNumber(trigger.card.number)}则${get.translation(player)}失去此技能`)
 						.set("ai", card => {
 							const player = get.player(),
 								source = get.event().getParent().player,
