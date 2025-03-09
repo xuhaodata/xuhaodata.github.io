@@ -380,27 +380,29 @@ const skills = {
 	},
 	//浮云
 	hm_shuiqu: {
-		trigger: {
-			global: "phaseDiscardBegin",
-		},
+		trigger: { global: "phaseDiscardBegin" },
 		forced: true,
 		filter(event, player) {
-			return player.countCards("h");
+			const hs = player.getCards("h");
+			if (!hs.length) return false;
+			return hs.every(card => lib.filter.cardDiscardable(card, player, "hm_shuiqu"));
 		},
 		async content(event, trigger, player) {
-			const cards = await player.chooseToDiscard(Infinity, true).forResultCards();
-			if (cards.length > 1) {
-				const control = await player
+			await player.chooseToDiscard(true, "h", player.countCards("h"));
+			let result;
+			if (player.isDamaged())
+				result = await player
 					.chooseControl("baonue_hp", "baonue_maxHp", function (event, player) {
 						if (player.hp == player.maxHp) return "baonue_maxHp";
 						if (player.hp < player.maxHp - 1 || player.hp <= 2) return "baonue_hp";
 						return "baonue_hp";
 					})
-					.set("prompt", "随去：恢复1点体力或加1点体力上限")
-					.forResultControl();
-				if (control == "baonue_hp") await player.recover();
-				else await player.gainMaxHp(true);
-			}
+					.set("prompt", "随去：回复1点体力或加1点体力上限")
+					.forResult();
+			else result = { control: "baonue_maxHp" };
+			if (!result?.control) return;
+			if (result.control == "baonue_hp") await player.recover();
+			else await player.gainMaxHp();
 		},
 	},
 	hm_yure: {
@@ -410,22 +412,31 @@ const skills = {
 			global: "loseAsyncAfter",
 		},
 		filter(event, player) {
-			if (event.type != "discard" || event.getlx === false) return false;
-			var evt = event.getParent("phaseDiscard"),
-				evt2 = event.getl(player);
-			return evt && evt2 && evt.name == "phaseDiscard" && evt.player == player && evt2.cards2 && evt2.cards2.length > 0;
+			if (event.type != "discard" || event.getlx === false || !game.hasPlayer(current => player != current)) return false;
+			return event.getl?.(player)?.cards2?.someInD("d");
 		},
 		async cost(event, trigger, player) {
-			const next = player.chooseTarget();
-			next.set("filterTarget", lib.filter.notMe);
-			next.set("prompt", "【余热】:是否将此次所有弃置的牌交给一名其他角色");
-			const result = await next.forResult();
-			event.result = result;
+			const cards = trigger.getl(player).cards2.filterInD("d");
+			event.result = await player
+				.chooseTarget(lib.filter.notMe, get.prompt(event.skill), `将${get.translation(cards)}交给一名其他角色`)
+				.set("ai", target => {
+					const { player, cards } = get.event();
+					if (cards.length < 3) return 0;
+					let att = get.attitude(player, target);
+					if (att < 3) return 0;
+					if (target.hasSkillTag("nogain")) att /= 10;
+					if (target.hasJudge("lebu")) att /= 5;
+					if (target.hasSha() && cards.some(card => card.name == "sha")) att /= 5;
+					if (target.needsToDiscard(1) && cards.some(card => card.name == "wuxie")) att /= 5;
+					return att / (1 + get.distance(player, target, "absolute"));
+				})
+				.set("cards", cards)
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.awakenSkill("hm_yure");
-			await target.gain(trigger.getl(player).cards2, "gain2");
+			player.awakenSkill(event.name);
+			await target.gain(trigger.getl(player).cards2.filterInD("d"), "gain2").set("giver", player);
 		},
 	},
 	//陶升
