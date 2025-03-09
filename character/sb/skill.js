@@ -59,7 +59,7 @@ const skills = {
 							if (!vcard.length) return 0;
 							return Math.max(
 								...vcard.map(info => {
-									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon } });
 									return player.getUseValue(card, false);
 								})
 							);

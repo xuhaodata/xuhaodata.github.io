@@ -1089,7 +1089,7 @@ const skills = {
 								await target.addAdditionalSkills("potfuji_" + player.playerid, "potfuji_" + name, true);
 							}
 						}
-						if (player.isMaxHandcard()) {
+						if (player.isMinHandcard()) {
 							await player.draw(2);
 							player.addTempSkill("potfuji_clear", { player: "phaseBegin" });
 							await player.addAdditionalSkills("potfuji_" + player.playerid, ["potfuji_sha", "potfuji_shan"], true);
