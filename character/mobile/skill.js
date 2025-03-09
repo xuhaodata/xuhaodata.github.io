@@ -5,7 +5,7 @@ const skills = {
 	//孩子们，我来上班了
 	//清河公主
 	mbzengou: {
-		audio: 2,
+		audio: 3,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
 			if (player.getStorage("mbfeili_effect").includes(target)) return false;
@@ -350,7 +350,7 @@ const skills = {
 	//势娄圭
 	potguansha: {
 		limited: true,
-		audio: "jsrgninghan",
+		audio: 2,
 		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
 			return player.countCards("he");
@@ -388,7 +388,7 @@ const skills = {
 		},
 	},
 	potjiyu: {
-		audio: "jsrgshacheng",
+		audio: 3,
 		enable: "phaseUse",
 		filter(event, player) {
 			return player.hasCard(card => lib.filter.cardDiscardable(card, player), "h");

@@ -13298,6 +13298,7 @@ const skills = {
 	},
 	rezhiheng_new_simayi: { audio: 1 },
 	reqicai: {
+		audio: 2,
 		mod: {
 			targetInRange(card, player, target, now) {
 				var type = get.type(card);

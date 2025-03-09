@@ -5,14 +5,14 @@ const characterSort = {
 	sp_nvshi: ["ol_sunru", "ol_yuanji", "ol_dingshangwan", "lingju", "guanyinping", "zhangxingcai", "mayunlu", "dongbai", "zhaoxiang", "ol_zhangchangpu", "daxiaoqiao", "jin_guohuai", "ol_hujinding", "ol_luyusheng", "ol_liwan", "ol_dongxie", "kongshu"],
 	sp_shaowei: ["ol_pengyang", "simahui", "zhangbao", "zhanglu", "zhugeguo", "xujing", "zhangling", "huangchengyan", "zhangzhi", "lushi"],
 	sp_huben: ["wangkuang", "zhoufang", "duanjiong", "liupan", "ol_mengda", "caohong", "xiahouba", "zhugeke", "zumao", "wenpin", "litong", "mazhong", "heqi", "quyi", "luzhi", "yuejin", "dingfeng", "wuyan", "ol_zhuling", "tianyu", "huojun", "zhaoyǎn", "dengzhong", "ol_furong", "macheng", "ol_zhangyì", "ol_zhujun", "maxiumatie", "luoxian", "ol_huban", "haopu", "ol_qianzhao", "caimao", "chenggongying", "ol_wuanguo"],
-	sp_liesi: ["lvboshe", "mizhu", "weizi", "ol_liuba", "zhangshiping"],
+	sp_liesi: ["lvboshe", "mizhu", "weizi", "ol_liuba", "zhangshiping", "ol_zhaozhong"],
 	sp_default: ["sp_ol_liubei", "sp_ol_caocao", "re_jsp_pangtong", "sp_diaochan", "sp_zhaoyun", "sp_sunshangxiang", "sp_caoren", "sp_jiangwei", "sp_machao", "sp_caiwenji", "jsp_guanyu", "jsp_huangyueying", "sp_pangde", "sp_jiaxu", "yuanshu", "sp_zhangliao", "sp_ol_zhanghe", "sp_menghuo", "sp_sunce"],
 	sp_qifu: ["ol_xuelingyun", "ol_jiangwan", "ol_feiyi", "caoying", "panshu", "caochun", "yuantanyuanshang", "caoshuang", "wolongfengchu", "guansuo", "baosanniang", "fengfangnv", "jin_zhouchu"],
 	sp_wanglang: ["ol_nanhualaoxian", "ol_wanglang", "ol_puyuan", "ol_zhouqun"],
 	sp_zhongdan: ["cuiyan", "huangfusong"],
 	sp_guozhan2: ["sp_dongzhuo"],
 	sp_others: ["hanba", "caiyang"],
-	sp_waitforsort: ["ol_tw_zhangji", "ol_zhaozhong"],
+	sp_waitforsort: ["ol_tw_zhangji"],
 };
 
 const characterSortTranslate = {
