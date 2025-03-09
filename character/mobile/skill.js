@@ -274,7 +274,7 @@ const skills = {
 			return cardx.some(card => {
 				if (!lib.filter.cardDiscardable(card, player)) return false;
 				const number = get.number(card, player);
-				if (number <= (player.storage?.friendqinying ?? 0)) return false;
+				if (number <= (player.storage?.friendlunxiong ?? 0)) return false;
 				const cards = cardx.slice().remove(card);
 				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
 			});
@@ -284,7 +284,7 @@ const skills = {
 			const card = cardx.find(card => {
 					if (!lib.filter.cardDiscardable(card, player)) return false;
 					const number = get.number(card, player);
-					if (number <= (player.storage?.friendqinying ?? 0)) return false;
+					if (number <= (player.storage?.friendlunxiong ?? 0)) return false;
 					const cards = cardx.slice().remove(card);
 					return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
 				}),
@@ -296,7 +296,7 @@ const skills = {
 			const card = cardx.find(card => {
 				if (!lib.filter.cardDiscardable(card, player)) return false;
 				const number = get.number(card, player);
-				if (number <= (player.storage?.friendqinying ?? 0)) return false;
+				if (number <= (player.storage?.friendlunxiong ?? 0)) return false;
 				const cards = cardx.slice().remove(card);
 				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
 			});
@@ -308,7 +308,7 @@ const skills = {
 			const card = cardx.find(card => {
 				if (!lib.filter.cardDiscardable(card, player)) return false;
 				const number = get.number(card, player);
-				if (number <= (player.storage?.friendqinying ?? 0)) return false;
+				if (number <= (player.storage?.friendlunxiong ?? 0)) return false;
 				const cards = cardx.slice().remove(card);
 				return !cards.length || number > Math.max(...cards.map(i => get.number(i, player)));
 			});
@@ -426,7 +426,7 @@ const skills = {
 					list.length > 1
 						? await player
 								.chooseButton([get.translation(event.name) + "：请选择你要视为使用的基本牌", [list, "vcard"]], true)
-								.set("ai", button => get.player.getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }), false))
+								.set("ai", button => get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }), false))
 								.forResult("links")
 						: list;
 				if (choice) await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false);
