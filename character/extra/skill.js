@@ -1234,9 +1234,16 @@ const skills = {
 		audio: 2,
 		trigger: {
 			player: ["chooseToUseAfter", "chooseToRespondAfter"],
+			global: "_wuxieAfter",
 		},
 		filter(event, player) {
 			if (player.countMark("xinrenjie_used") >= 4) return false;
+			if (event.name == "chooseToUse" && event.type == "wuxie") return false;
+			if (event.name == "_wuxie") {
+				if (event.wuxieresult && event.wuxieresult == player) return false;
+				if (event._info_map.player == player) return false;
+				return true;
+			}
 			return event.respondTo && event.respondTo[0] !== player && !event.result.bool;
 		},
 		forced: true,
