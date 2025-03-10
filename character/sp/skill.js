@@ -20166,7 +20166,7 @@ const skills = {
 		mark: true,
 		intro: {
 			content(storage, player) {
-				return storage ? "每轮限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的基本牌。" : "每轮限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的普通锦囊牌。";
+				return `每轮限一次，你可以废除你的一个装备栏，视为使用一张未以此法使用过的${storage ? "基本" : "普通锦囊"}牌。`;
 			},
 		},
 		init(player) {
@@ -20175,43 +20175,36 @@ const skills = {
 		},
 		hiddenCard(player, name) {
 			if (player.storage.youlong2.includes(name) || !player.hasEnabledSlot()) return false;
-			if (player.hasSkill("youlong_" + (player.storage.youlong || false))) return false;
-			var type = get.type(name);
+			if (player.getStorage("youlong_used").includes(player.storage.youlong || false)) return false;
+			const type = get.type(name);
 			if (player.storage.youlong) return type == "basic";
 			return type == "trick";
 		},
 		filter(event, player) {
 			if (player.storage.youlong2.includes(name) || !player.hasEnabledSlot()) return false;
-			if (player.hasSkill("youlong_" + (player.storage.youlong || false))) return false;
-			var type = player.storage.youlong ? "basic" : "trick";
-			for (var name of lib.inpile) {
-				if (player.storage.youlong2.includes(name)) continue;
-				if (get.type(name) != type) continue;
-				if (event.filterCard({ name: name, isCard: true }, player, event)) return true;
-			}
-			return false;
+			if (player.getStorage("youlong_used").includes(player.storage.youlong || false)) return false;
+			const type = player.storage.youlong ? "basic" : "trick";
+			return get.inpileVCardList(info => {
+				if (info[0] != type) return false;
+				if (player.storage.youlong2.includes(info[2])) return false;
+				return event.filterCard({ name: info[2], nature: info[3], isCard: true }, player, event);
+			}).length;
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var dialog = ui.create.dialog("游龙", "hidden");
+				const dialog = ui.create.dialog("游龙", "hidden");
 				const equips = [];
 				for (let i = 1; i < 6; i++) {
 					if (!player.hasEnabledSlot(i)) continue;
 					equips.push([i, get.translation("equip" + i)]);
 				}
 				if (equips.length > 0) dialog.add([equips, "tdnodes"]);
-				var type = player.storage.youlong ? "basic" : "trick";
-				var list = [];
-				for (var name of lib.inpile) {
-					if (player.storage.youlong2.includes(name)) continue;
-					if (get.type(name) != type) continue;
-					if (event.filterCard({ name: name, isCard: true }, player, event)) {
-						list.push([type, "", name]);
-						if (name == "sha") {
-							for (var j of lib.inpile_nature) list.push(["基本", "", "sha", j]);
-						}
-					}
-				}
+				const type = player.storage.youlong ? "basic" : "trick";
+				const list = get.inpileVCardList(info => {
+					if (info[0] != type) return false;
+					if (player.storage.youlong2.includes(info[2])) return false;
+					return event.filterCard({ name: info[2], nature: info[3], isCard: true }, player, event);
+				});
 				dialog.add([list, "vcard"]);
 				return dialog;
 			},
@@ -20221,11 +20214,11 @@ const skills = {
 			},
 			select: 2,
 			check(button) {
-				var player = _status.event.player;
+				const player = get.player();
 				if (typeof button.link == "number") {
-					var card = player.getEquip(button.link);
+					const card = player.getEquip(button.link);
 					if (card) {
-						var val = get.value(card);
+						const val = get.value(card);
 						if (val > 0) return 0;
 						return 5 - val;
 					}
@@ -20240,7 +20233,7 @@ const skills = {
 							return (3 - player.hp) * 1.5;
 						case 1: {
 							if (
-								game.hasPlayer(function (current) {
+								game.hasPlayer(current => {
 									return (get.realAttitude || get.attitude)(player, current) < 0 && get.distance(player, current) > 1;
 								})
 							)
@@ -20249,10 +20242,10 @@ const skills = {
 						}
 					}
 				}
-				var name = button.link[2];
-				var evt = _status.event.getParent();
+				const name = button.link[2];
+				const evt = get.event().getParent();
 				if (evt.type == "phase") {
-					var card = { name: name, nature: button.link[3], isCard: true };
+					const card = { name: name, nature: button.link[3], isCard: true };
 					if (name == "shan") return 2;
 					if (evt.type == "dying") {
 						if (get.attitude(player, evt.dying) < 2) return false;
@@ -20265,13 +20258,11 @@ const skills = {
 			},
 			backup(links, player) {
 				if (typeof links[1] == "number") links.reverse();
-				var equip = links[0];
-				var name = links[1][2];
-				var nature = links[1][3];
+				const equip = links[0];
+				const name = links[1][2];
+				const nature = links[1][3];
 				return {
-					filterCard() {
-						return false;
-					},
+					filterCard: () => false,
 					selectCard: -1,
 					equip: equip,
 					viewAs: {
@@ -20284,7 +20275,8 @@ const skills = {
 					precontent() {
 						player.logSkill("youlong");
 						player.disableEquip(lib.skill.youlong_backup.equip);
-						player.addTempSkill("youlong_" + (player.storage.youlong || false), "roundStart");
+						player.addTempSkill("youlong_used", "roundStart");
+						player.markAuto("youlong_used", [player.storage.youlong || false]);
 						player.changeZhuanhuanji("youlong");
 						player.storage.youlong2.add(event.result.card.name);
 					},
@@ -20292,9 +20284,9 @@ const skills = {
 			},
 			prompt(links, player) {
 				if (typeof links[1] == "number") links.reverse();
-				var equip = "equip" + links[0];
-				var name = links[1][2];
-				var nature = links[1][3];
+				const equip = "equip" + links[0];
+				const name = links[1][2];
+				const nature = links[1][3];
 				return "废除自己的" + get.translation(equip) + "栏，视为使用" + (get.translation(nature) || "") + get.translation(name);
 			},
 		},
@@ -20303,24 +20295,24 @@ const skills = {
 			respondShan: true,
 			skillTagFilter(player, tag, arg) {
 				if (arg == "respond") return false;
-				if (!player.storage.youlong || player.hasSkill("youlong_true")) return false;
-				var name = tag == "respondSha" ? "sha" : "shan";
+				if (!player.storage.youlong || player.getStorage("youlong_used").includes(true)) return false;
+				const name = tag == "respondSha" ? "sha" : "shan";
 				return !player.storage.youlong2.includes(name);
 			},
 			order(item, player) {
 				if (player && _status.event.type == "phase") {
-					var max = 0,
+					let max = 0,
 						add = false;
-					var type = player.storage.youlong ? "basic" : "trick";
-					var list = lib.inpile.filter(name => get.type(name) == type && !player.storage.youlong2.includes(name));
+					const type = player.storage.youlong ? "basic" : "trick";
+					let list = lib.inpile.filter(name => get.type(name) == type && !player.storage.youlong2.includes(name));
 					if (list.includes("sha")) add = true;
 					list = list.map(namex => {
 						return { name: namex, isCard: true };
 					});
 					if (add) lib.inpile_nature.forEach(naturex => list.push({ name: "sha", nature: naturex, isCard: true }));
-					for (var card of list) {
+					for (const card of list) {
 						if (player.getUseValue(card) > 0) {
-							var temp = get.order(card);
+							const temp = get.order(card);
 							if (temp > max) max = temp;
 						}
 					}
@@ -20336,10 +20328,7 @@ const skills = {
 				},
 			},
 		},
-		subSkill: {
-			true: { charlotte: true },
-			false: { charlotte: true },
-		},
+		subSkill: { used: { charlotte: true, onremove: true } },
 	},
 	luanfeng: {
 		audio: 2,

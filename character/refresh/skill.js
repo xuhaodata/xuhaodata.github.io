@@ -14563,7 +14563,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		check(card) {
 			return 8 - get.value(card);
 		},
@@ -14585,22 +14585,49 @@ const skills = {
 		audio: 2,
 		audioname2: { ol_sb_jiangwei: "zhaxiang_ol_sb_jiangwei" },
 		trigger: { player: "loseHpEnd" },
+		filter(event, player) {
+			return player.isIn() && event.num > 0;
+		},
+		getIndex: event => event.num,
 		forced: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			player.draw(3);
+		async content(event, trigger, player) {
+			await player.draw(3);
 			if (player.isPhaseUsing()) {
-				player.addTempSkill("zhaxiang2");
-				player.addMark("zhaxiang2", 1, false);
+				player.addTempSkill(event.name + "_effect");
+				player.addMark(event.name + "_effect", 1, false);
 			}
-			"step 2";
-			if (event.count > 0 && player.hasSkill("zhaxiang") && !get.is.blocked("zhaxiang", player)) {
-				player.logSkill("zhaxiang");
-				event.goto(1);
-			}
+		},
+		subSkill: {
+			effect: {
+				mod: {
+					targetInRange(card, player, target, now) {
+						if (card.name == "sha" && get.color(card) == "red") return true;
+					},
+					cardUsable(card, player, num) {
+						if (card.name == "sha") return num + player.countMark("zhaxiang_effect");
+					},
+				},
+				charlotte: true,
+				onremove: true,
+				audio: "zhaxiang",
+				audioname2: { ol_sb_jiangwei: "zhaxiang_ol_sb_jiangwei" },
+				trigger: { player: "useCard" },
+				sourceSkill: "zhaxiang",
+				filter(event, player) {
+					return event.card?.name == "sha" && get.color(event.card) == "red";
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					trigger.directHit.addArray(game.players);
+				},
+				intro: { content: "<li>使用【杀】的次数上限+#<br><li>使用红色【杀】无距离限制且不能被【闪】响应" },
+				ai: {
+					directHit_ai: true,
+					skillTagFilter(player, tag, arg) {
+						return arg?.card?.name == "sha" && get.color(arg.card) == "red";
+					},
+				},
+			},
 		},
 		ai: {
 			maihp: true,
@@ -14615,50 +14642,9 @@ const skills = {
 						var using = target.isPhaseUsing();
 						if (target.hp <= 2) return [1, player.countCards("h") <= 1 && using ? 3 : 0];
 						if (using && target.countCards("h", { name: "sha", color: "red" })) return [1, 3];
-						return [
-							1,
-							target.countCards("h") <= target.hp ||
-							(using &&
-								game.hasPlayer(function (current) {
-									return current != player && get.attitude(player, current) < 0 && player.inRange(current);
-								}))
-								? 3
-								: 2,
-						];
+						return [1, target.countCards("h") <= target.hp || (using && game.hasPlayer(current => current != player && get.attitude(player, current) < 0 && player.inRange(current))) ? 3 : 2];
 					}
 				},
-			},
-		},
-	},
-	zhaxiang2: {
-		mod: {
-			targetInRange(card, player, target, now) {
-				if (card.name == "sha" && get.color(card) == "red") return true;
-			},
-			cardUsable(card, player, num) {
-				if (card.name == "sha") return num + player.storage.zhaxiang2;
-			},
-		},
-		charlotte: true,
-		onremove: true,
-		audio: "zhaxiang",
-		audioname2: { ol_sb_jiangwei: "zhaxiang_ol_sb_jiangwei" },
-		trigger: { player: "useCard" },
-		sourceSkill: "zhaxiang",
-		filter(event, player) {
-			return event.card && event.card.name == "sha" && get.color(event.card) == "red";
-		},
-		forced: true,
-		content() {
-			trigger.directHit.addArray(game.players);
-		},
-		intro: {
-			content: "<li>使用【杀】的次数上限+#<br><li>使用红色【杀】无距离限制且不能被【闪】响应",
-		},
-		ai: {
-			directHit_ai: true,
-			skillTagFilter(player, tag, arg) {
-				return arg.card.name == "sha" && get.color(arg.card) == "red";
 			},
 		},
 	},
