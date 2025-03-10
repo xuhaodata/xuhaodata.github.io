@@ -4888,7 +4888,7 @@ const skills = {
 								.then(() => {
 									var num = 0;
 									player.checkHistory("sourceDamage", evt => {
-										if (evt.card.storage.jsrgcuifeng) num += evt.num;
+										if (evt.card?.storage?.jsrgcuifeng) num += evt.num;
 									});
 									if (num == 0 || num > 1) {
 										player.restoreSkill("jsrgcuifeng");
@@ -4959,7 +4959,7 @@ const skills = {
 								.then(() => {
 									var targets = [];
 									player.checkHistory("useCard", evt => {
-										if (evt.card.storage.jsrgdengnan) targets.addArray(evt.targets);
+										if (evt.card.storage?.jsrgdengnan && evt.targets?.length) targets.addArray(evt.targets);
 									});
 									if (
 										targets.every(current => {
