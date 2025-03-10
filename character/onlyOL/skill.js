@@ -874,81 +874,80 @@ const skills = {
 		},
 	},
 	//OL界廖化
-	ol_dangxian: {
+	oldangxian: {
+		audio: 2,
 		trigger: { player: "phaseBegin" },
-		locked: true,
-		audio: "dangxian",
-		async cost(event, trigger, player) {
-			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
-			event.result = await player.chooseBool("是否从牌堆或弃牌堆获得一张【杀】？").forResult();
-		},
+		forced: true,
 		async content(event, trigger, player) {
-			const card = get.cardPile(function (card) {
-				return card.name == "sha";
-			});
-			if (card) await player.gain(card, "draw");
-			player
-				.when({ player: "phaseUseAfter" })
-				.filter((event, player) => {
-					return !player.getHistory("sourceDamage").length;
-				})
-				.then(function () {
-					player.damage();
-				});
+			player.addSkill("oldangxian_effect");
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
+		},
+		subSkill: {
+			effect: {
+				mod: {
+					targetInRange(card) {
+						if ((card.cards ?? []).length === 1) {
+							const card2 = card.cards[0];
+							if (get.itemtype(card2) === "card" && card2.hasGaintag("oldangxian")) return true;
+						}
+					},
+				},
+				charlotte: true,
+				audio: "oldangxian",
+				trigger: { player: ["phaseUseBegin", "phaseUseEnd"] },
+				filter(event, player, name) {
+					if (event._extraPhaseReason !== "oldangxian") return false;
+					return name.endsWith("Begin") || !player.hasHistory("sourceDamage", evt => evt.getParent(event.name) === event);
+				},
+				async cost(event, trigger, player) {
+					if (event.triggername.endsWith("Begin")) {
+						event.result = await player
+							.chooseBool("当先：是否从牌堆或弃牌堆获得一张无距离限制的【杀】？")
+							.set("prompt2", '<div class="text center">若如此做，此阶段结束时，若你未于此阶段造成过伤害，则你对自己造成1点伤害</div>')
+							.set(
+								"choice",
+								get.cardPile(card => card.name === "sha" && player.hasUseTarget(card, false))
+							)
+							.forResult();
+					} else event.result = { bool: true };
+				},
+				content() {
+					if (event.triggername.endsWith("Begin")) {
+						const card = get.cardPile({ name: "sha" });
+						if (card) player.gain(card, "draw").gaintag.add("oldangxian");
+					} else player.damage();
+				},
+			},
 		},
 	},
-	ol_fuli: {
+	olfuli: {
+		limited: true,
+		audio: 2,
+		enable: "chooseToUse",
+		filter(event, player) {
+			return event.type === "dying" && player !== event.dyin;
+		},
 		skillAnimation: true,
 		animationColor: "soil",
-		audio: "xinfuli",
-		limited: true,
-		enable: "chooseToUse",
-		locked: true,
-		init(player, skill) {
-			player.storage[skill] = false;
-		},
-		mark: true,
-		filter(event, player) {
-			if (event.type != "dying") return false;
-			if (player != event.dying) return false;
-			return true;
-		},
 		async content(event, trigger, player) {
-			player.awakenSkill("ol_fuli");
-			await player.recoverTo(game.countGroup());
-			await player.drawTo(game.countGroup());
-			let maxDamage = 0;
-			let bool = false;
-			player.getAllHistory("sourceDamage").forEach(evt => {
-				maxDamage += evt.num;
-			});
-			for (const i of get.players(null, true, true)) {
-				let num = 0;
-				i.getAllHistory("sourceDamage").forEach(evt => {
-					num += evt.num;
-				});
-				if (num > maxDamage) {
-					bool = true;
-				}
-			}
-			if (bool) {
-				await player.turnOver();
-			}
+			player.awakenSkill("olfuli");
+			const sum = game.countGroup();
+			await player.recoverTo(sum);
+			await player.drawTo(sum);
+			const maxDamage = player.getAllHistory("sourceDamage").forEach(evt => (maxDamage += evt.num));
+			if (maxDamage < sum) await player.turnOver();
 		},
 		ai: {
 			save: true,
 			skillTagFilter(player, arg, target) {
-				return player == target && player.storage.ol_fuli != true;
+				return player == target && player.storage.olfuli != true;
 			},
 			result: {
 				player: 10,
 			},
 			threaten(player, target) {
-				if (!target.storage.ol_fuli) return 0.9;
+				if (!target.storage.olfuli) return 0.9;
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	//OL谋黄月英

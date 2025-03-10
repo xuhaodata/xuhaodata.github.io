@@ -35,24 +35,23 @@ const skills = {
 				skills.remove(skill);
 				const skill2 = skills[0];
 				if (game.hasPlayer(target => target !== player && !target.hasSkill(skill2, null, false, false))) {
-					const [target] = await player
-						.chooseTarget(
-							"是否令一名其他角色获得〖" + get.translation(skill2) + "〗",
-							(card, player, target) => {
-								return target !== player && !target.hasSkill(get.event().skill, null, false, false);
-							},
-							true,
-							'<div class="text center">' + lib.translate[skill2 + "_info"] + "</div>"
-						)
-						.set("skill", skill2)
-						.set("ai", target => {
-							const player = get.player();
-							if (player.identity === "nei") return 0;
-							return get.attitude(player, target);
-						})
-						.forResult("targets");
+					const [target] =
+						(await player
+							.chooseTarget(
+								"是否令一名其他角色获得〖" + get.translation(skill2) + "〗",
+								(card, player, target) => {
+									return target !== player && !target.hasSkill(get.event().skill, null, false, false);
+								},
+								'<div class="text center">' + lib.translate[skill2 + "_info"] + "</div>"
+							)
+							.set("skill", skill2)
+							.set("ai", target => {
+								const player = get.player();
+								if (player.identity === "nei") return 0;
+								return get.attitude(player, target);
+							})
+							.forResult("targets")) ?? [];
 					if (target) {
-						player.addExpose(1145141919810);
 						player.line(target);
 						await target.addSkills(skill2);
 					}
@@ -1173,11 +1172,7 @@ const skills = {
 				}
 			}
 		},
-		intro: {
-			content(color) {
-				return "本轮声明的颜色为" + get.translation(color);
-			},
-		},
+		intro: { content: "本轮声明的颜色为$" },
 		subSkill: {
 			phaseChange: {
 				audio: "oljiaoyu",
@@ -1185,14 +1180,31 @@ const skills = {
 				forced: true,
 				async content(event, trigger, player) {
 					player.removeSkill(event.name);
-					for (const i of game.filterPlayer(c => player != c)) {
-						i.addTempSkill("oljiaoyu_debuff", {
-							global: ["phaseBeginStart", "phaseAfter"],
-							player: ["damageEnd"],
-						});
-						i.storage["oljiaoyu_debuff"] = player;
+					player.addTempSkill("oljiaoyu_ban");
+					const targets = game.filterPlayer(target => player !== target);
+					if (targets.length) {
+						for (const i of targets) {
+							i.storage["oljiaoyu_debuff"] = player;
+							i.addTempSkill("oljiaoyu_debuff");
+						}
 					}
 					trigger.phaseList.splice(trigger.num, 0, "phaseUse|oljiaoyu");
+				},
+			},
+			ban: {
+				charlotte: true,
+				onremove: true,
+				mod: {
+					cardEnabled(card, player) {
+						const event = get.event().getParent("phaseUse");
+						if (event?._extraPhaseReason !== "oljiaoyu" || event.player !== player) return;
+						if (get.color(card) !== player.storage.oljiaoyu) return false;
+					},
+					cardSavable(card, player) {
+						const event = get.event().getParent("phaseUse");
+						if (event?._extraPhaseReason !== "oljiaoyu" || event.player !== player) return;
+						if (get.color(card) !== player.storage.oljiaoyu) return false;
+					},
 				},
 			},
 			debuff: {
@@ -1201,18 +1213,32 @@ const skills = {
 				mod: {
 					cardEnabled(card, player) {
 						const owner = player.storage.oljiaoyu_debuff;
+						if (!owner) return;
 						if (owner.countCards("e", cardx => get.color(card) === get.color(cardx)) > 0) {
 							const event = get.event().getParent("phaseUse");
-							if (event?._extraPhaseReason === "oljiaoyu") return false;
+							if (event?._extraPhaseReason === "oljiaoyu" && event.player === owner) return false;
 						}
 					},
 					cardSavable(card, player) {
 						const owner = player.storage.oljiaoyu_debuff;
+						if (!owner) return;
 						if (owner.countCards("e", cardx => get.color(card) === get.color(cardx)) > 0) {
 							const event = get.event().getParent("phaseUse");
-							if (event?._extraPhaseReason === "oljiaoyu") return false;
+							if (event?._extraPhaseReason === "oljiaoyu" && event.player === owner) return false;
 						}
 					},
+				},
+				trigger: { global: "damageBegin3" },
+				filter(evt, player) {
+					const owner = player.storage.oljiaoyu_debuff;
+					if (!owner) return false;
+					const event = evt.getParent("phaseUse");
+					return event?._extraPhaseReason === "oljiaoyu" && event.player === owner;
+				},
+				forced: true,
+				popup: false,
+				content() {
+					player.removeSkill(event.name);
 				},
 			},
 		},

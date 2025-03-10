@@ -36,7 +36,7 @@ const characters = {
 	ol_zhangchunhua: ["female", "wei", 3, ["jueqing", "shangshi", "oljianmie"]],
 	ol_caochong: ["male", "wei", 3, ["olchengxiang", "olrenxin"]],
 	ol_caozhi: ["male", "wei", 3, ["reluoying", "oljiushi"]],
-	ol_liaohua: ["male", "shu", 4, ["ol_dangxian", "ol_fuli"]],
+	ol_liaohua: ["male", "shu", 4, ["oldangxian", "olfuli"]],
 };
 
 export default characters;

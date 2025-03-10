@@ -741,15 +741,16 @@ const skills = {
 						if (num >= 3) {
 							await player.loseHp();
 							if (game.hasPlayer(target => target !== player && target.countCards("h"))) {
-								const [target] = await player
-									.chooseTarget("是否获得一名其他角色的一张手牌？", (card, player, target) => {
-										return target !== player && target.countCards("h");
-									})
-									.set("ai", target => {
-										const player = get.player();
-										return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
-									})
-									.forResult("targets");
+								const [target] =
+									(await player
+										.chooseTarget("是否获得一名其他角色的一张手牌？", (card, player, target) => {
+											return target !== player && target.countCards("h");
+										})
+										.set("ai", target => {
+											const player = get.player();
+											return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
+										})
+										.forResult("targets")) ?? [];
 								if (target) {
 									player.line(target);
 									await player.gainPlayerCard(target, "h", true);
@@ -758,19 +759,20 @@ const skills = {
 						}
 						if (num >= 4) {
 							if (game.hasPlayer(target => target.countDiscardableCards(player, "ej"))) {
-								const [target] = await player
-									.chooseTarget(
-										"弃置场上的一张牌",
-										(card, player, target) => {
-											return target.countDiscardableCards(player, "ej");
-										},
-										true
-									)
-									.set("ai", target => {
-										const player = get.player();
-										return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
-									})
-									.forResult("targets");
+								const [target] =
+									(await player
+										.chooseTarget(
+											"弃置场上的一张牌",
+											(card, player, target) => {
+												return target.countDiscardableCards(player, "ej");
+											},
+											true
+										)
+										.set("ai", target => {
+											const player = get.player();
+											return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
+										})
+										.forResult("targets")) ?? [];
 								if (target) {
 									player.line(target);
 									await player.discardPlayerCard(target, "ej", true);
