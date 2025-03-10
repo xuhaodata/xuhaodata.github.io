@@ -15434,7 +15434,7 @@ const skills = {
 		content() {
 			if (!player.hasEquipableSlot(5) || player.getEquip("dagongche")) {
 				const evt = trigger.getParent("phase", true, true);
-				if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseUse|dcwanglu");
+				if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`);
 			} else {
 				var card = game.createCard("dagongche", "spade", 9);
 				player.$gain2(card);

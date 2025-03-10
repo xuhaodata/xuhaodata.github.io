@@ -1138,51 +1138,11 @@ const skills = {
 	//新李典
 	xinwangxi: {
 		audio: "wangxi",
-		trigger: { player: "damageEnd", source: "damageSource" },
-		filter(event) {
-			if (event._notrigger.includes(event.player)) return false;
-			return event.num && event.source && event.player && event.player.isIn() && event.source.isIn() && event.source != event.player;
-		},
-		check(event, player) {
-			if (player.isPhaseUsing()) return true;
-			if (event.player == player) return get.attitude(player, event.source) > -5;
-			return get.attitude(player, event.player) > -5;
-		},
-		logTarget(event, player) {
-			if (event.player == player) return event.source;
-			return event.player;
-		},
-		preHidden: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			event.target = lib.skill.xinwangxi.logTarget(trigger, player);
-			"step 1";
-			player.draw(2);
-			event.count--;
-			"step 2";
-			var cards = player.getCards("he");
-			if (cards.length > 0 && target.isIn()) {
-				if (cards.length == 1) event._result = { bool: true, cards: cards };
-				else player.chooseCard("he", "忘隙：交给" + get.translation(target) + "一张牌", true);
-			} else event.goto(4);
-			"step 3";
-			if (result.bool) {
-				player.give(result.cards, target);
-			}
-			"step 4";
-			if (event.count && target.isIn() && player.hasSkill("xinwangxi")) {
-				player.chooseBool(get.prompt2("xinwangxi", target));
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("xinwangxi", target);
-				event.goto(1);
-			}
-		},
-		ai: {
-			maixie: true,
-			maixie_hp: true,
+		inherit: "wangxi",
+		async content(event, trigger, player) {
+			const target = get.info(event.name).logTarget(trigger, player);
+			await player.draw(2);
+			if (player.countCards("he") && target.isIn()) await player.chooseToGive(target, "he", true);
 		},
 	},
 	//OL界火诸葛
@@ -2646,24 +2606,23 @@ const skills = {
 	oljieming: {
 		audio: 2,
 		trigger: { player: ["damageEnd", "die"] },
-		direct: true,
 		forceDie: true,
 		filter(event, player) {
 			if (event.name == "die") return true;
-			return player.isIn();
+			return player.isIn() && event.num > 0;
 		},
-		content() {
-			"step 0";
-			event.count = trigger.num || 1;
-			"step 1";
-			event.count--;
-			player
-				.chooseTarget(get.prompt2("oljieming"), function (card, player, target) {
+		getIndex(event) {
+			return event.num || 1;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
 					return target.maxHp > 0;
 				})
-				.set("ai", function (target) {
-					var att = get.attitude(_status.event.player, target);
-					var draw = Math.min(5, target.maxHp) - target.countCards("h");
+				.set("ai", target => {
+					const player = get.player();
+					let att = get.attitude(player, target);
+					let draw = Math.min(5, target.maxHp) - target.countCards("h");
 					if (draw >= 0) {
 						if (target.hasSkillTag("nogain")) att /= 6;
 						if (att > 2) {
@@ -2678,19 +2637,16 @@ const skills = {
 						}
 					}
 					return 0;
-				});
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("oljieming", target);
-				target.draw(Math.min(5, target.maxHp));
-			} else event.finish();
-			"step 3";
-			var num = target.countCards("h") - Math.min(5, target.maxHp);
-			if (num > 0) target.chooseToDiscard("h", true, num);
-			"step 4";
-			if (event.count > 0 && player.isIn() && player.hasSkill("oljieming")) event.goto(1);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			await target.draw(Math.min(5, target.maxHp));
+			let num = target.countCards("h") - Math.min(5, target.maxHp);
+			if (num > 0) await target.chooseToDiscard("h", true, num);
 		},
 		ai: {
 			expose: 0.2,
@@ -4687,7 +4643,7 @@ const skills = {
 				logTarget: "player",
 				content() {
 					const evt = trigger.getParent("phase", true, true);
-					if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|oljiezi");
+					if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|oljiezi");
 					trigger.player.removeMark("oljiezi", trigger.player.countMark("oljiezi"));
 				},
 			},
@@ -5670,55 +5626,37 @@ const skills = {
 			player: ["damageEnd"],
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
+		getIndex(event, player, triggername) {
+			return event.name == "damage" ? event.num : 1;
+		},
 		filter(event, player) {
-			if (event.name == "damage") return true;
+			if (event.name == "damage") return event.num > 0;
 			if (event.name == "loseAsync") {
 				if (event.type != "gain" || event.giver) return false;
-				var cards = event.getl(player).cards2;
-				return game.hasPlayer(function (current) {
+				return game.hasPlayer(current => {
 					if (current == player) return false;
-					var cardsx = event.getg(current);
-					for (var i of cardsx) {
-						if (cards.includes(i)) return true;
-					}
-					return false;
+					return event.getg?.(current).some(card => event.getl?.(player)?.cards2?.includes(card));
 				});
 			}
 			if (player == event.player) return false;
 			if (event.giver || event.getParent().name == "gift") return false;
-			var evt = event.getl(player);
-			return evt && evt.cards2 && evt.cards2.length > 0;
+			return event.getl?.(player)?.cards2?.length;
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			event.count = trigger.name == "damage" ? trigger.num : 1;
-			"step 1";
-			event.count--;
-			player.draw();
-			"step 2";
-			var hs = player.getCards("h");
-			if (hs.length) {
-				if (hs.length == 1) event._result = { bool: true, cards: hs };
-				else player.chooseCard("h", true, "选择一张手牌作为“权”");
-			} else event.goto(4);
-			"step 3";
-			if (result.bool && result.cards && result.cards.length) {
-				player.addToExpansion(result.cards, "giveAuto", player).gaintag.add("xinquanji");
-			}
-			"step 4";
-			if (event.count > 0 && player.hasSkill(event.name) && !get.is.blocked(event.name, player)) {
-				player.chooseBool(get.prompt2("xinquanji")).set("frequentSkill", event.name);
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("xinquanji");
-				event.goto(1);
+		async content(event, trigger, player) {
+			await player.draw();
+			const hs = player.getCards("h");
+			if (!hs.length) return;
+			const result = hs.length == 1 ? { bool: true, cards: hs } : await player.chooseCard("h", true, "选择一张手牌作为“权”").forResult();
+			if (result?.bool && result?.cards?.length) {
+				const next = layer.addToExpansion(result.cards, player, "give");
+				next.gaintag.add(event.name);
+				await next;
 			}
 		},
 		locked: false,
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) player.loseToDiscardpile(cards);
 		},
 		intro: {
@@ -6187,10 +6125,10 @@ const skills = {
 			//插入阶段，后来的先插
 			const evt = trigger.getParent("phase", true, true);
 			if (event.goon || result.index == 1) {
-				if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseUse|decadejingce");
+				if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`);
 			}
 			if (event.goon || result.index == 0) {
-				if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|decadejingce");
+				if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, `phaseDraw|${event.name}`);
 			}
 		},
 	},
@@ -7439,21 +7377,8 @@ const skills = {
 	},
 	reenyuan1: {
 		audio: "reenyuan",
-		trigger: { player: "gainEnd" },
+		inherit: "xinenyuan1",
 		sourceSkill: "reenyuan",
-		filter(event, player) {
-			if (!event.source || event.source == player || !event.source.isIn() || event.cards.length < 2) return false;
-			var evt = event.getl(event.source);
-			return evt && evt.cards2 && evt.cards2.length > 1;
-		},
-		check(event, player) {
-			return get.attitude(player, event.source) > 0;
-		},
-		logTarget: "source",
-		prompt2: "令该角色摸一张牌",
-		content() {
-			trigger.source.draw();
-		},
 	},
 	reenyuan2: {
 		audio: "reenyuan",
@@ -11415,28 +11340,11 @@ const skills = {
 		},
 	},
 	rexinsheng: {
-		unique: true,
-		audio: 2,
-		trigger: { player: "damageEnd" },
-		frequent: true,
-		content() {
-			"step 0";
-			event.num = trigger.num;
-			"step 1";
+		inherit: "xinsheng",
+		async content(event, trigger, player) {
 			lib.skill.rehuashen.addHuashens(player, 1);
-			"step 2";
-			if (--event.num > 0 && player.hasSkill(event.name) && !get.is.blocked(event.name, player)) {
-				player.chooseBool(get.prompt2("rexinsheng")).set("frequentSkill", event.name);
-			} else event.finish();
-			"step 3";
-			if (result.bool && player.hasSkill("rexinsheng")) {
-				player.logSkill("rexinsheng");
-				event.goto(1);
-			}
 		},
-		ai: {
-			combo: "rehuasheng",
-		},
+		ai: { combo: "rehuashen" },
 	},
 	reguhuo: {
 		audio: 2,
@@ -13719,49 +13627,34 @@ const skills = {
 	reganglie: {
 		audio: 2,
 		trigger: { player: "damageEnd" },
-		filter(event, player) {
-			return event.source != undefined && event.num > 0;
+		getIndex(event, player, triggername) {
+			if (get.mode() == "guozhan") return 1;
+			return event.num;
+		},
+		filter(event) {
+			return event.source?.isIn() && event.num > 0;
 		},
 		check(event, player) {
 			return get.attitude(player, event.source) <= 0;
 		},
 		logTarget: "source",
 		preHidden: true,
-		content() {
-			"step 0";
-			event.num = trigger.num;
-			if (get.mode() == "guozhan") event.num = 1;
-			"step 1";
-			player.judge(function (card) {
+		async content(event, trigger, player) {
+			const { source } = trigger;
+			const { result } = await player.judge(card => {
 				if (get.color(card) == "red") return 1;
 				return 0;
 			});
-			"step 2";
-			switch (result.color) {
+			switch (result?.color) {
 				case "black":
-					if (trigger.source.countCards("he")) {
-						player.discardPlayerCard(trigger.source, "he", true);
-					}
+					if (source.countDiscardableCards(player, "he")) await player.discardPlayerCard(source, "he", true);
 					break;
 
 				case "red":
-					if (trigger.source.isIn()) {
-						trigger.source.damage();
-					}
+					if (source.isIn()) await source.damage();
 					break;
 				default:
 					break;
-			}
-			event.num--;
-			if (event.num > 0 && player.hasSkill("reganglie")) {
-				player.chooseBool(get.prompt2("reganglie"));
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (result.bool) {
-				player.logSkill("reganglie", trigger.source);
-				event.goto(1);
 			}
 		},
 		ai: {
@@ -14563,7 +14456,7 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
 		check(card) {
 			return 8 - get.value(card);
 		},
@@ -14585,22 +14478,49 @@ const skills = {
 		audio: 2,
 		audioname2: { ol_sb_jiangwei: "zhaxiang_ol_sb_jiangwei" },
 		trigger: { player: "loseHpEnd" },
+		filter(event, player) {
+			return player.isIn() && event.num > 0;
+		},
+		getIndex: event => event.num,
 		forced: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			player.draw(3);
+		async content(event, trigger, player) {
+			await player.draw(3);
 			if (player.isPhaseUsing()) {
-				player.addTempSkill("zhaxiang2");
-				player.addMark("zhaxiang2", 1, false);
+				player.addTempSkill(event.name + "_effect");
+				player.addMark(event.name + "_effect", 1, false);
 			}
-			"step 2";
-			if (event.count > 0 && player.hasSkill("zhaxiang") && !get.is.blocked("zhaxiang", player)) {
-				player.logSkill("zhaxiang");
-				event.goto(1);
-			}
+		},
+		subSkill: {
+			effect: {
+				mod: {
+					targetInRange(card, player, target, now) {
+						if (card.name == "sha" && get.color(card) == "red") return true;
+					},
+					cardUsable(card, player, num) {
+						if (card.name == "sha") return num + player.countMark("zhaxiang_effect");
+					},
+				},
+				charlotte: true,
+				onremove: true,
+				audio: "zhaxiang",
+				audioname2: { ol_sb_jiangwei: "zhaxiang_ol_sb_jiangwei" },
+				trigger: { player: "useCard" },
+				sourceSkill: "zhaxiang",
+				filter(event, player) {
+					return event.card?.name == "sha" && get.color(event.card) == "red";
+				},
+				forced: true,
+				async content(event, trigger, player) {
+					trigger.directHit.addArray(game.players);
+				},
+				intro: { content: "<li>使用【杀】的次数上限+#<br><li>使用红色【杀】无距离限制且不能被【闪】响应" },
+				ai: {
+					directHit_ai: true,
+					skillTagFilter(player, tag, arg) {
+						return arg?.card?.name == "sha" && get.color(arg.card) == "red";
+					},
+				},
+			},
 		},
 		ai: {
 			maihp: true,
@@ -14615,50 +14535,9 @@ const skills = {
 						var using = target.isPhaseUsing();
 						if (target.hp <= 2) return [1, player.countCards("h") <= 1 && using ? 3 : 0];
 						if (using && target.countCards("h", { name: "sha", color: "red" })) return [1, 3];
-						return [
-							1,
-							target.countCards("h") <= target.hp ||
-							(using &&
-								game.hasPlayer(function (current) {
-									return current != player && get.attitude(player, current) < 0 && player.inRange(current);
-								}))
-								? 3
-								: 2,
-						];
+						return [1, target.countCards("h") <= target.hp || (using && game.hasPlayer(current => current != player && get.attitude(player, current) < 0 && player.inRange(current))) ? 3 : 2];
 					}
 				},
-			},
-		},
-	},
-	zhaxiang2: {
-		mod: {
-			targetInRange(card, player, target, now) {
-				if (card.name == "sha" && get.color(card) == "red") return true;
-			},
-			cardUsable(card, player, num) {
-				if (card.name == "sha") return num + player.storage.zhaxiang2;
-			},
-		},
-		charlotte: true,
-		onremove: true,
-		audio: "zhaxiang",
-		audioname2: { ol_sb_jiangwei: "zhaxiang_ol_sb_jiangwei" },
-		trigger: { player: "useCard" },
-		sourceSkill: "zhaxiang",
-		filter(event, player) {
-			return event.card && event.card.name == "sha" && get.color(event.card) == "red";
-		},
-		forced: true,
-		content() {
-			trigger.directHit.addArray(game.players);
-		},
-		intro: {
-			content: "<li>使用【杀】的次数上限+#<br><li>使用红色【杀】无距离限制且不能被【闪】响应",
-		},
-		ai: {
-			directHit_ai: true,
-			skillTagFilter(player, tag, arg) {
-				return arg.card.name == "sha" && get.color(arg.card) == "red";
 			},
 		},
 	},
@@ -14937,9 +14816,10 @@ const skills = {
 	wangxi: {
 		audio: 2,
 		trigger: { player: "damageEnd", source: "damageSource" },
+		getIndex: event => event.num,
 		filter(event) {
 			if (event._notrigger.includes(event.player)) return false;
-			return event.num && event.source && event.player && event.player.isIn() && event.source.isIn() && event.source != event.player;
+			return event.num && event.source?.isIn() && event.player?.isIn() && event.source != event.player;
 		},
 		check(event, player) {
 			if (player.isPhaseUsing()) return true;
@@ -14951,23 +14831,8 @@ const skills = {
 			return event.player;
 		},
 		preHidden: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			game.asyncDraw([trigger.player, trigger.source]);
-			event.count--;
-			"step 2";
-			game.delay();
-			"step 3";
-			if (event.count && player.hasSkill("wangxi")) {
-				player.chooseBool(get.prompt2("wangxi", lib.skill.wangxi.logTarget(trigger, player)));
-			} else event.finish();
-			"step 4";
-			if (result.bool) {
-				player.logSkill("wangxi", lib.skill.wangxi.logTarget(trigger, player));
-				event.goto(1);
-			}
+		async content(event, trigger, player) {
+			await game.asyncDraw([trigger.player, trigger.source].sortBySeat());
 		},
 		ai: {
 			maixie: true,

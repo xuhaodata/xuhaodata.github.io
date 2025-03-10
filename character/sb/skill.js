@@ -4595,33 +4595,30 @@ const skills = {
 				trigger: { player: "discardAfter" },
 				filter(event, player) {
 					const evt = event.getParent("sbliuli", true);
-					if (!evt || !evt.cards) return false;
-					if (player.hasSkill("sbliuli_used")) return false;
+					if (!evt?.cards?.length) return false;
 					return get.suit(evt.cards[0]) == "heart";
 				},
-				direct: true,
-				content() {
-					"step 0";
-					var sourcex = trigger.getParent("sbliuli", true).getTrigger().player;
-					player
+				usable: 1,
+				popup: false,
+				async cost(event, trigger, player) {
+					const sourcex = trigger.getParent("sbliuli", true).getTrigger().player;
+					event.result = await player
 						.chooseTarget("流离：是否令一名不为" + get.translation(sourcex) + "的其他角色获得“流离”标记？", (card, player, target) => {
-							return target != player && target != _status.event.sourcex;
+							return target != player && target != get.event().sourcex;
 						})
 						.set("ai", target => {
-							return get.attitude(_status.event.player, target);
+							return get.attitude(get.player(), target);
 						})
-						.set("sourcex", sourcex);
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.line(target, "green");
-						game.countPlayer(i => i.removeSkill("sbliuli_dangxian"));
-						target.addSkill("sbliuli_dangxian");
-						player.addTempSkill("sbliuli_used");
-					}
+						.set("sourcex", sourcex)
+						.forResult();
+				},
+				content() {
+					const target = event.targets[0];
+					player.line(target, "green");
+					game.countPlayer(current => current.removeSkill("sbliuli_dangxian"));
+					target.addSkill("sbliuli_dangxian");
 				},
 			},
-			used: { charlotte: true },
 			dangxian: {
 				trigger: { player: "phaseBegin" },
 				forced: true,
@@ -4629,9 +4626,9 @@ const skills = {
 				mark: true,
 				marktext: "流",
 				intro: { content: "回合开始时，执行一个额外的出牌阶段" },
-				content() {
-					trigger.phaseList.splice(trigger.num, 0, `phaseUse|sbliuli`);
-					player.removeSkill("sbliuli_dangxian");
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 				},
 			},
 		},
@@ -7461,59 +7458,60 @@ const skills = {
 	sbkurou: {
 		audio: 2,
 		trigger: { player: "phaseUseBegin" },
-		direct: true,
-		group: "sbkurou_gain",
-		content() {
-			"step 0";
-			player.chooseCardTarget({
-				prompt: get.prompt("sbkurou"),
-				prompt2: "交给其他角色一张牌，若此牌为【桃】或【酒】，你失去2点体力，否则你失去1点体力",
-				filterCard: true,
-				position: "he",
-				filterTarget: lib.filter.notMe,
-				ai1(card) {
-					if ((player.hp <= 1 && !player.canSave(player)) || player.hujia >= 5) return 0;
-					if (
-						get.value(card, player) > 6 &&
-						!game.hasPlayer(current => {
-							return current != player && get.attitude(current, player) > 0 && !current.hasSkillTag("nogain");
-						})
-					)
-						return 0;
-					if (
-						player.hp >= 2 &&
-						(card.name == "tao" ||
-							(card.name == "jiu" &&
-								player.countCards("hs", cardx => {
-									return cardx != card && get.tag(cardx, "save");
-								}))) &&
-						player.hujia <= 1
-					)
-						return 10;
-					if (player.hp <= 1 && !player.canSave(player)) return 0;
-					return 1 / Math.max(0.1, get.value(card));
-				},
-				ai2(target) {
-					var player = _status.event.player,
-						att = get.attitude(player, target);
-					if (ui.selected.cards.length) {
-						var val = get.value(ui.selected.cards[0]);
-						att *= val >= 0 ? 1 : -1;
-					}
-					if (target.hasSkillTag("nogain")) att /= 9;
-					return 15 + att;
-				},
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0],
-					card = result.cards[0];
-				player.logSkill("sbkurou", target);
-				if (get.mode() !== "identity" || player.identity !== "nei") player.addExpose(0.15);
-				player.give(card, target);
-				player.loseHp(["tao", "jiu"].includes(get.name(card, target)) ? 2 : 1);
-			}
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseCardTarget({
+					prompt: get.prompt(event.skill),
+					prompt2: "交给其他角色一张牌，若此牌为【桃】或【酒】，你失去2点体力，否则你失去1点体力",
+					filterCard: true,
+					position: "he",
+					filterTarget: lib.filter.notMe,
+					ai1(card) {
+						const player = get.player();
+						if ((player.hp <= 1 && !player.canSave(player)) || player.hujia >= 5) return 0;
+						if (
+							get.value(card, player) > 6 &&
+							!game.hasPlayer(current => {
+								return current != player && get.attitude(current, player) > 0 && !current.hasSkillTag("nogain");
+							})
+						)
+							return 0;
+						if (
+							player.hp >= 2 &&
+							(card.name == "tao" ||
+								(card.name == "jiu" &&
+									player.countCards("hs", cardx => {
+										return cardx != card && get.tag(cardx, "save");
+									}))) &&
+							player.hujia <= 1
+						)
+							return 10;
+						if (player.hp <= 1 && !player.canSave(player)) return 0;
+						return 1 / Math.max(0.1, get.value(card));
+					},
+					ai2(target) {
+						let player = get.player(),
+							att = get.attitude(player, target);
+						if (ui.selected.cards.length) {
+							const val = get.value(ui.selected.cards[0]);
+							att *= val >= 0 ? 1 : -1;
+						}
+						if (target.hasSkillTag("nogain")) att /= 9;
+						return 15 + att;
+					},
+				})
+				.forResult();
 		},
+		async content(event, trigger, player) {
+			const {
+				cards,
+				targets: [target],
+			} = event;
+			if (get.mode() !== "identity" || player.identity !== "nei") player.addExpose(0.15);
+			await player.give(cards, target);
+			await player.loseHp(["tao", "jiu"].includes(get.name(cards[0], target)) ? 2 : 1);
+		},
+		group: "sbkurou_gain",
 		ai: {
 			nokeep: true,
 			skillTagFilter(player, tag, arg) {
@@ -7527,18 +7525,11 @@ const skills = {
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return player.isIn() && player.hujia < 5;
+					return player.isIn() && player.hujia < 5 && event.num > 0;
 				},
-				content() {
-					"step 0";
-					event.count = trigger.num;
-					"step 1";
-					player.changeHujia(2, null, true);
-					"step 2";
-					if (--event.count > 0) {
-						player.logSkill("sbkurou_gain");
-						event.goto(1);
-					}
+				getIndex: event => event.num,
+				async content(event, trigger, player) {
+					await player.changeHujia(2, null, true);
 				},
 				ai: {
 					maihp: true,

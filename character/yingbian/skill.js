@@ -1171,17 +1171,12 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {
-			return (
-				player.getStorage("wanyi2").length < 4 &&
-				player.hasCard(function (i) {
-					return get.is.yingbian(i);
-				}, "hs")
-			);
+			return player.getStorage("wanyi_used").length < 4 && player.hasCard(card => get.is.yingbian(card), "hs");
 		},
 		chooseButton: {
 			dialog(event, player) {
 				var list = ["zhujinqiyuan", "chuqibuyi", "shuiyanqijunx", "dongzhuxianji"];
-				list.removeArray(player.getStorage("wanyi2"));
+				list.removeArray(player.getStorage("wanyi_used"));
 				return ui.create.dialog("婉嫕", [list, "vcard"], "hidden");
 			},
 			filter(button, player) {
@@ -1205,9 +1200,8 @@ const skills = {
 					},
 					position: "hs",
 					onuse(links, player) {
-						if (!player.storage.wanyi2) player.storage.wanyi2 = [];
-						player.storage.wanyi2.add(links.card.name);
-						player.addTempSkill("wanyi2");
+						player.addTempSkill("wanyi_used");
+						player.markAuto("wanyi_used", [links.card.name]);
 					},
 				};
 			},
@@ -1217,8 +1211,13 @@ const skills = {
 		},
 		subSkill: { backup: {} },
 		ai: { order: 8, result: { player: 1 } },
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+		},
 	},
-	wanyi2: { onremove: true },
 	maihuo: {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
