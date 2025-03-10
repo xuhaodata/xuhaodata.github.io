@@ -10086,22 +10086,18 @@ const skills = {
 		forced: true,
 		derivation: "paiyi",
 		filter(event, player) {
-			return !player.hasSkill("paiyi") && player.getExpansions("quanji").length >= 3;
+			return player.countExpansions("quanji") >= 3;
 		},
-		content() {
-			"step 0";
-			player.awakenSkill("zili");
-			player.chooseDrawRecover(2, true, function (event, player) {
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			await player.loseMaxHp();
+			await player.chooseDrawRecover(2, true, (event, player) => {
 				if (player.hp == 1 && player.isDamaged()) return "recover_hp";
 				return "draw_card";
 			});
-			"step 1";
-			player.loseMaxHp();
-			player.addSkills("paiyi");
+			await player.addSkills("paiyi");
 		},
-		ai: {
-			combo: "quanji",
-		},
+		ai: { combo: "quanji" },
 	},
 	paiyi: {
 		enable: "phaseUse",

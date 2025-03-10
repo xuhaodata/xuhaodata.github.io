@@ -4172,55 +4172,11 @@ const skills = {
 	//李典光速通渠传说
 	junkwangxi: {
 		audio: "wangxi",
-		trigger: { player: "damageEnd", source: "damageSource" },
-		filter(event) {
-			if (event._notrigger.includes(event.player)) return false;
-			return event.num && event.source && event.player && event.player.isIn() && event.source.isIn() && event.source != event.player;
-		},
-		check(event, player) {
-			if (player.isPhaseUsing()) return true;
-			if (event.player == player) return get.attitude(player, event.source) > -5;
-			return get.attitude(player, event.player) > -5;
-		},
-		logTarget(event, player) {
-			if (event.player == player) return event.source;
-			return event.player;
-		},
-		preHidden: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			event.target = lib.skill.junkwangxi.logTarget(trigger, player);
-			"step 1";
-			player.draw(2).gaintag = ["junkwangxi_tag"];
-			event.count--;
-			"step 2";
-			var cards = player.getCards("he", card => card.hasGaintag("junkwangxi_tag"));
-			if (cards.length > 0 && target.isIn()) {
-				if (cards.length == 1) event._result = { bool: true, cards: cards };
-				else
-					player.chooseCard("he", "忘隙：交给" + get.translation(target) + "一张牌", true, function (card) {
-						return card.hasGaintag("junkwangxi_tag");
-					});
-			} else event.goto(4);
-			"step 3";
-			if (result.bool) {
-				player.give(result.cards, target);
-			}
-			"step 4";
-			player.removeGaintag("junkwangxi_tag");
-			if (event.count && target.isIn() && player.hasSkill("junkwangxi")) {
-				player.chooseBool(get.prompt2("junkwangxi", target));
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("junkwangxi", target);
-				event.goto(1);
-			}
-		},
-		ai: {
-			maixie: true,
-			maixie_hp: true,
+		inherit: "wangxi",
+		async content(event, trigger, player) {
+			const target = get.info(event.name).logTarget(trigger, player);
+			const { result } = await player.draw(2);
+			if (get.itemtype(result) == "cards" && target.isIn() && player.hasCard(card => result.includes(card), "he")) await player.chooseToGive(target, "he", true, card => get.event("cards")?.includes(card)).set("cards", result);
 		},
 	},
 	//2013标准包双蜀黑
@@ -7409,20 +7365,17 @@ const skills = {
 	nstaiping_nh: {
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return !event.nshuanxian && player.getSubPlayers("nshuanxian").length;
+			return !event.nshuanxian && player.getSubPlayers("nshuanxian").length && event.num > 0;
 		},
-		direct: true,
+		getIndex: event => event.num,
 		priority: -0.1,
-		content() {
-			"step 0";
-			event.num = trigger.num;
-			"step 1";
-			var left = player.storage.nshuanxian_left;
-			var right = player.storage.nshuanxian_right;
-			var list = [];
-			var choice = 0;
-			var hpleft = 0;
-			var maxleft = 0;
+		async cost(event, trigger, player) {
+			const left = player.storage.nshuanxian_left;
+			const right = player.storage.nshuanxian_right;
+			const list = [];
+			let choice = 0;
+			let hpleft = 0;
+			let maxleft = 0;
 			if (left && player.hasSkill(left)) {
 				if (player.storage[left].hp < player.storage[left].maxHp) {
 					list.push("令幻身·左回复1点体力");
@@ -7446,45 +7399,46 @@ const skills = {
 				}
 			}
 			if (!list.length) {
-				event.finish();
 				return;
 			}
-			event.map = {};
+			let map = {};
 			for (var i = 0; i < list.length; i++) {
-				event.map["选项" + get.cnNumber(i + 1, true)] = list[i];
+				map["选项" + get.cnNumber(i + 1, true)] = list[i];
 			}
-			player
-				.chooseControlList(list, function () {
-					return _status.event.choice;
-				})
+			const result = await player
+				.chooseControlList(list, () => get.event().choice)
 				.set("prompt", get.prompt("nstaiping_nh"))
-				.set("choice", choice);
-			"step 2";
-			var left = player.storage.nshuanxian_left;
-			var right = player.storage.nshuanxian_right;
-			if (result.control != "cancel2") {
-				player.logSkill("nstaiping_nh");
-				switch (event.map[result.control]) {
-					case "令幻身·左回复1点体力":
-						player.storage[left].hp++;
-						break;
-					case "令幻身·左增加1点体力上限":
-						player.storage[left].maxHp++;
-						break;
-					case "令幻身·右回复1点体力":
-						player.storage[right].hp++;
-						break;
-					case "令幻身·右增加1点体力上限":
-						player.storage[right].maxHp++;
-						break;
-				}
-				game.log(player, event.map[result.control].replace(/一/, "了一"));
+				.set("choice", choice)
+				.forResult();
+			event.result = {
+				bool: result.control != "cancel2",
+				cost_data: {
+					control: result.control,
+					map: map,
+				},
+			};
+		},
+		async content(event, trigger, player) {
+			const {
+				cost_data: { control, map },
+			} = event;
+			const left = player.storage.nshuanxian_left;
+			const right = player.storage.nshuanxian_right;
+			switch (map[control]) {
+				case "令幻身·左回复1点体力":
+					player.storage[left].hp++;
+					break;
+				case "令幻身·左增加1点体力上限":
+					player.storage[left].maxHp++;
+					break;
+				case "令幻身·右回复1点体力":
+					player.storage[right].hp++;
+					break;
+				case "令幻身·右增加1点体力上限":
+					player.storage[right].maxHp++;
+					break;
 			}
-			"step 3";
-			if (event.num > 1) {
-				event.num--;
-				event.goto(1);
-			}
+			game.log(player, map[control].replace(/一/, "了一"));
 		},
 		ai: {
 			maixie: true,

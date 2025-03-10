@@ -4566,15 +4566,14 @@ const skills = {
 		unique: true,
 		trigger: { player: "damageEnd" },
 		frequent: true,
-		getIndex(event, player) {
+		getIndex: event => event.num,
+		filter(event) {
 			return event.num;
 		},
 		async content(event, trigger, player) {
 			lib.skill.huashen.addHuashens(player, 1);
 		},
-		ai: {
-			combo: "huashen",
-		},
+		ai: { combo: "huashen" },
 	},
 	huoshou: {
 		audio: "huoshou1",

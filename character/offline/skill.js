@@ -16083,54 +16083,39 @@ const skills = {
 	},
 	//桌游志贴纸
 	spyinzhi: {
-		trigger: { player: "damageEnd" },
-		frequent: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			var cards = game.cardsGotoOrdering(get.cards(2)).cards;
-			player.showCards(cards);
-			event.count2 = 0;
-			for (var i = 0; i < cards.length; i++) {
-				if (get.suit(cards[i]) == "spade") {
-					event.count2++;
-					cards.splice(i--, 1);
-				}
-			}
-			event.cards = cards;
-			if (!event.count2 || !trigger.source) event.goto(4);
-			"step 2";
-			event.count2--;
-			if (trigger.source.countCards("h") > 0) {
-				player
-					.chooseTarget("令一名角色获得" + get.translation(trigger.source) + "的一张手牌", function (card, player, target) {
-						var source = _status.event.source;
-						return target != source && source.countGainableCards(target, "h") > 0;
-					})
-					.set("source", trigger.source);
-			} else event.goto(4);
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.line([trigger.source, target], "green");
-				target.gainPlayerCard(trigger.source, "h", true);
-				if (event.count2) event.goto(2);
-			}
-			"step 4";
-			if (cards.length) player.gain(cards, "gain2", "log");
-			"step 5";
-			if (event.count > 0 && player.hasSkill(event.name) && !get.is.blocked(event.name, player)) {
-				player.chooseBool(get.prompt2("spyinzhi")).set("frequentSkill", event.name);
-			} else event.finish();
-			"step 6";
-			if (result.bool) {
-				player.logSkill("spyinzhi");
-				event.goto(1);
-			}
-		},
-	},
+						trigger: { player: "damageEnd" },
+						frequent: true,
+						filter(event, player) {
+							return event.num > 0;
+						},
+						getIndex: event => event.num,
+						async content(event, trigger, player) {
+							let cards = get.cards(2);
+							await game.cardsGotoOrdering(cards);
+							await player.showCards(cards);
+							const { source } = trigger;
+							let count = cards.filter(card => get.suit(card) == "spade").length;
+							while (count-- && source?.isIn() && game.hasPlayer(current => current != source && source.countGainableCards(current, "h"))) {
+								const { result } = await player
+									.chooseTarget(`令一名角色获得${get.translation(source)}的一张手牌`, (card, player, target) => {
+										const source = get.event().source;
+										return target != source && source.countGainableCards(target, "h");
+									})
+									.set("source", source)
+									.set("ai", target => {
+										const { player, source } = get.event();
+										return get.effect(target, { name: "shunshou_copy", position: "h" }, source, player);
+									});
+								if (result?.targets?.length) {
+									const [target] = result.targets;
+									player.line([source, target], "green");
+									if (source.countGainableCards(target, "h")) await target.gainPlayerCard(source, "h", true);
+								}
+							}
+							cards = cards.filter(card => get.suit(card) != "spade");
+							if (cards.length) await player.gain(cards, "gain2", "log");
+						},
+					},
 	spmingjian: {
 		trigger: { global: "phaseBegin" },
 		direct: true,

@@ -9160,57 +9160,42 @@ const skills = {
 		audio: "rangjie",
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return player.canMoveCard();
+			return player.canMoveCard() && event.num > 0;
 		},
 		check(event, player) {
 			return player.canMoveCard(true);
 		},
-		content() {
-			"step 0";
-			event.num = trigger.num;
-			"step 1";
-			event.num--;
-			if (player.canMoveCard()) player.moveCard(true);
-			"step 2";
-			if (result.bool) {
-				var card = result.card;
-				var suit = get.suit(card, false);
-				var cards = Array.from(ui.discardPile.childNodes);
-				var gains = [];
-				var history = game.getGlobalHistory("cardMove", evt => {
-					if (evt.name == "lose") return evt.position == ui.discardPile;
-					return evt.name == "cardsDiscard";
+		getIndex: event => event.num,
+		async content(event, trigger, player) {
+			if (!player.canMoveCard()) return;
+			const result = await player.moveCard(true).forResult();
+			if (!result?.card) return;
+			const suit = get.suit(result.card, false);
+			const cards = Array.from(ui.discardPile.childNodes);
+			const gains = [];
+			const history = game.getGlobalHistory("cardMove", evt => {
+				if (evt.name == "lose") return evt.position == ui.discardPile;
+				return evt.name == "cardsDiscard";
+			});
+			for (let i = history.length - 1; i >= 0; i--) {
+				let evt = history[i];
+				let cards2 = evt.cards.filter(card => {
+					return cards.includes(card) && get.suit(card, false) == suit;
 				});
-				for (var i = history.length - 1; i >= 0; i--) {
-					var evt = history[i];
-					var cards2 = evt.cards.filter(card => {
-						return cards.includes(card) && get.suit(card, false) == suit;
-					});
-					if (cards2.length) {
-						gains.addArray(cards2);
-						cards.removeArray(cards2);
-					}
-					if (!cards.length) break;
+				if (cards2.length) {
+					gains.addArray(cards2);
+					cards.removeArray(cards2);
 				}
-				if (gains.length) {
-					player.chooseButton(["让节：是否获得一张" + get.translation(suit) + "牌？", gains]).set("ai", get.buttonValue);
-				} else event._result = { bool: false };
+				if (!cards.length) break;
 			}
-			"step 3";
-			if (result.bool) {
-				player.gain(result.links, "gain2");
-			}
-			"step 4";
-			if (event.num > 0 && player.hasSkill("jsrgrangjie")) {
-				player
-					.chooseBool(get.prompt2("jsrgrangjie"))
-					.set("ai", () => _status.event.bool)
-					.set("bool", lib.skill.jsrgrangjie.check(trigger, player));
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("jsrgrangjie");
-				event.goto(1);
+			if (gains.length) {
+				const result = await player
+					.chooseButton(["让节：是否获得一张" + get.translation(suit) + "牌？", gains])
+					.set("ai", get.buttonValue)
+					.forResult();
+				if (result?.bool && result?.links?.length) {
+					await player.gain(result.links, "gain2");
+				}
 			}
 		},
 		ai: {

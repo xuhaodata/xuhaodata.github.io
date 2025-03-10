@@ -3618,7 +3618,6 @@ game.import("card", function () {
 					"step 4";
 					var id = event.id;
 					var sendback = function (result, player) {
-						game.temp = result;
 						if (result && result.id == id && !event.wuxieresult && result.bool) {
 							event.wuxieresult = player;
 							event.wuxieresult2 = result;

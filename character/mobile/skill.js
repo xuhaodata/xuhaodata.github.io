@@ -9849,36 +9849,31 @@ const skills = {
 	//手杀界荀彧
 	rejieming: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
+		trigger: { player: "damageEnd" },
+		filter(event, player) {
+			return event.num > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			player.chooseTarget(get.prompt("rejieming"), "令一名角色摸两张牌。然后若其手牌数少于体力上限，你摸一张牌").set("ai", function (target) {
-				var att = get.attitude(_status.event.player, target);
-				if (att > 2) {
-					if (target.maxHp - target.countCards("h") > 2) return 2 * att;
-					return att;
-				}
-				return att / 3;
-			});
-			"step 2";
-			if (result.bool) {
-				event.current = result.targets[0];
-				player.logSkill("rejieming", event.current);
-				player.line(event.current, "thunder");
-				event.current.draw(2);
-				event.count--;
-			} else event.finish();
-			"step 3";
-			if (event.current.countCards("h") < event.current.maxHp) {
-				player.draw();
-			}
-			"step 4";
-			if (event.count > 0 && player.hasSkill("rejieming")) event.goto(1);
+		getIndex: event => event.num,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const att = get.attitude(get.player(), target);
+					if (att > 2) {
+						if (target.maxHp - target.countCards("h") > 2) return 2 * att;
+						return att;
+					}
+					return att / 3;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			player.line(target, "thunder");
+			await target.draw(2);
+			if (target.countCards("h") < target.maxHp) await player.draw();
 		},
 		ai: {
 			maixie: true,
@@ -12251,11 +12246,12 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.draw();
-			if (player.countCards("h")) {
-				const result = await player.chooseCard("将一张手牌置于武将牌上作为“权”", true).forResult();
-				if (result.bool && result.cards.length) {
-					await player.addToExpansion(result.cards, player, "give").gaintag.add("quanji");
-				}
+			if (!player.countCards("h")) return;
+			const { result } = await player.chooseCard("将一张手牌置于武将牌上作为“权”", true);
+			if (result?.bool && result?.cards?.length) {
+				const next = player.addToExpansion(result.cards, player, "give");
+				next.gaintag.add("quanji");
+				await next;
 			}
 		},
 		mod: {
@@ -12275,7 +12271,7 @@ const skills = {
 			},
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions("quanji");
+			const cards = player.getExpansions("quanji");
 			if (cards.length) player.loseToDiscardpile(cards);
 		},
 		ai: {
@@ -20241,21 +20237,13 @@ const skills = {
 				trigger: { player: "damageEnd" },
 				forced: true,
 				filter(event, player) {
-					return !player.getEquips("ly_piliche").length;
+					return !player.getEquips("ly_piliche").length && event.num > 0;
 				},
-				content() {
-					"step 0";
-					event.count = trigger.num;
-					"step 1";
-					event.count--;
-					player.draw();
-					"step 2";
-					var card = get.cardPile2(function (card) {
-						return get.subtype(card, false) == "equip1" && player.canUse(card, player);
-					});
-					if (card) player.chooseUseTarget(card, true, "nopopup");
-					"step 3";
-					if (event.count > 0 && !player.getEquips("ly_piliche").length) event.goto(1);
+				getIndex: event => event.num,
+				async content(event, trigger, player) {
+					await player.draw();
+					const card = get.cardPile2(card => get.subtype(card, false) == "equip1" && player.canUse(card, player));
+					if (card) await player.chooseUseTarget(card, true, "nopopup");
 				},
 			},
 		},

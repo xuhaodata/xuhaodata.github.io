@@ -411,7 +411,6 @@ const translates = {
 	junkqicai_info: "锁定技。①你使用锦囊牌无距离限制。②你装备区内的非坐骑牌不能被其他角色弃置。",
 	junkwangxi: "忘隙",
 	junkwangxi_info: "当你对其他角色造成1点伤害后，或受到其他角色造成的1点伤害后，你可以摸两张牌，然后交给其其中一张牌。",
-	junkwangxi_tag: "invisible",
 	junklangmie: "狼灭",
 	junklangmie_info: "其他角色的结束阶段开始时，你可以选择一项：⒈若其本回合内使用过某种类型的牌超过一张，则你弃置一张牌并摸两张牌。⒉若其本回合累计造成过的伤害大于1，则你弃置一张牌，然后对其造成1点伤害。",
 	junkshicai: "恃才",
