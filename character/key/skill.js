@@ -6337,12 +6337,10 @@ const skills = {
 	godan_yuanyi: {
 		trigger: { player: "phaseBegin" },
 		forced: true,
-		content() {
-			"step 0";
-			var num = game.roundNumber;
-			if (num && typeof num == "number") player.draw(Math.min(3, num));
-			"step 1";
-			trigger.phaseList.splice(trigger.num, 0, "phaseUse|godan_yuanyi");
+		async content(event, trigger, player) {
+			const num = game.roundNumber;
+			if (num && typeof num == "number") await player.draw(Math.min(3, num));
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},
 	},
 	godan_feiqu: {

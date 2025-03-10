@@ -3420,6 +3420,9 @@ game.import("card", function () {
 					"step 0";
 					delete event.wuxieresult;
 					delete event.wuxieresult2;
+					delete event._result;
+					delete event.resultOL;
+					delete event._info_map;
 					//创建map存储各种信息，用于hasHiddenWuxie判断
 					var map = {};
 					event._info_map = map;
@@ -3601,7 +3604,7 @@ game.import("card", function () {
 						return current.hasWuxie(map);
 					});
 					event.list = list;
-					event.id = get.id();
+					if (!event.id) event.id = get.id();
 					map.id = event.id;
 					list.sortBySeat(_status.currentPhase);
 					"step 2";
@@ -3717,7 +3720,9 @@ game.import("card", function () {
 						}
 					}
 					"step 9";
-					if (event.wuxieresult) {
+					if (event?.wuxieresult2?.cancel) {
+						event.goto(0);
+					} else if (event.wuxieresult) {
 						var next = event.wuxieresult.useResult(event.wuxieresult2);
 						if (event.triggername != "phaseJudge") {
 							next.respondTo = [trigger.player, trigger.card];

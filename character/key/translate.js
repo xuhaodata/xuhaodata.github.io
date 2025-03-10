@@ -321,7 +321,7 @@ const translates = {
 	abyusa_dunying: "遁影",
 	abyusa_dunying_info: "锁定技，其他角色计算与你的距离时+X。准备阶段和结束阶段，你摸X张牌（X为你已损失的体力值）。",
 	godan_yuanyi: "远忆",
-	godan_yuanyi_info: "锁定技，回合开始时，你摸X张牌并进行一个额外的出牌阶段。（X为游戏轮数且至多为3）",
+	godan_yuanyi_info: "锁定技，回合开始时，你摸X张牌并进行一个额外的出牌阶段（X为游戏轮数且至多为3）。",
 	godan_feiqu: "肥躯",
 	godan_feiqu_info: "锁定技，当你使用【杀】时，或你成为【杀】的目标后，你令此【杀】不可被响应。",
 	godan_xiaoyuan: "消元",
