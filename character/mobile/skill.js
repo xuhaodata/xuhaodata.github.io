@@ -397,7 +397,7 @@ const skills = {
 								.filter(i => !target.hasCard({ name: i }, "h"))
 								.map(i => "【" + get.translation(i) + "】")
 								.join("、") +
-							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "" : "中的一张牌") +
+							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "中的一张牌" : "") +
 							"（无距离和次数限制）",
 						"将你与其手牌中的" + allNames.map(i => "【" + get.translation(i) + "】").join("、") + "替换为牌堆中等量的【杀】且这些牌不计入各自手牌上限直到各自结束阶段",
 					])
@@ -510,9 +510,7 @@ const skills = {
 				},
 				mod: {
 					ignoredHandcard(card, player) {
-						if (card.hasGaintag("mbzengou_effect")) {
-							return true;
-						}
+						if (card.hasGaintag("mbzengou_effect")) return true;
 					},
 					cardDiscardable(card, player, name) {
 						if (name === "phaseDiscard" && card.hasGaintag("mbzengou_effect")) return false;
@@ -540,7 +538,7 @@ const skills = {
 										return get.translation(item) + "：" + storage[item] + "枚";
 									})
 									.join("<br>"),
-						].map(str => "<li>" + str);
+						].map(str => "<li>" + str).join("<br>");
 					},
 				},
 				audio: "mbzengou",
