@@ -650,9 +650,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				trigger: {
-					player: ["useCardToBefore", "useCardToAfter", "useCardToExcluded", "useCardToOmitted", "useCardToCancelled"],
-				},
+				trigger: { player: ["useCardToBefore", "useCardToAfter", "useCardToExcluded", "useCardToOmitted", "useCardToCancelled", "eventNeutralized"] },
 				forced: true,
 				charlotte: true,
 				popup: false,
@@ -660,7 +658,7 @@ const skills = {
 				priority: 100,
 				filter(event, player, name) {
 					if (event.type !== "card" || event.skill !== "jsrgguanshi") return false;
-					const isUnhurted = event.card.storage && event.card.storage.jsrgguanshi;
+					const isUnhurted = event.card.storage?.jsrgguanshi;
 					if (name === "useCardToBefore") return isUnhurted;
 					return (
 						!isUnhurted &&
