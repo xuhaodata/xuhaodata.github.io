@@ -2387,134 +2387,134 @@ const skills = {
 	},
 	jsrgzhendan: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-			global: "roundStart",
-		},
+		enable: ["chooseToUse", "chooseToRespond"],
 		filter(event, player) {
-			let count = 0;
-			let roundCount = 1 + (event.name != "damage");
-			const curLen = player.actionHistory.length;
-			for (let i = curLen - 1; i >= 0; i--) {
-				if (
-					roundCount == 1 &&
-					game.hasPlayer(current => {
-						const history = current.actionHistory[i];
-						if (!history.isMe || history.isSkipped) return false;
-						return true;
-					})
-				) {
-					count++;
-				}
-				if (player.actionHistory[i].isRound) roundCount--;
-				if (roundCount <= 0) break;
-			}
-			if (!player.storage.jsrgzhendan_mark && count > 0) return true;
-			return false;
+			if (event.type == "wuxie") return false;
+			if (
+				!_status.connectMode &&
+				!player.countCards("hs", card => {
+					return get.type2(card) != "basic";
+				})
+			)
+				return false;
+			return get.inpileVCardList(info => {
+				if (info[0] != "basic") return false;
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+			}).length;
 		},
-		forced: true,
-		locked: false,
-		group: "jsrgzhendan_viewas",
-		async content(event, trigger, player) {
-			let count = 0;
-			let roundCount = 1 + (trigger.name != "damage");
-			const curLen = player.actionHistory.length;
-			for (let i = curLen - 1; i >= 0; i--) {
-				if (
-					roundCount == 1 &&
-					game.hasPlayer(current => {
-						const history = current.actionHistory[i];
-						if (!history.isMe || history.isSkipped) return false;
-						return true;
-					})
-				) {
-					count++;
-				}
-				if (player.actionHistory[i].isRound) roundCount--;
-				if (roundCount <= 0) break;
-			}
-			count = Math.min(5, count);
-			await player.draw(count);
-			if (trigger.name == "damage") {
-				player.tempBanSkill("jsrgzhendan", "roundStart");
-				player.storage.jsrgzhendan_mark = true;
-				player
-					.when({ global: "roundStart" })
-					.assign({
-						lastDo: true,
-					})
-					.then(() => {
-						delete player.storage.jsrgzhendan_mark;
-					});
-			}
+		chooseButton: {
+			dialog(event, player) {
+				const vcards = get.inpileVCardList(info => {
+					if (info[0] != "basic") return false;
+					return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+				});
+				return ui.create.dialog("镇胆", [vcards, "vcard"]);
+			},
+			check(button) {
+				if (get.event().getParent().type != "phase") return 1;
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			},
+			backup(links, player) {
+				return {
+					audio: "jsrgzhendan",
+					popname: true,
+					viewAs: { name: links[0][2], nature: links[0][3] },
+					filterCard(card, player) {
+						return get.type2(card) != "basic";
+					},
+					selectCard: 1,
+					position: "hs",
+				};
+			},
+			prompt(links, player) {
+				return "将一张非基本手牌当" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用或打出";
+			},
 		},
-		subSkill: {
-			viewas: {
-				audio: "jsrgzhendan",
-				enable: ["chooseToUse", "chooseToRespond"],
-				filter(event, player) {
-					if (event.type == "wuxie") return false;
-					if (
-						!_status.connectMode &&
-						!player.countCards("hs", card => {
-							return get.type2(card) != "basic";
-						})
-					)
-						return false;
-					return get.inpileVCardList(info => {
-						if (info[0] != "basic") return false;
-						return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
-					}).length;
-				},
-				chooseButton: {
-					dialog(event, player) {
-						const vcards = get.inpileVCardList(info => {
-							if (info[0] != "basic") return false;
-							return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
-						});
-						return ui.create.dialog("镇胆", [vcards, "vcard"]);
-					},
-					check(button) {
-						if (get.event().getParent().type != "phase") return 1;
-						return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
-					},
-					backup(links, player) {
-						return {
-							audio: "jsrgzhendan",
-							popname: true,
-							viewAs: { name: links[0][2], nature: links[0][3] },
-							filterCard(card, player) {
-								return get.type2(card) != "basic";
-							},
-							selectCard: 1,
-							position: "hs",
-						};
-					},
-					prompt(links, player) {
-						return "将一张非基本手牌当" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用或打出";
-					},
-				},
-				hiddenCard(player, name) {
-					return get.type(name) == "basic" && player.countCards("hs") > 0;
-				},
-				ai: {
-					respondSha: true,
-					respondShan: true,
-					skillTagFilter(player) {
-						return player.countCards("hs") > 0;
-					},
-					order: 0.5,
-					result: {
-						player(player) {
-							if (get.event().dying) {
-								return get.attitude(player, get.event().dying);
-							}
-							return 1;
-						},
-					},
+		hiddenCard(player, name) {
+			return get.type(name) == "basic" && player.countCards("hs") > 0;
+		},
+		ai: {
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player) {
+				return player.countCards("hs") > 0;
+			},
+			order: 0.5,
+			result: {
+				player(player) {
+					if (get.event().dying) {
+						return get.attitude(player, get.event().dying);
+					}
+					return 1;
 				},
 			},
-			viewas_backup: {},
+		},
+		group: "jsrgzhendan_damage",
+		subSkill: {
+			damage: {
+				audio: "jsrgzhendan",
+				trigger: {
+					player: "damageEnd",
+					global: "roundStart",
+				},
+				filter(event, player) {
+					let count = 0;
+					let roundCount = 1 + (event.name != "damage");
+					const curLen = player.actionHistory.length;
+					for (let i = curLen - 1; i >= 0; i--) {
+						if (
+							roundCount == 1 &&
+							game.hasPlayer(current => {
+								const history = current.actionHistory[i];
+								if (!history.isMe || history.isSkipped) return false;
+								return true;
+							})
+						) {
+							count++;
+						}
+						if (player.actionHistory[i].isRound) roundCount--;
+						if (roundCount <= 0) break;
+					}
+					if (!player.storage.jsrgzhendan_mark && count > 0) return true;
+					return false;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					let count = 0;
+					let roundCount = 1 + (trigger.name != "damage");
+					const curLen = player.actionHistory.length;
+					for (let i = curLen - 1; i >= 0; i--) {
+						if (
+							roundCount == 1 &&
+							game.hasPlayer(current => {
+								const history = current.actionHistory[i];
+								if (!history.isMe || history.isSkipped) return false;
+								return true;
+							})
+						) {
+							count++;
+						}
+						if (player.actionHistory[i].isRound) roundCount--;
+						if (roundCount <= 0) break;
+					}
+					count = Math.min(5, count);
+					await player.draw(count);
+					if (trigger.name == "damage") {
+						player.tempBanSkill("jsrgzhendan", "roundStart");
+						player.storage.jsrgzhendan_mark = true;
+						player
+							.when({ global: "roundStart" })
+							.assign({
+								lastDo: true,
+							})
+							.then(() => {
+								delete player.storage.jsrgzhendan_mark;
+							});
+					}
+				},
+			},
+			backup: {},
 		},
 	},
 	//司马懿
