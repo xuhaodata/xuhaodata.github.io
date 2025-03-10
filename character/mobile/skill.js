@@ -15150,16 +15150,10 @@ const skills = {
 		forced: true,
 		audio: "dangxian",
 		audioname: ["xin_liaohua"],
-		audioname2: {
-			guansuo: "dangxian_guansuo",
-		},
-		content() {
-			"step 0";
-			var card = get.discardPile(function (card) {
-				return card.name == "sha";
-			});
-			if (card) player.gain(card, "gain2");
-			"step 1";
+		audioname2: { guansuo: "dangxian_guansuo" },
+		async content(event, trigger, player) {
+			const card = get.discardPile(card => card.name == "sha");
+			if (card) await player.gain(card, "gain2");
 			game.updateRoundNumber();
 			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},

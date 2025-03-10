@@ -9543,9 +9543,9 @@ const skills = {
 			return event.phaseList[event.num].indexOf("phaseJudge") != -1;
 		},
 		content() {
-			player.changeZhuanhuanji("junkchigang");
+			player.changeZhuanhuanji(event.name);
 			let phase = player.storage.junkchigang ? "phaseDraw" : "phaseUse";
-			trigger.phaseList[trigger.num] = `${phase}|clanguixiang`;
+			trigger.phaseList[trigger.num] = `${phase}|${event.name}`;
 			game.delayx();
 		},
 		ai: {

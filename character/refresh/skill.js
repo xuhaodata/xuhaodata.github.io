@@ -4687,7 +4687,7 @@ const skills = {
 				logTarget: "player",
 				content() {
 					const evt = trigger.getParent("phase", true, true);
-					if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|oljiezi");
+					if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|oljiezi");
 					trigger.player.removeMark("oljiezi", trigger.player.countMark("oljiezi"));
 				},
 			},
@@ -6187,10 +6187,10 @@ const skills = {
 			//插入阶段，后来的先插
 			const evt = trigger.getParent("phase", true, true);
 			if (event.goon || result.index == 1) {
-				if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseUse|decadejingce");
+				if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, `phaseUse|${event.name}`);
 			}
 			if (event.goon || result.index == 0) {
-				if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|decadejingce");
+				if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, `phaseDraw|${event.name}`);
 			}
 		},
 	},

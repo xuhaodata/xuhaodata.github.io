@@ -1155,7 +1155,7 @@ const skills = {
 			guansuo: "dangxian_guansuo",
 		},
 		content() {
-			trigger.phaseList.splice(trigger.num, 0, "phaseUse|xindangxian");
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},
 		group: "xindangxian_rewrite",
 		subSkill: {
@@ -1166,25 +1166,17 @@ const skills = {
 				filter(kagari) {
 					return kagari._extraPhaseReason == "xindangxian";
 				},
-				content() {
-					"step 0";
-					if (player.storage.xinfuli) {
-						player.chooseBool("是否失去1点体力并获得一张【杀】？").ai = function () {
-							return player.hp > 2 && !player.hasSha();
-						};
-					} else event._result = { bool: true };
-					"step 1";
-					if (!result.bool) {
-						event.finish();
-						return;
-					}
-					player.loseHp();
-					"step 2";
-					var card = get.cardPile(function (card) {
-						return card.name == "sha";
-					});
-					if (card) player.gain(card, "gain2");
-					"step 3";
+				async content(event, trigger, player) {
+					const result = player.storage.xinfuli
+						? await player
+								.chooseBool("是否失去1点体力并获得一张【杀】？")
+								.set("choice", player.hp > 2 && !player.hasSha())
+								.forResult()
+						: { bool: true };
+					if (!result?.bool) return;
+					await player.loseHp();
+					const card = get.cardPile(card => card.name == "sha");
+					if (card) await player.gain(card, "gain2");
 					game.updateRoundNumber();
 				},
 			},
@@ -6457,11 +6449,9 @@ const skills = {
 		trigger: { player: "phaseBegin" },
 		forced: true,
 		audio: 2,
-		audioname2: {
-			guansuo: "dangxian_guansuo",
-		},
-		content() {
-			trigger.phaseList.splice(trigger.num, 0, "phaseUse|dangxian");
+		audioname2: {guansuo: "dangxian_guansuo"},
+		async content(event, trigger, player) {
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},
 	},
 	longyin: {

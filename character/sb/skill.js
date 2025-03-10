@@ -4594,33 +4594,30 @@ const skills = {
 				trigger: { player: "discardAfter" },
 				filter(event, player) {
 					const evt = event.getParent("sbliuli", true);
-					if (!evt || !evt.cards) return false;
-					if (player.hasSkill("sbliuli_used")) return false;
+					if (!evt?.cards?.length) return false;
 					return get.suit(evt.cards[0]) == "heart";
 				},
-				direct: true,
-				content() {
-					"step 0";
-					var sourcex = trigger.getParent("sbliuli", true).getTrigger().player;
-					player
+				usable: 1,
+				popup: false,
+				async cost(event, trigger, player) {
+					const sourcex = trigger.getParent("sbliuli", true).getTrigger().player;
+					event.result = await player
 						.chooseTarget("流离：是否令一名不为" + get.translation(sourcex) + "的其他角色获得“流离”标记？", (card, player, target) => {
-							return target != player && target != _status.event.sourcex;
+							return target != player && target != get.event().sourcex;
 						})
 						.set("ai", target => {
-							return get.attitude(_status.event.player, target);
+							return get.attitude(get.player(), target);
 						})
-						.set("sourcex", sourcex);
-					"step 1";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.line(target, "green");
-						game.countPlayer(i => i.removeSkill("sbliuli_dangxian"));
-						target.addSkill("sbliuli_dangxian");
-						player.addTempSkill("sbliuli_used");
-					}
+						.set("sourcex", sourcex)
+						.forResult();
+				},
+				content() {
+					const target = event.targets[0];
+					player.line(target, "green");
+					game.countPlayer(current => current.removeSkill("sbliuli_dangxian"));
+					target.addSkill("sbliuli_dangxian");
 				},
 			},
-			used: { charlotte: true },
 			dangxian: {
 				trigger: { player: "phaseBegin" },
 				forced: true,
@@ -4628,9 +4625,9 @@ const skills = {
 				mark: true,
 				marktext: "流",
 				intro: { content: "回合开始时，执行一个额外的出牌阶段" },
-				content() {
-					trigger.phaseList.splice(trigger.num, 0, `phaseUse|sbliuli`);
-					player.removeSkill("sbliuli_dangxian");
+				async content(event, trigger, player) {
+					player.removeSkill(event.name);
+					trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 				},
 			},
 		},

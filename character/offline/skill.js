@@ -2335,7 +2335,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			trigger.phaseList[trigger.num] = "phaseUse|hm_sanshou";
+			trigger.phaseList[trigger.num] = `phaseUse|${event.name}`;
 			const newPair = [];
 			for (const i of [player.name1, player.name2]) {
 				if (!i) continue;
@@ -6720,10 +6720,10 @@ const skills = {
 			const cards = Array.from(ui.discardPile.childNodes).filter(card => card.name == "sha");
 			if (cards.length) {
 				const result = await player.chooseButton(["获得一张杀", cards], true).forResult();
-				if (result.bool) await player.gain(result.links, "gain2");
+				if (result?.bool && result?.links?.length) await player.gain(result.links, "gain2");
 			}
 			game.updateRoundNumber();
-			trigger.phaseList.splice(trigger.num, 0, "phaseUse|tydangxian");
+			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},
 	},
 	tyfuli: {
@@ -9192,7 +9192,7 @@ const skills = {
 				forced: true,
 				popup: false,
 				content() {
-					game.countPlayer(i => i.removeSkill("jdsbliuli_dangxian"));
+					game.countPlayer(current => current.removeSkill("jdsbliuli_dangxian"));
 					trigger.targets[0].addSkill("jdsbliuli_dangxian");
 				},
 			},
@@ -9204,8 +9204,8 @@ const skills = {
 				marktext: "流",
 				intro: { content: "回合开始时，执行一个额外的出牌阶段" },
 				content() {
-					player.removeSkill("jdsbliuli_dangxian");
-					trigger.phaseList.splice(trigger.num, 0, "phaseUse|jdsbliuli_dangxian");
+					player.removeSkill(event.name);
+					trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 				},
 			},
 		},
