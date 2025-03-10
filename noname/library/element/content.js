@@ -4390,7 +4390,9 @@ export const Content = {
 			event.skillDialog.close();
 		}
 		if (event.result && event.result.bool && !game.online && !event.nouse) {
-			player.useResult(event.result, event);
+			if (event.result?.cancel) {
+				event.goto(0);
+			} else player.useResult(event.result, event);
 		} else if (event._sendskill) {
 			event.result._sendskill = event._sendskill;
 		}
@@ -4611,6 +4613,8 @@ export const Content = {
 			if (!event.result.card && event.result.skill) {
 				event.result.used = event.result.skill;
 				player.useSkill(event.result.skill, event.result.cards, event.result.targets);
+			} else if (event.result?.cancel) {
+				event.goto(0);
 			} else {
 				if (info && info.prerespond) {
 					info.prerespond(event.result, player);

@@ -2600,6 +2600,9 @@ const skills = {
 	mbbeini: {
 		audio: "beini",
 		inherit: "beini",
+		filterTarget(card, player, target) {
+			return target.hp >= player.hp && player != target;
+		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const str = get.translation(target);

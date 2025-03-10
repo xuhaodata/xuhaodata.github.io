@@ -611,7 +611,7 @@ const skills = {
 		usable: 1,
 		enable: "phaseUse",
 		async content(event, trigger, player) {
-			const next = player.judge(function (card) {
+			const next = player.judge(card => {
 				if (["diamond", "club"].includes(get.suit(card))) return 2;
 				return 0;
 			});
@@ -619,7 +619,15 @@ const skills = {
 			switch (suit) {
 				case "spade":
 					{
-						const { targets, bool } = await player.chooseTarget("【御风】：令一名其他角色跳过其下个回合的出牌阶段和弃牌阶段", lib.filter.notMe, true).forResult();
+						if (!game.hasPlayer(current => player != current)) return;
+						const { targets, bool } = await player
+							.chooseTarget("【御风】：令一名其他角色跳过其下个回合的出牌阶段和弃牌阶段", lib.filter.notMe, true)
+							.set("ai", target => {
+								const player = get.player();
+								const att = get.attitude(player, target);
+								return att * lib.skill.yijin.getValue(player, "yijin_jinmi", target);
+							})
+							.forResult();
 						if (bool) {
 							targets[0].skip("phaseUse");
 							targets[0].skip("phaseDiscard");
@@ -629,7 +637,15 @@ const skills = {
 					break;
 				case "heart":
 					{
-						const { targets, bool } = await player.chooseTarget("【御风】：令一名其他角色跳过其下个回合的摸牌阶段", lib.filter.notMe, true).forResult();
+						if (!game.hasPlayer(current => player != current)) return;
+						const { targets, bool } = await player
+							.chooseTarget("【御风】：令一名其他角色跳过其下个回合的摸牌阶段", lib.filter.notMe, true)
+							.set("ai", target => {
+								const player = get.player();
+								const att = get.attitude(player, target);
+								return att * lib.skill.yijin.getValue(player, "yijin_yongbi", target);
+							})
+							.forResult();
 						if (bool) {
 							targets[0].skip("phaseDraw");
 							game.log(targets[0], "跳过其下个回合的摸牌阶段");
@@ -639,18 +655,15 @@ const skills = {
 				case "diamond":
 				case "club":
 					await player.draw();
-					player.getStat("skill").hm_yufeng--;
-					if (player.storage.couttrigger) {
-						player.storage.couttrigger["hm_yufeng"]--;
-					}
+					if (!player.getStat().skill.hm_yufeng) return;
+					delete player.getStat().skill.hm_yufeng;
+					game.log(player, "重置了", "#g【御风】");
 					break;
 			}
 		},
 		ai: {
 			order: 13,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 			threaten: 1.5,
 		},
 	},
@@ -771,15 +784,14 @@ const skills = {
 	},
 	//珪固
 	hm_tuntian: {
-		trigger: {
-			player: "phaseBeginStart",
+		trigger: { player: "phaseZhunbeiBegin" },
+		filter(event, player) {
+			return !player.hasAllHistory("custom", evt => evt.hm_tuntian);
 		},
 		forced: true,
-		filter(event, player) {
-			return !player.storage.hm_qianjun;
-		},
 		async content(event, trigger, player) {
-			player.addTempSkill("hm_tuntian_temp");
+			player.getHistory("custom").push({ hm_tuntian: true });
+			player.addTempSkill("hm_tuntian_temp", { player: "hm_qianjunAfter" });
 		},
 		subSkill: {
 			temp: {
@@ -793,15 +805,15 @@ const skills = {
 					source: "damageBegin1",
 				},
 				forced: true,
-				filter(event, player, triggername) {
-					if (triggername == "phaseDrawBegin2") {
-						return !event.numFixed;
-					}
-					return !player.getHistory("sourceDamage").length;
+				filter(event, player) {
+					if (event.name == "phaseDraw") return !event.numFixed;
+					return game.getGlobalHistory("everything", evt => evt.name == "damage" && evt.source == player).indexOf(event) == 0;
 				},
 				async content(event, trigger, player) {
 					trigger.num++;
 				},
+				mark: true,
+				intro: { content: "本局游戏的摸牌阶段摸牌数、手牌上限、本回合首次造成的伤害+1" },
 			},
 		},
 	},
@@ -810,21 +822,17 @@ const skills = {
 		enable: "phaseUse",
 		seatRelated: true,
 		changeSeat: true,
-		mark: true,
 		skillAnimation: true,
-		intro: {
-			content: "limited",
-		},
+		animationColor: "orange",
 		derivation: "olluanji",
-		init: (player, skill) => (player.storage[skill] = false),
 		filter(event, player) {
-			return Boolean(player.countCards("e"));
+			return player.countCards("e");
 		},
 		filterTarget: lib.filter.notMe,
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.awakenSkill(event.name);
-			await target.gain(player.getCards("e"), "gain2");
+			await target.gain(player.getCards("e"), "gain2").set("giver", player);
 			game.broadcastAll(
 				function (target1, target2) {
 					game.swapSeat(target1, target2);

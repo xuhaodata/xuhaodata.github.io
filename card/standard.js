@@ -2929,29 +2929,43 @@ game.import("card", function () {
 					"step 0";
 					if (!trigger.target.countCards("h")) event._result = { bool: false };
 					else
-						trigger.target.chooseToDiscard("弃置一张手牌，或令" + get.translation(player) + "摸一张牌").set("ai", function (card) {
-							const bool = get.event("bool");
-							if (!bool) return 0;
-							if (get.name(card) === "shan") {
-								return bool - get.event("shan") * get.value(card);
-							}
-							return bool - get.value(card);
-						}).set("bool", function () {
-							const hs = trigger.target.countCards("h"), att = get.attitude(trigger.target, trigger.player);
-							if (!hs || att > 0) return false;
-							if (trigger.target.hasSkillTag("noh")) return 8;
-							if (get.effect(trigger.target, trigger.card, player, trigger.target) >= 0) return 6;
-							return -att - Math.max(0, 4 - trigger.target.hp) * 2;
-						}()).set("shan", function () {
-							if (player.hasSkillTag("directHit_ai", true, {
-								target: trigger.target,
-								card: trigger.card,
-							})) return 0;
-							const shans = trigger.target.mayHaveShan(trigger.target, "use", null, "count");
-							if (shans === 0 || shans > 2) return 1;
-							if (shans === 1) return 3.6 / Math.min(3.6, trigger.target.getHp());
-							return 1.8 / Math.min(1.8, trigger.target.getHp());
-						}());
+						trigger.target
+							.chooseToDiscard("弃置一张手牌，或令" + get.translation(player) + "摸一张牌")
+							.set("ai", function (card) {
+								const bool = get.event("bool");
+								if (!bool) return 0;
+								if (get.name(card) === "shan") {
+									return bool - get.event("shan") * get.value(card);
+								}
+								return bool - get.value(card);
+							})
+							.set(
+								"bool",
+								(function () {
+									const hs = trigger.target.countCards("h"),
+										att = get.attitude(trigger.target, trigger.player);
+									if (!hs || att > 0) return false;
+									if (trigger.target.hasSkillTag("noh")) return 8;
+									if (get.effect(trigger.target, trigger.card, player, trigger.target) >= 0) return 6;
+									return -att - Math.max(0, 4 - trigger.target.hp) * 2;
+								})()
+							)
+							.set(
+								"shan",
+								(function () {
+									if (
+										player.hasSkillTag("directHit_ai", true, {
+											target: trigger.target,
+											card: trigger.card,
+										})
+									)
+										return 0;
+									const shans = trigger.target.mayHaveShan(trigger.target, "use", null, "count");
+									if (shans === 0 || shans > 2) return 1;
+									if (shans === 1) return 3.6 / Math.min(3.6, trigger.target.getHp());
+									return 1.8 / Math.min(1.8, trigger.target.getHp());
+								})()
+							);
 					"step 1";
 					if (result.bool == false) player.draw();
 				},
@@ -3397,6 +3411,9 @@ game.import("card", function () {
 					"step 0";
 					delete event.wuxieresult;
 					delete event.wuxieresult2;
+					delete event._result;
+					delete event.resultOL;
+					delete event._info_map;
 					//创建map存储各种信息，用于hasHiddenWuxie判断
 					var map = {};
 					event._info_map = map;
@@ -3578,7 +3595,7 @@ game.import("card", function () {
 						return current.hasWuxie(map);
 					});
 					event.list = list;
-					event.id = get.id();
+					if (!event.id) event.id = get.id();
 					map.id = event.id;
 					list.sortBySeat(_status.currentPhase);
 					"step 2";
@@ -3601,6 +3618,7 @@ game.import("card", function () {
 					"step 4";
 					var id = event.id;
 					var sendback = function (result, player) {
+						game.temp = result;
 						if (result && result.id == id && !event.wuxieresult && result.bool) {
 							event.wuxieresult = player;
 							event.wuxieresult2 = result;
@@ -3694,7 +3712,9 @@ game.import("card", function () {
 						}
 					}
 					"step 9";
-					if (event.wuxieresult) {
+					if (event?.wuxieresult2?.cancel) {
+						event.goto(0);
+					} else if (event.wuxieresult) {
 						var next = event.wuxieresult.useResult(event.wuxieresult2);
 						if (event.triggername != "phaseJudge") {
 							next.respondTo = [trigger.player, trigger.card];
