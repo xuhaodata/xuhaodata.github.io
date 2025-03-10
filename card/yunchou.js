@@ -478,9 +478,10 @@ game.import("card", function () {
 					result: {
 						target(player, target, vcard) {
 							let num = 0,
-								mei = ui.selected.cards || [],
+								mei = [],
 								draw = target.hasSkillTag("nogain") ? 0.1 : 1;
 							if (vcard?.cards) mei.addArray(vcard.cards);
+							if (ui.selected.cards) mei.addArray(ui.selected.cards); //再把ui.selected.xxx赋值给变量我把所有ai都吃了
 							let mine = player.countCards("h", i => {
 								if (mei.includes(i)) return false;
 								// if (!mei.length && get.name(i) === "wangmeizhike") {
