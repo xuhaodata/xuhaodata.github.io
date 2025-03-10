@@ -7553,7 +7553,7 @@ const skills = {
 	},
 	skill_zhangji_B: {
 		getNum(name) {
-			var num = 0;
+			let num = 0;
 			if (name == "litong") num = 1;
 			else
 				switch (game.getRarity(name)) {
@@ -7573,10 +7573,10 @@ const skills = {
 			return num;
 		},
 		getCharacter(list) {
-			var listx = [],
+			let listx = [],
 				num = 0;
-			for (var name of list) {
-				var numx = lib.skill.skill_zhangji_B.getNum(name);
+			for (const name of list) {
+				const numx = lib.skill.skill_zhangji_B.getNum(name);
 				if (numx > num) {
 					num = numx;
 					listx = [name];
@@ -7589,96 +7589,83 @@ const skills = {
 		trigger: { player: "dying" },
 		skillAnimation: true,
 		animationColor: "water",
-		direct: true,
-		content() {
-			"step 0";
+		async cost(event, trigger, player) {
 			if (!_status.characterlist) lib.skill.pingjian.initList();
-			player.chooseTarget(get.prompt("skill_zhangji_B"), "令一名其他角色选择是否更换武将牌", lib.filter.notMe).set("ai", function (target) {
-				var att = get.attitude(_status.event.player, target);
-				var num = lib.skill.skill_zhangji_B.getNum(target.name);
-				if (target.name2 != undefined) num = Math.min(num, lib.skill.skill_zhangji_B.getNum(target.name2));
-				return att * (4 - num);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("skill_zhangji_B", target);
-				var list = [];
-				for (var i = 0; i < _status.characterlist.length; i++) {
-					if (lib.character[_status.characterlist[i]][1] == "wei") list.push(_status.characterlist[i]);
-				}
-				list = list.randomGets(5);
-				var bolDialog = ["请选择替换的武将", [list, "character"]];
-				target.chooseButton(bolDialog).set("ai", function (button) {
-					var target = _status.event.player;
-					var num = lib.skill.skill_zhangji_B.getNum(target.name);
+			event.result = await player
+				.chooseTarget(get.prompt(event.skill), "令一名其他角色选择是否更换武将牌", lib.filter.notMe)
+				.set("ai", target => {
+					const att = get.attitude(get.player(), target);
+					const num = lib.skill.skill_zhangji_B.getNum(target.name);
 					if (target.name2 != undefined) num = Math.min(num, lib.skill.skill_zhangji_B.getNum(target.name2));
-					return lib.skill.skill_zhangji_B.getNum(button.link) - num;
-				});
-			} else event.finish();
-			"step 2";
-			if (result.bool) {
-				event.character = result.links[0];
-				if (target.name2 != undefined)
-					target
-						.chooseControl(target.name1, target.name2)
-						.set("prompt", "请选择要更换的武将牌")
-						.set("ai", function () {
-							return lib.skill.skill_zhangji_B.getNum(target.name) < lib.skill.skill_zhangji_B.getNum(target.name2) ? target.name : target.name2;
-						});
-				else result.control = target.name1;
+					return att * (4 - num);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			let list = [];
+			for (let i = 0; i < _status.characterlist.length; i++) {
+				if (lib.character[_status.characterlist[i]][1] == "wei") list.push(_status.characterlist[i]);
+			}
+			list = list.randomGets(5);
+			const bolDialog = ["请选择替换的武将", [list, "character"]];
+			const { result } = await target.chooseButton(bolDialog).set("ai", button => {
+				const target = get.player();
+				const num = lib.skill.skill_zhangji_B.getNum(target.name);
+				if (target.name2 != undefined) num = Math.min(num, lib.skill.skill_zhangji_B.getNum(target.name2));
+				return lib.skill.skill_zhangji_B.getNum(button.link) - num;
+			});
+			if (result?.bool && result?.links?.length) {
+				const [character] = result.links;
+				const result2 =
+					target.name2 != undefined
+						? await target
+								.chooseControl(target.name1, target.name2)
+								.set("prompt", "请选择要更换的武将牌")
+								.set("ai", () => get.event("choice"))
+								.set("choice", lib.skill.skill_zhangji_B.getNum(target.name) < lib.skill.skill_zhangji_B.getNum(target.name2) ? target.name : target.name2)
+								.forResult()
+						: { control: target.name1 };
+				if (result2?.control) {
+					await target.reinitCharacter(result2.control, character);
+					target.update();
+				}
 			} else {
 				target.chat("拒绝");
 				game.log("但", target, "拒绝更换其武将牌");
-				event.finish();
+				return;
 			}
-			"step 3";
-			target.reinitCharacter(result.control, event.character);
-			target.update();
 		},
 		subSkill: {
 			jieming: {
 				audio: "skill_zhangji_B",
 				trigger: { player: "damageEnd" },
+				getIndex: event => event.num,
 				filter(event, player) {
-					return game.hasPlayer(function (current) {
-						return current.countCards("h") < current.maxHp;
-					});
+					return game.hasPlayer(current => current.countCards("h") < current.maxHp) && event.num > 0;
 				},
-				direct: true,
-				content() {
-					"step 0";
-					event.count = trigger.num;
-					"step 1";
-					event.count--;
-					player
-						.chooseTarget(get.prompt("skill_zhangji_B"), "令一名手牌数小于其体力上限的角色摸三张牌，然后其将手牌数调整至其体力上限值", function (card, player, target) {
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget(get.prompt(event.skill), "令一名手牌数小于其体力上限的角色摸三张牌，然后其将手牌数调整至其体力上限值", (card, player, target) => {
 							return target.countCards("h") < target.maxHp;
 						})
-						.set("ai", function (target) {
-							var att = get.attitude(_status.event.player, target);
+						.set("ai", target => {
+							const player = get.player();
+							let att = get.attitude(player, target);
 							if (target.hasSkillTag("nogain")) att /= 6;
 							if (att > 2) return Math.min(5, target.maxHp) - target.countCards("h");
 							return att / 3;
-						});
-					"step 2";
-					if (result.bool) {
-						var target = result.targets[0];
-						event.target = target;
-						player.logSkill("skill_zhangji_B_jieming", target);
-						target.draw(3);
-					} else event.finish();
-					"step 3";
-					if (target.countCards("h") > target.maxHp) target.chooseToDiscard("h", target.countCards("h") - target.maxHp, true);
-					if (
-						event.count > 0 &&
-						game.hasPlayer(function (current) {
-							return current.countCards("h") < current.maxHp;
-						}) &&
-						player.hasSkill("skill_zhangji_B")
-					)
-						event.goto(1);
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					await target.draw(3);
+					if (target.countCards("h") > target.maxHp) await target.chooseToDiscard("h", target.countCards("h") - target.maxHp, true);
 				},
 				ai: {
 					maixie: true,
@@ -28313,26 +28300,22 @@ const skills = {
 	bushi: {
 		audio: 2,
 		trigger: { player: "damageEnd", source: "damageEnd" },
+		getIndex: event => event.num,
 		filter(event, player) {
 			if (event._notrigger.includes(event.player)) return false;
-			return event.player.isIn() && player.getExpansions("yishe").length > 0;
+			return event.player.isIn() && player.countExpansions("yishe") && event.num > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			trigger.player.chooseCardButton("选择获得一张“米”", player.getExpansions("yishe"));
-			"step 2";
-			if (result.bool) {
-				event.count--;
-				player.logSkill("bushi", trigger.player);
-				trigger.player.gain(result.links[0], "give", player, "bySelf");
-			} else event.finish();
-			"step 3";
-			if (event.count > 0 && player.getExpansions("yishe").length && player.hasSkill("bushi")) {
-				event.goto(1);
-			}
+		async cost(event, trigger, player) {
+			const result = await trigger.player.chooseCardButton("选择获得一张“米”", player.getExpansions("yishe")).forResult();
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links,
+			};
+		},
+		async content(event, trigger, player) {
+			const { player: target } = trigger;
+			player.line(target);
+			await target.gain(event.cost_data, "give", player, "bySelf");
 		},
 		ai: { combo: "yishe" },
 	},

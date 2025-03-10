@@ -3334,7 +3334,6 @@ const skills = {
 		inherit: "xinenyuan2",
 		sourceSkill: "olenyuan",
 		prompt2: event => "令" + get.translation(event.source) + "交给你一张红色手牌或失去1点体力",
-		getIndex: event => event.num,
 		async content(event, trigger, player) {
 			const result = await trigger.source
 				.chooseToGive(
@@ -3346,16 +3345,13 @@ const skills = {
 					player
 				)
 				.set("ai", card => {
-					const player = _status.event.getParent().player,
-						source = _status.event.player;
-					if (get.effect(source, { name: "losehp" }, source, source) >= 0) return 0;
-					if (get.attitude(player, source) > 0) return 11 - get.value(card);
+					const { player, target } = get.event();
+					if (get.effect(player, { name: "losehp" }, player, player) >= 0) return 0;
+					if (get.attitude(target, player) > 0) return 11 - get.value(card);
 					return 7 - get.value(card);
 				})
 				.forResult();
-			if (!result.bool) {
-				await trigger.source.loseHp();
-			}
+			if (!result?.bool) await trigger.source.loseHp();
 		},
 	},
 	//王异

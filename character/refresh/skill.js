@@ -5626,55 +5626,37 @@ const skills = {
 			player: ["damageEnd"],
 			global: ["gainAfter", "loseAsyncAfter"],
 		},
+		getIndex(event, player, triggername) {
+			return event.name == "damage" ? event.num : 1;
+		},
 		filter(event, player) {
-			if (event.name == "damage") return true;
+			if (event.name == "damage") return event.num > 0;
 			if (event.name == "loseAsync") {
 				if (event.type != "gain" || event.giver) return false;
-				var cards = event.getl(player).cards2;
-				return game.hasPlayer(function (current) {
+				return game.hasPlayer(current => {
 					if (current == player) return false;
-					var cardsx = event.getg(current);
-					for (var i of cardsx) {
-						if (cards.includes(i)) return true;
-					}
-					return false;
+					return event.getg?.(current).some(card => event.getl?.(player)?.cards2?.includes(card));
 				});
 			}
 			if (player == event.player) return false;
 			if (event.giver || event.getParent().name == "gift") return false;
-			var evt = event.getl(player);
-			return evt && evt.cards2 && evt.cards2.length > 0;
+			return event.getl?.(player)?.cards2?.length;
 		},
 		frequent: true,
-		content() {
-			"step 0";
-			event.count = trigger.name == "damage" ? trigger.num : 1;
-			"step 1";
-			event.count--;
-			player.draw();
-			"step 2";
-			var hs = player.getCards("h");
-			if (hs.length) {
-				if (hs.length == 1) event._result = { bool: true, cards: hs };
-				else player.chooseCard("h", true, "选择一张手牌作为“权”");
-			} else event.goto(4);
-			"step 3";
-			if (result.bool && result.cards && result.cards.length) {
-				player.addToExpansion(result.cards, "giveAuto", player).gaintag.add("xinquanji");
-			}
-			"step 4";
-			if (event.count > 0 && player.hasSkill(event.name) && !get.is.blocked(event.name, player)) {
-				player.chooseBool(get.prompt2("xinquanji")).set("frequentSkill", event.name);
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("xinquanji");
-				event.goto(1);
+		async content(event, trigger, player) {
+			await player.draw();
+			const hs = player.getCards("h");
+			if (!hs.length) return;
+			const result = hs.length == 1 ? { bool: true, cards: hs } : await player.chooseCard("h", true, "选择一张手牌作为“权”").forResult();
+			if (result?.bool && result?.cards?.length) {
+				const next = layer.addToExpansion(result.cards, player, "give");
+				next.gaintag.add(event.name);
+				await next;
 			}
 		},
 		locked: false,
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) player.loseToDiscardpile(cards);
 		},
 		intro: {
@@ -7395,21 +7377,8 @@ const skills = {
 	},
 	reenyuan1: {
 		audio: "reenyuan",
-		trigger: { player: "gainEnd" },
+		inherit: "xinenyuan1",
 		sourceSkill: "reenyuan",
-		filter(event, player) {
-			if (!event.source || event.source == player || !event.source.isIn() || event.cards.length < 2) return false;
-			var evt = event.getl(event.source);
-			return evt && evt.cards2 && evt.cards2.length > 1;
-		},
-		check(event, player) {
-			return get.attitude(player, event.source) > 0;
-		},
-		logTarget: "source",
-		prompt2: "令该角色摸一张牌",
-		content() {
-			trigger.source.draw();
-		},
 	},
 	reenyuan2: {
 		audio: "reenyuan",

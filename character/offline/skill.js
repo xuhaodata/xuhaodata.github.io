@@ -13905,23 +13905,19 @@ const skills = {
 		frequent: true,
 		filter(event, player, name) {
 			if (name == "damageEnd") return true;
-			var evt = event.getParent();
+			const evt = event.getParent();
 			if (evt.player != player) return false;
 			return evt.card && evt.type == "card" && evt.targets.length == 1;
 		},
-		content() {
-			"step 0";
-			player.draw();
-			"step 1";
-			var hs = player.getCards("he");
-			if (hs.length > 0) {
-				if (hs.length == 1) event._result = { bool: true, cards: hs };
-				else player.chooseCard("he", true, "选择一张牌作为“权”");
-			} else event.finish();
-			"step 2";
-			if (result.bool) {
-				var cs = result.cards;
-				player.addToExpansion(cs, player, "give").gaintag.add("zyquanji");
+		async content(event, trigger, player) {
+			await player.draw();
+			const hs = player.getCards("he");
+			if (!hs.length) return;
+			const result = hs.length == 1 ? { bool: true, cards: hs } : await player.chooseCard("he", true, "选择一张牌作为“权”").forResult();
+			if (result?.bool && result?.cards?.length) {
+				const next = layer.addToExpansion(result.cards, player, "give");
+				next.gaintag.add(event.name);
+				await next;
 			}
 		},
 		intro: {
@@ -13929,7 +13925,7 @@ const skills = {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) player.loseToDiscardpile(cards);
 		},
 		locked: false,
@@ -13938,9 +13934,7 @@ const skills = {
 				return num + player.getExpansions("zyquanji").length;
 			},
 		},
-		ai: {
-			notemp: true,
-		},
+		ai: { notemp: true },
 	},
 	zypaiyi: {
 		audio: "gzpaiyi",
