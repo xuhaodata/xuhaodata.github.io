@@ -415,6 +415,7 @@ window.noname_character_rank = {
 		"ol_sb_dengai",
 		"ol_qinlang",
 		"chentai",
+		"liujinliupei",
 	],
 	am: [
 		"xuxin",
@@ -687,6 +688,7 @@ window.noname_character_rank = {
 		"sp_menghuo",
 		"dc_sp_menghuo",
 		"dc_qinghegongzhu",
+		"caoyuan",
 		"ruiji",
 		"re_liuchen",
 		"dc_gongsunzan",
@@ -784,6 +786,7 @@ window.noname_character_rank = {
 		"yue_zhouyu",
 	],
 	bp: [
+		"dongwan",
 		"ol_guohuai",
 		"ol_fuhuanghou",
 		"yj_yongkai",
@@ -2591,8 +2594,10 @@ window.noname_character_rank = {
 			"niufu",
 			"friend_cuijun",
 			"chentai",
+			"liujinliupei",
 		],
 		rare: [
+			"dongwan",
 			"friend_shitao",
 			"re_xiahouyuan",
 			"ol_guohuai",
@@ -3132,6 +3137,7 @@ window.noname_character_rank = {
 			"sp_menghuo",
 			"dc_sp_menghuo",
 			"dc_qinghegongzhu",
+			"caoyuan",
 			"tenggongzhu",
 			"tengfanglan",
 			"dc_bulianshi",

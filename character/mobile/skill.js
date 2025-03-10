@@ -17,7 +17,7 @@ const skills = {
 				number = get.number(card, player);
 			if (!["heart"].concat(player.getStorage("friendgongli_cuijun_shunyi")).includes(suit)) return false;
 			if (typeof number !== "number" || number <= (player.storage.counttrigger?.friendshunyi ?? 0)) return false;
-			if (!player.hasCard({ suit: suit }, "h")) return false;
+			//if (!player.hasCard({ suit: suit }, "h")) return false;
 			const cards = [...hs, ...player.getCards("h")].unique().filter(i => {
 				return i !== card && typeof get.number(i, player) === "number";
 			});
@@ -42,7 +42,8 @@ const skills = {
 		},
 		content() {
 			player.addTempSkill("friendshunyi_effect");
-			player.addToExpansion(player.getCards("h", { suit: get.suit(event.indexedData) }), player, "giveAuto").gaintag.add("friendshunyi_effect");
+			const cards = player.getCards("h", { suit: get.suit(event.indexedData) });
+			if (cards.length) player.addToExpansion(cards, player, "giveAuto").gaintag.add("friendshunyi_effect");
 			player.draw();
 		},
 		subSkill: {
