@@ -28188,7 +28188,7 @@ const skills = {
 		},
 		subSkill: {
 			backup: {
-				ilterCard(card) {
+				filterCard(card) {
 					return get.itemtype(card) == "card";
 				},
 				selectCard: 1,

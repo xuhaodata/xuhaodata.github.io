@@ -152,10 +152,10 @@ const skills = {
 			player.changeSkin({ characterName: "mb_simazhao" }, "jin_jsrg_simazhao");
 			await player.changeGroup("qun");
 			//player.node.name.dataset.nature = get.groupnature("jin");
-			await player.changeSkills(get.info(event.name).derivation, ["mbqiantun"]);
+			await player.addSkills("mbdangyi");
 		},
 		persevereSkill: true,
-		derivation: ["mbweisi", "mbdangyi"],
+		derivation: "mbdangyi",
 	},
 	mbweisi: {
 		audio: "jsrgweisi",
@@ -223,6 +223,11 @@ const skills = {
 		},
 		usable: 1,
 		persevereSkill: true,
+		intro: {
+			content(storage = 0, player) {
+				return `剩余可发动次数为${storage - player.countMark("mbdangyi_used")}`;
+			},
+		},
 	},
 	//牢又寄双雄
 	//友崔均
