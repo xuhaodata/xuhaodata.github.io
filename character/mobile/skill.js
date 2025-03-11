@@ -32,23 +32,11 @@ const skills = {
 			const mode = get.mode();
 			if (mode === "doudizhu") player.tempBanSkill(event.name, "forever", false);
 			for (const target of event.targets.sortBySeat()) {
-				if (!target.countCards("h")) continue;
-				const result = await target
-					.chooseCard("h", true, "将一张手牌置于牌堆顶")
-					.set("targetx", player)
-					.set("ai", card => {
-						const { player, targetx } = get.event();
-						let att = 0;
-						if (player && target) att = get.sgnAttitude(player, targetx);
-						let val = 7 - get.value(card);
-						if (card.name == "sha") val += att * 4;
-						return val;
-					})
-					.forResult();
-				if (result.bool) {
+				if (target.countCards("h")) {
+					const cards = target.getCards("h").randomGets(1);
 					target.$throw(1, 1000);
 					game.log(target, "将", "#y一张手牌", "置于了牌堆顶");
-					await target.lose(result.cards, ui.cardPile, "insert");
+					await target.lose(cards, ui.cardPile, "insert");
 					game.updateRoundNumber();
 				}
 			}
