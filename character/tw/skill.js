@@ -2429,12 +2429,10 @@ const skills = {
 		subSkill: {
 			lose: {
 				audio: "twjielv",
-				trigger: {
-					global: "phaseEnd",
-				},
+				trigger: { global: "phaseEnd" },
 				filter(event, player) {
 					if (player.storage.isInHuan) return false;
-					return !player.hasHistory("useCard", evt => evt.targets && evt.targets.some(i => i == event.player));
+					return !player.hasHistory("useCard", evt => evt.targets?.some(i => i == event.player));
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -2443,32 +2441,28 @@ const skills = {
 			},
 			buff: {
 				audio: "twjielv",
-				trigger: {
-					player: ["loseHpEnd", "damageEnd"],
-				},
+				trigger: { player: ["loseHpEnd", "damageEnd"] },
 				filter(event, player) {
 					if (player.storage.isInHuan) return false;
 					return player.maxHp < 7 && event.num > 0;
 				},
 				forced: true,
+				getIndex: event => event.num,
 				async content(event, trigger, player) {
-					const num = Math.min(trigger.num, 7 - player.maxHp);
-					player.gainMaxHp(num);
+					await player.gainMaxHp();
 				},
 			},
 			huan: {
 				audio: "twjielv",
-				trigger: {
-					player: "loseMaxHpEnd",
-				},
+				trigger: { player: "loseMaxHpEnd" },
 				filter(event, player) {
 					if (!player.storage.isInHuan) return false;
 					return event.num > 0 && player.isDamaged();
 				},
 				forced: true,
+				getIndex: event => event.num,
 				async content(event, trigger, player) {
-					const num = Math.min(player.getDamagedHp(), trigger.num);
-					player.recover(num);
+					await player.recover(num);
 				},
 			},
 		},
@@ -8769,7 +8763,7 @@ const skills = {
 				else event.finish();
 			}
 			"step 4";
-			if (!result?.bool || !result.cards?.length || !!result.targets?.length) return;
+			if (!result?.bool || !result.cards?.length || !result.targets?.length) return;
 			var target = result.targets[0];
 			trigger.player.line(target);
 			trigger.player.give(result.cards, target);
@@ -11331,137 +11325,80 @@ const skills = {
 	},
 	twenyuan1: {
 		audio: ["enyuan1.mp3", "enyuan2.mp3"],
-		trigger: {
-			global: ["gainAfter", "loseAsyncAfter"],
-		},
-		direct: true,
+		trigger: { player: "gainAfter", global: "loseAsyncAfter" },
 		sourceSkill: "twenyuan",
-		filter(event, player) {
-			var cards = event.getg(player);
-			if (!cards.length || cards.length < 2) return false;
-			return game.countPlayer(current => {
-				if (current == player) return false;
-				var evt = event.getl(current);
-				if (evt && evt.cards && evt.cards.filter(card => cards.includes(card)).length >= 2) return true;
-				return false;
-			});
+		filter(event, player, triggername, target) {
+			return target?.isIn();
 		},
-		check(event, player) {
-			var cards = event.getg(player);
-			var target = game.filterPlayer(current => {
-				if (current == player) return false;
-				var evt = event.getl(current);
-				if (evt && evt.cards && evt.cards.filter(card => cards.includes(card)).length >= 2) return true;
-				return false;
-			})[0];
-			return get.attitude(player, target) > 0;
+		getIndex(event, player) {
+			return game
+				.filterPlayer(current => {
+					if (current == player) return false;
+					return event.getl?.(current)?.cards2?.filter(card => event.getg?.(player)?.includes(card)).length >= 2;
+				})
+				.sortBySeat();
 		},
-		logTarget(event, player) {
-			var cards = event.getg(player);
-			return game.filterPlayer(current => {
-				if (current == player) return false;
-				var evt = event.getl(current);
-				if (evt && evt.cards && evt.cards.filter(card => cards.includes(card)).length >= 2) return true;
-				return false;
-			});
-		},
-		content() {
-			"step 0";
-			var target = lib.skill.twenyuan1.logTarget(trigger, player)[0];
-			event.target = target;
-			var list = ["摸一张牌"];
-			var prompt2 = "令" + get.translation(target) + "摸一张牌";
+		async cost(event, trigger, player) {
+			const { indexedData: target } = event;
+			const list = ["摸一张牌"];
+			let prompt2 = "令" + get.translation(target) + "摸一张牌";
 			if ((!target.countCards("h") || !target.countCards("e")) && target.isDamaged()) {
 				list.push("回复1点体力");
 				prompt2 += "或回复1点体力";
 			}
 			list.push("cancel2");
-			player
+			const control = await player
 				.chooseControl(list)
-				.set("prompt", get.prompt("twenyuan", target))
+				.set("prompt", get.prompt(event.skill, target))
 				.set("prompt2", prompt2)
-				.set("ai", () => _status.event.choice)
+				.set("ai", () => get.event().choice)
 				.set(
 					"choice",
-					(function () {
+					(() => {
 						if (get.attitude(player, target) > 0) {
-							if (target.hp <= 2 && list.includes("回复1点体力")) return "回复1点体力";
+							if (get.recoverEffect(target, player, player) >= get.effect(target, { name: "draw" }, player, player) && list.includes("回复1点体力")) return "回复1点体力";
 							return 0;
 						}
 						return "cancel2";
 					})()
-				);
-			"step 1";
-			if (result.control == "cancel2") {
-				event.finish();
-				return;
-			}
-			player.logSkill("twenyuan1", target);
-			if (result.control == "回复1点体力") target.recover();
-			else target.draw();
+				)
+				.forResultControl();
+			event.result = {
+				bool: control !== "cancel2",
+				cost_data: control,
+				targets: [target],
+			};
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+				cost_data,
+			} = event;
+			await target[cost_data == "回复1点体力" ? "recover" : "draw"]();
 		},
 	},
 	twenyuan2: {
 		audio: ["enyuan3.mp3", "enyuan4.mp3"],
-		trigger: { player: "damageEnd" },
-		logTarget: "source",
+		inherit: "xinenyuan2",
 		sourceSkill: "twenyuan",
-		filter(event, player) {
-			return event.source && event.source.isIn();
-		},
-		check(event, player) {
-			var att = get.attitude(player, event.source);
-			var num = event.source.countCards("h");
-			if (att <= 0) return true;
-			if (get.effect(event.source, { name: "losehp" }, player, event.source) > 0) return true;
-			if (num > 2) return true;
-			if (num) return att < 4;
-			return false;
-		},
-		prompt2: "令其选择一项：1.失去1点体力；2.交给你一张手牌，若此牌的花色不为♥，你摸一张牌。",
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			var target = trigger.source;
-			event.count--;
-			if (!target.countCards("h")) event._result = { bool: false };
-			else
-				target.chooseCard("h", "恩怨：将一张手牌交给" + get.translation(player) + "，或失去1点体力").set("ai", function (card) {
-					if (get.attitude(_status.event.player, _status.event.getParent().player) > 0) {
+		prompt2: event => `令${get.translation(event.source)}令其选择一项：1.失去1点体力；2.交给你一张手牌，若此牌的花色不为♥，你摸一张牌。`,
+		async content(event, trigger, player) {
+			const result = await trigger.source
+				.chooseToGive(`恩怨：交给${get.translation(player)}一张手牌，或失去1点体力`, "h", player)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					if (get.attitude(player, target) > 0) {
 						if (get.suit(card) != "heart") return 15 - get.value(card);
 						return 11 - get.value(card);
 					} else {
-						var num = 12 - _status.event.player.hp * 2;
+						let num = 12 - player.hp * 2;
 						if (get.suit(card) != "heart") num -= 2;
 						return num - get.value(card);
 					}
-				});
-			"step 2";
-			var target = trigger.source;
-			if (result.bool) {
-				var card = result.cards[0];
-				event.card = card;
-				target.give(card, player);
-			} else {
-				target.loseHp();
-				event.goto(4);
-			}
-			"step 3";
-			if (get.suit(card) != "heart") player.draw();
-			"step 4";
-			var target = trigger.source;
-			if (target.isIn() && event.count > 0 && player.hasSkill("twenyuan"))
-				player.chooseBool(get.prompt("twenyuan", target), lib.skill.twenyuan2.prompt2).set("ai", function () {
-					var evt = _status.event.getTrigger();
-					return lib.skill.twenyuan2.check(evt, evt.player);
-				});
-			else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("twenyuan2", trigger.source);
-				event.goto(1);
-			}
+				})
+				.forResult();
+			if (!result?.bool || !result?.cards?.length) await trigger.source.loseHp();
+			else if (get.suit(result.cards[0]) == "heart") await player.draw();
 		},
 	},
 	//马岱

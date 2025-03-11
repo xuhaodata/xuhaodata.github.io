@@ -741,15 +741,16 @@ const skills = {
 						if (num >= 3) {
 							await player.loseHp();
 							if (game.hasPlayer(target => target !== player && target.countCards("h"))) {
-								const [target] = await player
-									.chooseTarget("是否获得一名其他角色的一张手牌？", (card, player, target) => {
-										return target !== player && target.countCards("h");
-									})
-									.set("ai", target => {
-										const player = get.player();
-										return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
-									})
-									.forResult("targets");
+								const [target] =
+									(await player
+										.chooseTarget("是否获得一名其他角色的一张手牌？", (card, player, target) => {
+											return target !== player && target.countCards("h");
+										})
+										.set("ai", target => {
+											const player = get.player();
+											return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
+										})
+										.forResult("targets")) ?? [];
 								if (target) {
 									player.line(target);
 									await player.gainPlayerCard(target, "h", true);
@@ -758,19 +759,20 @@ const skills = {
 						}
 						if (num >= 4) {
 							if (game.hasPlayer(target => target.countDiscardableCards(player, "ej"))) {
-								const [target] = await player
-									.chooseTarget(
-										"弃置场上的一张牌",
-										(card, player, target) => {
-											return target.countDiscardableCards(player, "ej");
-										},
-										true
-									)
-									.set("ai", target => {
-										const player = get.player();
-										return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
-									})
-									.forResult("targets");
+								const [target] =
+									(await player
+										.chooseTarget(
+											"弃置场上的一张牌",
+											(card, player, target) => {
+												return target.countDiscardableCards(player, "ej");
+											},
+											true
+										)
+										.set("ai", target => {
+											const player = get.player();
+											return get.effect(target, { name: "guohe_copy", position: "ej" }, player, player);
+										})
+										.forResult("targets")) ?? [];
 								if (target) {
 									player.line(target);
 									await player.discardPlayerCard(target, "ej", true);
@@ -3780,62 +3782,48 @@ const skills = {
 			prevent: {
 				audio: "dcjiaowei",
 				trigger: {
-					player: "damageBegin4",
+					player: "loseAfter",
+					global: ["loseAsyncAfter", "addJudgeAfter", "equipAfter", "gainAfter", "addToExpansionAfter"],
+				},
+				filter(event, player) {
+					if (player.hasSkill("dcjiaowei_effect")) return false;
+					if (!event.getl?.(player)?.hs?.length) return false;
+					if (event.name === "lose") {
+						return Object.values(event.gaintag_map).flat().includes("dcjiaowei_tag");
+					}
+					return player.hasHistory("lose", evt => {
+						if (event !== evt.getParent()) return false;
+						return Object.values(evt.gaintag_map).flat().includes("dcjiaowei_tag");
+					});
 				},
 				forced: true,
-				filter(event, player) {
-					if (!event.source || !event.source.isIn()) return false;
-					return event.source.countCards("h") <= player.countCards("h", card => card.hasGaintag("dcjiaowei_tag"));
+				content() {
+					player.addTempSkill("dcjiaowei_effect");
 				},
-				*content(event, map) {
-					map.trigger.cancel();
+			},
+			effect: {
+				audio: "dcjiaowei",
+				trigger: { player: "damageBegin4" },
+				forced: true,
+				content() {
+					player.removeSkill(event.name);
+					trigger.cancel();
 				},
-				ai: {
-					effect: {
-						target(card, player, target) {
-							if (get.tag(card, "damage")) {
-								const num = target.countCards("h", card => card.hasGaintag("dcjiaowei_tag"));
-								let cards = [];
-								if (card.cards) cards.addArray(card.cards);
-								if (ui.selected.cards) cards.addArray(ui.selected.cards);
-								cards = cards.filter(card => {
-									if (get.itemtype(card) != "card") return false;
-									return get.owner(card) == player && get.position(card) == "e";
-								});
-								if (player.countCards("h") - cards.length <= num) return "zeroplayertarget";
-							}
-						},
-					},
-				},
+				mark: true,
+				intro: { content: "防止本回合下次受到的伤害" },
 			},
 		},
 	},
 	dcfeibai: {
 		audio: 2,
 		trigger: { player: "useCardAfter" },
-		usable: 1,
 		locked: false,
-		filter(event, player) {
-			return player.getHistory("useCard").indexOf(event) > 0;
-		},
-		prompt2(event, player) {
+		prompt(event, player) {
 			const history = player.getHistory("useCard");
 			const ind = history.indexOf(event) - 1,
 				evt = history[ind];
-			const len = get.cardNameLength(event.card) + get.cardNameLength(evt.card);
-			return `随机获得一张字数为${len}的牌`;
-		},
-		check(event, player) {
-			const history = player.getHistory("useCard");
-			const ind = history.indexOf(event) - 1,
-				evt = history[ind];
-			const len = get.cardNameLength(event.card) + get.cardNameLength(evt.card);
-			return (
-				player.countCards("h", card => card.hasGaintag("dcjiaowei_tag")) <= len ||
-				get.cardPile(card => {
-					return get.cardNameLength(card, false) == len;
-				})
-			);
+			const len = get.cardNameLength(event.card) + (evt ? get.cardNameLength(evt.card) : 0);
+			return `${get.prompt("dcfeibai")}（字数之和为${len}）`;
 		},
 		*content(event, map) {
 			const player = map.player,
@@ -3843,35 +3831,20 @@ const skills = {
 			const history = player.getHistory("useCard");
 			const ind = history.indexOf(trigger) - 1,
 				evt = history[ind];
-			const len = get.cardNameLength(trigger.card) + get.cardNameLength(evt.card);
-			const card = get.cardPile(
-				card => {
-					return get.cardNameLength(card, false) == len;
-				},
-				false,
-				"random"
-			);
+			const len = get.cardNameLength(trigger.card) + (evt ? get.cardNameLength(evt.card) : 0);
+			const card = get.cardPile2(card => get.cardNameLength(card, false) === len);
 			if (card) {
 				yield player.gain(card, "gain2");
 			} else {
-				let str = `没有${len}字的牌…`;
-				if (len == 5 && Math.random() <= 0.2) str = "五字不行哇";
-				player.chat(str);
-				game.log(`但是找不到字数为${len}的牌！`);
-			}
-			if (player.countCards("h", card => card.hasGaintag("dcjiaowei_tag")) <= len) {
-				player.storage.counttrigger.dcfeibai--;
-				game.log(player, "重置了", "#g【飞白】");
+				yield player.draw().gaintag.add("dcjiaowei_tag");
+				player.tempBanSkill(event.name);
 			}
 		},
 		mod: {
 			aiOrder(player, card, num) {
 				const evt = player.getLastUsed();
-				if (!evt) return;
-				const len = get.cardNameLength(card) + get.cardNameLength(evt.card);
-				const cardx = get.cardPile(card => {
-					return get.cardNameLength(card, false) == len;
-				});
+				const len = get.cardNameLength(card) + (evt ? get.cardNameLength(evt.card) : 0);
+				const cardx = get.cardPile(card => get.cardNameLength(card, false) === len);
 				if (cardx) return num + 8 + (len == 2 || len == 4 ? 2 : 0);
 			},
 		},

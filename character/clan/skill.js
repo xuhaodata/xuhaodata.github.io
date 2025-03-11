@@ -1018,7 +1018,7 @@ const skills = {
 						} else {
 							player.popup("洗具");
 							const evt = trigger.getParent("phase", true, true);
-							if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|clanqiajue");
+							if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|clanqiajue");
 						}
 					});
 			}
@@ -3896,18 +3896,16 @@ const skills = {
 	},
 	clanguixiang: {
 		audio: 2,
-		trigger: {
-			player: "phaseChange",
-		},
+		trigger: { player: "phaseChange" },
 		forced: true,
 		filter(event, player) {
 			if (event.phaseList[event.num].startsWith("phaseUse")) return false;
-			var num1 = player.getHandcardLimit() - 1,
+			const num1 = player.getHandcardLimit() - 1,
 				num2 = event.num - player.getHistory("skipped").length;
 			return num1 == num2;
 		},
 		content() {
-			trigger.phaseList[trigger.num] = "phaseUse|clanguixiang";
+			trigger.phaseList[trigger.num] = `phaseUse|${event.name}`;
 			game.delayx();
 		},
 	},

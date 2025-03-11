@@ -650,9 +650,7 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
-				trigger: {
-					player: ["useCardToBefore", "useCardToAfter", "useCardToExcluded", "useCardToOmitted", "useCardToCancelled"],
-				},
+				trigger: { player: ["useCardToBefore", "useCardToAfter", "useCardToExcluded", "useCardToOmitted", "useCardToCancelled", "eventNeutralized"] },
 				forced: true,
 				charlotte: true,
 				popup: false,
@@ -660,7 +658,7 @@ const skills = {
 				priority: 100,
 				filter(event, player, name) {
 					if (event.type !== "card" || event.skill !== "jsrgguanshi") return false;
-					const isUnhurted = event.card.storage && event.card.storage.jsrgguanshi;
+					const isUnhurted = event.card.storage?.jsrgguanshi;
 					if (name === "useCardToBefore") return isUnhurted;
 					return (
 						!isUnhurted &&
@@ -2387,134 +2385,134 @@ const skills = {
 	},
 	jsrgzhendan: {
 		audio: 2,
-		trigger: {
-			player: "damageEnd",
-			global: "roundStart",
-		},
+		enable: ["chooseToUse", "chooseToRespond"],
 		filter(event, player) {
-			let count = 0;
-			let roundCount = 1 + (event.name != "damage");
-			const curLen = player.actionHistory.length;
-			for (let i = curLen - 1; i >= 0; i--) {
-				if (
-					roundCount == 1 &&
-					game.hasPlayer(current => {
-						const history = current.actionHistory[i];
-						if (!history.isMe || history.isSkipped) return false;
-						return true;
-					})
-				) {
-					count++;
-				}
-				if (player.actionHistory[i].isRound) roundCount--;
-				if (roundCount <= 0) break;
-			}
-			if (!player.storage.jsrgzhendan_mark && count > 0) return true;
-			return false;
+			if (event.type == "wuxie") return false;
+			if (
+				!_status.connectMode &&
+				!player.countCards("hs", card => {
+					return get.type2(card) != "basic";
+				})
+			)
+				return false;
+			return get.inpileVCardList(info => {
+				if (info[0] != "basic") return false;
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+			}).length;
 		},
-		forced: true,
-		locked: false,
-		group: "jsrgzhendan_viewas",
-		async content(event, trigger, player) {
-			let count = 0;
-			let roundCount = 1 + (trigger.name != "damage");
-			const curLen = player.actionHistory.length;
-			for (let i = curLen - 1; i >= 0; i--) {
-				if (
-					roundCount == 1 &&
-					game.hasPlayer(current => {
-						const history = current.actionHistory[i];
-						if (!history.isMe || history.isSkipped) return false;
-						return true;
-					})
-				) {
-					count++;
-				}
-				if (player.actionHistory[i].isRound) roundCount--;
-				if (roundCount <= 0) break;
-			}
-			count = Math.min(5, count);
-			await player.draw(count);
-			if (trigger.name == "damage") {
-				player.tempBanSkill("jsrgzhendan", "roundStart");
-				player.storage.jsrgzhendan_mark = true;
-				player
-					.when({ global: "roundStart" })
-					.assign({
-						lastDo: true,
-					})
-					.then(() => {
-						delete player.storage.jsrgzhendan_mark;
-					});
-			}
+		chooseButton: {
+			dialog(event, player) {
+				const vcards = get.inpileVCardList(info => {
+					if (info[0] != "basic") return false;
+					return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+				});
+				return ui.create.dialog("镇胆", [vcards, "vcard"]);
+			},
+			check(button) {
+				if (get.event().getParent().type != "phase") return 1;
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			},
+			backup(links, player) {
+				return {
+					audio: "jsrgzhendan",
+					popname: true,
+					viewAs: { name: links[0][2], nature: links[0][3] },
+					filterCard(card, player) {
+						return get.type2(card) != "basic";
+					},
+					selectCard: 1,
+					position: "hs",
+				};
+			},
+			prompt(links, player) {
+				return "将一张非基本手牌当" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用或打出";
+			},
 		},
-		subSkill: {
-			viewas: {
-				audio: "jsrgzhendan",
-				enable: ["chooseToUse", "chooseToRespond"],
-				filter(event, player) {
-					if (event.type == "wuxie") return false;
-					if (
-						!_status.connectMode &&
-						!player.countCards("hs", card => {
-							return get.type2(card) != "basic";
-						})
-					)
-						return false;
-					return get.inpileVCardList(info => {
-						if (info[0] != "basic") return false;
-						return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
-					}).length;
-				},
-				chooseButton: {
-					dialog(event, player) {
-						const vcards = get.inpileVCardList(info => {
-							if (info[0] != "basic") return false;
-							return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
-						});
-						return ui.create.dialog("镇胆", [vcards, "vcard"]);
-					},
-					check(button) {
-						if (get.event().getParent().type != "phase") return 1;
-						return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
-					},
-					backup(links, player) {
-						return {
-							audio: "jsrgzhendan",
-							popname: true,
-							viewAs: { name: links[0][2], nature: links[0][3] },
-							filterCard(card, player) {
-								return get.type2(card) != "basic";
-							},
-							selectCard: 1,
-							position: "hs",
-						};
-					},
-					prompt(links, player) {
-						return "将一张非基本手牌当" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用或打出";
-					},
-				},
-				hiddenCard(player, name) {
-					return get.type(name) == "basic" && player.countCards("hs") > 0;
-				},
-				ai: {
-					respondSha: true,
-					respondShan: true,
-					skillTagFilter(player) {
-						return player.countCards("hs") > 0;
-					},
-					order: 0.5,
-					result: {
-						player(player) {
-							if (get.event().dying) {
-								return get.attitude(player, get.event().dying);
-							}
-							return 1;
-						},
-					},
+		hiddenCard(player, name) {
+			return get.type(name) == "basic" && player.countCards("hs") > 0;
+		},
+		ai: {
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player) {
+				return player.countCards("hs") > 0;
+			},
+			order: 0.5,
+			result: {
+				player(player) {
+					if (get.event().dying) {
+						return get.attitude(player, get.event().dying);
+					}
+					return 1;
 				},
 			},
-			viewas_backup: {},
+		},
+		group: "jsrgzhendan_damage",
+		subSkill: {
+			damage: {
+				audio: "jsrgzhendan",
+				trigger: {
+					player: "damageEnd",
+					global: "roundStart",
+				},
+				filter(event, player) {
+					let count = 0;
+					let roundCount = 1 + (event.name != "damage");
+					const curLen = player.actionHistory.length;
+					for (let i = curLen - 1; i >= 0; i--) {
+						if (
+							roundCount == 1 &&
+							game.hasPlayer(current => {
+								const history = current.actionHistory[i];
+								if (!history.isMe || history.isSkipped) return false;
+								return true;
+							})
+						) {
+							count++;
+						}
+						if (player.actionHistory[i].isRound) roundCount--;
+						if (roundCount <= 0) break;
+					}
+					if (!player.storage.jsrgzhendan_mark && count > 0) return true;
+					return false;
+				},
+				forced: true,
+				locked: false,
+				async content(event, trigger, player) {
+					let count = 0;
+					let roundCount = 1 + (trigger.name != "damage");
+					const curLen = player.actionHistory.length;
+					for (let i = curLen - 1; i >= 0; i--) {
+						if (
+							roundCount == 1 &&
+							game.hasPlayer(current => {
+								const history = current.actionHistory[i];
+								if (!history.isMe || history.isSkipped) return false;
+								return true;
+							})
+						) {
+							count++;
+						}
+						if (player.actionHistory[i].isRound) roundCount--;
+						if (roundCount <= 0) break;
+					}
+					count = Math.min(5, count);
+					await player.draw(count);
+					if (trigger.name == "damage") {
+						player.tempBanSkill("jsrgzhendan", "roundStart");
+						player.storage.jsrgzhendan_mark = true;
+						player
+							.when({ global: "roundStart" })
+							.assign({
+								lastDo: true,
+							})
+							.then(() => {
+								delete player.storage.jsrgzhendan_mark;
+							});
+					}
+				},
+			},
+			backup: {},
 		},
 	},
 	//司马懿
@@ -9160,57 +9158,42 @@ const skills = {
 		audio: "rangjie",
 		trigger: { player: "damageEnd" },
 		filter(event, player) {
-			return player.canMoveCard();
+			return player.canMoveCard() && event.num > 0;
 		},
 		check(event, player) {
 			return player.canMoveCard(true);
 		},
-		content() {
-			"step 0";
-			event.num = trigger.num;
-			"step 1";
-			event.num--;
-			if (player.canMoveCard()) player.moveCard(true);
-			"step 2";
-			if (result.bool) {
-				var card = result.card;
-				var suit = get.suit(card, false);
-				var cards = Array.from(ui.discardPile.childNodes);
-				var gains = [];
-				var history = game.getGlobalHistory("cardMove", evt => {
-					if (evt.name == "lose") return evt.position == ui.discardPile;
-					return evt.name == "cardsDiscard";
+		getIndex: event => event.num,
+		async content(event, trigger, player) {
+			if (!player.canMoveCard()) return;
+			const result = await player.moveCard(true).forResult();
+			if (!result?.card) return;
+			const suit = get.suit(result.card, false);
+			const cards = Array.from(ui.discardPile.childNodes);
+			const gains = [];
+			const history = game.getGlobalHistory("cardMove", evt => {
+				if (evt.name == "lose") return evt.position == ui.discardPile;
+				return evt.name == "cardsDiscard";
+			});
+			for (let i = history.length - 1; i >= 0; i--) {
+				let evt = history[i];
+				let cards2 = evt.cards.filter(card => {
+					return cards.includes(card) && get.suit(card, false) == suit;
 				});
-				for (var i = history.length - 1; i >= 0; i--) {
-					var evt = history[i];
-					var cards2 = evt.cards.filter(card => {
-						return cards.includes(card) && get.suit(card, false) == suit;
-					});
-					if (cards2.length) {
-						gains.addArray(cards2);
-						cards.removeArray(cards2);
-					}
-					if (!cards.length) break;
+				if (cards2.length) {
+					gains.addArray(cards2);
+					cards.removeArray(cards2);
 				}
-				if (gains.length) {
-					player.chooseButton(["让节：是否获得一张" + get.translation(suit) + "牌？", gains]).set("ai", get.buttonValue);
-				} else event._result = { bool: false };
+				if (!cards.length) break;
 			}
-			"step 3";
-			if (result.bool) {
-				player.gain(result.links, "gain2");
-			}
-			"step 4";
-			if (event.num > 0 && player.hasSkill("jsrgrangjie")) {
-				player
-					.chooseBool(get.prompt2("jsrgrangjie"))
-					.set("ai", () => _status.event.bool)
-					.set("bool", lib.skill.jsrgrangjie.check(trigger, player));
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("jsrgrangjie");
-				event.goto(1);
+			if (gains.length) {
+				const result = await player
+					.chooseButton(["让节：是否获得一张" + get.translation(suit) + "牌？", gains])
+					.set("ai", get.buttonValue)
+					.forResult();
+				if (result?.bool && result?.links?.length) {
+					await player.gain(result.links, "gain2");
+				}
 			}
 		},
 		ai: {

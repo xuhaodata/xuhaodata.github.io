@@ -973,7 +973,7 @@ const skills = {
 		locked: false,
 		logAudio: () => 1,
 		async content(event, trigger, player) {
-			const cards = get.cards(get.mode() == "doudizhu" ? 1 : 2);
+			const cards = get.cards(2);
 			const next = player.addToExpansion(cards, "draw");
 			next.gaintag.add(event.name);
 			await next;
@@ -3678,10 +3678,10 @@ const skills = {
 					player.storage.twshelie = 1 - result.index;
 					const evt = trigger.getParent("phase", true, true);
 					if (result.index == 0) {
-						if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|twshelie");
+						if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseDraw|twshelie");
 					}
 					if (result.index == 1) {
-						if (evt && evt.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseUse|twshelie");
+						if (evt?.phaseList) evt.phaseList.splice(evt.num + 1, 0, "phaseUse|twshelie");
 					}
 				},
 			},
@@ -5028,15 +5028,13 @@ const skills = {
 				trigger: { player: "phaseChange" },
 				forced: true,
 				filter(event, player) {
-					if (!player.storage.yuheng) return false;
-					var list = ["xinfu_guanwei", "bizheng", "xinanguo"];
-					for (var i of list) {
-						if (!player.storage.yuheng.includes(i)) return false;
-					}
+					if (!player.storage.yuheng?.length) return false;
+					const list = ["xinfu_guanwei", "bizheng", "xinanguo"];
+					if (list.some(skill => !player.storage.yuheng.includes(skill))) return false;
 					return event.phaseList[event.num].indexOf("phaseJudge") != -1;
 				},
 				content() {
-					trigger.phaseList[trigger.num] = "phaseDraw|clanguixiang";
+					trigger.phaseList[trigger.num] = `phaseDraw|${event.name}`;
 					game.delayx();
 				},
 				init(player, skill) {
