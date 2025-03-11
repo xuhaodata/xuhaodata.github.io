@@ -6139,6 +6139,7 @@ const skills = {
 		},
 		subSkill: {
 			draw: {
+				audio: "fyjianyu",
 				charlotte: true,
 				trigger: { global: "useCardToPlayer" },
 				filter(event, player) {

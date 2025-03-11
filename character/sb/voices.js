@@ -1,4 +1,9 @@
 export default {
+	"#sbshensu1": "兵贵出奇，先夺者胜。",
+	"#sbshensu2": "诸将岂不闻兵贵神速乎？",
+	"#sbzhengzi1": "整军深垒，备以待敌。",
+	"#sbzhengzi2": "整甲缮兵，以乘其敝。",
+	"#sb_xiahouyuan:die": "若非中其奸计，吾岂会命丧贼手？",
 	"#sbtuxi1": "成败之机，在此一战，诸君何疑！",
 	"#sbtuxi2": "及敌未合，折其盛势，以安众心！",
 	"#sbdengfeng1": "擒权覆吴，今便得成所愿，众将且奋力一战！",
