@@ -269,7 +269,7 @@ const skills = {
 				},
 				filter(event, player, name) {
 					if (event.name === "phase" || name === "enterGame") return event.name !== "phase" || game.phaseNumber === 0;
-					return player.hasMark("olshanjia");
+					return event.getParent().name !== "useCard" && player.hasMark("olshanjia");
 				},
 				forced: true,
 				locked: false,
