@@ -97,15 +97,15 @@ const skills = {
 				.forResult();
 			if (!result.bool) return;
 			await target.showCards(result.cards);
-			target.addGaintag(result.cards, "jsrgqiantun_tag");
+			target.addGaintag(result.cards, "mbqiantun_tag");
 			const next = player.chooseToCompare(target);
 			next.set("filterCard", (card, player) => {
-				const bool = cardx => cardx.hasGaintag("jsrgqiantun_tag");
+				const bool = cardx => cardx.hasGaintag("mbqiantun_tag");
 				return !player?.countCards("h", bool) || bool(card);
 			});
 			if (target.countCards("h") + 1 > result.cards.length * 2) next.set("small", true);
 			const result3 = await next.forResult();
-			target.removeGaintag("jsrgqiantun_tag");
+			target.removeGaintag("mbqiantun_tag");
 			const mode = get.mode();
 			if (result3.winner == player) {
 				player.logSkill("jsrgqiantun", [target], null, null, [3]);
@@ -229,6 +229,9 @@ const skills = {
 		inherit: "jsrgdangyi",
 		init(player, skill) {
 			player.setMark(skill, 2, false);
+		},
+		filter(event, player) {
+			return player.countMark("mbdangyi_used") < player.countMark("mbdangyi");
 		},
 		usable: 1,
 		persevereSkill: true,
