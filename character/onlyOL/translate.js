@@ -233,6 +233,15 @@ const translates = {
 	olsblunzhan_info: "出牌阶段，你可将任意张牌当作【决斗】使用（至多五张，且选择的转化牌数不得为你本回合发动〖轮战〗已经转化过的牌数）。若你因此对唯一目标造成了伤害，你可以摸X张牌，然后你本回合不能再对其发动此技能（X为本回合你使用牌指定其为目标的次数）。",
 	olsbjuejue: "决绝",
 	olsbjuejue_info: "锁定技，当你于回合内首次使用所有手牌指定仅一名其他角色为目标时，你令其弃置X张牌（X为本回合你使用牌指定其为目标的次数）。",
+	ol_sb_jiaxu: "OL谋贾诩",
+	ol_sb_jiaxu_prefix: "OL谋",
+	olsbwance: "完策",
+	olsbwance_info: "出牌阶段限一次，你可以选择一名有手牌的角色并选择一个单目标普通锦囊牌牌名，其依次将X张手牌当作此普通锦囊牌使用（X为游戏轮数且至多为3）。其以此法使用的牌指定目标时，你可以弃置一张牌并修改此牌的目标。",
+	olsbchenzhi: "沉智",
+	olsbchenzhi_info: "①当你受到伤害时，若你本轮已受到过X次伤害，则防止之（X为游戏轮数且至多为3）。②每局游戏限一次，一轮游戏结束时，若你本轮未发动过〖沉智①〗，则你可以复原一名角色的一个限定技。",
+	olsbchenzhi_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>目前无名杀未拥有“一轮游戏结束时”时机，实际执行时机在“下一轮游戏开始时”的时机且比正常“一轮游戏开始时”早，请不要反馈有关此技能时机的相关问题。</span>',
+	olsbluanchao: "乱朝",
+	olsbluanchao_info: "限定技，一轮游戏开始时，你可以令所有角色依次选择从牌堆中获得一张【杀】或【闪】。选择获得【杀】的角色本轮首次造成的伤害+1。",
 };
 
 export default translates;
