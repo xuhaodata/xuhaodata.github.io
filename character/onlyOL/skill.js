@@ -371,10 +371,11 @@ const skills = {
 			const nums = Array.from({ length: 5 })
 				.map((_, i) => i + 1)
 				.removeArray(player.getStorage("olsblunzhan_used"));
-			return nums.length > 0 && player.countCards("he") >= Math.min(...nums);
+			return nums.length > 0 && player.countCards("hes") >= Math.min(...nums);
 		},
 		filterCard: true,
 		selectCard: () => [1, 5],
+		position: "hes",
 		filterOk: () => !get.player().getStorage("olsblunzhan_used").includes(ui.selected.cards.length),
 		viewAs: { name: "juedou", storage: { olsblunzhan: true } },
 		precontent() {

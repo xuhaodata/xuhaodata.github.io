@@ -261,7 +261,7 @@ const skills = {
 				audio: "shanjia",
 				trigger: {
 					player: ["enterGame", "loseAfter"],
-					global: ["phaseBefore", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
+					global: ["phaseBefore", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"],
 				},
 				getIndex(event, player, name) {
 					if (event.name === "phase" || name === "enterGame") return 1;
