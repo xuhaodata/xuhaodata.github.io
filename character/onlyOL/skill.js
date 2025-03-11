@@ -315,12 +315,15 @@ const skills = {
 		},
 	},
 	olsbluanchao: {
+		limited: true,
 		audio: 2,
 		trigger: { global: "roundStart" },
 		check(event, player) {
 			if (player.hasUnknown()) return false;
 			return game.countPlayer(target => Math.sign(get.attitude(player, target))) > 0;
 		},
+		skillAnimation: true,
+		animationColor: "thunder",
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const targets = game.filterPlayer().sortBySeat();

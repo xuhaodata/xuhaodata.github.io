@@ -139,5 +139,21 @@ const dynamicTranslates = {
 		}
 		return result;
 	},
+	dcrejueyan(player, skill) {
+		let storage = player.storage[skill];
+		let str = lib.translate[skill + "_info"];
+		if (!storage) return str;
+		let regex = /\[\d+\]/g;
+		let index = 0;
+		let result = str.replace(regex, (match, offset, string) => {
+			if (index < storage.length) {
+				const resultx = `[${storage[index]}]`;
+				index++;
+				return resultx;
+			}
+			return match;
+		});
+		return result;
+	},
 };
 export default dynamicTranslates;

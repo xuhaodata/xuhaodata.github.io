@@ -431,12 +431,41 @@ const skills = {
 		logTarget(event, player) {
 			return event.targets.filter(i => i !== player);
 		},
-		content() {
+		async content(event, trigger, player) {
 			trigger.getParent().excluded.addArray(event.targets);
 			game.log(trigger.card, "对", event.targets, "无效");
+			let number = get.number(trigger.card);
+			if (typeof number === "number") {
+				let gains = [];
+				number--;
+				while (number > 0) {
+					const card = get.cardPile2(card => get.number(card) === number);
+					if (card) gains.push(card);
+					number--;
+				}
+				if (gains.length) {
+					player.addTempSkill("dclaoyan_effect");
+					const next = player.gain(gains, "gain2");
+					next.gaintag.add("dclaoyan_effect");
+					await next;
+				}
+			}
 		},
 		global: "dclaoyan_zhuiji",
 		subSkill: {
+			effect: {
+				charlotte: true,
+				trigger: { global: "phaseEnd" },
+				forced: true,
+				popup: false,
+				content() {
+					const cards = player.getCards("h", card => card.hasGaintag(event.name) && lib.filter.cardDiscardable(card, player));
+					if (cards.length) player.discard(cards);
+				},
+				onremove(player, skill) {
+					player.removeGaintag(skill);
+				},
+			},
 			//孩子们，原谅我这个梗小鬼还在玩牢大梗
 			zhuiji: {
 				ai: {
@@ -571,6 +600,119 @@ const skills = {
 					.map(i => i.toString())
 					.join(""),
 			content: storage => "当前选项数值为：" + storage.slice(0, 3),
+		},
+	},
+	dcrejueyan: {
+		audio: "dcjueyan",
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			if (player.getStorage("dcrejueyan_used").includes(get.type2(event.card))) return false;
+			return event.targets?.length === 1;
+		},
+		async cost(event, trigger, player) {
+			const storage = player.storage[event.skill];
+			let list = ["摸牌", "拿牌", "拼点"],
+				choices = [list[0]];
+			let choiceList = ["摸" + get.cnNumber(storage[0]) + "张牌", "随机从弃牌堆获得" + get.cnNumber(storage[1]) + "张牌", "与一名角色拼点，赢的角色对没赢的角色造成" + storage[2] + "点伤害"];
+			if (Array.from(ui.discardPile.childNodes).length) choices.add("拿牌");
+			else choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "（无法选择）</span>";
+			if (game.hasPlayer(target => player.canCompare(target))) choices.add("拼点");
+			else choiceList[2] = '<span style="opacity:0.5">' + choiceList[2] + "（无法选择）</span>";
+			const choice = await player
+				.chooseControl(choices, "cancel2")
+				.set("ai", () => {
+					const player = get.player(),
+						storage = player.storage.dcrejueyan;
+					const map = {
+						摸牌: get.effect(player, { name: "draw" }, player, player) * storage[0],
+						拿牌: get.effect(player, { name: "draw" }, player, player) * Math.min(Array.from(ui.discardPile.childNodes).length, storage[1]),
+						拼点: Math.max(...[0].concat(game.filterPlayer(target => player.canCompare(target)).length.map(target => get.effect(target, "hannan", player, player)))),
+					};
+					return get
+						.event()
+						.controls.slice()
+						.sort((a, b) => map[b] - map[a])[0];
+				})
+				.set("choiceList", choiceList)
+				.set("prompt", [get.prompt(event.skill), '<div class="text center">你可以选择一项执行，执行后该项目数值变为1，其余项目数值+1</div>'].map(str => "###" + str).join(""))
+				.forResult("control");
+			if (!choice || choice === "cancel2") event.result = { bool: false };
+			else event.result = { bool: true, cost_data: list.indexOf(choice) };
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill("dcrejueyan_used");
+			player.markAuto("dcrejueyan_used", [get.type2(trigger.card)]);
+			const storage = player.storage[event.name];
+			const index = event.cost_data;
+			switch (index) {
+				case 0:
+					await player.draw(storage[0]);
+					break;
+				case 1:
+					await player.gain(Array.from(ui.discardPile.childNodes).randomGets(storage[1]));
+					break;
+				case 2:
+					const result = await player
+						.chooseTarget(
+							true,
+							(card, player, target) => {
+								return player.canCompare(target);
+							},
+							"与一名角色拼点，赢的角色对没赢的角色造成" + storage[2] + "点伤害"
+						)
+						.set("ai", target => {
+							const player = get.player();
+							return get.effect(target, "hannan", player, player);
+						})
+						.forResult();
+					if (result?.bool && result.targets?.length) {
+						const target = result.targets[0];
+						const result2 = await player.chooseToCompare(target).forResult();
+						if (result2) {
+							if (!result2.tie) {
+								const winner = result2.bool ? player : target;
+								const loser = !result2.bool ? player : target;
+								winner.line(loser);
+								await loser.damage(storage[2], winner);
+							}
+						}
+					}
+					break;
+			}
+			player.storage[event.name][index] = 1;
+			const nums = Array.from({ length: 3 })
+				.map((_, i) => i)
+				.filter(i => i !== index);
+			for (const num of nums) {
+				if (player.storage[event.name][num] < 3) player.storage[event.name][num]++;
+			}
+			get.info(event.name).updateMark(player, event.name);
+		},
+		init(player, skill) {
+			player.storage[skill] = [1, 1, 1, false];
+			get.info(skill).updateMark(player, skill);
+		},
+		onremove(player, skill) {
+			player.removeTip(skill);
+			delete player.storage[skill];
+		},
+		updateMark(player, skill) {
+			player.markSkill(skill);
+			player.addTip(skill, [get.translation(skill), ...player.storage[skill].slice(0, 3)].join(" "));
+		},
+		intro: {
+			markcount: storage =>
+				storage
+					.slice(0, 3)
+					.map(i => i.toString())
+					.join(""),
+			content: storage => "当前选项数值为：" + storage.slice(0, 3),
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
 		},
 	},
 	//徐馨
