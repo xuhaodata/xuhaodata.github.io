@@ -154,7 +154,6 @@ const translates = {
 	baosanniang: "鲍三娘",
 	majun: "手杀马钧",
 	majun_prefix: "手杀",
-	simazhao: "司马昭",
 	wangyuanji: "王元姬",
 
 	jianggan: "蒋干",
