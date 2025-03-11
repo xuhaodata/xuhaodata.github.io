@@ -1,4 +1,5 @@
 const characters = {
+	mb_simazhao: ["male", "wei", 3, ["mbxiezheng", "mbqiantun", "mbweisi", "mbzhaoxiong"], ["character:jsrg_simazhao", "die:jsrg_simazhao", "border:jin"]],
 	friend_cuijun: ["male", "qun", 3, ["friendshunyi", "friendbiwei", "friendgongli_cuijun"]],
 	friend_shitao: ["male", "qun", 3, ["friendqinying", "friendlunxiong", "friendgongli_shitao"]],
 	pot_yuji: ["male", "qun", 3, ["potdaozhuan", "potfuji"]],

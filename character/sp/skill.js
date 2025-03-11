@@ -261,7 +261,7 @@ const skills = {
 				audio: "shanjia",
 				trigger: {
 					player: ["enterGame", "loseAfter"],
-					global: ["phaseBefore", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
+					global: ["phaseBefore", "loseAsyncAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter", "gainAfter"],
 				},
 				getIndex(event, player, name) {
 					if (event.name === "phase" || name === "enterGame") return 1;
@@ -269,7 +269,7 @@ const skills = {
 				},
 				filter(event, player, name) {
 					if (event.name === "phase" || name === "enterGame") return event.name !== "phase" || game.phaseNumber === 0;
-					return player.hasMark("olshanjia");
+					return event.getParent().name !== "useCard" && player.hasMark("olshanjia");
 				},
 				forced: true,
 				locked: false,
@@ -28188,7 +28188,7 @@ const skills = {
 		},
 		subSkill: {
 			backup: {
-				ilterCard(card) {
+				filterCard(card) {
 					return get.itemtype(card) == "card";
 				},
 				selectCard: 1,

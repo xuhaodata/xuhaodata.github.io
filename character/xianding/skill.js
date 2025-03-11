@@ -425,7 +425,7 @@ const skills = {
 		audio: 2,
 		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
-			return event.targets.length > 1;
+			return event.player !== player && event.targets.length > 1;
 		},
 		forced: true,
 		logTarget(event, player) {

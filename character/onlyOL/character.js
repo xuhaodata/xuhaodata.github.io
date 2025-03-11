@@ -1,4 +1,6 @@
 const characters = {
+	ol_jsrg_liuhong: ["male", "qun", 4, ["olchaozheng", "olshenchong", "jsrgjulian"], ["zhu", "character:jsrg_liuhong", "die:jsrg_liuhong"]],
+	ol_jsrg_zhaoyun: ["male", "shu", 4, ["ollonglin", "olzhendan"], ["character:jsrg_zhaoyun", "die:jsrg_zhaoyun"]],
 	ol_sb_jiaxu: ["male", "qun", 3, ["olsbwance", "olsbchenzhi", "olsbluanchao"]],
 	ol_sb_wenchou: ["male", "qun", 4, ["olsblunzhan", "olsbjuejue"]],
 	ol_sb_zhangrang: ["male", "qun", 3, ["olsblucun", "olsbtuisheng"], ["sex:male_castrated"]],
