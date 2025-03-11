@@ -2,6 +2,149 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//闪刘宏
+	olchaozheng: {
+		audio: "jsrgchaozheng",
+		inherit: "jsrgchaozheng",
+		filter(event, player) {
+			if (!player.countCards("h")) return false;
+			return game.hasPlayer(i => i != player && i.countCards("h"));
+		},
+		logTarget(event, player) {
+			return game.filterPlayer(i => i != player && i.countCards("h"));
+		},
+		prompt2() {
+			return lib.translate["olchaozheng_info"].split("②")[0].slice(1);
+		},
+		content() {
+			player.chooseToDebate(game.filterPlayer(current => current.countCards("h"))).set("callback", async (event, trigger, player) => {
+				const { debateResult: result } = event;
+				const { bool, opinion, targets, opinions } = result;
+				if (bool && opinion) {
+					if (opinion && ["red", "black"].includes(opinion)) {
+						player.logSkill("olchaozheng", targets, null, null, [opinion == "red" ? 3 : 4]);
+						for (const target of result.red
+							.map(i => i[0])
+							.unique()
+							.sortBySeat()) {
+							if (target === player && opinion !== "red") continue;
+							await target[opinion == "red" ? "recover" : "loseHp"]();
+						}
+					}
+				}
+				const ops = opinions.filter(i => result[i].flat().includes(player));
+				if (ops)
+					await player.draw(
+						Math.min(
+							3,
+							ops.reduce((sum, op) => sum + result[op].map(i => i[0]).unique().length, 0)
+						)
+					);
+			});
+		},
+		group: "olchaozheng_debate",
+		subSkill: {
+			debate: {
+				audio: [1, 2].map(num => "jsrgchaozheng" + num + ".mp3"),
+				trigger: { global: "debateShowOpinion" },
+				filter(event, player) {
+					return event.targets.includes(player) && event.opinions.some(i => event[i].flat().includes(player));
+				},
+				forced: true,
+				locked: false,
+				content() {
+					const ops = trigger.opinions.filter(i => trigger[i].flat().includes(player));
+					for (const op of ops) {
+						for (const list of trigger[op]) {
+							if (list[0] === player) {
+								const color = typeof list[1] == "string" ? list[1] : get.color(list[1], list[0]);
+								trigger[op].push([player, color]);
+								game.log(player, "的", "#g" + get.translation(color) + "意见+1");
+								break;
+							}
+						}
+					}
+				},
+			},
+		},
+	},
+	olshenchong: {
+		audio: "jsrgshenchong",
+		inherit: "jsrgshenchong",
+		async content(event, trigger, player) {
+			const { target, name: skillName } = event;
+			player.awakenSkill(skillName);
+			await target.addSkills(get.info(skillName).derivation);
+			player.addSkill(skillName + "_die");
+			player.markAuto(skillName + "_die", [target]);
+		},
+		derivation: ["olrefeiyang", "jsrgbahu"],
+		subSkill: {
+			die: {
+				charlotte: true,
+				audio: "jsrgshenchong",
+				trigger: { player: "die" },
+				filter(event, player) {
+					return player.getStorage("olshenchong_die").length;
+				},
+				forced: true,
+				forceDie: true,
+				content() {
+					const targets = player.getStorage("olshenchong_die");
+					player.line(targets);
+					targets.sortBySeat().forEach(current => {
+						current.clearSkills(true);
+						current.chooseToDiscard(current.countCards("h"), "h", true);
+					});
+				},
+			},
+		},
+	},
+	olrefeiyang: {
+		trigger: { player: "phaseJudgeBegin" },
+		filter(event, player) {
+			return (
+				player.countCards("j") &&
+				player.countCards("he", card => {
+					if (get.position(card) === "h" && _status.connectMode) return false;
+					return lib.filter.cardDiscardable(card, player);
+				}) > 1
+			);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseToDiscard("he", 2, get.prompt(event.skill), "弃置两张牌，然后弃置判定区里的所有牌")
+				.set("logSkill", event.skill)
+				.set("ai", card => {
+					return _status.event.goon ? 7 - get.value(card) : 0;
+				})
+				.set(
+					"goon",
+					(() => {
+						if (player.hasSkillTag("rejudge") && player.countCards("j") < 2) return false;
+						return player.hasCard(function (card) {
+							if (get.tag(card, "damage") && get.damageEffect(player, player, _status.event.player, get.natureList(card)) >= 0) return false;
+							return (
+								get.effect(
+									player,
+									{
+										name: card.viewAs || card.name,
+										cards: [card],
+									},
+									player,
+									player
+								) < 0
+							);
+						}, "j");
+					})()
+				)
+				.forResult();
+			event.result.skill_popup = false;
+		},
+		async content(event, trigger, player) {
+			await player.discardPlayerCard(player, "j", true, player.countCards("j"));
+		},
+	},
 	//闪赵云
 	ollonglin: {
 		audio: "jsrglonglin",
