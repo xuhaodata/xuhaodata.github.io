@@ -1,7 +1,9 @@
 const characters = {
+	friend_cuijun: ["male", "qun", 3, ["friendshunyi", "friendbiwei", "friendgongli_cuijun"]],
+	friend_shitao: ["male", "qun", 3, ["friendqinying", "friendlunxiong", "friendgongli_shitao"]],
 	pot_yuji: ["male", "qun", 3, ["potdaozhuan", "potfuji"]],
 	pot_lougui: ["male", "wei", 3, ["potguansha", "potjiyu"], ["die:jsrg_lougui"]],
-	mb_qinghegongzhu: ["female", "wei", 3, ["mbzengou", "mbfeili"]],
+	mb_qinghegongzhu: ["female", "wei", 3, ["mbzengou", "mbfeili"], ["name:曹|null"]],
 	friend_pangtong: ["male", "qun", 3, ["friendmanjuan", "friendyangming", "friendpangtonggongli"]],
 	friend_xushu: ["male", "qun", 3, ["friendxiaxing", "friendqihui", "friendxushugongli"]],
 	friend_zhugeliang: ["male", "qun", 3, ["friendyance", "friendfangqiu", "friendzhugelianggongli"], ["name:诸葛|亮"]],

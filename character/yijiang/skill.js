@@ -10365,49 +10365,27 @@ const skills = {
 		filter(event, player) {
 			return (
 				event.card.name == "sha" &&
-				game.hasPlayer(function (current) {
+				game.hasPlayer(current => {
 					return current != player && !event.targets.includes(current) && current.countCards("h") > 0 && lib.filter.targetEnabled(event.card, event.player, current);
 				})
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt2("oldqiuyuan"), function (card, player, target) {
-					var evt = _status.event.getTrigger();
-					return target != player && !evt.targets.includes(target) && lib.filter.targetEnabled(evt.card, evt.player, target) && target.countCards("h") > 0;
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			const { card } = trigger;
+			const [cardx] = await target
+				.chooseToGive("he", `交给${get.translation(player)}一张牌，若此牌不为【闪】，则成为${get.translation(card)}的额外目标`, player)
+				.set("ai", card => {
+					const { player, target } = get.event();
+					return Math.sign(Math.sign(get.attitude(player, target)) - 0.5) * get.value(card, player, "raw");
 				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var player = _status.event.player;
-					return get.effect(target, trigger.card, trigger.player, player) + 0.1;
-				})
-				.set("targets", trigger.targets)
-				.set("playerx", trigger.player);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("oldqiuyuan", target);
-				event.target = target;
-				target
-					.chooseCard("交给" + get.translation(player) + "一张牌，若此牌不为【闪】，则也成为此杀的额外目标", true)
-					.set("ai", function (card) {
-						return -get.value(card, player, "raw");
-					})
-					.set("sourcex", player);
-				game.delay();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			if (result.bool) {
-				target.give(result.cards, player, "give");
-				if (get.name(result.cards[0]) != "shan") {
-					trigger.getParent().targets.push(event.target);
-					trigger.getParent().triggeredTargets2.push(event.target);
-					game.log(event.target, "成为了额外目标");
-				}
-				game.delay();
+				.forResult("cards");
+			if (!cardx || get.name(cardx, target) !== "shan") {
+				trigger.getParent().targets.push(target);
+				trigger.getParent().triggeredTargets2.push(target);
+				game.log(target, "成为了", card, "的额外目标");
 			}
 		},
 	},

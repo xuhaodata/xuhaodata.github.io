@@ -1,4 +1,6 @@
 const characters = {
+	ol_sb_jiaxu: ["male", "qun", 3, ["olsbwance", "olsbchenzhi", "olsbluanchao"]],
+	ol_sb_wenchou: ["male", "qun", 4, ["olsblunzhan", "olsbjuejue"]],
 	ol_sb_zhangrang: ["male", "qun", 3, ["olsblucun", "olsbtuisheng"], ["sex:male_castrated"]],
 	ol_fuhuanghou: ["female", "qun", 3, ["rezhuikong", "olqiuyuan"]],
 	ol_guohuai: ["male", "wei", 3, ["oljingce"]],
@@ -35,7 +37,7 @@ const characters = {
 	ol_zhangchunhua: ["female", "wei", 3, ["jueqing", "shangshi", "oljianmie"]],
 	ol_caochong: ["male", "wei", 3, ["olchengxiang", "olrenxin"]],
 	ol_caozhi: ["male", "wei", 3, ["reluoying", "oljiushi"]],
-	ol_liaohua: ["male", "shu", 4, ["ol_dangxian", "ol_fuli"]],
+	ol_liaohua: ["male", "shu", 4, ["oldangxian", "olfuli"]],
 };
 
 export default characters;

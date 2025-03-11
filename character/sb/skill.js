@@ -59,7 +59,7 @@ const skills = {
 							if (!vcard.length) return 0;
 							return Math.max(
 								...vcard.map(info => {
-									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
+									const card = new lib.element.VCard({ name: "sha", nature: info[3], storage: { sbshensu: goon } });
 									return player.getUseValue(card, false);
 								})
 							);
@@ -103,16 +103,17 @@ const skills = {
 							: vcard;
 					if (link) {
 						const card = new lib.element.VCard({ name: "sha", nature: link[3], storage: { sbshensu: goon, sbshensu_targets: targets } });
-						const aims = await player
-							.chooseUseTarget(card, true, false, "nodistance")
-							.set("oncard", () => {
-								const event = get.event();
-								if (event.card.storage.sbshensu) {
-									event.directHit.addArray(game.players);
-									game.log(event.card, "不可被响应");
-								}
-							})
-							.forResult("targets");
+						const aims =
+							(await player
+								.chooseUseTarget(card, true, false, "nodistance")
+								.set("oncard", () => {
+									const event = get.event();
+									if (event.card.storage.sbshensu) {
+										event.directHit.addArray(game.players);
+										game.log(event.card, "不可被响应");
+									}
+								})
+								.forResult("targets")) ?? [];
 						targets = aims || [];
 						continue;
 					}

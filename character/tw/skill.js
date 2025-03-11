@@ -8763,7 +8763,7 @@ const skills = {
 				else event.finish();
 			}
 			"step 4";
-			if (!result?.bool || !result.cards?.length || !!result.targets?.length) return;
+			if (!result?.bool || !result.cards?.length || !result.targets?.length) return;
 			var target = result.targets[0];
 			trigger.player.line(target);
 			trigger.player.give(result.cards, target);
