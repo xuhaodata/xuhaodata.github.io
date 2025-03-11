@@ -1283,7 +1283,6 @@ const translates = {
 	oljinghua_info: "锁定技，每轮开始时，你摸两张牌。回合开始时，你将“镜花”牌置于牌堆底。",
 	olshuiyue: "水月",
 	olshuiyue_info: "锁定技，回合结束时，你摸两张牌。每轮结束时，你将“水月”牌置于牌堆顶。",
-	olshuiyue_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>目前无名杀未拥有“一轮游戏结束时”时机，实际执行时机在“下一轮游戏开始时”的时机且比正常“一轮游戏开始时”早，请不要反馈有关此技能时机的相关问题。</span>',
 	kongshu: "孔淑",
 	olleiluan: "累卵",
 	olleiluan_info: "①每回合限一次，你可以将X张牌当作本轮未使用过的基本牌使用。②一轮游戏开始时，若你上一轮使用基本牌的次数大于等于X，则你可以摸X张牌，然后视为使用上一轮进入弃牌堆的一张普通锦囊牌。（X为你此前连续发动〖累卵〗的轮数且X至少为1，且〖累卵②〗视为发动轮次的上一轮发动）",

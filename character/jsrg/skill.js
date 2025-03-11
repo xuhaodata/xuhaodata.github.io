@@ -9987,7 +9987,7 @@ const skills = {
 			if (result.bool) {
 				const { targets } = result;
 				player.line(targets);
-				targets.forEach(target=> target.addMark("jsrgzhenglve_mark", 1));
+				targets.forEach(target => target.addMark("jsrgzhenglve_mark", 1));
 			}
 		},
 		mod: {

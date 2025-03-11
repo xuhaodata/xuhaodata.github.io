@@ -239,9 +239,14 @@ const translates = {
 	olsbwance_info: "出牌阶段限一次，你可以选择一名有手牌的角色并选择一个单目标普通锦囊牌牌名，其依次将X张手牌当作此普通锦囊牌使用（X为游戏轮数且至多为3）。其以此法使用的牌指定目标时，你可以弃置一张牌并修改此牌的目标。",
 	olsbchenzhi: "沉智",
 	olsbchenzhi_info: "①当你受到伤害时，若你本轮已受到过X次伤害，则防止之（X为游戏轮数且至多为3）。②每局游戏限一次，一轮游戏结束时，若你本轮未发动过〖沉智①〗，则你可以复原一名角色的一个限定技。",
-	olsbchenzhi_append: '<span style="font-family: yuanli"><li><span style="text-decoration: line-through;">补丁×</span>注意事项：<br>目前无名杀未拥有“一轮游戏结束时”时机，实际执行时机在“下一轮游戏开始时”的时机且比正常“一轮游戏开始时”早，请不要反馈有关此技能时机的相关问题。</span>',
 	olsbluanchao: "乱朝",
 	olsbluanchao_info: "限定技，一轮游戏开始时，你可以令所有角色依次选择从牌堆中获得一张【杀】或【闪】。选择获得【杀】的角色本轮首次造成的伤害+1。",
+	ol_jsrg_zhaoyun: "闪赵云",
+	ol_jsrg_zhaoyun_prefix: "闪",
+	ollonglin: "龙临",
+	ollonglin_info: "其他角色于其出牌阶段内首次使用【杀】指定目标后，你可以弃置一张牌令此【杀】无效，然后其可以视为对你使用一张【决斗】，你以此法造成伤害后，其本阶段使用的下一张牌不能指定其他角色为目标。",
+	olzhendan: "镇胆",
+	olzhendan_info: "①你可以将一张非基本手牌当作本轮未使用过的任意基本牌使用或打出。②当你受到伤害后或一轮游戏结束时，你摸X张牌并令该技能本轮失效（X为本轮所有角色执行过的回合数且至多为5）。",
 };
 
 export default translates;

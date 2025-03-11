@@ -2,6 +2,229 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//闪赵云
+	ollonglin: {
+		audio: "jsrglonglin",
+		inherit: "jsrglonglin",
+		async content(event, trigger, player) {
+			const juedou = new lib.element.VCard({ name: "juedou", storage: { ollonglin: true } });
+			const { result } = await player
+				.chooseToDiscard(get.prompt2("ollonglin"), "he")
+				.set("ai", card => {
+					if (get.event("goon")) return 5 - get.value(card);
+					return 0;
+				})
+				.set(
+					"goon",
+					(trigger.player.canUse(juedou, player) ? Math.max(0, get.effect(player, juedou, trigger.player, trigger.player)) : 0) +
+						trigger.targets
+							.map(target => {
+								return get.effect(target, trigger.card, trigger.player, player);
+							})
+							.reduce((p, c) => {
+								return p + c;
+							}, 0) <
+						-4
+				)
+				.set("logSkill", ["ollonglin", trigger.player]);
+			if (result.bool) {
+				trigger.excluded.addArray(trigger.targets);
+				await game.delayx();
+				if (trigger.player.canUse(juedou, player)) {
+					const { result } = await trigger.player.chooseBool(`是否视为对${get.translation(player)}使用一张【决斗】？`).set("choice", get.effect(player, juedou, trigger.player, trigger.player) >= 0);
+					if (result.bool) {
+						player.addTempSkill("ollonglin_source");
+						trigger.player.useCard(juedou, player);
+					}
+				}
+			}
+		},
+		subSkill: {
+			source: {
+				charlotte: true,
+				trigger: { source: "damageSource" },
+				filter(event, player) {
+					return event.card?.storage?.ollonglin;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					player.line(trigger.player);
+					trigger.player.addTempSkill("ollonglin_forbid", {
+						player: "useCard1",
+						global: "phaseUseAfter",
+					});
+				},
+			},
+			forbid: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "不能指定其他角色为目标" },
+				mod: {
+					playerEnabled(card, player, target) {
+						if (target !== player) return false;
+					},
+				},
+			},
+		},
+	},
+	olzhendan: {
+		audio: "jsrgzhendan",
+		enable: ["chooseToUse", "chooseToRespond"],
+		onChooseToUse(event) {
+			if (!game.online && !event.onzhendan) event.set("olzhendan", get.info("olzhendan").getUsed(event.player));
+		},
+		onChooseToRespond(event) {
+			if (!game.online && !event.onzhendan) event.set("olzhendan", get.info("olzhendan").getUsed(event.player));
+		},
+		filter(event, player) {
+			if (event.type === "wuxie") return false;
+			if (
+				!player.hasCard(card => {
+					return _status.connectMode || get.type(card) !== "basic";
+				}, "hs")
+			)
+				return false;
+			return get.inpileVCardList(info => {
+				if (info[0] !== "basic" || event.olzhendan?.includes(info[2])) return false;
+				return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+			}).length;
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const vcards = get.inpileVCardList(info => {
+					if (info[0] !== "basic" || event.olzhendan?.includes(info[2])) return false;
+					return event.filterCard(get.autoViewAs({ name: info[2], nature: info[3] }, "unsure"), player, event);
+				});
+				return ui.create.dialog("镇胆", [vcards, "vcard"]);
+			},
+			check(button) {
+				if (get.event().getParent().type !== "phase") return 1;
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			},
+			backup(links, player) {
+				return {
+					audio: "jsrgzhendan",
+					popname: true,
+					viewAs: { name: links[0][2], nature: links[0][3] },
+					filterCard(card, player) {
+						return get.type2(card) !== "basic";
+					},
+					position: "hs",
+				};
+			},
+			prompt(links, player) {
+				return "将一张非基本手牌当作" + (get.translation(links[0][3]) || "") + get.translation(links[0][2]) + "使用或打出";
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name) || get.type(name) !== "basic" || player.isTempBanned("olzhendan")) return false;
+			return (
+				!get.info("olzhendan").getUsed(player).includes(name) &&
+				player.hasCard(card => {
+					return _status.connectMode || get.type(card) !== "basic";
+				}, "hs")
+			);
+		},
+		ai: {
+			respondSha: true,
+			respondShan: true,
+			skillTagFilter(player, tag, arg) {
+				return get.info("olzhendan").hiddenCard(player, name.slice("respond".length).toLowerCase());
+			},
+			order: 0.5,
+			result: {
+				player(player) {
+					if (get.event().dying) return get.attitude(player, get.event().dying);
+					return 1;
+				},
+			},
+		},
+		getUsed: player =>
+			player
+				.getRoundHistory("useCard", evt => get.type(evt.card) === "basic")
+				.map(evt => evt.card.name)
+				.unique(),
+		group: ["olzhendan_damage", "olzhendan_round"],
+		subSkill: {
+			backup: {},
+			damage: {
+				audio: "olzhendan",
+				trigger: { player: "damageEnd" },
+				filter(event, player) {
+					const history = _status.globalHistory;
+					if (history[history.length - 1].isRound) return false;
+					for (let i = history.length - 2; i >= 0; i--) {
+						if (
+							game.hasPlayer2(current => {
+								const actionHistory = current.actionHistory[i];
+								return actionHistory.isMe && !actionHistory.isSkipped;
+							})
+						)
+							return true;
+						if (history[i].isRound) break;
+					}
+					return false;
+				},
+				forced: true,
+				locked: false,
+				content() {
+					let num = 0;
+					const history = _status.globalHistory;
+					for (let i = history.length - 2; i >= 0; i--) {
+						if (
+							game.hasPlayer2(current => {
+								const actionHistory = current.actionHistory[i];
+								return actionHistory.isMe && !actionHistory.isSkipped;
+							})
+						)
+							num++;
+						if (num === 5 || history[i].isRound) break;
+					}
+					player.tempBanSkill("olzhendan", "roundStart");
+					player.draw(num);
+				},
+			},
+			round: {
+				audio: "olzhendan",
+				trigger: { global: "roundStart" },
+				filter(event, player) {
+					if (game.roundNumber <= 1) return false;
+					if (player.getRoundHistory("useSkill", evt => evt.skill === "olzhendan_damage", 1).length > 0) return false;
+					const history = _status.globalHistory;
+					for (let i = history.length - 2; i >= 0; i--) {
+						if (
+							game.hasPlayer2(current => {
+								const actionHistory = current.actionHistory[i];
+								return actionHistory.isMe && !actionHistory.isSkipped;
+							})
+						)
+							return true;
+						if (history[i].isRound) break;
+					}
+					return false;
+				},
+				forced: true,
+				locked: false,
+				firstDo: true,
+				content() {
+					let num = 0;
+					const history = _status.globalHistory;
+					for (let i = history.length - 2; i >= 0; i--) {
+						if (
+							game.hasPlayer2(current => {
+								const actionHistory = current.actionHistory[i];
+								return actionHistory.isMe && !actionHistory.isSkipped;
+							})
+						)
+							num++;
+						if (num === 5 || history[i].isRound) break;
+					}
+					player.draw(num);
+				},
+			},
+		},
+	},
 	//OL谋贾诩
 	olsbwance: {
 		audio: 2,
