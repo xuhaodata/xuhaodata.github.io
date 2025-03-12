@@ -294,38 +294,25 @@ const skills = {
 			damage: {
 				audio: "olzhendan",
 				trigger: { player: "damageEnd" },
-				filter(event, player) {
-					const history = _status.globalHistory;
-					if (history[history.length - 1].isRound) return false;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						)
-							return true;
-						if (history[i].isRound) break;
-					}
-					return false;
-				},
 				forced: true,
 				locked: false,
 				content() {
-					let num = 0;
 					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						)
-							num++;
-						if (num === 5 || history[i].isRound) break;
+					if (!history[history.length - 1].isRound) {
+						let num = 0;
+						for (let i = history.length - 2; i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							)
+								num++;
+							if (num === 5 || history[i].isRound) break;
+						}
+						player.draw(num);
 					}
 					player.tempBanSkill("olzhendan", "roundStart");
-					player.draw(num);
 				},
 			},
 			round: {
