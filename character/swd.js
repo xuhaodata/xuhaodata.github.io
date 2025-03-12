@@ -383,12 +383,10 @@ game.import("character", function () {
 					controls.remove(result.control);
 					var rand = Math.random();
 					var list = controls.slice(0);
-					if (player.hasShan()) {
-						list.remove("diamond2");
-					}
+					if (player.hasShan("all")) list.remove("diamond2");
 					player
 						.chooseControl(controls, function () {
-							if (!player.hasShan() && controls.includes("diamond2")) {
+							if (!player.hasShan("all") && controls.includes("diamond2")) {
 								return "diamond2";
 							}
 							if (rand < 0.5) {
@@ -1163,7 +1161,7 @@ game.import("character", function () {
 								return 3.15;
 							},
 							skillTagFilter(player, tag, arg) {
-								if (arg != "use") return false;
+								if (arg === "respond") return false;
 								if (player.isLinked()) return false;
 							},
 							respondSha: true,
@@ -1695,7 +1693,7 @@ game.import("character", function () {
 					},
 					respondSha: true,
 					skillTagFilter(player, tag, arg) {
-						if (arg != "use") return false;
+						if (arg === "respond") return false;
 						if (!player.countCards("he", { color: "red" })) return false;
 					},
 				},
@@ -1904,7 +1902,7 @@ game.import("character", function () {
 				},
 				ai: {
 					skillTagFilter(player, tag, arg) {
-						if (arg != "use") return false;
+						if (arg === "respond") return false;
 						if (player.countCards("h", { type: ["trick", "delay"] }) < 2) return false;
 					},
 					respondSha: true,
@@ -4863,8 +4861,8 @@ game.import("character", function () {
 					next.ai = function (card) {
 						if (get.tag(trigger.card, "multitarget") && !get.tag(card, "multineg")) return 0;
 						if (get.value(trigger.card, trigger.player, "raw") < 5) return 0;
-						if (get.tag(trigger.card, "respondSha") && player.hasSha()) return 0;
-						if (get.tag(trigger.card, "respondShan") && player.hasShan()) return 0;
+						if (get.tag(trigger.card, "respondSha") && player.hasSha("all")) return 0;
+						if (get.tag(trigger.card, "respondShan") && player.hasShan("all")) return 0;
 						if (get.effect(player, trigger.card, trigger.player, player) < 0) {
 							return 7 - get.value(card);
 						}
@@ -5392,7 +5390,7 @@ game.import("character", function () {
 					}
 					player.chooseButton(dialog, function (button) {
 						var player = get.owner(button.link);
-						if (get.subtype(button.link) == "equip2" && !player.hasShan()) {
+						if (get.subtype(button.link) == "equip2" && !player.hasShan("all")) {
 							return 11 - get.attitude(_status.event.player, player);
 						}
 						if (get.subtype(button.link) == "equip1" && !player.hasSha()) {

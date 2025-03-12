@@ -702,7 +702,7 @@ const skills = {
 							}
 							if (num > 2) return true;
 							var card = trigger.card;
-							if (get.tag(card, "damage") && player.hp <= trigger.getParent().baseDamage && (!get.tag(card, "respondShan") || !player.hasShan()) && (!get.tag(card, "respondSha") || !player.hasSha())) return true;
+							if (get.tag(card, "damage") && player.hp <= trigger.getParent().baseDamage && (!get.tag(card, "respondShan") || !player.hasShan("all")) && (!get.tag(card, "respondSha") || !player.hasSha())) return true;
 							var source = _status.currentPhase,
 								todis = source.countCards("h") - source.needsToDiscard();
 							if (
@@ -7734,16 +7734,14 @@ const skills = {
 						return get.color(card) == "black" && get.type(card) != "basic";
 					}, "he")
 				) {
+					if (arg === "respond") return false;
 					var list = lib.skill.huomo.getUsed(player);
 					if (tag == "respondSha") {
-						if (arg != "use") return false;
 						if (list.includes("sha")) return false;
 					} else if (tag == "respondShan") {
 						if (list.includes("shan")) return false;
 					}
-				} else {
-					return false;
-				}
+				} else return false;
 			},
 			result: {
 				player: 1,

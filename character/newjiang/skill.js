@@ -4356,10 +4356,10 @@ const skills = {
 						};
 					},
 					ai: {
-						hasSha: true,
-						hasShan: true,
+						respondSha: true,
+						respondShan: true,
 						skillTagFilter(player, tag) {
-							const name = "s" + tag.slice(4);
+							const name = "s" + tag.slice("respondS".length);
 							return lib.skill.mpsixiao_use.hiddenCard(player, name);
 						},
 					},

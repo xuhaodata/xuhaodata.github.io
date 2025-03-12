@@ -10222,30 +10222,26 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 有没有可用杀
-	 * @param { string | boolean } [respond] 响应什么类型，默认全部。"use": 使用，true / "respond": 打出
+	 * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
 	 * @param { boolean } [noauto] 不考虑出牌阶段才能用的（待补充）
 	 */
 	hasSha(respond, noauto) {
 		if (this.countCards("hs", "sha")) return true;
 		if (this.countCards("hs", "hufu")) return true;
 		if (!noauto && this.countCards("hs", "yuchanqian")) return true;
-		let tag = respond;
-		if (typeof tag !== "string" && tag) tag = "respond";
-		if (this.hasSkillTag("respondSha", true, tag, true)) return true;
-		if (typeof respond !== "string") respond = respond ? "respond" : "all";
+		if (typeof respond !== "string") respond = respond ? "all" : "use";
+		if (this.hasSkillTag("respondSha", true, respond, true)) return true;
 		return this.hasUsableCard("sha", respond);
 	}
 	/**
 	 * 有没有可用闪
-	 * @param { string | boolean } [respond] 响应什么类型，默认全部。"use": 使用，true / "respond": 打出
+	 * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
 	 */
 	hasShan(respond) {
 		if (this.countCards("hs", "shan")) return true;
 		if (this.countCards("hs", "hufu")) return true;
-		let tag = respond;
-		if (typeof tag !== "string" && tag) tag = "respond";
-		if (this.hasSkillTag("respondShan", true, tag, true)) return true;
-		if (typeof respond !== "string") respond = respond ? "respond" : "all";
+		if (typeof respond !== "string") respond = respond ? "all" : "use";
+		if (this.hasSkillTag("respondShan", true, respond, true)) return true;
 		return this.hasUsableCard("shan", respond);
 	}
 	/**
