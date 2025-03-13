@@ -4129,7 +4129,6 @@ export class Click {
 			_status.auto = true;
 			ui.auto.classList.add("glow");
 			ui.arena.classList.add("auto");
-
 			if (_status.imchoosing && _status.paused) {
 				if (ui.confirm) ui.confirm.close();
 				ui.control.hide();
@@ -4139,6 +4138,7 @@ export class Click {
 					if (_status.paused && _status.imchoosing) {
 						game.uncheck();
 						_status.event.redo();
+						if (_status.event.skill && !_status.event.norestore) _status.event.restore();
 					}
 				}
 				game.resume();

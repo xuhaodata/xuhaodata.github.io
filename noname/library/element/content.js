@@ -5059,7 +5059,7 @@ export const Content = {
 	chooseToCompareLose: function () {
 		for (var i = 0; i < event.lose_list.length; i++) {
 			var next = event.lose_list[i][0].lose(event.lose_list[i][1], ui.ordering);
-			next.relatedEvent = event.getParent();
+			next.relatedEvent = event.relatedEvent || event.getParent();
 			next.getlx = false;
 		}
 	},
