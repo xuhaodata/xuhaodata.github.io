@@ -16,26 +16,31 @@ const skills = {
 		},
 		content() {
 			for (const i of event.targets) {
-				i.addTempSkill("luansuo_debuff", ["phaseBeginStart", "phaseAfter"]);
+				i.addTempSkill("luansuo_debuff");
 				i.addGaintag(i.getCards("h"), "luansuo_debuff");
 			}
 		},
+		global: "luansuo_discard",
 		subSkill: {
+			discard: {
+				mod: {
+					cardDiscardable(card) {
+						if (_status.currentPhase?.hasSkill("luansuo") && get.position(card) === "h") return false;
+					},
+					canBeDiscarded(card) {
+						if (_status.currentPhase?.hasSkill("luansuo") && get.position(card) === "h") return false;
+					},
+				},
+			},
 			debuff: {
 				mod: {
-					cardname(card, player) {
+					cardname(card) {
 						if (get.itemtype(card) !== "card" || get.position(card) !== "h") return;
 						if (card.hasGaintag("luansuo_debuff")) return "tiesuo";
 					},
-					cardnature(card, player) {
+					cardnature(card) {
 						if (get.itemtype(card) !== "card" || get.position(card) !== "h") return;
 						if (card.hasGaintag("luansuo_debuff")) return false;
-					},
-					cardDiscardable(card, player) {
-						if (get.position(card) === "h") return false;
-					},
-					canBeDiscarded(card, player) {
-						if (get.position(card) === "h") return false;
 					},
 					aiOrder(player, card, num) {
 						if (num > 0 && get.name(card, player) === "huogong") return 0;
