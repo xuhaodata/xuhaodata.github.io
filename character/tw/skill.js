@@ -1343,7 +1343,6 @@ const skills = {
 		position: "hes",
 		precontent() {
 			event.getParent().addCount = false;
-			player.addTempSkill("twliyuan_effect");
 		},
 		prompt: "将一张与你已废除的装备栏对应副类别的装备牌当【杀】使用或打出",
 		check(card) {
@@ -1351,8 +1350,11 @@ const skills = {
 			if (_status.event.name == "chooseToRespond") return 1 / Math.max(0.1, val);
 			return 6 - val;
 		},
+		group: "twliyuan_effect",
 		subSkill: {
 			effect: {
+				audio: "twliyuan",
+				audioname: ["huan_caoang_shadow"],
 				trigger: { player: ["useCard", "respond"] },
 				filter: evt => evt.skill == "twliyuan",
 				forced: true,
