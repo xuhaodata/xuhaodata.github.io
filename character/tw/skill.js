@@ -1320,10 +1320,10 @@ const skills = {
 		audioname: ["huan_caoang_shadow"],
 		mod: {
 			targetInRange(card) {
-				if (card.storag?.twliyuan) return true;
+				if (card.storage?.twliyuan) return true;
 			},
 			cardUsable(card, player, num) {
-				if (card.storag?.twliyuan) return Infinity;
+				if (card.storage?.twliyuan) return Infinity;
 			},
 		},
 		enable: ["chooseToUse", "chooseToRespond"],
