@@ -20068,13 +20068,10 @@ const skills = {
 					await game.delayx();
 					const num = ["h", "e", "j"].filter(position => target.countDiscardableCards(player, position)).length;
 					if (num) {
-						await player
-							.discardPlayerCard(target, [1, Math.max(2, num)], "hej", true)
-							.set("filterButton", button => {
-								const { link } = button;
-								return !ui.selected.buttons.reduce((list, buttonx) => list.add(get.position(buttonx.link)), []).includes(get.position(link));
-							})
-							.set("complexCard", true);
+						await player.discardPlayerCard(target, [1, Math.max(2, num)], "hej", true).set("filterButton", button => {
+							const { link } = button;
+							return !ui.selected.buttons.reduce((list, buttonx) => list.add(get.position(buttonx.link)), []).includes(get.position(link));
+						});
 					}
 				},
 				ai: {
