@@ -67,7 +67,7 @@ const skills = {
 			keepdu: true,
 			respondSha: true,
 			skillTagFilter: (player, tag, arg) => {
-				if (tag == "respondSha" && arg != "use") return false;
+				if (tag == "respondSha" && arg === "respond") return false;
 			},
 		},
 	},

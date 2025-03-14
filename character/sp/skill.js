@@ -723,8 +723,7 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag, arg) {
-				if (player.hasSkill("olzonghu_used")) return false;
-				if (arg != "use") return false;
+				if (arg === "respond" || player.hasSkill("olzonghu_used")) return false;
 			},
 			result: {
 				player: 1,
@@ -22647,8 +22646,7 @@ const skills = {
 			respondSha: true,
 			respondShan: true,
 			skillTagFilter(player, tag, arg) {
-				if (player.hasSkill("weijing_used")) return false;
-				if (arg != "use") return false;
+				if (arg === "respond" || player.hasSkill("weijing_used")) return false;
 			},
 			result: {
 				player: 1,

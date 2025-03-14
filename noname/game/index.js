@@ -1983,7 +1983,7 @@ export class Game extends GameCompatible {
 		if (typeof object == "function") {
 			if (isClass(object)) {
 				const filters = await object.filter?.();
-				if (filters ?? true) object = await object.init?.() ?? new object();
+				if (filters ?? true) object = (await object.init?.()) ?? new object();
 				else return;
 			} else {
 				object = await (gnc.is.generatorFunc(object) ? gnc.of(object) : object)(lib, game, ui, get, ai, _status);
@@ -2005,35 +2005,49 @@ export class Game extends GameCompatible {
 		if (objectPackage) {
 			const author = Object.getOwnPropertyDescriptor(objectPackage, "author");
 			if (author) {
-				Object.defineProperty((extensionMenu.author = {
-					get name() {
-						return `作者：${this.author}`;
-					},
-					clear: true,
-					nopointer: true,
-				}), "author", author);
+				Object.defineProperty(
+					(extensionMenu.author = {
+						get name() {
+							return `作者：${this.author}`;
+						},
+						clear: true,
+						nopointer: true,
+					}),
+					"author",
+					author
+				);
 			}
 			const intro = Object.getOwnPropertyDescriptor(objectPackage, "intro");
 			if (intro) {
-				Object.defineProperty((extensionMenu.intro = {
-					clear: true,
-					nopointer: true,
-				}), "name", intro);
+				Object.defineProperty(
+					(extensionMenu.intro = {
+						clear: true,
+						nopointer: true,
+					}),
+					"name",
+					intro
+				);
 			}
 		}
 		const objectConfig = object.config;
 		if (objectConfig) {
-			Object.defineProperties(extensionMenu, Object.keys(objectConfig).reduce((propertyDescriptorMap, key) => {
-				propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(objectConfig, key);
-				return propertyDescriptorMap;
-			}, {}));
+			Object.defineProperties(
+				extensionMenu,
+				Object.keys(objectConfig).reduce((propertyDescriptorMap, key) => {
+					propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(objectConfig, key);
+					return propertyDescriptorMap;
+				}, {})
+			);
 		}
 		const help = object.help;
 		if (help) {
-			Object.defineProperties(lib.help, Object.keys(help).reduce((propertyDescriptorMap, key) => {
-				propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(help, key);
-				return propertyDescriptorMap;
-			}, {}));
+			Object.defineProperties(
+				lib.help,
+				Object.keys(help).reduce((propertyDescriptorMap, key) => {
+					propertyDescriptorMap[key] = Object.getOwnPropertyDescriptor(help, key);
+					return propertyDescriptorMap;
+				}, {})
+			);
 		}
 		if (object.editable !== false && lib.config.show_extensionmaker) {
 			extensionMenu.edit = {
@@ -2048,7 +2062,7 @@ export class Game extends GameCompatible {
 		extensionMenu.delete = {
 			name: "删除此扩展",
 			clear: true,
-			onclick () {
+			onclick() {
 				if (this.innerHTML != "<span>确认删除</span>") {
 					this.innerHTML = "<span>确认删除</span>";
 					new Promise(resolve => setTimeout(resolve, 1000)).then(() => (this.innerHTML = "<span>删除此扩展</span>"));

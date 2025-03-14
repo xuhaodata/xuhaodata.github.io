@@ -2927,30 +2927,20 @@ const skills = {
 		},
 		targetprompt: ["先拿牌", "后拿牌"],
 		find(type) {
-			let list = game.filterPlayer(function (current) {
-				return current != player && get.attitude(player, current) > 3;
-			});
 			const player = _status.event.player;
-			const num = player.countCards("he", function (card) {
-				return get.value(card) < 7;
-			});
-			let count = null;
-			let from, nh;
+			let list = game.filterPlayer(current => current != player && get.attitude(player, current) > 3);
+			const num = player.countCards("he", card => get.value(card) < 7);
+			let count = null,
+				from,
+				nh;
 			if (list.length == 0) return null;
-			list.sort(function (a, b) {
-				return a.countCards("h") - b.countCards("h");
-			});
+			list.sort((a, b) => a.countCards("h") - b.countCards("h"));
 			if (type == 1) return list[0];
 			from = list[0];
 			nh = from.countCards("h");
-
-			list = game.filterPlayer(function (current) {
-				return current != player && get.attitude(player, current) < 1;
-			});
-			if (list.length == 0) return null;
-			list.sort(function (a, b) {
-				return b.countCards("h") - a.countCards("h");
-			});
+			list = game.filterPlayer(current => current != player && get.attitude(player, current) < 1);
+			if (!list.length) return null;
+			list.sort((a, b) => b.countCards("h") - a.countCards("h"));
 			for (let i = 0; i < list.length; i++) {
 				const nh2 = list[i].countCards("h");
 				if (nh2 - nh <= num) {
@@ -5295,9 +5285,9 @@ const skills = {
 	benghuai: {
 		audio: 2,
 		audioname: ["re_dongzhuo", "ol_dongzhuo"],
-		audioname2: { 
+		audioname2: {
 			zhugedan: "benghuai_zhugedan",
-			re_zhugedan: "benghuai_re_zhugedan"
+			re_zhugedan: "benghuai_re_zhugedan",
 		},
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,

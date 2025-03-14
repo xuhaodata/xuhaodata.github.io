@@ -163,7 +163,7 @@ game.import("character", function () {
 								if (target.hasSkill("qianggu2") && get.attitude(player, target) > 0) {
 									return [0, num];
 								}
-								if (target.hp == 1 && !target.hasShan()) return;
+								if (target.hp == 1 && !target.hasShan("all")) return;
 								return [1, num];
 							}
 						},

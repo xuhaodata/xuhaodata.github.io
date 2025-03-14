@@ -1964,12 +1964,8 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					player.chooseToDiscard("he", get.prompt("zhuilie")).set("ai", function (card) {
-						if (player.hp >= 4 || (player.hasSha() && player.hasShan())) {
-							return 6 - get.value(card);
-						}
-						if (player.hasSha() || player.hasShan()) {
-							return 3 - get.value(card);
-						}
+						if (player.hp >= 4 || (player.hasSha("all") && player.hasShan("all"))) return 6 - get.value(card);
+						if (player.hasSha("all") || player.hasShan("all")) return 3 - get.value(card);
 						return 0;
 					}).logSkill = "zhuilie";
 					"step 1";
@@ -2395,7 +2391,7 @@ game.import("character", function () {
 					"step 0";
 					target.gain(cards, player);
 					var choice = 1;
-					if (get.attitude(target, player) > 0 || (target.hp <= 1 && !target.hasSha())) {
+					if (get.attitude(target, player) > 0 || (target.hp <= 1 && !target.hasSha("respond"))) {
 						choice = 0;
 					}
 					target
@@ -8578,7 +8574,7 @@ game.import("character", function () {
 			hszuzhou_nvwudexuetu: "女巫的学徒",
 			hszuzhou_nvwudexuetu_info: "出牌阶段对没有咒降技能的角色使用，令目标非锁定技失效，并获得技能咒降直到下一回合结束。",
 			hszuzhou_wushushike: "巫术时刻",
-			hszuzhou_wushushike_info: "出牌阶段对所有角色使用，将手牌中的闪替换为【杀】。",
+			hszuzhou_wushushike_info: "出牌阶段对所有角色使用，将手牌中的【闪】替换为【杀】。",
 			hszuzhou_guhuo: "蛊惑",
 			hszuzhou_guhuo_info: "出牌阶段对一名其他角色使用，令其交给你一张牌。",
 			xjumo: "聚魔",

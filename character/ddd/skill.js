@@ -183,7 +183,7 @@ const skills = {
 						const event = get.event();
 						if (event.filterCard({ name: "sha" }, player, event)) {
 							if (
-								!player.hasShan() &&
+								!player.hasSha() &&
 								!game.hasPlayer(function (current) {
 									return player.canUse("sha", current) && current.hp == 1 && get.effect(current, { name: "sha" }, player, player) > 0;
 								})
@@ -196,8 +196,8 @@ const skills = {
 					respondSha: true,
 					respondShan: true,
 					skillTagFilter(player, tag, arg) {
+						if (arg === "respond") return false;
 						if (!player.hasMark("dddxiaxing")) return false;
-						if (arg != "use") return false;
 					},
 					result: {
 						player: 1,

@@ -2034,7 +2034,7 @@ game.import("character", function () {
 						return 2;
 					},
 					skillTagFilter(player, tag, arg) {
-						if (arg != "use") return false;
+						if (arg === "respond") return false;
 					},
 					respondSha: true,
 				},

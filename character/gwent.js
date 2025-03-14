@@ -2056,7 +2056,7 @@ game.import("character", function () {
 							event.target
 								.chooseControl(function (event, player) {
 									if (player.hp >= 3 && !player.needsToDiscard()) return 1;
-									if (player.hp == 2 && player.hasShan() && player.countCards("h") <= 1) return 1;
+									if (player.hp == 2 && player.hasShan("all") && player.countCards("h") <= 1) return 1;
 									return 0;
 								})
 								.set("choiceList", ["回复1点体力", "从弃牌堆中获得一张非金法术"]);
@@ -2559,7 +2559,7 @@ game.import("character", function () {
 							)
 								return -1;
 							if (get.effect(player, { name: "sha" }, target, player) >= 0) return -1;
-							if (!player.hasShan()) {
+							if (!player.hasShan("all")) {
 								if (ui.selected.targets.length) return 0;
 								if (player.hp >= 4) return -1;
 								if (player.hp >= 3 && target.hp == 1) return -1;

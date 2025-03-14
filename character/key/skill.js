@@ -1376,7 +1376,7 @@ const skills = {
 						var player = _status.event.player;
 						var target = _status.event.getParent().player;
 						if (get.attitude(player, target) > 0) {
-							if (!target.hasShan() && card.name == "shan") return 10;
+							if (!target.hasShan("all") && card.name == "shan") return 10;
 							if (get.type(card) == "equip" && !get.cardtag(card, "gifts") && target.hasUseTarget(card)) return 10 - get.value(card);
 							return 6 - get.value(card);
 						}

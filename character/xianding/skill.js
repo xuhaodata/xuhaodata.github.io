@@ -807,7 +807,38 @@ const skills = {
 	//威吕布
 	dcbaguan: {
 		audio: 2,
-		group: "dcbaguan_mark",
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			if (!player.getEquips(1).length || get.type(event.card) !== "equip" || !get.subtypes(event.card).includes("equip1")) return false;
+			const num = player.getEquips(1).reduce((sum, card) => sum + get.cardNameLength(card), 0);
+			return lib.skill.dcbaguan.getUsed(player) && num > 0 && player.countCards("hs") > 0;
+		},
+		direct: true,
+		comboSkill: true,
+		async content(event, trigger, player) {
+			const num = player.getEquips(1).reduce((sum, card) => sum + get.cardNameLength(card), 0);
+			game.broadcastAll(num => lib.skill.dcbaguan_backup.selectCard = [1, num], num);
+			const next = player.chooseToUse();
+			next.set("openskilldialog", `###${get.prompt(event.name)}###是否将至多${get.cnNumber(num)}张手牌当作无任何次数限制且伤害基数为对应实体牌数的【杀】使用`);
+			next.set("norestore", true);
+			next.set("_backupevent", "dcbaguan_backup");
+			next.set("custom", {
+				add: {},
+				replace: { window() {} },
+			});
+			next.backup("dcbaguan_backup");
+			next.set("targetRequired", true);
+			next.set("complexSelect", true);
+			next.set("logSkill", event.name);
+			next.set("addCount", false);
+			next.set("oncard", () => {
+				let event = get.event(),
+					{ cards } = event;
+				event.set("dcbaguan", true);
+				event.baseDamage = cards.length;
+			});
+			await next;
+		},
 		init(player, skill) {
 			const evt = lib.skill.dcbaguan.getUsed(player, true);
 			if (evt && !evt.dcbaguan) player.addTip(skill, "霸关 可连击");
@@ -815,7 +846,7 @@ const skills = {
 		onremove(player, skill) {
 			player.removeTip(skill);
 		},
-		getUsed: (player, first) => {
+		getUsed(player, first) {
 			let history;
 			if (first) {
 				history = player
@@ -831,6 +862,7 @@ const skills = {
 			if (!history) return false;
 			return history.targets.length == 1;
 		},
+		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
 				if (lib.skill.dcbaguan.getUsed(player, true) && typeof card === "object") {
@@ -838,55 +870,11 @@ const skills = {
 				}
 			},
 		},
-		trigger: {
-			player: "useCardAfter",
-		},
-		locked: false,
-		comboSkill: true,
-		direct: true,
-		filter(event, player) {
-			if (!player.getEquips(1).length || get.type(event.card) != "equip" || get.subtype(event.card) != "equip1") return false;
-			const evt = lib.skill.dcbaguan.getUsed(player);
-			if (!evt) return false;
-			return true;
-		},
-		async content(event, trigger, player) {
-			let num = player.getEquips(1).reduce((sum, card) => sum + get.cardNameLength(card), 0);
-			if (num < 1) {
-				player.chat("不是哥们怎么没有名字？");
-				return;
-			}
-			game.broadcastAll(num => {
-				lib.skill.dcbaguan_backup.selectCard = [1, num];
-			}, num);
-			const next = player.chooseToUse();
-			next.set("openskilldialog", `霸关：将至多${get.cnNumber(num)}张手牌当作不计入次数且伤害基数为对应实体牌数的【杀】使用`);
-			next.set("norestore", true);
-			next.set("_backupevent", "dcbaguan_backup");
-			next.set("custom", {
-				add: {},
-				replace: { window() {} },
-			});
-			next.backup("dcbaguan_backup");
-			next.set("targetRequired", true);
-			next.set("complexSelect", true);
-			next.set("filterTarget", (...args) => lib.filter.targetEnabled.apply(this, args));
-			next.set("logSkill", event.name);
-			next.set("addCount", false);
-			next.set("oncard", () => {
-				let event = get.event(),
-					{ cards } = event;
-				event.set("dcbaguan", true);
-				event.baseDamage = cards.length;
-			});
-			await next;
-		},
+		group: "dcbaguan_mark",
 		subSkill: {
 			mark: {
 				charlotte: true,
-				trigger: {
-					player: "useCard",
-				},
+				trigger: { player: "useCard" },
 				forced: true,
 				popup: false,
 				firstDo: true,
@@ -897,11 +885,12 @@ const skills = {
 				},
 			},
 			backup: {
-				filterCard: (card, player) => get.itemtype(card) == "card",
-				viewAs: {
-					name: "sha",
+				filterCard(card, player) {
+					return get.itemtype(card) === "card";
 				},
-				position: "h",
+				filterTarget: lib.filter.filterTarget,
+				viewAs: { name: "sha" },
+				position: "hs",
 				ai1(card) {
 					return 8 - get.value(card);
 				},

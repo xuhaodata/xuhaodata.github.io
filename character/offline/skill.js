@@ -15611,7 +15611,7 @@ const skills = {
 								isCard: true,
 							};
 							if (card.name == "tao") {
-								if (player.hp == 1 || (player.hp == 2 && !player.hasShan()) || player.needsToDiscard()) {
+								if (player.hp == 1 || (player.hp == 2 && !player.hasShan("all")) || player.needsToDiscard()) {
 									return 5;
 								}
 								return 1;
@@ -16371,7 +16371,7 @@ const skills = {
 				}
 				//护驾
 				else if (
-					!player.hasShan() &&
+					!player.hasShan("all") &&
 					game.hasPlayer(function (current) {
 						return current != player && current.group == "wei" && current.mayHaveShan(player, "respond") && get.attitude(player, current) > 0 && get.attitude(current, player) > 0;
 					})
@@ -16422,7 +16422,7 @@ const skills = {
 							}
 							//护驾
 							else if (
-								!player.hasShan() &&
+								!player.hasShan("all") &&
 								game.hasPlayer(function (current) {
 									return current != player && current.group == "wei" && current.mayHaveShan(player, "respond") && get.attitude(player, current) > 0 && get.attitude(current, player) > 0;
 								})
