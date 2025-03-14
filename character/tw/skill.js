@@ -1343,7 +1343,6 @@ const skills = {
 		position: "hes",
 		precontent() {
 			event.getParent().addCount = false;
-			player.addTempSkill("twliyuan_effect");
 		},
 		prompt: "将一张与你已废除的装备栏对应副类别的装备牌当【杀】使用或打出",
 		check(card) {
@@ -1351,8 +1350,11 @@ const skills = {
 			if (_status.event.name == "chooseToRespond") return 1 / Math.max(0.1, val);
 			return 6 - val;
 		},
+		group: "twliyuan_effect",
 		subSkill: {
 			effect: {
+				audio: "twliyuan",
+				audioname: ["huan_caoang_shadow"],
 				trigger: { player: ["useCard", "respond"] },
 				filter: evt => evt.skill == "twliyuan",
 				forced: true,
@@ -3359,21 +3361,17 @@ const skills = {
 		},
 		subSkill: {
 			buff: {
-				trigger: {
-					global: "useCardToPlayer",
-				},
+				charlotte: true,
+				trigger: { global: "useCardToPlayer" },
 				filter(event, player) {
-					if (!event.card.storage || !event.card.storage.twqiji || !event.targets.includes(player)) return false;
-					const chosen = player.storage.twqiji_buff || [];
-					return event.isFirstTarget && event.targets.includes(player) && game.hasPlayer(current => current != player && current != event.player && !chosen.includes(current));
+					if (!event.card.storage?.twqiji || !event.targets.includes(player)) return false;
+					return event.isFirstTarget && game.hasPlayer(current => current != player && !player.getStorage("twqiji_used").includes(current) && lib.filter.targetEnabled2(event.card, player, current));
 				},
 				async cost(event, trigger, player) {
-					const chosen = player.storage.twqiji_buff || [];
 					event.result = await player
 						.chooseTarget("令一名本回合未以此法选择的角色摸一张牌，然后其可以将此杀转移给自己", (card, player, target) => {
-							const evt = get.event().getTrigger();
-							if (chosen.includes(target)) return false;
-							return target != evt.player && target != player;
+							const event = get.event().getTrigger();
+							return target != player && !player.getStorage("twqiji_used").includes(target) && lib.filter.targetEnabled2(event.card, player, target);
 						})
 						.set("ai", target => {
 							const player = get.player(),
@@ -3384,22 +3382,14 @@ const skills = {
 						})
 						.forResult();
 				},
-				popup: false,
-				onremove: true,
-				charlotte: true,
 				async content(event, trigger, player) {
 					const target = event.targets[0];
-					if (!player.storage.twqiji_buff) {
-						player.when({ global: "phaseAfter" }).then(() => {
-							player.unmarkSkill("twqiji_buff");
-						});
-					}
-					player.markAuto("twqiji_buff", target);
+					player.addTempSkill("twqiji_used");
+					player.markAuto("twqiji_used", target);
 					await target.draw();
-					const bool = await target
+					const result = await target
 						.chooseBool(`是否将${get.translation(trigger.card)}转移给自己`)
-						.set("ai", () => get.event("bool"))
-						.set("bool", () => {
+						.set("choice", () => {
 							let save = false;
 							if (target.countCards("h", "shan") || target.getEquip(2) || player.hp == 1 || target.hp > player.hp + 1) {
 								if (!player.countCards("h", "shan") || target.countCards("h") < player.countCards("h")) {
@@ -3408,16 +3398,18 @@ const skills = {
 							}
 							return save;
 						})
-						.forResultBool();
-					if (!bool) return;
+						.forResult();
+					if (!result?.bool) return;
 					const evt = trigger.getParent();
 					evt.triggeredTargets1.remove(player);
 					evt.targets.remove(player);
 					evt.targets.push(target);
 				},
-				intro: {
-					content: "已选择过$",
-				},
+			},
+			used: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "已选择过$" },
 			},
 		},
 	},

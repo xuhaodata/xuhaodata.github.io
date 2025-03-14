@@ -3158,7 +3158,7 @@ const skills = {
 							isCard: true,
 						};
 						if (card.name == "tao") {
-							if (player.hp == 1 || (player.hp == 2 && !player.hasShan()) || player.needsToDiscard()) return 5;
+							if (player.hp == 1 || (player.hp == 2 && !player.hasShan("all")) || player.needsToDiscard()) return 5;
 							return 1;
 						}
 						if (card.name == "sha") {

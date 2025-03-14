@@ -479,7 +479,7 @@ const skills = {
 					},
 					respondSha: true,
 					skillTagFilter(player, tag, arg) {
-						if (arg !== "respond") return false;
+						if (arg === "use") return false;
 						const event = get.event();
 						if (event.friendqinying || !(Array.isArray(event?.respondTo) && (event.respondTo[1]?.storage?.friendqinying ?? 0) > 0)) return false;
 						const source = event.respondTo[0],
@@ -13096,7 +13096,7 @@ const skills = {
 						att = get.attitude(player, target);
 					if (att <= 0) return att;
 					if (target.hasSkillTag("nogain")) return att / 10;
-					if (!target.hasShan()) return 2 * att;
+					if (!target.hasShan("all")) return 2 * att;
 					return att;
 				});
 			"step 7";
@@ -19061,7 +19061,7 @@ const skills = {
 					}, "hs")
 				) {
 					if (tag == "respondSha") {
-						if (arg != "use") return false;
+						if (arg === "respond") return false;
 					}
 				} else {
 					return false;

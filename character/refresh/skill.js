@@ -205,16 +205,14 @@ const skills = {
 						return get.color(card) == "black" && get.type(card) != "basic";
 					}, "he")
 				) {
+					if (arg === "respond") return false;
 					var list = player.getStorage("rehuomo");
 					if (tag == "respondSha") {
-						if (arg != "use") return false;
 						if (list.includes("sha")) return false;
 					} else if (tag == "respondShan") {
 						if (list.includes("shan")) return false;
 					}
-				} else {
-					return false;
-				}
+				} else return false;
 			},
 			result: {
 				player: 1,

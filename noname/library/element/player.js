@@ -2152,30 +2152,29 @@ export class Player extends HTMLDivElement {
 			}, "hs")
 		)
 			return true;
-		const skills = this.getSkills("invisible").concat(lib.skill.global),
-			str = "respond" + name[0].toUpperCase() + name.slice(1);
+		const skills = this.getSkills("invisible").concat(lib.skill.global);
 		game.expandSkills(skills);
 		for (let i = 0; i < skills.length; i++) {
 			const ifo = get.info(skills[i]),
 				hiddenCard = ifo.hiddenCard;
 			if (ifo.viewAs && typeof ifo.viewAs !== "function" && typeof ifo.viewAs !== "string" && ifo.viewAs.name === name) {
-				if (!ifo.viewAsFilter || ifo.viewAsFilter(this) !== false) return true;
+				const goon = !ifo.viewAsFilter || ifo.viewAsFilter(this) !== false;
+				const bool =
+					!ifo.filter ||
+					(() => {
+						let evtNames = typeof type !== "string" || type === "all" ? ["chooseToUse", "chooseToRespond"] : ["chooseTo" + type.slice(0, 1).toUpperCase() + type.slice(1)];
+						return evtNames.some(evtName => {
+							let evt = get.event().getParent(evtName);
+							if (get.itemtype(evt) !== "event") evt = get.event();
+							return ifo.filter(evt, this, evt.triggername);
+						});
+					})();
+				if (goon && bool) return true;
 			} else if (typeof hiddenCard == "function") {
 				if (hiddenCard(this, name)) return true;
 			}
-			/*else if (ifo.ai && ifo.ai[str]) {
-				if (ifo.ai.skillTagFilter) {
-					if ((type === 'respond' || type === 'all')&& ifo.ai.skillTagFilter(this, str, 'respond') !== false) return true;
-					if (type !== 'respond' && ifo.ai.skillTagFilter(this, str, 'use') !== false) return true;
-					continue;
-				}
-				if (type === 'all') return true;
-				if (typeof ifo.ai[str] === 'string') {
-					if (ifo.ai[str] === 'use' || type === 'respond' && ifo.ai[str] === type) return true;
-				}
-				else return true;
-			}*/
 		}
+		return false;
 	}
 	/**
 	 * @param { Player } to
@@ -10223,30 +10222,26 @@ export class Player extends HTMLDivElement {
 	}
 	/**
 	 * 有没有可用杀
-	 * @param { string | boolean } [respond] 响应什么类型，默认全部。"use": 使用，true / "respond": 打出
+	 * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
 	 * @param { boolean } [noauto] 不考虑出牌阶段才能用的（待补充）
 	 */
 	hasSha(respond, noauto) {
 		if (this.countCards("hs", "sha")) return true;
 		if (this.countCards("hs", "hufu")) return true;
 		if (!noauto && this.countCards("hs", "yuchanqian")) return true;
-		let tag = respond;
-		if (typeof tag !== "string" && tag) tag = "respond";
-		if (this.hasSkillTag("respondSha", true, tag, true)) return true;
-		if (typeof respond !== "string") respond = respond ? "respond" : "all";
+		if (typeof respond !== "string") respond = respond ? "all" : "use";
+		if (this.hasSkillTag("respondSha", true, respond, true)) return true;
 		return this.hasUsableCard("sha", respond);
 	}
 	/**
 	 * 有没有可用闪
-	 * @param { string | boolean } [respond] 响应什么类型，默认全部。"use": 使用，true / "respond": 打出
+	 * @param { string | boolean } [respond] 响应什么类型，默认使用。"use": 使用 / "respond": 打出 / "all": 全部，true
 	 */
 	hasShan(respond) {
 		if (this.countCards("hs", "shan")) return true;
 		if (this.countCards("hs", "hufu")) return true;
-		let tag = respond;
-		if (typeof tag !== "string" && tag) tag = "respond";
-		if (this.hasSkillTag("respondShan", true, tag, true)) return true;
-		if (typeof respond !== "string") respond = respond ? "respond" : "all";
+		if (typeof respond !== "string") respond = respond ? "all" : "use";
+		if (this.hasSkillTag("respondShan", true, respond, true)) return true;
 		return this.hasUsableCard("shan", respond);
 	}
 	/**

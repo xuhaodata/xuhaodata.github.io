@@ -294,38 +294,25 @@ const skills = {
 			damage: {
 				audio: "olzhendan",
 				trigger: { player: "damageEnd" },
-				filter(event, player) {
-					const history = _status.globalHistory;
-					if (history[history.length - 1].isRound) return false;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						)
-							return true;
-						if (history[i].isRound) break;
-					}
-					return false;
-				},
 				forced: true,
 				locked: false,
 				content() {
-					let num = 0;
 					const history = _status.globalHistory;
-					for (let i = history.length - 2; i >= 0; i--) {
-						if (
-							game.hasPlayer2(current => {
-								const actionHistory = current.actionHistory[i];
-								return actionHistory.isMe && !actionHistory.isSkipped;
-							})
-						)
-							num++;
-						if (num === 5 || history[i].isRound) break;
+					if (!history[history.length - 1].isRound) {
+						let num = 0;
+						for (let i = history.length - 2; i >= 0; i--) {
+							if (
+								game.hasPlayer2(current => {
+									const actionHistory = current.actionHistory[i];
+									return actionHistory.isMe && !actionHistory.isSkipped;
+								})
+							)
+								num++;
+							if (num === 5 || history[i].isRound) break;
+						}
+						player.draw(num);
 					}
 					player.tempBanSkill("olzhendan", "roundStart");
-					player.draw(num);
 				},
 			},
 			round: {
@@ -397,27 +384,29 @@ const skills = {
 								const player = get.player();
 								const target = get.event().getParent().target;
 								const effectCard = cardx => {
-									const card = get.autoViewAs({ name: button.link }, [cardx]);
-									let targets = game.filterPlayer(current => target.canUse(card, current, false));
+									const card = get.autoViewAs({ name: button.link[2] }, [cardx]);
+									let targets = game.filterPlayer(current => target.canUse(card, current));
 									if (!targets.length) return 0;
 									targets.sort((a, b) => get.effect(b, card, target, target) - get.effect(a, card, target, target));
 									let sum = get.effect(target, { name: "guohe_copy", position: "h" }, player, player);
 									const effect = get.effect(targets[0], card, target, player);
 									if (effect < 0) {
 										let targets2 = game.filterPlayer(current => lib.filter.targetEnabled2(card, target, current) && lib.filter.targetInRange(card, target, current));
-										targets2.sort((a, b) => get.effect(b, card, target, player) - get.effect(a, card, target, player));
-										const effect2 = get.effect(targets2[0], card, target, player);
-										if (effect2 > 0) {
-											sum += get.effect(player, { name: "guohe_copy2" }, player, player);
-											sum += effect2;
-										}
+										if (targets2.length) {
+											targets2.sort((a, b) => get.effect(b, card, target, player) - get.effect(a, card, target, player));
+											const effect2 = get.effect(targets2[0], card, target, player);
+											if (effect2 > 0) {
+												sum += get.effect(player, { name: "guohe_copy2" }, player, player);
+												sum += effect2;
+											}
+										} else sum += effect;
 									} else sum += effect;
 									return sum;
 								};
 								let cards = target.getCards("h");
 								return cards
 									.sort((a, b) => effectCard(b) - effectCard(a))
-									.slice(0, sum)
+									.slice(0, Math.min(3, game.roundNumber))
 									.reduce((num, card) => num + effectCard(card), 0);
 							})
 							.forResult("links")) ?? [])[0][2]
@@ -450,34 +439,35 @@ const skills = {
 			result: {
 				player(player, target) {
 					const names = lib.inpile.filter(name => {
-							const info = get.info({ name: name });
-							return info && info.type === "trick" && !info.notarget && (info.toself || info.singleCard || !info.selectTarget || info.selectTarget === 1);
-						}),
-						sum = Math.min(3, game.roundNumber);
+						const info = get.info({ name: name });
+						return info && info.type === "trick" && !info.notarget && (info.toself || info.singleCard || !info.selectTarget || info.selectTarget === 1);
+					});
 					return Math.max(
 						...names.map(name => {
 							const effectCard = cardx => {
 								const card = get.autoViewAs({ name: name }, [cardx]);
-								let targets = game.filterPlayer(current => target.canUse(card, current, false));
+								let targets = game.filterPlayer(current => target.canUse(card, current));
 								if (!targets.length) return 0;
 								targets.sort((a, b) => get.effect(b, card, target, target) - get.effect(a, card, target, target));
 								let sum = get.effect(target, { name: "guohe_copy", position: "h" }, player, player);
 								const effect = get.effect(targets[0], card, target, player);
 								if (effect < 0) {
 									let targets2 = game.filterPlayer(current => lib.filter.targetEnabled2(card, target, current) && lib.filter.targetInRange(card, target, current));
-									targets2.sort((a, b) => get.effect(b, card, target, player) - get.effect(a, card, target, player));
-									const effect2 = get.effect(targets2[0], card, target, player);
-									if (effect2 > 0) {
-										sum += get.effect(player, { name: "guohe_copy2" }, player, player);
-										sum += effect2;
-									}
+									if (targets2.length) {
+										targets2.sort((a, b) => get.effect(b, card, target, player) - get.effect(a, card, target, player));
+										const effect2 = get.effect(targets2[0], card, target, player);
+										if (effect2 > 0) {
+											sum += get.effect(player, { name: "guohe_copy2" }, player, player);
+											sum += effect2;
+										}
+									} else sum += effect;
 								} else sum += effect;
 								return sum;
 							};
 							let cards = target.getCards("h");
 							return cards
 								.sort((a, b) => effectCard(b) - effectCard(a))
-								.slice(0, sum)
+								.slice(0, Math.min(3, game.roundNumber))
 								.reduce((num, card) => num + effectCard(card), 0);
 						})
 					);

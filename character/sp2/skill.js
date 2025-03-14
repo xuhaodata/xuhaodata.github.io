@@ -5495,10 +5495,10 @@ const skills = {
 		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
-			return player.countCards("h") != 3;
+			return player.countCards("h") !== 4;
 		},
 		content() {
-			var num = player.countCards("h") - 3;
+			var num = player.countCards("h") - 4;
 			if (num > 0) player.chooseToDiscard("h", num, true);
 			else player.draw(-num);
 		},

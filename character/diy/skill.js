@@ -4679,10 +4679,10 @@ const skills = {
 				};
 			},
 			ai: {
-				hasSha: true,
-				hasShan: true,
+				respondSha: true,
+				respondhan: true,
 				skillTagFilter(player, tag) {
-					var name = "s" + tag.slice(4);
+					var name = "s" + tag.slice("respondS".length);
 					return lib.skill.nsfengli_use.hiddenCard(player, name);
 				},
 			},
@@ -7248,7 +7248,7 @@ const skills = {
 		ai: {
 			respondSha: true,
 			skillTagFilter(player, tag, arg) {
-				if (arg != "respond") return false;
+				if (arg !== "respond") return false;
 				if (!player.countCards("hs")) return false;
 			},
 		},

@@ -10591,10 +10591,10 @@ export class Library {
 			return target.canAddJudge(card);
 		},
 		autoRespondSha: function () {
-			return !this.player.hasSha(true);
+			return !this.player.hasSha("respond");
 		},
 		autoRespondShan: function () {
-			return !this.player.hasShan();
+			return !this.player.hasShan("respond");
 		},
 		wuxieSwap: function (event) {
 			if (event.type == "wuxie") {

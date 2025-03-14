@@ -4150,9 +4150,9 @@ const skills = {
 			fireAttack: true,
 			respondShan: true,
 			skillTagFilter(player, tag, arg) {
-				if (tag == "fireAttack") return true;
+				if (arg === "respond" || tag == "fireAttack") return true;
 				if (player.countCards("he") < player.countMark("dcshizong") + 1) return false;
-				if (tag == "respondSha" && arg != "use") return false;
+				if (tag == "respondSha") return false;
 			},
 			result: {
 				player(player) {
