@@ -633,7 +633,7 @@ const skills = {
 					const map = {
 						摸牌: get.effect(player, { name: "draw" }, player, player) * storage[0],
 						拿牌: get.effect(player, { name: "draw" }, player, player) * Math.min(Array.from(ui.discardPile.childNodes).length, storage[1]),
-						拼点: Math.max(...[0].concat(game.filterPlayer(target => player.canCompare(target)).length.map(target => get.effect(target, "hannan", player, player)))),
+						拼点: Math.max(...[0].concat(game.filterPlayer(target => player.canCompare(target)).map(target => get.effect(target, "hannan", player, player)))),
 					};
 					return get
 						.event()
@@ -5738,7 +5738,6 @@ const skills = {
 								if (!remained.length) return event.finish();
 								player.gain(remained, "gain2");
 							});
-
 						await target.chooseUseTarget(
 							{
 								name: "wugu",

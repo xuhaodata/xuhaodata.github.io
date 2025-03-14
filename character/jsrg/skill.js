@@ -1030,14 +1030,11 @@ const skills = {
 			for (const current of targets) current.hideTimer();
 			//结算后续
 			for (let i = 0; i < 5; i++) {
-				const discarded = await target
-					.chooseToDiscard("h", true)
-					.set("ai", card => {
-						//开摆，直接随机弃牌，不考虑有的没的
-						return 1 + Math.random();
-					})
-					.forResult("cards");
-				if (!discarded?.length || discarded[0] === card) break;
+				const { result } = await target.chooseToDiscard("h", true).set("ai", card => {
+					//开摆，直接随机弃牌，不考虑有的没的
+					return 1 + Math.random();
+				});
+				if (!result?.cards?.length || result.cards[0] === card) break;
 			}
 			if (target.countCards("h") > player.countCards("h")) {
 				player.logSkill("mbsaojian", null, null, null, [3]);

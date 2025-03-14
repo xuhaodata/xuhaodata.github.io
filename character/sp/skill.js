@@ -23913,7 +23913,7 @@ const skills = {
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
-					if (lib.skill.event.filterx(trigger, player)) {
+					if (lib.skill[event.name].filterx(trigger, player)) {
 						const num = player.getHistory("useSkill", evt => evt.skill == "rehengjiang" && evt.targets.includes(trigger.player)).length;
 						if (num > 0) await player.draw(num);
 					} else await player.draw();
