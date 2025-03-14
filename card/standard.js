@@ -901,7 +901,7 @@ game.import("card", function () {
 					"step 2";
 					ui.clear();
 					var cards;
-					if (Array.isArray(card.storage?.fixedShownCards)) {
+					if (get.itemtype(card.storage?.fixedShownCards) == "cards") {
 						cards = card.storage.fixedShownCards.slice();
 						var lose_list = [],
 							cards2 = [];
@@ -927,7 +927,7 @@ game.import("card", function () {
 						if (cards2.length) game.cardsGotoOrdering(cards2).relatedEvent = event.getParent();
 						game.delayex();
 					} else {
-						let num = event.targets?.length ? event.targets.length : game.countPlayer();
+						let num = event.targets?.length ?? game.countPlayer();
 						if (typeof card.storage?.extraCardsNum == "number") num += card.storage.extraCardsNum;
 						cards = get.cards(num);
 						game.cardsGotoOrdering(cards).relatedEvent = event.getParent();

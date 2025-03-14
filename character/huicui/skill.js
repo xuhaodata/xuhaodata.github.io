@@ -740,24 +740,6 @@ const skills = {
 						if (num >= 2 && player.countCards("h")) await player.chooseToDiscard("h", true);
 						if (num >= 3) {
 							await player.loseHp();
-							if (game.hasPlayer(target => target !== player && target.countCards("h"))) {
-								const [target] =
-									(await player
-										.chooseTarget("是否获得一名其他角色的一张手牌？", (card, player, target) => {
-											return target !== player && target.countCards("h");
-										})
-										.set("ai", target => {
-											const player = get.player();
-											return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
-										})
-										.forResult("targets")) ?? [];
-								if (target) {
-									player.line(target);
-									await player.gainPlayerCard(target, "h", true);
-								}
-							}
-						}
-						if (num >= 4) {
 							if (game.hasPlayer(target => target.countDiscardableCards(player, "ej"))) {
 								const [target] =
 									(await player
@@ -778,6 +760,9 @@ const skills = {
 									await player.discardPlayerCard(target, "ej", true);
 								}
 							}
+						}
+						if (num >= 4) {
+							if (player.countCards("h")) await player.chooseToDiscard("he", true);
 							await player.addSkills("dcretanluan");
 						}
 					},

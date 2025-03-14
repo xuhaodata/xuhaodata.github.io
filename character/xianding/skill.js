@@ -319,6 +319,13 @@ const skills = {
 					if (cards.length) await target.discard(cards.randomGets(1));
 				}
 			}
+			const cards = game
+				.getGlobalHistory("everything", evt => evt.name === "discard" && evt.getParent() == event)
+				.reduce((cards, evt) => cards.addArray(evt.cards), [])
+				.filterInD("d");
+			if (!cards.length) return;
+			const result = cards.length > 1 ? await player.chooseCardButton(cards, true, "获得其中一张牌").forResult() : { bool: true, links: cards };
+			if (result?.bool && result?.links?.length) await player.gain(result.links, "gain2");
 		},
 	},
 	//二刘
@@ -5715,24 +5722,28 @@ const skills = {
 								await game.delayx();
 							}
 						}
-						if (target.countCards("h") < game.countPlayer()) return;
-						player
-							.when({ global: "wuguRemained" })
-							.filter(evt => {
-								return evt.getParent(3) === event;
-							})
-							.vars({ originalOwner: target })
+						target
+							.when({ global: "wuguContentBeforeBefore" })
+							.filter(evt => evt.getParent(3) === event)
 							.then(() => {
-								const remained = trigger.remained.filterInD("d");
-								if (!remained.length) return event.finish();
-								player.line(originalOwner);
-								originalOwner.gain(remained, "gain2");
+								trigger.card.storage ??= {};
+								trigger.card.storage.fixedShownCards ??= [];
+								trigger.card.storage.fixedShownCards.addArray(player.getCards("h"));
 							});
+						target
+							.when({ global: "wuguRemained" })
+							.filter(evt => evt.getParent(3) === event)
+							.then(() => {
+								const remained = trigger.remained.filterInD();
+								if (!remained.length) return event.finish();
+								player.gain(remained, "gain2");
+							});
+
 						await target.chooseUseTarget(
 							{
 								name: "wugu",
 								storage: {
-									fixedShownCards: target.getCards("h"),
+									fixedShownCards: [],
 								},
 							},
 							true
@@ -5744,9 +5755,7 @@ const skills = {
 				return "点击“确定”以执行效果";
 			},
 		},
-		subSkill: {
-			backup: {},
-		},
+		subSkill: { backup: {} },
 		ai: {
 			order(item, player) {
 				if (!game.hasPlayer(current => current !== player && get.attitude(player, current) > 0) && game.hasPlayer(current => get.attitude(player, current) <= 0)) return 10;
