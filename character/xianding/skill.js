@@ -5722,22 +5722,8 @@ const skills = {
 								await game.delayx();
 							}
 						}
-						target
-							.when({ global: "wuguContentBeforeBefore" })
-							.filter(evt => evt.getParent(3) === event)
-							.then(() => {
-								trigger.card.storage ??= {};
-								trigger.card.storage.fixedShownCards ??= [];
-								trigger.card.storage.fixedShownCards.addArray(player.getCards("h"));
-							});
-						target
-							.when({ global: "wuguRemained" })
-							.filter(evt => evt.getParent(3) === event)
-							.then(() => {
-								const remained = trigger.remained.filterInD();
-								if (!remained.length) return event.finish();
-								player.gain(remained, "gain2");
-							});
+						target.addTempSkill("dchuiji_effect");
+						target.markAuto("dchuiji_effect", [event]);
 						await target.chooseUseTarget(
 							{
 								name: "wugu",
@@ -5754,7 +5740,29 @@ const skills = {
 				return "点击“确定”以执行效果";
 			},
 		},
-		subSkill: { backup: {} },
+		subSkill: {
+			backup: {},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				trigger: { player: "wuguContentBeforeBefore", global: "wuguRemained" },
+				filter(event, player) {
+					if (!player.getStorage("dchuiji_effect").includes(event.getParent(3))) return false;
+					return event.name == "wuguContentBefore" || event.remained.someInD();
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					if (trigger.name == "wuguContentBefore") {
+						trigger.card.storage ??= {};
+						trigger.card.storage.fixedShownCards = player.getCards("h");
+					} else {
+						const remained = trigger.remained.filterInD();
+						if (remained.length) player.gain(remained, "gain2");
+					}
+				},
+			},
+		},
 		ai: {
 			order(item, player) {
 				if (!game.hasPlayer(current => current !== player && get.attitude(player, current) > 0) && game.hasPlayer(current => get.attitude(player, current) <= 0)) return 10;
