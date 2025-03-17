@@ -1261,7 +1261,7 @@ const skills = {
 			check(button) {
 				const player = get.player(),
 					owner = get.owner(button.link);
-				return get.value(button.link, get.owner(source)) * Math.sign(-get.attitude(player, source));
+				return get.value(button.link, owner) * Math.sign(-get.attitude(player, owner));
 			},
 			prompt(links) {
 				let prompt = "将" + get.translation(links) + "交给至多等量角色。";
