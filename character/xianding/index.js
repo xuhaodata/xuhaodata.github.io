@@ -31,6 +31,9 @@ game.import("character", function () {
 			dc_sb_jiaxu: [
 				["dc_sb_jiaxu_shadow", []],
 			],
+			dc_sb_xunyu: [
+				["dc_sb_xunyu_shadow", []],
+			],
 		},
 		characterFilter: { ...characterFilters },
 		characterTitle: {

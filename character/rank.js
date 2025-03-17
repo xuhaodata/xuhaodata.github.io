@@ -418,6 +418,7 @@ window.noname_character_rank = {
 		"ol_qinlang",
 		"chentai",
 		"liujinliupei",
+		"dc_sb_xunyu",
 	],
 	am: [
 		"xuxin",
@@ -2604,6 +2605,7 @@ window.noname_character_rank = {
 			"friend_cuijun",
 			"chentai",
 			"liujinliupei",
+			"dc_sb_xunyu",
 		],
 		rare: [
 			"dongwan",

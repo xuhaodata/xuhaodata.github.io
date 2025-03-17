@@ -3,6 +3,285 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//谋荀彧
+	dcsbbizuo: {
+		audio: 2,
+		limited: true,
+		skillAnimation: true,
+		animationColor: "thunder",
+		trigger: { global: "phaseEnd" },
+		filter(event, player) {
+			var zhu = game.filterPlayer(current => current.getSeatNum() == 1)[0];
+			if (!zhu || !zhu.isIn()) return false;
+			return zhu.isMinHp();
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2("dcsbbizuo"))
+				.set("ai", target => {
+					let player = get.player();
+					if (target.hasJudge("lebu") || target.isTurnedOver()) return false;
+					if (get.attitude(player, target) > 4) {
+						return get.threaten(target) / Math.sqrt(target.hp + 1) / Math.sqrt(target.countCards("h") + 1) > 0;
+					}
+					return false;
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const target = event.targets[0];
+			var next = target.insertPhase().set("dcsbbizuo", player);
+			target
+				.when({ player: "phaseBefore" })
+				.filter(evt => {
+					return evt?.dcsbbizuo;
+				})
+				.assign({
+					firstDo: true,
+				})
+				.then(() => {
+					const source = trigger.dcsbbizuo;
+					player.addTempSkill("dcsbbizuo_mark", "phaseAfter");
+					game.filterPlayer(target => {
+						return target !== player && target !== source;
+					}).forEach(target => {
+						target.addTempSkill("fengyin", "phaseAfter");
+					});
+				});
+			player
+				.when({ global: "phaseEnd" })
+				.filter(evt => {
+					return evt?.dcsbbizuo;
+				})
+				.step(async (event, trigger, player) => {
+					let cards = game
+						.getGlobalHistory("cardMove", evt => {
+							if (evt.name == "lose") {
+								if (evt.position !== ui.discardPile || evt.type === "discard") return false; //|| evt.getlx === false
+								return true;
+							} else if (evt.name == "cardsDiscard") {
+								return true;
+							}
+						})
+						.map(evt => {
+							return evt.cards.filterInD("d");
+						})
+						.flat()
+						.unique();
+					if (cards.length) {
+						if (_status.connectMode)
+							game.broadcastAll(() => {
+								_status.noclearcountdown = true;
+							});
+						const given_map = {};
+						let result;
+						while (true) {
+							if (cards.length > 1) {
+								result = await player
+									.chooseCardButton("弼佐：请选择要分配的牌", true, cards, [1, cards.length])
+									.set("ai", button => {
+										if (ui.selected.buttons.length) return 0;
+										return get.buttonValue(button);
+									})
+									.forResult();
+							} else if (cards.length === 1) result = { bool: true, links: cards.slice(0) };
+							else break;
+							const toGive = result.links;
+							result = await player
+								.chooseTarget(`选择一名角色获得${get.translation(toGive)}`, cards.length === 1)
+								.set("ai", target => {
+									const att = get.attitude(get.player(), target);
+									if (get.event("toEnemy")) return Math.max(0.01, 100 - att);
+									else if (att > 0) {
+										return Math.max(0.1, att / Math.sqrt(1 + target.countCards("h") + (get.event("given_map")[target.playerid] || 0)));
+									} else return Math.max(0.01, (100 + att) / 200);
+								})
+								.set("given_map", given_map)
+								.set("toEnemy", get.value(toGive[0], player, "raw") < 0)
+								.forResult();
+							if (result.bool) {
+								cards.removeArray(toGive);
+								if (result.targets.length) {
+									const id = result.targets[0].playerid;
+									if (!given_map[id]) given_map[id] = [];
+									given_map[id].addArray(toGive);
+								}
+								if (!cards.length) break;
+							}
+						}
+						if (_status.connectMode)
+							game.broadcastAll(() => {
+								delete _status.noclearcountdown;
+								game.stopCountChoose();
+							});
+						const gain_list = [];
+						for (const i in given_map) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+							player.line(source, "green");
+							gain_list.push([source, given_map[i]]);
+							game.log(source, "获得了", given_map[i]);
+						}
+						await game
+							.loseAsync({
+								gain_list,
+								giver: player,
+								animate: "gain2",
+							})
+							.setContent("gaincardMultiple");
+					}
+				});
+		},
+		subSkill: {
+			//防呆标记
+			mark: {
+				charlotte: true,
+				mark: true,
+				intro: {
+					markcount: () => 0,
+					content: "当前回合为〖弼佐〗回合",
+				},
+			},
+		},
+	},
+	dcsbshimou: {
+		audio: 2,
+		audioname: ["dc_sb_xunyou_shadow"],
+		enable: "phaseUse",
+		usable: 1,
+		zhuanhuanji(player, skill) {
+			player.storage[skill] = !player.storage[skill];
+			player.changeSkin({ characterName: "dc_sb_xunyu" }, "dc_sb_xunyu" + (player.storage[skill] ? "_shadow" : ""));
+		},
+		marktext: "☯",
+		mark: true,
+		intro: {
+			content(storage) {
+				if (!storage) return "转换技，出牌阶段限一次，你可令一名手牌数全场最低的角色将手牌调整至体力上限（至多摸5）并视为使用一张仅指定一个目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，该锦囊可额外增加1个目标；若以此法弃牌，该锦囊可额外结算一次";
+				return "转换技，出牌阶段限一次，你可令一名手牌数全场最高的角色将手牌调整至体力上限（至多摸5）并视为使用一张仅指定一个目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，该锦囊可额外增加1个目标；若以此法弃牌，该锦囊可额外结算一次";
+			},
+		},
+		filter(event, player) {
+			return true;
+		},
+		filterTarget(card, player, target) {
+			if (!player.storage.dcsbshimou) return target.isMinHandcard();
+			return target.isMaxHandcard();
+		},
+		selectTarget: 1,
+		prompt() {
+			const player = get.event("player");
+			return lib.skill.dcsbshimou.intro.content(player.storage.dcsbshimou);
+		},
+		async content(event, trigger, player) {
+			player.changeZhuanhuanji(event.name);
+			const target = event.targets[0];
+			let num = target.maxHp - target.countCards("h");
+			if (num > 0) await target.draw(Math.min(5, num));
+			else if (num < 0 && target.countDiscardableCards(target, "h") > 0) await target.chooseToDiscard(-num, "h", true);
+			if (!target.isIn()) return;
+			let list = get.inpileVCardList(info => {
+				if (info[0] != "trick") return false;
+				return true;
+			});
+			if (
+				!list.filter(info => {
+					return game.hasPlayer(targetx => {
+						return lib.filter.targetEnabled2({ name: info[2], isCard: true }, target, targetx);
+					});
+				}).length
+			)
+				return;
+			//判断是否因此摸牌弃牌
+			const bool1 = target.hasHistory("gain", evt => {
+				return evt.getParent().name == "draw" && evt.getParent(2) == event;
+			});
+			const bool2 = target.hasHistory("lose", evt => {
+				return evt.type == "discard" && evt.getParent(3) == event;
+			});
+			let str = `势谋：请选择${get.translation(target)}要使用的牌名`;
+			if (bool1) str += "（可额外增加1个目标）";
+			if (bool2) str += "（可额外结算一次）";
+			const result = await player
+				.chooseButton([str, [list, "vcard"]], true)
+				.set("filterButton", button => {
+					const source = get.event("source");
+					return game.hasPlayer(target => {
+						return lib.filter.targetEnabled2({ name: button.link[2], isCard: true }, source, target);
+					});
+				})
+				.set("ai", button => {
+					const card = get.autoViewAs({ name: button.link[2], isCard: true });
+					return get.event("source").getUseValue(card) * Math.sign(get.attitude(get.player(), get.event("source")));
+				})
+				.set("source", target)
+				.forResult();
+			const card = get.autoViewAs({ name: result.links[0][2], isCard: true, storage: { dcsbshimou: [num, target] } });
+
+			let range = [1, 1];
+			if (bool1) range[1]++;
+			const result2 = await player
+				.chooseTarget(true, range, `势谋：请为${get.translation(target)}选择${get.translation(card)}的目标`, (card, player, target) => {
+					return lib.filter.targetEnabled2(get.event("cardx"), get.event("source"), target);
+				})
+				.set("source", target)
+				.set("cardx", card)
+				.set("ai", target => {
+					return get.effect(target, get.event("cardx"), get.event("source"), get.player());
+				})
+				.forResult();
+			var next = target.useCard(card, result2.targets);
+			if (bool2) {
+				next.set("oncard", (card, player) => {
+					get.event().effectCount++;
+				});
+			}
+			await next;
+		},
+		ai: {
+			//ai还有待完善
+			order: 5,
+			result: {
+				player: 1,
+				target(player, target) {
+					const num = target.maxHp - target.countCards("h");
+					const att = get.attitude(player, target);
+					if (num > 0) {
+						return num;
+					} else if (num < 0) {
+						if (-num < 2) {
+							if (att > 0) return 1.5;
+							return -2;
+						}
+						return num;
+					}
+					return Math.random() > 0.5;
+				},
+			},
+		},
+		locked: false,
+		group: ["dcsbshimou_change"],
+		subSkill: {
+			change: {
+				audio: "dcsbshimou",
+				audioname: ["dc_sb_xunyou_shadow"],
+				trigger: {
+					global: "phaseBefore",
+					player: "enterGame",
+				},
+				filter(event, player) {
+					return event.name != "phase" || game.phaseNumber == 0;
+				},
+				prompt2(event, player) {
+					return "切换【势谋】为状态" + (player.storage.dcsbshimou ? "阳" : "阴");
+				},
+				check: () => Math.random() > 0.5,
+				content() {
+					player.changeZhuanhuanji("dcsbshimou");
+				},
+			},
+		},
+	},
 	//威董卓
 	dcguangyong: {
 		audio: 2,
