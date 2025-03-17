@@ -9010,16 +9010,16 @@ const skills = {
 					return target.hasSkill("spdaming") && !target.hasSkill("spdaming_used");
 				},
 				selectTarget() {
-					var player = _status.event.player;
-					var targets = game.filterPlayer(current => {
+					const player = get.player();
+					const targets = game.filterPlayer(current => {
 						return current != player && current.hasSkill("spdaming") && !current.hasSkill("spdaming_used");
 					});
 					return targets.length > 1 ? 1 : -1;
 				},
 				complexSelect: true,
 				prompt() {
-					var player = _status.event.player;
-					var targets = game.filterPlayer(function (current) {
+					const player = get.player();
+					const targets = game.filterPlayer(current => {
 						return current != player && current.hasSkill("spdaming") && !current.hasSkill("spdaming_used");
 					});
 					return "将一张牌交给" + get.translation(targets) + (targets.length > 1 ? "中的一人" : "");
@@ -9029,7 +9029,7 @@ const skills = {
 				lose: false,
 				delay: false,
 				check(card) {
-					var player = _status.event.player;
+					const player = get.player();
 					if (
 						game.hasPlayer(current => {
 							return lib.skill.spdaming_give.filterTarget(null, player, current) && get.attitude(player, current) > 0;
@@ -9039,53 +9039,45 @@ const skills = {
 					}
 					return 0;
 				},
-				content() {
-					"step 0";
-					player.give(cards, target);
-					if (!game.hasPlayer(current => current != player && current != target)) event.finish();
+				async content(event, trigger, player) {
+					const { cards, target } = event;
+					await player.give(cards, target);
 					target.addTempSkill("spdaming_used", "phaseUseAfter");
-					"step 1";
-					var type = get.type(cards[0], "trick", target);
-					event.cardtype = type;
-					var str = get.translation(type),
+					if (!game.hasPlayer(current => current != player && current != target && get.owner(cards[0]) == target)) {
+						await target.give(cards, player);
+						return;
+					}
+					const type = get.type(cards[0], "trick", target);
+					const str = get.translation(type),
 						user = get.translation(player);
-					target
+					const { result } = await target
 						.chooseTarget(
 							"达命：选择另一名其他角色",
-							"若该角色有" + str + "牌，其将一张该类型的牌交给" + user + "，你获得1点“达命”值；否则你将" + get.translation(cards) + "交给" + user,
+							`若该角色有${str}牌，其将一张该类型的牌交给${user}，你获得1点“达命”值；否则你将${get.translation(cards)}交给${user}`,
 							(card, player, target) => {
-								return target != player && target != _status.event.getParent().player;
+								return target != player && target != get.event().getParent().player;
 							},
 							true
 						)
-						.set("ai", target => 1 - get.attitude(_status.event.player, target));
-					"step 2";
-					if (result.bool) {
-						var targetx = result.targets[0],
-							type = event.cardtype;
-						target.line(targetx);
-						event.targetx = targetx;
-						if (targetx.countCards("he", { type: type }) > 0) {
-							targetx
-								.chooseCard("交给" + get.translation(player) + "一张" + get.translation(type) + "牌", "he", true, card => {
-									return get.type(card) == _status.event.getParent().cardtype;
-								})
-								.set("ai", card => 10 - get.value(card));
-						} else {
-							var cards = cards.filter(i => get.owner(i) == target);
-							if (cards.length) target.give(cards, player);
-							game.broadcastAll(function () {
-								if (lib.config.background_speak) game.playAudio("skill", "spdaming3");
-							});
-							event.finish();
-						}
-					} else event.finish();
-					"step 3";
-					if (result.bool) {
-						event.targetx.give(result.cards, player);
-						event.targetx.line(player);
+						.set("ai", target => 1 - get.attitude(get.player(), target));
+					if (!result?.bool || !result?.targets?.length) return;
+					const [targetx] = result.targets;
+					target.line(targetx);
+					if (targetx.countCards("he", { type: type })) {
+						await targetx
+							.chooseToGive(player, `交给${get.translation(player)}一张${get.translation(type)}牌`, "he", true, card => {
+								return get.type(card) == get.event("cardtype");
+							})
+							.set("ai", card => 10 - get.value(card))
+							.set("cardtype", type);
+						targetx.line(player);
 						lib.skill.spdaming.change(target, 1);
-						game.delayx();
+						await game.delayx();
+					} else if (get.owner(cards[0]) == target) {
+						await target.give(cards, player);
+						game.broadcastAll(() => {
+							if (lib.config.background_speak) game.playAudio("skill", "spdaming3");
+						});
 					}
 				},
 				ai: {
@@ -9102,28 +9094,20 @@ const skills = {
 		usable: 1,
 		locked: false,
 		filter(event, player) {
-			return (player.storage.spdaming || 0) > 0;
+			return player.hasMark("spdaming") && player.countCards("hes") && get.inpileVCardList(info => (info[0] == "trick" && get.tag({ name: info[2] }, "damage")) || info[2] == "sha");
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = [];
-				for (var name of lib.inpile) {
-					if (name == "sha") {
-						list.push(["基本", "", "sha"]);
-						for (var i of lib.inpile_nature) list.push(["基本", "", "sha", i]);
-					}
-					if (!get.tag({ name: name }, "damage")) continue;
-					if (get.type2(name) == "trick") list.push(["锦囊", "", name]);
-				}
+				const list = get.inpileVCardList(info => (info[0] == "trick" && get.tag({ name: info[2] }, "damage")) || info[2] == "sha");
 				return ui.create.dialog("嚣逆", [list, "vcard"]);
 			},
 			filter(button, player) {
-				return lib.filter.filterCard({ name: button.link[2] }, player, _status.event.getParent());
+				return lib.filter.filterCard({ name: button.link[2] }, player, get.event().getParent());
 			},
 			check(button) {
-				var player = _status.event.player;
+				const player = get.player();
 				if (player.countCards("hs", button.link[2]) > 0) return 0;
-				var effect = player.getUseValue(button.link[2]);
+				const effect = player.getUseValue({ name: button.link[2], nature: button.link[3] });
 				if (effect > 0) return effect;
 				return 0;
 			},
@@ -9149,20 +9133,16 @@ const skills = {
 		},
 		mod: {
 			maxHandcardBase(player, num) {
-				return Math.min(Math.max(0, player.storage.spdaming || 0), player.hp);
+				return Math.min(Math.max(0, player.countMark("spdaming")), player.hp);
 			},
 		},
 		ai: {
 			order: 4,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 			threaten: 1.4,
 			combo: "spdaming",
 		},
-		subSkill: {
-			backup: {},
-		},
+		subSkill: { backup: {} },
 	},
 	// 灭霸
 	zhujian: {
