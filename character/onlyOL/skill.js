@@ -1792,6 +1792,9 @@ const skills = {
 			return event.player != player;
 		},
 		usable: 1,
+		check(event, player) {
+			return get.effect(player, event.card, event.player, player) < 0;
+		},
 		async content(event, trigger, player) {
 			trigger.getParent().excluded.add(player);
 			player.addTempSkill("olsbguliang_debuff");
@@ -1801,9 +1804,7 @@ const skills = {
 			debuff: {
 				charlotte: true,
 				onremove: true,
-				trigger: {
-					target: "useCardToPlayer",
-				},
+				trigger: { target: "useCardToPlayer" },
 				silent: true,
 				filter(event, player) {
 					return player.getStorage("olsbguliang_debuff").includes(event.player);
@@ -1828,36 +1829,53 @@ const skills = {
 			markcount: "expansion",
 		},
 		filter(event, player) {
-			return (event.name != "phase" || game.phaseNumber == 0) && !player.getExpansions("olsbxutu").length;
+			return event.name != "phase" || game.phaseNumber == 0;
 		},
 		async content(event, trigger, player) {
 			const cards = get.cards(3);
 			const next = player.addToExpansion(cards, player, "giveAuto");
-			next.gaintag.add("olsbxutu");
+			next.gaintag.add(event.name);
 			await next;
 		},
 		group: ["olsbxutu_exchange"],
 		subSkill: {
 			exchange: {
 				audio: "olsbxutu",
-				trigger: {
-					global: "phaseJieshuBegin",
-				},
+				trigger: { global: "phaseJieshuBegin" },
 				filter(event, player) {
-					return _status.discarded.length > 0;
+					return get.discarded().someInD("d") && player.countExpansions("olsbxutu");
 				},
 				async cost(event, trigger, player) {
-					const xs = player.getExpansions("olsbxutu");
-					const discardPile = _status.discarded;
-					const dialog = ["徐图：选择要交换的牌", '<div class="text center">“资”</div>', xs, '<div class="text center">弃牌堆</div>', discardPile];
+					const cards = player.getExpansions("olsbxutu");
+					const discardPile = get.discarded().filterInD("d");
+					const dialog = ["徐图：选择要交换的牌", '<div class="text center">“资”</div>', cards, '<div class="text center">弃牌堆</div>', discardPile];
 					const { result } = await player
 						.chooseButton(dialog, 2)
-						.set("filterButton", function (button) {
+						.set("filterButton", button => {
 							if (ui.selected.buttons.length) return get.position(button.link) != get.position(ui.selected.buttons[0].link);
 							return true;
 						})
-						.set("cards1", xs)
-						.set("cards2", discardPile);
+						.set("cards1", cards)
+						.set("cards2", discardPile)
+						.set("ai", button => {
+							const player = get.player(),
+								{ link } = button;
+							let cards1 = get.event().cards1.slice(0),
+								cards2 = get.event().cards2.slice(0);
+							if (!ui.selected.buttons.length) {
+								if (!cards2.includes(link)) return 0;
+								cards2.remove(link);
+								const suits = cards1.filter(card => get.suit(card) == get.suit(link));
+								const numbers = cards1.filter(card => get.number(card) == get.number(link));
+								if (suits.length > 2 || numbers.length > 2) return 20 + get.value(card);
+								return get.value(link);
+							}
+							cards1.push(ui.selected.buttons[0].link);
+							cards1.remove(link);
+							const bool = cards1.every(card => get.suit(card) == get.suit(cards1[0])) || cards1.every(card => get.number(card) == get.number(cards1[0]));
+							if (bool) return 20 - get.value(link);
+							return get.value(ui.selected.buttons[0].link) - get.value(link);
+						});
 					event.result = {
 						bool: result.bool,
 						cost_data: result.links,
@@ -1867,22 +1885,23 @@ const skills = {
 					const { cost_data } = event;
 					const cards = cost_data;
 					if (get.position(cards[0]) != "x") cards.reverse();
-					const next = player.addToExpansion([cards[1]], player, "giveAuto");
+					const next = player.addToExpansion(cards[1], player, "giveAuto");
 					next.gaintag.add("olsbxutu");
 					await next;
-					await player.loseToDiscardpile([cards[0]]);
-					const xs = player.getExpansions("olsbxutu");
-					let bool =
-						xs.every(c => {
-							return get.suit(c) == get.suit(xs[0]);
-						}) ||
-						xs.every(c => {
-							return get.number(c) == get.number(xs[0]);
-						});
-					if (bool) {
-						const { result } = await player.chooseTarget().set("prompt", `将${get.translation(xs)}交给一名其他角色`);
-						await result.targets[0].gain(xs, "draw");
-						await player.addToExpansion(get.cards(3), player, "giveAuto").gaintag.add("olsbxutu");
+					await player.loseToDiscardpile(cards[0]);
+					const expansion = player.getExpansions("olsbxutu");
+					if (!expansion.length) return;
+					const bool = expansion.every(card => get.suit(card) == get.suit(expansion[0])) || expansion.every(card => get.number(card) == get.number(expansion[0]));
+					if (!bool) return;
+					const { result } = await player.chooseTarget(true).set("prompt", `将${get.translation(expansion)}交给一名角色`);
+					if (result?.bool && result?.targets?.length) {
+						await result.targets[0].gain(expansion, "draw");
+						const num = 3 - player.countExpansions("olsbxutu");
+						if (num > 0) {
+							const next = player.addToExpansion(get.cards(num), player, "giveAuto");
+							next.gaintag.add("olsbxutu");
+							await next;
+						}
 					}
 				},
 			},
