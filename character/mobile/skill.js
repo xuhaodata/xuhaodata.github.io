@@ -131,7 +131,6 @@ const skills = {
 				if (!target.canUse({ name: "sha", isCard: true }, victim, false, false)) return;
 				await target.useCard({ name: "sha", isCard: true }, victim).set("addCount", false);
 			};
-
 			//更新ui
 			player.removeGaintag("mbjianji");
 			ui.updatehl();
@@ -142,9 +141,15 @@ const skills = {
 				await sha(target2, target1);
 			}
 			if (get.name(event.cards[0], player) === "sha") {
-				let targets = [];
-				if (result.player == card) targets.add(target1);
-				if (result.target == card) targets.add(target2);
+				let targets = [
+					[target1, result.player],
+					[target2, result.target],
+				]
+					.filter(list => {
+						if (list[1] == card) return true;
+					})
+					.map(list => list[0]);
+				if (!targets.length) return;
 				player.line(targets);
 				for (const target of targets.sortBySeat()) await target.damage();
 			}
@@ -255,7 +260,7 @@ const skills = {
 				.set("filterButton", button => !(button.link === "discard" && !game.hasPlayer(c => c.countDiscardableCards(get.player(), "he"))))
 				.set("ai", button => {
 					const player = get.player();
-					if ((button.link === "discard" && !game.hasPlayer(c => c.countCards("he") - 2 > player.countCards("he") && get.effect(c, { name: "guohe_copy2" }, player))) || !game.hasPlayer((c = c.getHp() - 1 > player.getHp() && get.damageEffect(c, player, player, "fire")))) return 0;
+					if ((button.link === "discard" && !game.hasPlayer(c => c.countCards("he") - 2 > player.countCards("he") && get.effect(c, { name: "guohe_copy2" }, player))) || !game.hasPlayer((c = c.getHp() - 1 > player.getHp() && get.damageEffect(c, player, player)))) return 0;
 					return 1;
 				})
 				.set("selectButton", [1, 2])
@@ -567,7 +572,7 @@ const skills = {
 				return;
 			}
 			await player.gain(card, "draw");
-			await player.chooseUseTarget(card, true);
+			if (player.hasCard(cardx => cardx == card, "h")) await player.chooseUseTarget(card, true);
 			let num = 0;
 			player.checkHistory("lose", evt => {
 				if (evt.type == "discard" && evt.getParent(2) == event) num += evt.cards.length;
@@ -3218,7 +3223,7 @@ const skills = {
 									player.popup(skill);
 									game.log(player, "修改", "#g【" + get.translation(skill) + "】", "的", "#yX", "为", "#g" + list.find(item => item[0] === change)[1]);
 								}
-								if (changeList.length > 1 && changeList[0] === changeList[1]) {
+								if (changeList[0]) {
 									switch (changeList[0]) {
 										case "hp":
 											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow2");
@@ -7302,7 +7307,7 @@ const skills = {
 			"step 0";
 			if (trigger.player != player) player.addExpose(0.3);
 			var target = get.translation(trigger.player);
-			var choiceList = ["令" + target + "获得牌堆里的一张【杀】", "令" + target + "将一张牌交给另一名角色，然后" + target + "摸一张牌"];
+			var choiceList = ["令" + target + "获得牌堆里的一张【杀】", "令" + target + "将一张手牌交给另一名角色，然后" + target + "摸一张牌"];
 			var list = ["选项一"];
 			if (trigger.player.countCards("h") && game.hasPlayer(t => t !== trigger.player)) list.push("选项二");
 			else choiceList[1] = '<span style="opacity:0.5">' + choiceList[1] + "</span>";
