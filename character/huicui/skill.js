@@ -13352,14 +13352,11 @@ const skills = {
 				return player.hasUseTarget(card);
 			});
 			if (!list.length) return;
-			const links = await player
-				.chooseButton(["是否视为使用一张伤害牌？", [list, "vcard"]])
-				.set("ai", button => {
-					return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
-				})
-				.forResultLinks();
-			if (!links.length) return;
-			await player.chooseUseTarget({ name: links[0][2], nature: links[0][3], isCard: true }, true, false);
+			const { result } = await player.chooseButton(["是否视为使用一张伤害牌？", [list, "vcard"]]).set("ai", button => {
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			});
+			if (!result?.links?.length) return;
+			await player.chooseUseTarget({ name: result.links[0][2], nature: result.links[0][3], isCard: true }, true, false);
 			if (
 				!player.hasHistory("sourceDamage", evt => {
 					if (!evt.card) return false;
