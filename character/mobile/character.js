@@ -1,4 +1,9 @@
 const characters = {
+	wuke: ["female", "wu", 3, ["mbzhuguo", "mbanda"], ["name:吴|null"]],
+	mb_yanghong: ["male", "qun", 3, ["mbjianji", "mbyuanmo"], []],
+	mb_xiahoushang: ["male", "wei", 4, ["mbtanfeng"], []],
+	sunsháo: ["male", "wu", 4, ["mbganjue", "mbzhuji"], []], //跟孙邵拼音字母相同了
+	pangxi: ["male", "shu", 3, ["mbxuye", "mbkuangxiang"], []],
 	mb_simazhao: ["male", "wei", 3, ["mbxiezheng", "mbqiantun", "mbweisi", "mbzhaoxiong"], ["character:jsrg_simazhao", "die:jsrg_simazhao", "border:jin"]],
 	friend_cuijun: ["male", "qun", 3, ["friendshunyi", "friendbiwei", "friendgongli_cuijun"]],
 	friend_shitao: ["male", "qun", 3, ["friendqinying", "friendlunxiong", "friendgongli_shitao"]],
