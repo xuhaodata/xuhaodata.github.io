@@ -1,5 +1,5 @@
 const characters = {
-	wuke: ["female", "wu", 3, ["mbzhuguo", "mbanda"], ["name:吴|null"]],
+	wuke: ["female", "wu", 3, ["mbanda", "mbzhuguo"], ["name:吴|null"]],
 	mb_yanghong: ["male", "qun", 3, ["mbjianji", "mbyuanmo"], []],
 	mb_xiahoushang: ["male", "wei", 4, ["mbtanfeng"], []],
 	sunsháo: ["male", "wu", 4, ["mbganjue", "mbzhuji"], []], //跟孙邵拼音字母相同了

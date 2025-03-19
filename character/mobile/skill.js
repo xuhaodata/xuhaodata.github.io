@@ -260,8 +260,18 @@ const skills = {
 				.set("filterButton", button => !(button.link === "discard" && !game.hasPlayer(c => c.countDiscardableCards(get.player(), "he"))))
 				.set("ai", button => {
 					const player = get.player();
-					if ((button.link === "discard" && !game.hasPlayer(c => c.countCards("he") - 2 > player.countCards("he") && get.effect(c, { name: "guohe_copy2" }, player))) || !game.hasPlayer((c = c.getHp() - 1 > player.getHp() && get.damageEffect(c, player, player)))) return 0;
-					return 1;
+					if (button.link === "discard") {
+						if (
+							!game.hasPlayer(target => {
+								return target.countCards("he") - 2 > player.countCards("he") && get.effect(target, { name: "guohe_copy2" }, player);
+							})
+						)
+							return 0;
+						return 1;
+					} else if (button.link === "damage") {
+						if (!game.hasPlayer(target => target.getHp() - 1 > player.getHp() && get.damageEffect(target, player, player))) return 0;
+						return 1;
+					}
 				})
 				.set("selectButton", [1, 2])
 				.forResult();
@@ -17654,8 +17664,6 @@ const skills = {
 	},
 	rezhengrong: {
 		trigger: { player: "useCardAfter" },
-		locked: true,
-		direct: true,
 		audio: "drlt_zhenrong",
 		filter(event, player) {
 			if (!event.targets) return false;
@@ -17679,26 +17687,23 @@ const skills = {
 					})
 					.indexOf(event) %
 					2 ==
-				1
+					1 && game.hasPlayer(target => target != player && target.countCards("he") > 0)
 			);
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("rezhengrong"), true, "将一名其他角色的随机一张牌置于你的武将牌上，成为「荣」", function (card, player, target) {
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt("rezhengrong"), true, "将一名其他角色的随机一张牌置于你的武将牌上，称为「荣」", function (card, player, target) {
 					return target != player && target.countCards("he") > 0;
 				})
 				.set("ai", function (target) {
 					return (1 - get.attitude(_status.event.player, target)) / target.countCards("he");
-				});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = result.targets[0];
-				player.logSkill("rezhengrong", target);
-				var card = target.getCards("he").randomGet();
-				player.addToExpansion(card, target, "give").gaintag.add("rezhengrong");
-			}
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			const card = target.getCards("he").randomGet();
+			player.addToExpansion(card, target, "give").gaintag.add("rezhengrong");
 		},
 		marktext: "荣",
 		onremove(player, skill) {
