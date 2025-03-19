@@ -2120,7 +2120,7 @@ const skills = {
 				if (!num1 && num2 < 1) return false;
 				return player.countCards("hs", card => player.hasUseTarget(get.autoViewAs({ name: "shunshou" }, [card]), false, false));
 			}
-			return player.countCards("h") == num2 && !player.isMaxHp(true);
+			return player.countCards("h") == num2 && !player.isMaxMaxHp(true);
 		},
 		async cost(event, trigger, player) {
 			if (trigger.name == "phaseJieshu") {

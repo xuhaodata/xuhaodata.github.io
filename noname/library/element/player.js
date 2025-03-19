@@ -9662,6 +9662,28 @@ export class Player extends HTMLDivElement {
 		return this.hp >= this.maxHp || this.storage.nohp;
 	}
 	/**
+	 * 判断玩家是否是场上体力上限最大的玩家
+	 * @param { boolean } [only] 是否唯一
+	 * @returns { boolean }
+	 */
+	isMaxMaxHp(only) {
+		return game.players.every(value => {
+			if (value.isOut() || value == this) return true;
+			return only ? value.maxHp < this.maxHp : value.maxHp <= this.maxHp;
+		});
+	}
+	/**
+	 * 判断玩家是否是场上体力上限最少的玩家
+	 * @param { boolean } [only] 是否唯一
+	 * @returns { boolean }
+	 */
+	isMinMaxHp(only) {
+		return game.players.every(value => {
+			if (value.isOut() || value == this) return true;
+			return only ? value.maxHp > this.maxHp : value.maxHp >= this.maxHp;
+		});
+	}
+	/**
 	 * 判断玩家是否是场上体力最大的玩家
 	 * @param { boolean } [only] 是否唯一
 	 * @param { boolean } [raw]
