@@ -17,7 +17,7 @@ const skills = {
 			const card = event.card;
 			const name = card.name;
 			if (!card || !["sha", "juedou"].includes(name)) return false;
-			if (target == player || !evtx.targets.includes(target) || !event.notLink()) return false;
+			if (target == player) return false;
 			if (name == "sha") {
 				return !target.hasHistory("useCard", evt => {
 					return evt.card.name == "shan" && evt.respondTo && evt.getParent(3) == evtx;

@@ -328,9 +328,6 @@ const skills = {
 					const evt = get.event();
 					if (evt.addCount !== false) {
 						evt.addCount = false;
-						const stat = player.getStat().card,
-							name = card.name;
-						if (typeof stat[name] === "number") stat[name]--;
 					}
 					evt.directHit.addArray(
 						evt.targets.filter(target => {
@@ -661,9 +658,8 @@ const skills = {
 				audio: 2,
 				onremove(player, skill) {
 					game.filterPlayer(target => {
-						if (!player.storage[skill].includes(target)) return false;
-						target.removeGaintag("mbkuangxiang_" + player.playerid);
-					});
+						return player.storage[skill].includes(target);
+					}).forEach(target => target.removeGaintag("mbkuangxiang_" + player.playerid));
 					delete player.storage[skill];
 				},
 				charlotte: true,
@@ -675,17 +671,23 @@ const skills = {
 				},
 				getIndex(event, player) {
 					return game
-						.filterPlayer(target => {
+						.filterPlayer2(target => {
 							if (!player.getStorage("mbkuangxiang_effect").includes(target)) return false;
 							let evt = event.getl(target);
-							if (!evt?.cards2?.length) return false;
+							if (!evt?.hs?.length) return false;
 							if (event.name == "lose") {
-								return evt.cards2.some(card => (event?.gaintag_map[card.cardid] || []).includes("mbkuangxiang_" + player.playerid));
+								return Object.values(event.gaintag_map)
+									.flat()
+									.includes("mbkuangxiang_" + player.playerid);
 							}
 							return target.hasHistory("lose", evtx => {
-								if (event != evtx.getParent()) return false;
-								if (!evtx?.cards2?.length) return false;
-								return evtx.cards2.some(card => (evtx?.gaintag_map[card.cardid] || []).includes("mbkuangxiang_" + player.playerid));
+								return (
+									evtx.getParent() == event &&
+									evtx.hs.length &&
+									Object.values(evtx.gaintag_map)
+										.flat()
+										.includes("mbkuangxiang_" + player.playerid)
+								);
 							});
 						})
 						.sortBySeat();
