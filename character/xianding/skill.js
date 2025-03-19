@@ -11118,26 +11118,18 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var suits = [];
-			cards.forEach(i => {
-				if (suits.length >= 4) return;
-				let suit = get.suit(i, player);
-				if (lib.suit.includes(suit)) suits.add(suit);
-			});
-			event.num = suits.length;
-			"step 1";
-			var suits = [];
-			player.countCards("h", card => {
-				if (suits.length >= 4) return;
-				var suit = get.suit(card);
-				if (lib.suit.includes(suit)) suits.add(suit);
-			});
-			if (suits.length >= event.num) event.finish();
-			"step 2";
-			player.draw();
-			event.goto(1);
+		async content(event, trigger, player) {
+			const num = event.cards.map(card => get.suit(card, player)).toUniqued().length;
+			while (true) {
+				await player.draw();
+				if (
+					player
+						.getCards("h")
+						.map(card => get.suit(card, player))
+						.toUniqued().length >= num
+				)
+					break;
+			}
 		},
 		ai: {
 			order: 2,
@@ -11148,12 +11140,11 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		frequent: true,
-		content() {
-			"step 0";
-			player.judge(() => 1).judge2 = result => result.bool;
-			"step 1";
-			var color = result.color;
-			if (color == "red" || color == "black") player.addTempSkill("dchuayi_" + color, { player: "phaseBegin" });
+		async content(event, trigger, player) {
+			const next = player.judge(() => 1);
+			next.judge2 = result => result.bool;
+			const { result } = await next;
+			if (result?.color && ["red", "black"].includes(result.color)) player.addTempSkill(event.name + "_" + result.color, { player: "phaseBegin" });
 		},
 		subSkill: {
 			red: {
