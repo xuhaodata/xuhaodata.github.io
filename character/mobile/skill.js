@@ -1898,22 +1898,22 @@ const skills = {
 							if (player.hasCard(card => lib.filter.cardDiscardable(card, player), "he")) await player.chooseToDiscard(1 + num, "he", true);
 						} else {
 							player.logSkill("friendyance", null, null, null, [trueArr.length === storage[3] ? 7 : 6]);
-							const choice = storage[1].unique();
+							const choice = storage[2] == "color" ? Object.keys(lib.color) : lib.inpile.map(name => get.type2(name)).unique();
 							const control =
 								choice.length > 1
 									? await player
 											.chooseControl(choice)
 											.set("ai", () => {
-												return get.event().controls.randomGet();
+												return get.event().controls.remove("none").randomGet();
 											})
 											.set("prompt", `请选择获得牌的条件`)
 											.forResult("control")
 									: choice[0];
 							let gains = [];
 							while (gains.length < 1 + num) {
-								const card = get.cardPile2(c => {
-									if (gains.includes(c)) return false;
-									return get[storage[2]](c) === control;
+								const card = get.cardPile2(card => {
+									if (gains.includes(card)) return false;
+									return get[storage[2]](card) === control;
 								});
 								if (card) gains.push(card);
 								else break;
@@ -1974,20 +1974,17 @@ const skills = {
 		getIndex: () => 1,
 		async cost(event, trigger, player) {
 			if (trigger.name == "damage") {
+				const dialog = ui.create.dialog("请选择一项", "hidden");
+				dialog.add([[["draw", "摸两张牌"]], "textbutton"]);
+				dialog.add([get.zhinangs(), "vcard"]);
 				const {
 					result: { bool, links },
-				} = await player
-					.chooseButton([
-						"请选择一项",
-						[
-							[
-								["draw", "摸两张牌"],
-								["gain", "从牌堆或弃牌堆中获得一张智囊"],
-							],
-							"textbutton",
-						],
-					])
-					.set("ai", button => Math.random());
+				} = await player.chooseButton(dialog).set("ai", button => {
+					const player = get.player();
+					const { link } = button;
+					if (typeof link == "string") return get.effect(player, { name: "draw" }, player, player) * 2;
+					return player.getUseValue({ name: link[2] });
+				});
 				event.result = {
 					bool: bool,
 					cost_data: links,
@@ -1996,11 +1993,12 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "damage") {
-				if (event.cost_data[0] == "gain") {
-					const card = get.cardPile(card => get.zhinangs().includes(card.name));
+				console.log(event.cost_data);
+				if (event.cost_data[0] == "draw") await player.draw(2);
+				else {
+					const card = get.cardPile(card => card.name == event.cost_data[0][2]);
 					if (card) await player.gain(card, "gain2");
-					else player.chat("这智囊怎么一张都没有？");
-				} else await player.draw(2);
+				}
 			} else {
 				if (!lib.inpile.includes("dz_mantianguohai")) lib.inpile.add("dz_mantianguohai");
 				if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
