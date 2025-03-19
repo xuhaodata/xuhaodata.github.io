@@ -2,6 +2,100 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL裴元绍
+	olfulve: {
+		trigger: { player: "useCardToPlayered" },
+		filter(event, player) {
+			if (event.targets.length != 1 || player.getStorage("olfulve_used").length > 1) return false;
+			return event.card.name == "sha" || (get.type(event.card) == "trick" && get.tag(event.card, "damage"));
+		},
+		async cost(event, trigger, player) {
+			const target = trigger.target;
+			const list = [
+				["damage", "此牌造成伤害+1"],
+				["gain", "获得其一张牌"],
+			];
+			const result = await player
+				.chooseButton([get.prompt2("olfulve", target), [list, "textbutton"]], 1)
+				.set("filterButton", function (button) {
+					if (get.player().getStorage("olfulve_used").includes(button.link)) return false;
+					if (button.link == "gain") return get.event("target").countGainableCards(get.player(), "he") > 0;
+					return true;
+				})
+				.set("target", target)
+				.set("ai", button => {
+					if (button.link == "gain") return get.effect(get.event("target"), { name: "shunshou_copy2" }, get.player(), get.player());
+					return get.damageEffect(get.event("target"), get.player(), get.player());
+				})
+				.forResult();
+			if (result.bool) {
+				event.result = {
+					bool: true,
+					cost_data: result.links[0],
+				};
+			}
+		},
+		logTarget: "target",
+		async content(event, trigger, player) {
+			const target = trigger.target;
+			let choice = event.cost_data;
+			const map = {
+				damage: async (player, target, trigger) => {
+					game.log(trigger.card, "造成的伤害+1");
+					trigger.baseDamage++;
+				},
+				gain: async (player, target, trigger) => {
+					if (!target.countGainableCards(player, "he")) return;
+					await player.gainPlayerCard(target, "he", true);
+				},
+			};
+			player.addTempSkill("olfulve_used");
+			player.markAuto("olfulve_used", [choice]);
+			await map[choice](player, target, trigger.getParent());
+			choice = choice == "damage" ? "gain" : "damage";
+			target
+				.when({ global: "useCardAfter" })
+				.filter(evt => {
+					return evt === trigger.getParent();
+				})
+				.then(() => {
+					if (
+						game.hasPlayer(current => {
+							return current.hasHistory("damage", evt => evt.getParent(2) == trigger);
+						})
+					)
+						return;
+					player
+						.chooseToUse(function (card, player, event) {
+							if (get.name(card) != "sha") return false;
+							return lib.filter.filterCard.apply(this, arguments);
+						}, "复掠：是否对" + get.translation(sourcex) + "使用一张【杀】")
+						.set("targetRequired", true)
+						.set("complexSelect", true)
+						.set("filterTarget", function (card, player, target) {
+							if (target != get.event("sourcex") && !ui.selected.targets.includes(get.event("sourcex"))) return false;
+							return lib.filter.filterTarget.apply(this, arguments);
+						})
+						.set("sourcex", sourcex)
+						.set("func", func)
+						.set("oncard", (card, player) => {
+							const event = get.event(),
+								evt = event.getParent();
+							evt.func(player, evt.sourcex, event);
+						});
+				})
+				.vars({
+					func: map[choice],
+					sourcex: player,
+				});
+		},
+		subSkill: {
+			used: {
+				onremove: true,
+				charlotte: true,
+			},
+		},
+	},
 	//赵忠
 	olpengbi: {
 		audio: 2,

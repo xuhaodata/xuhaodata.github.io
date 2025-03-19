@@ -1382,6 +1382,7 @@ window.noname_character_rank = {
 		"friend_cuijun",
 	],
 	b: [
+		"ol_peiyuanshao",
 		"pangxi",
 		"sunsháo",
 		"mb_xiahoushang",
@@ -2615,6 +2616,7 @@ window.noname_character_rank = {
 			"dc_sb_xunyu",
 		],
 		rare: [
+			"ol_peiyuanshao",
 			"pangxi",
 			"sunsháo",
 			"mb_xiahoushang",

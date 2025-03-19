@@ -2,7 +2,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
-	//吴珂
+	//吴珂 —— by 刘巴
 	mbzhuguo: {
 		audio: 2,
 		usable: 1,
@@ -92,7 +92,7 @@ const skills = {
 			}
 		},
 	},
-	//手杀杨弘
+	//手杀杨弘 —— by 刘巴
 	//用同一张牌拼点神将
 	mbjianji: {
 		audio: 2,
@@ -239,7 +239,7 @@ const skills = {
 			}
 		},
 	},
-	//夏侯尚
+	//夏侯尚 —— by 刘巴
 	mbtanfeng: {
 		trigger: {
 			player: "phaseZhunbeiBegin",
