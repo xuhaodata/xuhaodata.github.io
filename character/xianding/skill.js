@@ -1366,9 +1366,7 @@ const skills = {
 		subSkill: {
 			lose: {
 				audio: "dcjiedang",
-				trigger: {
-					player: ["phaseUseBegin", "phaseJieshuBegin", "dying"],
-				},
+				trigger: { player: ["phaseUseBegin", "phaseJieshuBegin", "dying"] },
 				filter(event, player) {
 					return player.getExpansions("dcjiedang").length > 0;
 				},
@@ -1382,7 +1380,7 @@ const skills = {
 					const {
 						result: { control },
 					} = await player.chooseControl(list).set("dialog", dialog);
-					const lose = cards.filter(c => get.type(c) == control);
+					const lose = cards.filter(c => get.type2(c) == control);
 					if (!lose.length) return;
 					await player.loseToDiscardpile(lose);
 					await player.draw(lose.length);
