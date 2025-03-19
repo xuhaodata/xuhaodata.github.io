@@ -5,7 +5,7 @@ const dynamicTranslates = {
 		let str1 = `阳：手牌数全场最低的角色`, str2 = `阴：手牌数全场最高的角色`;
 		if (!player.storage.dcsbshimou) str1=`<span class=thundertext>${str1}</span>`;
 		else str2=`<span class=thundertext>${str2}</span>`;
-		return `转换技，游戏开始可自选阴阳状态，出牌阶段限一次，你可令一名${str1}${str2}将手牌调整至体力上限（至多摸5）并视为使用一张仅指定一个目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，该锦囊可额外增加1个目标；若以此法弃牌，该锦囊可额外结算一次`;
+		return `转换技，游戏开始可自选阴阳状态，出牌阶段限一次，你可令一名${str1}；${str2}将手牌调整至体力上限（至多摸5）并视为使用一张仅指定一个目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，该锦囊可额外增加1个目标；若以此法弃牌，该锦囊可额外结算一次。`;
 	},
 	dcsbkongwu(player) {
 		let str = "转换技，出牌阶段限一次，你可以弃置至多体力上限张牌，选择一名其他角色：",
