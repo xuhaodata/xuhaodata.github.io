@@ -4,6 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//OL裴元绍
 	olfulve: {
+		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			if (event.targets.length != 1 || player.getStorage("olfulve_used").length > 1) return false;

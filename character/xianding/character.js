@@ -1,5 +1,5 @@
 const characters = {
-	dc_sb_xunyu: ["male", "wei", 3, ["dcsbbizuo", "dcsbshimou", "dcsbxianshi"], []],
+	dc_sb_xunyu: ["male", "wei", 3, ["dcsbbizuo", "dcsbshimou", "dcsbxianshi"]],
 	v_dongzhuo: ["male", "qun", 5, ["dcguangyong", "dcjuchui"]],
 	liujinliupei: ["female", "wei", 3, ["dcllqixin", "dcjiusi"], ["name:刘|衿-刘|佩"]],
 	caoyuan: ["female", "qun", 3, ["dcwuyan", "dczhanyu"]],
