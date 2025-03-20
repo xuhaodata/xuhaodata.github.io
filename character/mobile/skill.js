@@ -53,11 +53,9 @@ const skills = {
 		},
 	},
 	mbanda: {
-		trigger: {
-			global: "dying",
-		},
-		usable: 1,
 		audio: 2,
+		trigger: { global: "dying" },
+		usable: 1,
 		check: (event, player) => get.attitude(player, event.player) > 0,
 		filter: event => event?.getParent()?.source.isIn(),
 		logTarget: "player",
@@ -125,16 +123,14 @@ const skills = {
 				target2 = event.targets[1],
 				card = event.cards[0];
 			player.addGaintag(card, "mbjianji");
-			event.targets.forEach(c => c.addTempSkill(event.name + "_fake", "phaseUseAfter"));
+			player.addTempSkill(event.name + "_put");
+			event.targets.forEach(c => c.addTempSkill(event.name + "_fake"));
 			const result = await target1.chooseToCompare(target2).set("mbjianji", true).forResult();
 			const sha = async function sha(target, victim) {
 				if (!target.canUse({ name: "sha", isCard: true }, victim, false, false)) return;
 				await target.useCard({ name: "sha", isCard: true }, victim).set("addCount", false);
 			};
-			//更新ui
 			player.removeGaintag("mbjianji");
-			ui.updatehl();
-			player.update();
 			if (result.bool) {
 				await sha(target1, target2);
 			} else if (!result.tie) {
@@ -148,61 +144,55 @@ const skills = {
 					.filter(list => {
 						if (list[1] == card) return true;
 					})
-					.map(list => list[0]);
-				if (!targets.length) return;
-				player.line(targets);
-				for (const target of targets.sortBySeat()) await target.damage();
+					.map(list => list[0])
+					.sortBySeat();
+				if (targets.length) {
+					for (const target of targets) await target.chat("我也干了");
+					await game.delayx();
+					player.line(targets);
+					for (const target of targets) await target.damage();
+				}
 			}
 		},
 		subSkill: {
 			fake: {
-				//秦宓天辩的写法(会被强制logSkill)
-				/*
 				charlotte: true,
-				enable: "chooseCard",
-				check(event, player) {
-					var player = _status.event.player;
-					return !player.hasCard(function (card) {
-						var val = get.value(card);
-						return val < 0 || (val <= 4 && get.number(card) >= 11);
-					}, "h")
-						? 20
-						: 0;
-				},
-				filter(event) {
-					return event.type == "compare" && !event.directresult && event?.getParent(2)?.mbjianji;
-				},
-				silent:true,
-				onCompare(player) {
-					const event=_status.event.getParent();
-					const cards=event.cards;
-					return game.cardsGotoOrdering(cards).cards;
-				},*/
-
-				//刘巴的写法（界太写法）
-				charlotte: true,
-				trigger: {
-					global: "chooseToCompareBegin",
-				},
+				trigger: { global: "chooseToCompareBegin" },
 				filter(event, player) {
 					return (player === event.player || player === event.target) && event?.mbjianji;
 				},
-				check() {
-					const player = get.player();
+				check(event, player) {
 					return !player.hasCard(card => {
 						let val = get.value(card);
 						return val < 0 || (val <= 4 && get.number(card) >= 11);
-					}, "h")
-						? 20
-						: 0;
+					}, "h");
 				},
 				prompt: event => "是否用" + get.translation(event.getParent()?.player) + "秘密选择的牌拼点？",
 				popup: false,
 				async content(event, trigger, player) {
-					const card = trigger.getParent().cards[0];
-					await game.cardsGotoOrdering(card);
 					if (!trigger.fixedResult) trigger.fixedResult = {};
-					trigger.fixedResult[player.playerid] = card;
+					trigger.fixedResult[player.playerid] = trigger.getParent().cards[0];
+				},
+			},
+			put: {
+				charlotte: true,
+				trigger: { global: "compareCardShowBefore" },
+				filter(event, player) {
+					if (!event?.mbjianji) return false;
+					const evt = event.getParent();
+					if (!(evt?.name === "mbjianji" && evt.player === player)) return false;
+					return Object.values(event.fixedResult || {}).includes(evt.cards[0]);
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					const card = trigger.getParent().cards[0];
+					if (get.position(card) !== "o") {
+						const owner = get.owner(card);
+						if (owner) await owner.lose([card], ui.ordering, false).set("log", false);
+						else await game.cardsGotoOrdering([card]);
+					}
 				},
 			},
 		},
@@ -218,12 +208,11 @@ const skills = {
 		},
 	},
 	mbyuanmo: {
-		trigger: {
-			player: ["phaseZhunbeiBegin", "damageEnd"],
-		},
+		audio: 2,
+		trigger: { player: ["phaseZhunbeiBegin", "damageEnd"] },
 		usable: 2,
 		filter: (event, player) => player.canMoveCard(),
-		check: () => game.hasPlayer(c => get.attitude(get.player(), c) && (c.countCards("j") || !c.countCards("e"))),
+		check: (event, player) => player.canMoveCard(true),
 		async content(event, trigger, player) {
 			let nums = {};
 			game.filterPlayer().forEach(target => (nums[target.playerid] = game.countPlayer(c => c.inRangeOf(target))));
@@ -241,10 +230,8 @@ const skills = {
 	},
 	//夏侯尚 —— by 刘巴
 	mbtanfeng: {
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
 		audio: 2,
+		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			const result = await player
 				.chooseButton([
@@ -321,9 +308,7 @@ const skills = {
 		position: "e",
 		viewAs: {
 			name: "sha",
-			storage: {
-				mbganjue: true,
-			},
+			storage: { mbganjue: true },
 		},
 		viewAsFilter(player) {
 			if (!player.countCards("e")) return false;
@@ -349,11 +334,9 @@ const skills = {
 		},
 		ai: {
 			order(item, player) {
-				return get.order({ name: "sha" }) - 0.2;
+				return get.order({ name: "sha" }, player) - 0.2;
 			},
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		locked: false,
 		mod: {
@@ -367,9 +350,7 @@ const skills = {
 	},
 	mbzhuji: {
 		audio: 2,
-		trigger: {
-			player: "phaseUseEnd",
-		},
+		trigger: { player: "phaseUseEnd" },
 		filter(event, player) {
 			return player.countCards("h") > 0;
 		},
@@ -613,14 +594,11 @@ const skills = {
 				game.updateRoundNumber();
 			}
 		},
-		ai: {
-			expose: 0.2,
-		},
+		ai: { expose: 0.2 },
 	},
 	mbkuangxiang: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 1,
 		filter(event, player) {
 			return game.hasPlayer(target => {
 				return target != player && target.countCards("h") < player.countCards("h");
@@ -629,6 +607,7 @@ const skills = {
 		filterTarget(card, player, target) {
 			return target != player && target.countCards("h") < player.countCards("h");
 		},
+		usable: 1,
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			player.addTempSkill("mbkuangxiang_effect", { player: "phaseUseBegin" });
@@ -647,15 +626,13 @@ const skills = {
 		subSkill: {
 			//给交换的牌上标记
 			mark: {
-				silent: true,
 				charlotte: true,
-				firstDo: true,
-				trigger: {
-					global: "loseAsyncBegin",
-				},
+				trigger: { global: "loseAsyncBegin" },
 				filter(event, player) {
 					return event.getParent(2).name == "mbkuangxiang" && event.getParent(2).player == player;
 				},
+				silent: true,
+				firstDo: true,
 				content() {
 					//考虑场上出现复数个技能的情况
 					game.broadcastAll(player => {
@@ -665,20 +642,16 @@ const skills = {
 				},
 			},
 			effect: {
-				audio: 2,
+				charlotte: true,
 				onremove(player, skill) {
 					game.filterPlayer(target => {
 						return player.storage[skill].includes(target);
 					}).forEach(target => target.removeGaintag("mbkuangxiang_" + player.playerid));
 					delete player.storage[skill];
 				},
-				charlotte: true,
-				intro: {
-					content: "players",
-				},
-				trigger: {
-					global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-				},
+				intro: { content: "players" },
+				audio: "mbkuangxiang",
+				trigger: { global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"] },
 				getIndex(event, player) {
 					return game
 						.filterPlayer2(target => {

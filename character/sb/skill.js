@@ -6,11 +6,7 @@ const skills = {
 	sbwushuang: {
 		audio: 2,
 		inherit: "wushuang",
-		forced: true,
-		trigger: {
-			source: "damageBegin1",
-		},
-		forceDie: true, //刘巴墙裂建议
+		trigger: { source: "damageBegin1" },
 		filter(event, player) {
 			const target = event.player;
 			const evtx = event.getParent(2);
@@ -29,18 +25,28 @@ const skills = {
 			}
 			return false;
 		},
+		forced: true,
 		logTarget: "player",
 		content() {
 			trigger.num++;
 		},
+		group: ["sbwushuang_1", "sbwushuang_2"],
+		preHidden: ["sbwushuang_1", "sbwushuang_2"],
+		subSkill: {
+			1: {
+				audio: "wushuang1",
+				inherit: "wushuang1",
+			},
+			2: {
+				audio: "wushuang2",
+				inherit: "wushuang2",
+			},
+		},
 	},
 	sbliyu: {
 		audio: 2,
-		trigger: {
-			source: "damageSource",
-		},
+		trigger: { source: "damageSource" },
 		filter(event, player) {
-			if (event._notrigger.includes(event.player)) return false;
 			return event.player != player && event?.card?.name == "sha" && event.player.countGainableCards(player, "hej") > 0 && event.player.isIn();
 		},
 		async cost(event, trigger, player) {
@@ -95,7 +101,7 @@ const skills = {
 					target.line(player);
 					await player.useCard({ name: "juedou", isCard: true }, result2.targets[0], "noai");
 				} else {
-					target.addTempSkills("sbwushuang", { player: "phaseAfter" });
+					await target.addTempSkills("sbwushuang", { player: "phaseAfter" });
 				}
 			}
 		},

@@ -31,7 +31,8 @@ const skills = {
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			const target = event.targets[0];
-			var next = target.insertPhase().set("dcsbbizuo", player);
+			const next = target.insertPhase();
+			next.set("dcsbbizuo", player);
 			target
 				.when({ player: "phaseBefore" })
 				.filter(evt => {
@@ -157,12 +158,9 @@ const skills = {
 		mark: true,
 		intro: {
 			content(storage) {
-				if (!storage) return "转换技，出牌阶段限一次，你可令一名手牌数全场最低的角色将手牌调整至体力上限（至多摸5）并视为使用一张仅指定一个目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，该锦囊可额外增加1个目标；若以此法弃牌，该锦囊可额外结算一次";
-				return "转换技，出牌阶段限一次，你可令一名手牌数全场最高的角色将手牌调整至体力上限（至多摸5）并视为使用一张仅指定一个目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，该锦囊可额外增加1个目标；若以此法弃牌，该锦囊可额外结算一次";
+				if (!storage) return "转换技，出牌阶段限一次，你可令一名手牌数全场最低的角色将手牌调整至体力上限（至多摸五张）并视为使用一张仅指定单目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，此牌可额外增加一个目标；若以此法弃牌，此牌额外结算一次。";
+				return "转换技，出牌阶段限一次，你可令一名手牌数全场最高的角色将手牌调整至体力上限（至多摸五张）并视为使用一张仅指定单目标的普通锦囊牌（此牌牌名与目标由你指定）。若以此法摸牌，此牌可额外增加一个目标；若以此法弃牌，此牌额外结算一次。";
 			},
-		},
-		filter(event, player) {
-			return true;
 		},
 		filterTarget(card, player, target) {
 			if (!player.storage.dcsbshimou) return target.isMinHandcard();
@@ -217,23 +215,24 @@ const skills = {
 				.set("source", target)
 				.forResult();
 			const card = get.autoViewAs({ name: result.links[0][2], isCard: true, storage: { dcsbshimou: [num, target] } });
-
 			let range = [1, 1];
 			if (bool1) range[1]++;
 			const result2 = await player
-				.chooseTarget(true, range, `势谋：请为${get.translation(target)}选择${get.translation(card)}的目标`, (card, player, target) => {
+				.chooseTarget( `势谋：请为${get.translation(target)}选择${get.translation(card)}的目标`, (card, player, target) => {
 					return lib.filter.targetEnabled2(get.event("cardx"), get.event("source"), target);
-				})
+				}, true, range)
 				.set("source", target)
 				.set("cardx", card)
 				.set("ai", target => {
 					return get.effect(target, get.event("cardx"), get.event("source"), get.player());
 				})
 				.forResult();
-			var next = target.useCard(card, result2.targets);
+			const next = target.useCard(card, result2.targets, false);
 			if (bool2) {
-				next.set("oncard", (card, player) => {
-					get.event().effectCount++;
+				next.set("oncard", () => {
+					const event = get.event();
+					event.effectCount++;
+					game.log(event.card, "额外结算一次");
 				});
 			}
 			await next;
@@ -284,9 +283,7 @@ const skills = {
 	},
 	dcsbxianshi: {
 		audio: 2,
-		trigger: {
-			target: "useCardToTarget",
-		},
+		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
 			return get.type2(event.card) == "trick";
 		},
@@ -325,19 +322,19 @@ const skills = {
 		},
 		subSkill: {
 			wuxie: {
-				audio: 2,
+				charlotte: true,
+				audio: "dcsbxianshi",
 				enable: "chooseToUse",
 				filterCard: true,
 				viewAsFilter(player) {
 					return player.countCards("hs") > 0;
 				},
-				viewAs: {
-					name: "wuxie",
-				},
+				viewAs: { name: "wuxie" },
 				hiddenCard(name) {
 					return name === "wuxie";
 				},
 				position: "hs",
+				popname: true,
 				prompt: "将一张手牌当【无懈可击】使用",
 				check(card) {
 					return 8 - get.value(card);
@@ -347,9 +344,7 @@ const skills = {
 						useful: [6, 4, 3],
 						value: [6, 4, 3],
 					},
-					result: {
-						player: 1,
-					},
+					result: { player: 1 },
 					expose: 0.2,
 				},
 			},
