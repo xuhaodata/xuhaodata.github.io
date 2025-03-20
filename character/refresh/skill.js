@@ -5647,7 +5647,7 @@ const skills = {
 			if (!hs.length) return;
 			const result = hs.length == 1 ? { bool: true, cards: hs } : await player.chooseCard("h", true, "选择一张手牌作为“权”").forResult();
 			if (result?.bool && result?.cards?.length) {
-				const next = layer.addToExpansion(result.cards, player, "give");
+				const next = player.addToExpansion(result.cards, player, "give");
 				next.gaintag.add(event.name);
 				await next;
 			}

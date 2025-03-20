@@ -671,6 +671,13 @@ const skills = {
 					if (cards.length) await target.discard(cards.randomGets(1));
 				}
 			}
+			const cards = game
+				.getGlobalHistory("everything", evt => evt.name === "discard" && evt.getParent() == event)
+				.reduce((cards, evt) => cards.addArray(evt.cards), [])
+				.filterInD("d");
+			if (!cards.length) return;
+			const result = cards.length > 1 ? await player.chooseCardButton(cards, true, "获得其中一张牌").forResult() : { bool: true, links: cards };
+			if (result?.bool && result?.links?.length) await player.gain(result.links, "gain2");
 		},
 	},
 	//二刘
@@ -978,7 +985,7 @@ const skills = {
 					const map = {
 						摸牌: get.effect(player, { name: "draw" }, player, player) * storage[0],
 						拿牌: get.effect(player, { name: "draw" }, player, player) * Math.min(Array.from(ui.discardPile.childNodes).length, storage[1]),
-						拼点: Math.max(...[0].concat(game.filterPlayer(target => player.canCompare(target)).length.map(target => get.effect(target, "hannan", player, player)))),
+						拼点: Math.max(...[0].concat(game.filterPlayer(target => player.canCompare(target)).map(target => get.effect(target, "hannan", player, player)))),
 					};
 					return get
 						.event()
@@ -1711,9 +1718,7 @@ const skills = {
 		subSkill: {
 			lose: {
 				audio: "dcjiedang",
-				trigger: {
-					player: ["phaseUseBegin", "phaseJieshuBegin", "dying"],
-				},
+				trigger: { player: ["phaseUseBegin", "phaseJieshuBegin", "dying"] },
 				filter(event, player) {
 					return player.getExpansions("dcjiedang").length > 0;
 				},
@@ -1727,7 +1732,7 @@ const skills = {
 					const {
 						result: { control },
 					} = await player.chooseControl(list).set("dialog", dialog);
-					const lose = cards.filter(c => get.type(c) == control);
+					const lose = cards.filter(c => get.type2(c) == control);
 					if (!lose.length) return;
 					await player.loseToDiscardpile(lose);
 					await player.draw(lose.length);
@@ -6067,24 +6072,13 @@ const skills = {
 								await game.delayx();
 							}
 						}
-						if (target.countCards("h") < game.countPlayer()) return;
-						player
-							.when({ global: "wuguRemained" })
-							.filter(evt => {
-								return evt.getParent(3) === event;
-							})
-							.vars({ originalOwner: target })
-							.then(() => {
-								const remained = trigger.remained.filterInD("d");
-								if (!remained.length) return event.finish();
-								player.line(originalOwner);
-								originalOwner.gain(remained, "gain2");
-							});
+						target.addTempSkill("dchuiji_effect");
+						target.markAuto("dchuiji_effect", [event]);
 						await target.chooseUseTarget(
 							{
 								name: "wugu",
 								storage: {
-									fixedShownCards: target.getCards("h"),
+									fixedShownCards: [],
 								},
 							},
 							true
@@ -6098,6 +6092,26 @@ const skills = {
 		},
 		subSkill: {
 			backup: {},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				trigger: { player: "wuguContentBeforeBefore", global: "wuguRemained" },
+				filter(event, player) {
+					if (!player.getStorage("dchuiji_effect").includes(event.getParent(3))) return false;
+					return event.name == "wuguContentBefore" || event.remained.someInD();
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					if (trigger.name == "wuguContentBefore") {
+						trigger.card.storage ??= {};
+						trigger.card.storage.fixedShownCards = player.getCards("h");
+					} else {
+						const remained = trigger.remained.filterInD();
+						if (remained.length) player.gain(remained, "gain2");
+					}
+				},
+			},
 		},
 		ai: {
 			order(item, player) {
@@ -11456,26 +11470,18 @@ const skills = {
 			}
 			return false;
 		},
-		content() {
-			"step 0";
-			var suits = [];
-			cards.forEach(i => {
-				if (suits.length >= 4) return;
-				let suit = get.suit(i, player);
-				if (lib.suit.includes(suit)) suits.add(suit);
-			});
-			event.num = suits.length;
-			("step 1");
-			var suits = [];
-			player.countCards("h", card => {
-				if (suits.length >= 4) return;
-				var suit = get.suit(card);
-				if (lib.suit.includes(suit)) suits.add(suit);
-			});
-			if (suits.length >= event.num) event.finish();
-			("step 2");
-			player.draw();
-			event.goto(1);
+		async content(event, trigger, player) {
+			const num = event.cards.map(card => get.suit(card, player)).toUniqued().length;
+			while (true) {
+				await player.draw();
+				if (
+					player
+						.getCards("h")
+						.map(card => get.suit(card, player))
+						.toUniqued().length >= num
+				)
+					break;
+			}
 		},
 		ai: {
 			order: 2,
@@ -11486,12 +11492,11 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		frequent: true,
-		content() {
-			"step 0";
-			player.judge(() => 1).judge2 = result => result.bool;
-			("step 1");
-			var color = result.color;
-			if (color == "red" || color == "black") player.addTempSkill("dchuayi_" + color, { player: "phaseBegin" });
+		async content(event, trigger, player) {
+			const next = player.judge(() => 1);
+			next.judge2 = result => result.bool;
+			const { result } = await next;
+			if (result?.color && ["red", "black"].includes(result.color)) player.addTempSkill(event.name + "_" + result.color, { player: "phaseBegin" });
 		},
 		subSkill: {
 			red: {
@@ -13522,49 +13527,54 @@ const skills = {
 	dcanzhi: {
 		audio: 2,
 		enable: "phaseUse",
-		group: "dcanzhi_damage",
-		content() {
-			"step 0";
-			player.judge(result => {
-				if (get.color(result) == "red") return _status.event.getParent().player.countMark("dcxialei_clear") / 2;
+		trigger: { player: "damageEnd" },
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseBool(get.prompt(event.skill))
+				.set("prompt2", "你判定，若结果为红色，你重置〖霞泪〗的观看牌数；若结果为黑色，〖暗织〗于本回合失效，然后你可以令一名非当前回合角色获得本回合进入弃牌堆的两张牌。")
+				.set(
+					"choice",
+					game.hasPlayer(current => get.attitude(player, current) > 0 && current != _status.currentPhase)
+				)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const next = player.judge(result => {
+				if (get.color(result) == "red") return get.event().getParent().player.countMark("dcxialei_clear") / 2;
 				return 2;
-			}).judge2 = result => result.bool;
-			("step 1");
-			if (result.color == "red") {
-				player.removeSkill("dcxialei_clear");
-				event.finish();
-			} else if (result.color == "black") {
-				player.tempBanSkill("dcanzhi");
-				player
-					.chooseTarget("暗织：是否令一名非当前回合角色获得本回合进入弃牌堆的两张牌？", (card, player, target) => {
-						return target != _status.currentPhase;
-					})
-					.set("ai", target => {
-						return get.effect(target, { name: "wuzhong" }, _status.event.player);
-					});
-			} else event.finish();
-			("step 2");
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.line(target);
-				var cards = [];
-				game.getGlobalHistory("cardMove", evt => {
-					if ((evt.name == "lose" && evt.position == ui.discardPile) || evt.name == "cardsDiscard") {
-						cards.addArray(evt.cards.filterInD("d"));
+			});
+			next.judge2 = result => result.bool;
+			const { result } = await next;
+			if (result?.color && ["red", "black"].includes(result.color)) {
+				const { color } = result;
+				if (color == "red") {
+					player.removeSkill("dcxialei_clear");
+				} else {
+					player.tempBanSkill(event.name);
+					let cards = get.discarded().filterInD("d");
+					if (!cards.length || !game.hasPlayer(current => current != _status.currentPhase)) return;
+					const { result } = await player
+						.chooseTarget("暗织：是否令一名非当前回合角色获得本回合进入弃牌堆的两张牌？", (card, player, target) => {
+							return target != _status.currentPhase;
+						})
+						.set("ai", target => {
+							const player = get.player();
+							return get.effect(target, { name: "wuzhong" }, player, player);
+						});
+					if (result?.bool && result?.targets?.length) {
+						cards = cards.filterInD("d");
+						if (!cards.length) return;
+						const [target] = result.targets;
+						const { result: result2 } = await player
+							.chooseButton([`暗织：选择令${get.translation(target)}获得的牌`, cards], true, Math.min(cards.length, 2))
+							.set("ai", button => {
+								const { player, target } = get.event();
+								return get.sgnAttitude(player, target) * get.value(button.link, target);
+							})
+							.set("target", target);
+						if (result2?.bool && result2?.links?.length) await target.gain(result2.links, "gain2");
 					}
-				});
-				if (cards.length) {
-					player.chooseButton(["暗织：选择令" + get.translation(target) + "获得的牌", cards], true, Math.min(cards.length, 2)).set("ai", button => {
-						var player = _status.event.player,
-							target = _status.event.getParent().target;
-						return get.sgnAttitude(player, target) * get.value(button.link, target);
-					});
 				}
-			} else event.finish();
-			("step 3");
-			if (result.bool) {
-				target.gain(result.links, "gain2");
 			}
 		},
 		ai: {
@@ -13574,67 +13584,7 @@ const skills = {
 				if (player.hasHistory("useSkill", evt => evt.skill == "dcxialei") && get.color(ui.cardPile.firstChild, player) == "red" && player.countMark("dcxialei_clear") > 0) return 9;
 				return 1;
 			},
-			result: {
-				player(player) {
-					return 1;
-				},
-			},
-		},
-		subSkill: {
-			damage: {
-				audio: "dcanzhi",
-				trigger: { player: "damageEnd" },
-				check(event, player) {
-					return game.hasPlayer(current => {
-						return get.attitude(player, current) > 0 && current != _status.currentPhase;
-					});
-				},
-				prompt2: "你判定，若结果为红色，你重置〖霞泪〗的观看牌数；若结果为黑色，〖暗织〗于本回合失效，然后你可以令一名非当前回合角色获得本回合进入弃牌堆的两张牌。",
-				content() {
-					"step 0";
-					player.judge(result => {
-						if (get.color(result) == "red") return _status.event.getParent().player.countMark("dcxialei_clear") / 2;
-						return 2;
-					}).judge2 = result => result.bool;
-					("step 1");
-					if (result.color == "red") {
-						player.removeSkill("dcxialei_clear");
-						event.finish();
-					} else if (result.color == "black") {
-						player.tempBanSkill("dcanzhi");
-						player
-							.chooseTarget("暗织：是否令一名非当前回合角色获得本回合进入弃牌堆的两张牌？", (card, player, target) => {
-								return target != _status.currentPhase;
-							})
-							.set("ai", target => {
-								return get.effect(target, { name: "wuzhong" }, _status.event.player);
-							});
-					} else event.finish();
-					("step 2");
-					if (result.bool) {
-						var target = result.targets[0];
-						event.target = target;
-						player.line(target);
-						var cards = [];
-						game.getGlobalHistory("cardMove", evt => {
-							if ((evt.name == "lose" && evt.position == ui.discardPile) || evt.name == "cardsDiscard") {
-								cards.addArray(evt.cards.filterInD("d"));
-							}
-						});
-						if (cards.length) {
-							player.chooseButton(["暗织：选择令" + get.translation(target) + "获得的牌", cards], true, Math.min(cards.length, 2)).set("ai", button => {
-								var player = _status.event.player,
-									target = _status.event.getParent().target;
-								return get.sgnAttitude(player, target) * get.value(button.link, target);
-							});
-						}
-					} else event.finish();
-					("step 3");
-					if (result.bool) {
-						target.gain(result.links, "gain2");
-					}
-				},
-			},
+			result: { player: 1 },
 		},
 	},
 	//十周年王允

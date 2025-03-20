@@ -8057,78 +8057,60 @@ const skills = {
 		check(card) {
 			return 6 - get.value(card);
 		},
-		group: "liangce2",
-	},
-	liangce2: {
-		trigger: { global: "wuguRemained" },
-		direct: true,
-		sourceSkill: "liangce",
-		filter(event) {
-			return event.remained.filterInD().length > 0;
-		},
-		content() {
-			"step 0";
-			var du = 0;
-			for (var i = 0; i < trigger.remained.length; i++) {
-				if (trigger.remained[i].name == "du") du++;
-			}
-			var dialog = ui.create.dialog(get.prompt("liangce"), trigger.remained, "hidden");
-			dialog.classList.add("noselect");
-			player.chooseTarget(dialog).set("ai", function (target) {
-				var trigger = _status.event.getTrigger();
-				var player = _status.event.player;
-				var att = get.attitude(player, target);
-				if (du >= trigger.remained.length / 2) return -att;
-				return att;
-			});
-			"step 1";
-			if (result.bool) {
-				player.logSkill("liangce", result.targets);
-				result.targets[0].gain(trigger.remained.slice(0), "gain2", "log");
-				trigger.remained.length = 0;
-			}
+		group: "liangce_effect",
+		subSkill: {
+			effect: {
+				trigger: { global: "wuguRemained" },
+				filter(event) {
+					return event.remained.someInD();
+				},
+				async cost(event, trigger, player) {
+					const du = trigger.remained.filter(card => card.name == "du" && get.position(card, true) == "o").length;
+					event.result = await player
+						.chooseTarget(get.prompt(event.skill), `令一名角色获得${get.translation(trigger.remained.filterInD())}`)
+						.set("ai", target => {
+							const trigger = _status.event.getTrigger();
+							const { player, du } = get.event();
+							const att = get.attitude(player, target);
+							if (du >= trigger.remained.length / 2) return -att;
+							return att;
+						})
+						.set("du", du)
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					await event.targets[0].gain(trigger.remained.filterInD(), "gain2", "log");
+				},
+			},
 		},
 	},
 	jianbi: {
-		trigger: { target: "useCardToTargeted" },
-		priority: 5,
+		trigger: { target: "useCardToTarget" },
 		filter(event, player) {
 			if (get.type(event.card) != "trick") return false;
 			if (get.info(event.card).multitarget) return false;
 			if (event.targets.length < 2) return false;
 			return true;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			player
-				.chooseTarget(get.prompt("jianbi"), [1, 1], function (card, player, target) {
-					return _status.event.getTrigger().targets.includes(target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), (card, player, target) => {
+					return get.event().getTrigger().targets.includes(target);
 				})
-				.set("ai", function (target) {
-					var trigger = _status.event.getTrigger();
-					var eff = -get.effect(target, trigger.card, trigger.player, _status.event.player);
+				.set("ai", target => {
+					const trigger = get.event().getTrigger();
+					const player = get.player();
+					const eff = -get.effect(target, trigger.card, trigger.player, player);
 					if (trigger.card.name == "wugu" && eff == 0 && get.attitude(player, target) < 0) {
 						return 0.01;
 					}
 					return eff;
-				});
-			"step 1";
-			if (result.bool) {
-				event.targets = result.targets;
-				if (event.isMine()) {
-					player.logSkill("jianbi", event.targets);
-					event.finish();
-				}
-				for (var i = 0; i < result.targets.length; i++) {
-					trigger.getParent().excluded.add(result.targets[i]);
-				}
-				game.delay();
-			} else {
-				event.finish();
-			}
-			"step 2";
-			player.logSkill("jianbi", event.targets);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			trigger.getParent().excluded.add(event.targets[0]);
+			await game.delay();
 		},
 		ai: {
 			effect: {

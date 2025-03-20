@@ -876,7 +876,7 @@ game.import("card", function () {
 						event.finish();
 						return;
 					}
-					if ((card.storage && card.storage.chooseDirection) || get.is.versus()) {
+					if (card.storage?.chooseDirection || get.is.versus()) {
 						player
 							.chooseControl("顺时针", "逆时针", function (event, player) {
 								if ((get.event("isVersus") && player.next.side == player.side) || get.attitude(player, player.next) > get.attitude(player, player.previous)) return "逆时针";
@@ -901,7 +901,7 @@ game.import("card", function () {
 					"step 2";
 					ui.clear();
 					var cards;
-					if (card.storage && Array.isArray(card.storage.fixedShownCards)) {
+					if (get.itemtype(card.storage?.fixedShownCards) == "cards") {
 						cards = card.storage.fixedShownCards.slice();
 						var lose_list = [],
 							cards2 = [];
@@ -921,18 +921,14 @@ game.import("card", function () {
 							game.loseAsync({
 								lose_list: lose_list,
 								visible: true,
+								relatedEvent: event.getParent(),
 							}).setContent("chooseToCompareLose");
 						}
-						if (cards2.length) game.cardsGotoOrdering(cards2);
+						if (cards2.length) game.cardsGotoOrdering(cards2).relatedEvent = event.getParent();
 						game.delayex();
 					} else {
-						var num;
-						if (event.targets) {
-							num = event.targets.length;
-						} else {
-							num = game.countPlayer();
-						}
-						if (card.storage && typeof card.storage.extraCardsNum == "number") num += card.storage.extraCardsNum;
+						let num = event.targets?.length ?? game.countPlayer();
+						if (typeof card.storage?.extraCardsNum == "number") num += card.storage.extraCardsNum;
 						cards = get.cards(num);
 						game.cardsGotoOrdering(cards).relatedEvent = event.getParent();
 					}

@@ -174,7 +174,7 @@ export class Click {
 							hour: parseInt(hoursselect.value),
 							nickname: get.connectNickname(),
 							avatar: lib.config.connect_avatar,
-							content: button.input.value,
+							content: get.plainText(button.input.value),
 							create: game.onlineKey,
 							members: [game.onlineKey],
 						};
@@ -227,7 +227,7 @@ export class Click {
 							hour: parseInt(hoursselect.value),
 							nickname: get.connectNickname(),
 							avatar: lib.config.connect_avatar,
-							content: button.input.value,
+							content: get.plainText(button.input.value),
 						},
 						game.onlineKey
 					);
@@ -436,7 +436,7 @@ export class Click {
 					//ui.create.div('.videostatus',node,button.info[i][5]);
 					//node.classList.add('videonodestatus');
 					if (button.info[i][3]) {
-						ui.create.div(".videostatus", node, button.info[i][3].slice(0, 80));
+						ui.create.div(".videostatus", node, get.plainText(button.info[i][3].slice(0, 80)));
 						node.classList.add("videonodestatus");
 					}
 				}
@@ -4129,7 +4129,6 @@ export class Click {
 			_status.auto = true;
 			ui.auto.classList.add("glow");
 			ui.arena.classList.add("auto");
-
 			if (_status.imchoosing && _status.paused) {
 				if (ui.confirm) ui.confirm.close();
 				ui.control.hide();
@@ -4139,6 +4138,7 @@ export class Click {
 					if (_status.paused && _status.imchoosing) {
 						game.uncheck();
 						_status.event.redo();
+						if (_status.event.skill && !_status.event.norestore) _status.event.restore();
 					}
 				}
 				game.resume();
