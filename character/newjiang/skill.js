@@ -4395,7 +4395,7 @@ const skills = {
 		prompt: "将一张锦囊牌当【酒】使用",
 		filter(event, player) {
 			if (event.name == "chooseToUse") return player.hasCard(card => get.type2(card) == "trick", "hs");
-			return event.card.name == "jiu" && player.countMark("mpjiusong") < 3;
+			return event.card?.name == "jiu" && player.countMark("mpjiusong") < 3;
 		},
 		forced: true,
 		locked: false,

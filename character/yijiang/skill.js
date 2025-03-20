@@ -10015,30 +10015,16 @@ const skills = {
 		filter(event) {
 			return event.num > 0;
 		},
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			player.draw();
-			"step 2";
-			if (player.countCards("h")) {
-				player.chooseCard("将一张手牌置于武将牌上作为“权”", true);
-			} else {
-				event.goto(4);
-			}
-			"step 3";
-			if (result.cards && result.cards.length) {
-				player.addToExpansion(result.cards, player, "giveAuto").gaintag.add("quanji");
-			}
-			"step 4";
-			if (event.count > 0 && player.hasSkill(event.name) && !get.is.blocked(event.name, player)) {
-				player.chooseBool(get.prompt2("quanji")).set("frequentSkill", event.name);
-			} else event.finish();
-			"step 5";
-			if (result.bool) {
-				player.logSkill("quanji");
-				event.goto(1);
+		getIndex: event => event.num,
+		async content(event, trigger, player) {
+			await player.draw();
+			const hs = player.getCards("h");
+			if (!hs.length) return;
+			const result = hs.length == 1 ? { bool: true, cards: hs } : await player.chooseCard("h", true, "选择一张牌作为“权”").forResult();
+			if (result?.bool && result?.cards?.length) {
+				const next = player.addToExpansion(result.cards, player, "give");
+				next.gaintag.add(event.name);
+				await next;
 			}
 		},
 		intro: {
@@ -10046,7 +10032,7 @@ const skills = {
 			markcount: "expansion",
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) player.loseToDiscardpile(cards);
 		},
 		mod: {
@@ -12936,12 +12922,11 @@ const skills = {
 	},
 	zquanji: {
 		trigger: { global: "phaseBegin" },
-		//priority:15,
 		check(event, player) {
-			var att = get.attitude(player, event.player);
+			const att = get.attitude(player, event.player);
 			if (att < 0) {
-				var nh1 = event.player.countCards("h");
-				var nh2 = player.countCards("h");
+				const nh1 = event.player.countCards("h");
+				const nh2 = player.countCards("h");
 				return nh1 <= 2 && nh2 > nh1 + 1;
 			}
 			if (att > 0 && event.player.hasJudge("lebu") && event.player.countCards("h") > event.player.hp + 1) return true;
@@ -12951,18 +12936,15 @@ const skills = {
 		filter(event, player) {
 			return event.player != player && player.canCompare(event.player);
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(trigger.player);
-			"step 1";
-			if (result.bool) {
-				trigger.player.skip("phaseZhunbei");
-				trigger.player.skip("phaseJudge");
+		async content(event, trigger, player) {
+			const { player: target } = trigger;
+			const result = await player.chooseToCompare(target);
+			if (result?.bool) {
+				target.skip("phaseZhunbei");
+				target.skip("phaseJudge");
 			}
 		},
-		ai: {
-			expose: 0.2,
-		},
+		ai: { expose: 0.2 },
 	},
 	zbaijiang: {
 		skillAnimation: true,

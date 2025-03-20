@@ -3341,7 +3341,7 @@ const skills = {
 					return 0;
 				})
 				.set("eff", eff);
-			if (result.bool == false) trigger.getParent().excluded.add(player);
+			if (!result?.bool) trigger.getParent().excluded.add(player);
 		},
 		ai: {
 			effect: {

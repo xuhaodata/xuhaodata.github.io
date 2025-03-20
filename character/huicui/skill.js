@@ -740,24 +740,6 @@ const skills = {
 						if (num >= 2 && player.countCards("h")) await player.chooseToDiscard("h", true);
 						if (num >= 3) {
 							await player.loseHp();
-							if (game.hasPlayer(target => target !== player && target.countCards("h"))) {
-								const [target] =
-									(await player
-										.chooseTarget("是否获得一名其他角色的一张手牌？", (card, player, target) => {
-											return target !== player && target.countCards("h");
-										})
-										.set("ai", target => {
-											const player = get.player();
-											return get.effect(target, { name: "shunshou_copy", position: "h" }, player, player);
-										})
-										.forResult("targets")) ?? [];
-								if (target) {
-									player.line(target);
-									await player.gainPlayerCard(target, "h", true);
-								}
-							}
-						}
-						if (num >= 4) {
 							if (game.hasPlayer(target => target.countDiscardableCards(player, "ej"))) {
 								const [target] =
 									(await player
@@ -778,6 +760,9 @@ const skills = {
 									await player.discardPlayerCard(target, "ej", true);
 								}
 							}
+						}
+						if (num >= 4) {
+							if (player.countCards("h")) await player.chooseToDiscard("he", true);
 							await player.addSkills("dcretanluan");
 						}
 					},
@@ -862,14 +847,21 @@ const skills = {
 				trigger: { source: "damageSource" },
 				filter(event, player) {
 					if (typeof player.getStat("skill")["dcremanhou"] !== "number") return false;
-					return event.card?.dcretanluan === true;
+					return event.card?.dcretanluan === true && event.player != player && !player.getStorage("dcremanhou_record").includes(event.player);
 				},
 				forced: true,
 				content() {
 					delete player.getStat("skill")["dcremanhou"];
 					player.popup("dcremanhou");
 					game.log(player, "重置了技能", "【" + get.translation("dcremanhou") + "】");
+					player.addTempSkill("dcremanhou_record");
+					player.markAuto("dcremanhou_record", [trigger.player]);
 				},
+			},
+			record: {
+				charlotte: true,
+				onremove: true,
+				intro: { content: "【探乱】已记录角色：$" },
 			},
 		},
 	},
@@ -13367,14 +13359,11 @@ const skills = {
 				return player.hasUseTarget(card);
 			});
 			if (!list.length) return;
-			const links = await player
-				.chooseButton(["是否视为使用一张伤害牌？", [list, "vcard"]])
-				.set("ai", button => {
-					return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
-				})
-				.forResultLinks();
-			if (!links.length) return;
-			await player.chooseUseTarget({ name: links[0][2], nature: links[0][3], isCard: true }, true, false);
+			const { result } = await player.chooseButton(["是否视为使用一张伤害牌？", [list, "vcard"]]).set("ai", button => {
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			});
+			if (!result?.links?.length) return;
+			await player.chooseUseTarget({ name: result.links[0][2], nature: result.links[0][3], isCard: true }, true, false);
 			if (
 				!player.hasHistory("sourceDamage", evt => {
 					if (!evt.card) return false;

@@ -118,7 +118,7 @@ game.import("card", function () {
 					const { target } = event;
 					if (!target.countGainableCards(player, "hej")) return;
 					const { result } = await player.gainPlayerCard(target, "hej", true, [1, 2]);
-					if (result.bool && target.isIn()) {
+					if (result?.bool && result?.cards?.length && target.isIn()) {
 						const num = result.cards.length,
 							he = player.getCards("he");
 						if (!he.length) return;

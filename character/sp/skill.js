@@ -15728,7 +15728,15 @@ const skills = {
 					event.players[i].wait(sendback);
 				} else if (event.players[i] == game.me) {
 					event.withme = true;
-					game.me.chooseControl("助力锻造！", "妨碍锻造！", "什么都不做");
+					game.me.chooseControl("助力锻造！", "妨碍锻造！", "什么都不做").set("ai", () => {
+						const player = get.player(),
+							target = get.event().getParent().player;
+						const att = get.attitude(player, target);
+						let num = 2;
+						if (att > 0) num = 0;
+						else if (att < 0) num = 1;
+						return num;
+					});
 					if (_status.connectMode) game.me.wait(sendback);
 				} else {
 					event.ai_targets.push(event.players[i]);
@@ -15949,7 +15957,7 @@ const skills = {
 					return player.countMark("olshengong_draw") > 0;
 				},
 				content() {
-					player.draw(player.countMark("olshengong_draw"));
+					player.draw(player.countMark(event.name));
 				},
 			},
 		},
@@ -23913,7 +23921,7 @@ const skills = {
 				},
 				logTarget: "player",
 				async content(event, trigger, player) {
-					if (lib.skill.event.filterx(trigger, player)) {
+					if (lib.skill[event.name].filterx(trigger, player)) {
 						const num = player.getHistory("useSkill", evt => evt.skill == "rehengjiang" && evt.targets.includes(trigger.player)).length;
 						if (num > 0) await player.draw(num);
 					} else await player.draw();

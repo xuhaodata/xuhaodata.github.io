@@ -2452,7 +2452,7 @@ const skills = {
 				cost: 3,
 				prompt: () => "令一名体力上限小于10的角色回复1点体力，增加1点体力上限，随机恢复一个废除的装备栏",
 				filter: () => game.hasPlayer(target => target.maxHp < 10),
-				filterTarget: true,
+				filterTarget: (card, player, target) => target.maxHp < 10,
 				async content(player, target) {
 					await target.recover();
 					await target.gainMaxHp();
@@ -2487,7 +2487,7 @@ const skills = {
 				deadTarget: true,
 				async content(player, target) {
 					await player.changeSkills(
-						target.getStockSkills(true, true).filter(i => get.info(i) && !get.info(i).charlotte),
+						target.getStockSkills(true, true).filter(skill => get.info(skill) && !get.info(skill).charlotte),
 						["sbxingshang", "sbfangzhu", "sbsongwei"]
 					);
 				},
