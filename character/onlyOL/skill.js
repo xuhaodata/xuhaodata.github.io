@@ -2954,7 +2954,7 @@ const skills = {
 					},
 				},
 				checkTarget(player, key) {
-					let num = [];
+					let num = 0;
 					switch (key) {
 						case 1: {
 							game.getGlobalHistory("everything", evt => {
