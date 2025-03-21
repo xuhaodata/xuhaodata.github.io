@@ -11855,6 +11855,15 @@ export class Player extends HTMLDivElement {
 			list2 = [];
 		for (var i = 0; i < cards.length; i++) {
 			if (cards[i].clone && (cards[i].clone.parentNode == this.parentNode || cards[i].clone.parentNode == ui.arena) && parseFloat(getComputedStyle(cards[i].clone).opacity) > 0.3) {
+				var next = ui.create.div(".cardsetion", cardsetion, cards[i].clone);
+				next.style.setProperty("display", "block", "important");
+				if (cards[i].clone.node) {
+					if (cards[i].clone.node.cardsetion) {
+						cards[i].clone.node.cardsetion.remove();
+						delete cards[i].clone.node.cardsetion;
+					}
+					cards[i].clone.node.cardsetion = next;
+				}
 				cards[i].clone.moveDelete(this);
 				list2.push(cards[i].clone);
 			} else {
