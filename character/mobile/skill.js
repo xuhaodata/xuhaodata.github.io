@@ -210,21 +210,24 @@ const skills = {
 	mbyuanmo: {
 		audio: 2,
 		trigger: { player: ["phaseZhunbeiBegin", "damageEnd"] },
-		usable: 2,
 		filter: (event, player) => player.canMoveCard(),
-		check: (event, player) => player.canMoveCard(true),
-		async content(event, trigger, player) {
+		async cost(event, trigger, player) {
 			let nums = {};
 			game.filterPlayer().forEach(target => (nums[target.playerid] = game.countPlayer(c => c.inRangeOf(target))));
-			const result = await player.moveCard(true).forResult();
-			const drawer = result.targets[0];
-			const num = nums[drawer.playerid] - game.countPlayer(c => c.inRangeOf(drawer));
+			event.result = await player.moveCard(get.prompt2("mbyuanmo")).set("logSkill", "mbyuanmo").forResult();
+			event.result.cost_data = nums;
+		},
+		usable: 2,
+		popup: false,
+		async content(event, trigger, player) {
+			const drawer = event.targets[0];
+			const num = event.cost_data[drawer.playerid] - game.countPlayer(c => c.inRangeOf(drawer));
 			if (num > 0) {
-				const resultx = await player
-					.chooseBool("远谟", `是否令${get.translation(drawer)}摸${get.cnNumber(num)}张牌`)
+				const result = await player
+					.chooseBool("远谟", `是否令${get.translation(drawer)}摸${get.cnNumber(num)}张牌？`)
 					.set("choice", get.effect(drawer, { name: "draw" }, player, player) > 0)
-					.forResultBool();
-				if (resultx.bool) await drawer.draw(num);
+					.forResult();
+				if (result?.bool) await drawer.draw(num);
 			}
 		},
 	},
@@ -1072,6 +1075,7 @@ const skills = {
 		logAudio: () => 2,
 		inherit: "dcctjiuxian",
 		selectCard: [1, Infinity],
+		position: "he",
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
 			player.addTempSkill("friendqinying_effect");
