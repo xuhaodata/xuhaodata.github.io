@@ -57,7 +57,7 @@ const skills = {
 		trigger: { global: "dying" },
 		usable: 1,
 		check: (event, player) => get.attitude(player, event.player) > 0,
-		filter: event => event?.getParent()?.source.isIn(),
+		filter: event => event.getParent().name == "damage" && event.getParent()?.source.isIn(),
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const source = trigger.getParent().source;
@@ -85,9 +85,7 @@ const skills = {
 				})
 				.set("source", source)
 				.forResult();
-			if (!result.bool) {
-				await trigger.player.recover();
-			}
+			if (!result.bool) await trigger.player.recover();
 		},
 	},
 	//手杀杨弘 —— by 刘巴
