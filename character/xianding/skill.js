@@ -13666,22 +13666,11 @@ const skills = {
 		audio: 2,
 		trigger: {
 			player: "loseAfter",
-			global: ["cardsDiscardAfter", "loseAsyncAfter", "equipAfter"],
+			global: ["loseAsyncAfter", "cardsDiscardAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
 			if (player.countMark("dcxialei_clear") >= 3) return false;
-			if (event.name != "cardsDiscard") {
-				return event.getd(player, "cards2").some(i => get.color(i, player) == "red");
-			} else {
-				if (!event.cards.filterInD("d").some(i => get.color(i, player) == "red")) return false;
-				var evt = event.getParent();
-				if (evt.name != "orderingDiscard") return false;
-				var evtx = evt.relatedEvent || evt.getParent();
-				if (evtx.player != player) return false;
-				return player.hasHistory("lose", evtxx => {
-					return evtx == (evtxx.relatedEvent || evtxx.getParent()) && evtxx.cards2.length > 0;
-				});
-			}
+			return event.getd(player, "cards2").some(i => get.color(i, player) === "red");
 		},
 		async content(event, trigger, player) {
 			let cards = get.cards(3 - player.countMark("dcxialei_clear"));
