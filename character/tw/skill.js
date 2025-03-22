@@ -52,30 +52,9 @@ const skills = {
 			delete event.result.cards;
 			next.setContent(() => {
 				"step 0";
-				/*if (((!event.fixedResult || !event.fixedResult[player.playerid]) && player.countCards("h") == 0)) {
-					event.result = { cancelled: true, bool: false };
-					event.finish();
-					return;
-				}*/
 				game.log(player, "对牌堆发起拼点");
 				if (!event.filterCard) event.filterCard = lib.filter.all;
 				"step 1";
-				event.list = [player].filter(function (current) {
-					return !event.fixedResult || !event.fixedResult[current.playerid];
-				});
-				if (event.list.length) {
-					player.chooseCardOL(event.list, "请选择拼点牌", true).set("small", event.small).set("filterCard", event.filterCard).set("type", "compare").set("ai", event.ai).set("source", player).aiCard = function (target) {
-						var hs = target.getCards("h");
-						var event = _status.event;
-						event.player = target;
-						hs.sort(function (a, b) {
-							return event.ai(b) - event.ai(a);
-						});
-						delete event.player;
-						return { bool: true, cards: [hs[0]] };
-					};
-				}
-				"step 2";
 				const lose_list = [];
 				if (event.fixedResult && event.fixedResult[player.playerid]) {
 					lose_list.push([player, [event.fixedResult[player.playerid]]]);
@@ -90,15 +69,15 @@ const skills = {
 				const card = game.cardsGotoOrdering(get.cards()).cards[0];
 				event.card2 = card;
 				event.lose_list = lose_list;
-				"step 3";
+				"step 2";
 				if (event.lose_list.length) {
 					game.loseAsync({
 						lose_list: event.lose_list,
 					}).setContent("chooseToCompareLose");
 				}
-				"step 4";
+				"step 3";
 				event.trigger("compareCardShowBefore");
-				"step 5";
+				"step 4";
 				game.broadcast(function () {
 					ui.arena.classList.add("thrownhighlight");
 				});
@@ -117,7 +96,7 @@ const skills = {
 				event.num2 = getNum(event.card2);
 				event.trigger("compare");
 				game.delay(0, 1500);
-				"step 6";
+				"step 5";
 				event.result = {
 					player: event.card1,
 					target: event.card2,
@@ -125,7 +104,7 @@ const skills = {
 					num2: event.num2,
 				};
 				event.trigger("compareFixing");
-				"step 7";
+				"step 6";
 				var str;
 				if (event.forceWinner === player || event.num1 > event.num2) {
 					event.result.bool = true;
@@ -151,7 +130,7 @@ const skills = {
 					}, 1000);
 				}, str);
 				game.delay(2);
-				"step 8";
+				"step 7";
 				game.broadcastAll(function () {
 					ui.arena.classList.remove("thrownhighlight");
 				});

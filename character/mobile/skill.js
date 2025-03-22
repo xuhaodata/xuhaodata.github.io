@@ -374,7 +374,96 @@ const skills = {
 		subSkill: {
 			fake: {
 				charlotte: true,
-				trigger: { global: "chooseToCompareBegin" },
+				trigger: {
+					player: ["chooseCardBegin", "chooseCardEnd"],
+				},
+				filter(event, player) {
+					return event.type == "compare" && !event.directresult && event.getParent(2).mbjianji;
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				async content(event, trigger, player) {
+					const evt = trigger.getParent(3),
+						evtx = trigger.getParent(2);
+					const card = evt.cards[0];
+					if (!card) return;
+					if (event.triggername == "chooseCardBegin") {
+						let cardx = ui.create.card();
+						cardx._cardid = card.cardid;
+						cardx.init([null, null, "mbjianji_card", null, card.cardid]);
+						cardx.classList.add("infohidden");
+						cardx.classList.add("infoflip");
+						await player.directgains([cardx], null, "mbjianji");
+						trigger.position = "hs";
+						trigger.set("mbjianji_card", card);
+						//牌的检测也得重写，毕竟都选到s区域去了
+						trigger.filterCard=function (card){
+							if(get.position(card)=='s') return card.hasGaintag('mbjianji');
+							return true;
+						};
+						//修改一下chooseCard的ai，因为这张假牌是没有number属性的，没法用原先的ai让人机选
+						trigger.ai = function (card) {
+							if (typeof card == "string" && lib.skill[card]) {
+								var ais =
+									lib.skill[card].check ||
+									function () {
+										return 0;
+									};
+								return ais();
+							}
+							var addi = get.value(card) >= 8 && get.type(card) != "equip" ? -3 : 0;
+							if (card.name == "du") addi -= 3;
+							var source = _status.event.source;
+							var player = _status.event.player;
+							var event = _status.event.getParent();
+							var getn = function (card) {
+								//会赢吗？会赢的！
+								if (card._cardid === get.event().mbjianji_card.cardid) {
+									if (
+										!player.hasCard(function (card) {
+											var val = get.value(card);
+											//对秦宓天辩的ai做了点小修改
+											return val < 0 || (val <= 5 && get.number(card) >= 10);
+										}, "h")
+									)
+										return 10 + Math.random() * 3;
+								}
+								if (player.hasSkillTag("forceWin", null, { card })) return 13 * (Boolean(event.small) ? -1 : 1);
+								return get.number(card) * (Boolean(event.small) ? -1 : 1);
+							};
+							if (source && source != player) {
+								if (get.attitude(player, source) > 1) {
+									if (Boolean(event.small)) return getn(card) - get.value(card) / 3 + addi;
+									return -getn(card) - get.value(card) / 3 + addi;
+								}
+								if (Boolean(event.small)) return -getn(card) - get.value(card) / 5 + addi;
+								return getn(card) - get.value(card) / 5 + addi;
+							} else {
+								if (Boolean(event.small)) return -getn(card) - get.value(card) / 5 + addi;
+								return getn(card) - get.value(card) / 5 + addi;
+							}
+						};
+					} else {
+						const cards = player.getCards("s", card => card.hasGaintag("mbjianji"));
+						if (player.isOnline2()) {
+							player.send(
+								function (cards, player) {
+									cards.forEach(i => i.delete());
+									if (player == game.me) ui.updatehl();
+								},
+								cards,
+								player
+							);
+						}
+						cards.forEach(i => i.delete());
+						if (player == game.me) ui.updatehl();
+						if (trigger.result.cards[0]._cardid === card.cardid) {
+							trigger.result.cards = [card];
+						}
+					}
+				},
+				/*trigger: { global: "chooseToCompareBegin" },
 				filter(event, player) {
 					return (player === event.player || player === event.target) && event?.mbjianji;
 				},
@@ -389,7 +478,7 @@ const skills = {
 				async content(event, trigger, player) {
 					if (!trigger.fixedResult) trigger.fixedResult = {};
 					trigger.fixedResult[player.playerid] = trigger.getParent().cards[0];
-				},
+				},*/
 			},
 			put: {
 				charlotte: true,
@@ -398,7 +487,8 @@ const skills = {
 					if (!event?.mbjianji) return false;
 					const evt = event.getParent();
 					if (!(evt?.name === "mbjianji" && evt.player === player)) return false;
-					return Object.values(event.fixedResult || {}).includes(evt.cards[0]);
+					//其实不用看fixedResult吧，这会看card1，card2应该就可以了
+					return [event.card1, event.card2].includes(evt.cards[0]);
 				},
 				forced: true,
 				popup: false,
