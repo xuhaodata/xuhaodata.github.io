@@ -9054,7 +9054,7 @@ export class Player extends HTMLDivElement {
 		return evts;
 	}
 	/**
-	 * 不填参数，直接获得最后一个回合的改玩家的整个历史对象。
+	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
@@ -9069,7 +9069,7 @@ export class Player extends HTMLDivElement {
 	 * @overload
 	 * @param { T } key
 	 * @param { (event: GameEventPromise) => boolean } [filter] 过滤条件
-	 * @param { GameEventPromise } [last] 若有改参数，则该参数事件之后的将被排除掉
+	 * @param { GameEventPromise } [last] 若有该参数，则该参数事件之后的将被排除掉
 	 * @returns { ActionHistory[T] }
 	 */
 	getHistory(key, filter, last) {
@@ -9129,7 +9129,7 @@ export class Player extends HTMLDivElement {
 		return history.some(filter);
 	}
 	/**
-	 * 不填参数，直接获得最后一个回合的改玩家的整个历史对象。
+	 * 不填参数，直接获得最后一个回合的该玩家的整个历史对象。
 	 * @overload
 	 * @returns { ActionHistory }
 	 */
@@ -9138,7 +9138,7 @@ export class Player extends HTMLDivElement {
 	 * @overload
 	 * @param { T } key
 	 * @param { (event: GameEventPromise) => boolean } [filter] 过滤条件
-	 * @param { GameEventPromise } [last] 若有改参数，则该参数事件之后的将被排除掉
+	 * @param { GameEventPromise } [last] 若有该参数，则该参数事件之后的将被排除掉
 	 * @returns { ActionHistory[T] }
 	 */
 	getLastHistory(key, filter, last) {
