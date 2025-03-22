@@ -819,6 +819,7 @@ const translates = {
 	dcjiusi: "纠思",
 	dcjiusi_info: "每回合限一次，你可以将武将牌翻面，视为使用一张基本牌。",
 	v_dongzhuo: "威董卓",
+	v_dongzhuo_prefix: "威",
 	dcguangyong: "犷勇",
 	dcguangyong_self: "犷勇(自己)",
 	dcguangyong_toself: "犷勇(他人)",
