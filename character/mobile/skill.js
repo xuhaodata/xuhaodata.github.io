@@ -398,8 +398,8 @@ const skills = {
 						trigger.position = "hs";
 						trigger.set("mbjianji_card", card);
 						//牌的检测也得重写，毕竟都选到s区域去了
-						trigger.filterCard=function (card){
-							if(get.position(card)=='s') return card.hasGaintag('mbjianji');
+						trigger.filterCard = function (card) {
+							if (get.position(card) == "s") return card.hasGaintag("mbjianji");
 							return true;
 						};
 						//修改一下chooseCard的ai，因为这张假牌是没有number属性的，没法用原先的ai让人机选
