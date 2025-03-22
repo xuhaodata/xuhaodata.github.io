@@ -218,9 +218,14 @@ const skills = {
 			let range = [1, 1];
 			if (bool1) range[1]++;
 			const result2 = await player
-				.chooseTarget( `势谋：请为${get.translation(target)}选择${get.translation(card)}的目标`, (card, player, target) => {
-					return lib.filter.targetEnabled2(get.event("cardx"), get.event("source"), target);
-				}, true, range)
+				.chooseTarget(
+					`势谋：请为${get.translation(target)}选择${get.translation(card)}的目标`,
+					(card, player, target) => {
+						return lib.filter.targetEnabled2(get.event("cardx"), get.event("source"), target);
+					},
+					true,
+					range
+				)
 				.set("source", target)
 				.set("cardx", card)
 				.set("ai", target => {
@@ -6263,7 +6268,6 @@ const skills = {
 			},
 			filter(button, player) {
 				const target = get.event().getParent().result.targets[0];
-				const link = button.link;
 				if (button.link === "equip" && target.isMin()) return false;
 				return true;
 			},
@@ -6300,17 +6304,12 @@ const skills = {
 								await game.delayx();
 							}
 						}
-						target.addTempSkill("dchuiji_effect");
-						target.markAuto("dchuiji_effect", [event]);
-						await target.chooseUseTarget(
-							{
-								name: "wugu",
-								storage: {
-									fixedShownCards: [],
-								},
-							},
-							true
-						);
+						if (target.countCards("h") >= game.countPlayer()) {
+							target.addTempSkill("dchuiji_effect");
+							target.markAuto("dchuiji_effect", [event]);
+							const card = new lib.element.VCard({ name: "wugu", storage: { fixedShownCards: [] } });
+							if (target.hasUseTarget(card)) await target.chooseUseTarget(card, true, false);
+						}
 					},
 				};
 			},

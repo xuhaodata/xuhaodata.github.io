@@ -10900,8 +10900,9 @@ const skills = {
 		},
 		initList() {
 			var list,
-				skills = [];
-			var banned = ["xunyi", "mbyilie"];
+				skills = [],
+				banned = [],
+				bannedInfo = ["游戏开始时"];
 			if (get.mode() == "guozhan") {
 				list = [];
 				for (var i in lib.characterPack.mode_guozhan) list.push(i);
@@ -10919,13 +10920,10 @@ const skills = {
 					var skill = lib.skill[j];
 					if (!skill || skill.zhuSkill || banned.includes(j)) continue;
 					if (skill.ai && (skill.ai.combo || skill.ai.neg)) continue;
-					var info = get.translation(j);
-					for (var ix = 0; ix < info.length; ix++) {
-						if (/仁|义|礼|智|信/.test(info[ix]) == true) {
-							skills.add(j);
-							break;
-						}
-					}
+					const infox = get.plainText(get.skillInfoTranslation(j));
+					if (bannedInfo.some(item => infox.includes(item))) continue;
+					const info = get.plainText(get.translation(j));
+					if ("仁/义/礼/智/信".split("/").some(item => info.includes(item))) skills.add(j);
 				}
 			}
 			_status.dunshi_list = skills;
