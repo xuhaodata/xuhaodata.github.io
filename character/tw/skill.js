@@ -582,7 +582,7 @@ const skills = {
 					const list = [`本回合每当其使用或打出与其「潜凶」牌相同牌名的牌时，你对其造成1点伤害，本回合结束你移除与其使用或打出过的相同名牌的「潜凶」牌`, `你依次使用其所有「潜凶」牌`],
 						target = trigger.player;
 					const result = await player
-						.chooseControl("cancel2")
+						.chooseControl()
 						.set("choiceList", list)
 						.set("prompt", `潜凶：为${get.translation(target)}选择一项`)
 						.set("ai", () => {
