@@ -146,7 +146,7 @@ const skills = {
 		},
 		filter(event, player) {
 			if (event.name == "useCard") {
-				if (!player.hasSkill("clanqieyi_effect")) return false;
+				if (!player.hasSkill("clanqieyi_effect") || !lib.suits.includes(get.suit(event.card))) return false;
 				const history = player.getHistory("useCard", evt => get.suit(evt.card) == get.suit(event.card));
 				return history.indexOf(event) == 0;
 			}
@@ -186,7 +186,34 @@ const skills = {
 		},
 		subSkill: {
 			effect: {
+				init(player, skill) {
+					const suits = player
+						.getHistory("useCard", evt => lib.suits.includes(get.suit(evt.card)))
+						.map(evt => get.suit(evt.card))
+						.unique()
+						.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+					player.markAuto(skill, suits);
+					if (suits.length) player.addTip(skill, get.translation(skill) + suits.reduce((str, i) => str + get.translation(i), ""));
+				},
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				mark: true,
+				intro: {
+					content: "已使用过的花色：$",
+					onunmark(storage, player) {
+						player.removeTip("clanqieyi_effect");
+					},
+				},
+				silent: true,
 				charlotte: true,
+				trigger: {
+					player: "useCard",
+				},
+				content() {
+					lib.skill.clanqieyi_effect.init(player, event.name);
+				},
 			},
 		},
 	},
