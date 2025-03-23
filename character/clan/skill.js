@@ -52,7 +52,7 @@ const skills = {
 					const target = event.targets[0];
 					let cards;
 					if (target === player) {
-						cards = await player.chooseCard("he", true, `捷悟：展示你的一张手牌`).forResultCards();
+						cards = await player.chooseCard("h", true, `捷悟：展示你的一张手牌`).forResultCards();
 					} else {
 						cards = await player.choosePlayerCard(target, true, "h", `捷悟：展示${get.translation(target)}的一张手牌`).forResultCards();
 					}
