@@ -425,6 +425,8 @@ window.noname_character_rank = {
 		"dc_sb_xunyu",
 	],
 	am: [
+		"clan_yangci",
+		"clan_yangxiu",
 		"huan_dianwei",
 		"xuxin",
 		"houcheng",
@@ -2211,6 +2213,8 @@ window.noname_character_rank = {
 			"ol_sb_dongzhuo",
 		],
 		epic: [
+			"clan_yangci",
+			"clan_yangxiu",
 			"huan_dianwei",
 			"huan_caopi",
 			"huan_caozhi",

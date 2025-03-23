@@ -397,4 +397,5 @@ window.noname_character_replace = {
 	yanghong: ["yanghong", "mb_yanghong"],
 	peiyuanshao: ["ol_peiyuanshao", "peiyuanshao"],
 	xingdaorong: ["xingdaorong", "mb_xingdaorong"],
+	yangxiu: ["yangxiu", "clan_yangxiu"],
 };
