@@ -32,7 +32,7 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (!player.isPhaseUsing() || typeof card !== "object") return;
 				const name = get.name(card, player);
-				if (card.hasGaintag("potwanglie")) {
+				if (get.itemtype(card) == "card" && card.hasGaintag("potwanglie")) {
 					if (
 						!player.hasCard(cardx => {
 							if (cardx === card) return false;
