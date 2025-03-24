@@ -13390,6 +13390,9 @@ export class Library {
 			cancel: function (id) {
 				if (_status.event._parent_id == id) {
 					ui.click.cancel();
+					if (_status.event.getParent().name == "chooseToUse" && _status.event.getParent().id == id) {
+						_status.event.getParent().cancel(null, null, false);
+					}
 				}
 				if (_status.event.id == id) {
 					if (_status.event._backup) ui.click.cancel();
