@@ -34,7 +34,7 @@ const skills = {
 				const name = get.name(card, player);
 				if (card.hasGaintag("potwanglie")) {
 					if (
-						!player.hasCards(cardx => {
+						!player.hasCard(cardx => {
 							if (cardx === card) return false;
 							if (player.getCardUsable(name, true) == 1 && get.name(cardx, player) == name) return false;
 							return player.hasValueTarget(cardx, null, true);
