@@ -14206,6 +14206,14 @@ export class Library {
 				nature: "watermm",
 			},
 		],
+		[
+			"ddd",
+			{
+				showName: "3D",
+				color: "#edb5b5",
+				nature: "watermm",
+			},
+		],
 	]);
 	groupnature = {
 		shen: "shen",
