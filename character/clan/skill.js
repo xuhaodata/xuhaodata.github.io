@@ -92,22 +92,12 @@ const skills = {
 	},
 	clangaoshi: {
 		audio: 2,
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+		trigger: { player: "phaseJieshuBegin" },
 		frequent: true,
-		filter: (event, player) =>
-			player.getHistory("useSkill", evt => {
-				return ["clanjiewu", "clanjiewu_effect"].includes(evt.skill);
-			}).length,
-		prompt2: event =>
-			"你可亮出牌堆顶的" +
-			get.cnNumber(
-				event.player.getHistory("useSkill", evt => {
-					return ["clanjiewu", "clanjiewu_effect"].includes(evt.skill);
-				}).length
-			) +
-			"张牌",
+		filter: (event, player) => player.hasHistory("useSkill", evt => ["clanjiewu", "clanjiewu_effect"].includes(evt.skill)),
+		prompt(event, player) {
+			return get.prompt("clangaoshi") + "（可亮出" + get.cnNumber(player.getHistory("useSkill", evt => ["clanjiewu", "clanjiewu_effect"].includes(evt.skill)).length) + "张牌）";
+		},
 		async content(event, trigger, player) {
 			const num = player.getHistory("useSkill", evt => {
 				return ["clanjiewu", "clanjiewu_effect"].includes(evt.skill);
