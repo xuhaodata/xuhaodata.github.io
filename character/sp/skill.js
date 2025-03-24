@@ -28208,10 +28208,8 @@ const skills = {
 						const att3 = get.attitude(player, target);
 						if (att3 < 0) return 0;
 						return att1 / 2 + att2 + att3;
-					} else {
-						return 0;
-						// return get.attitude(player,target);
 					}
+					return 0;
 				})
 				.set("targetx", target)
 				.forResult();
@@ -28221,7 +28219,7 @@ const skills = {
 				targets: [target],
 			} = event;
 			await target.draw(4);
-			if (!target.countCards("he", card => lib.filter.cardDiscardable)) return;
+			if (!target.countCards("he", card => lib.filter.cardDiscardable(card, target, "chenqing"))) return;
 			const { player: tosave } = trigger;
 			const att = get.attitude(target, tosave);
 			const hastao = target.countCards("hs", card => target.canSaveCard(card, tosave)) >= 1 - tosave.hp;
@@ -28250,10 +28248,10 @@ const skills = {
 				})
 				.set("hastao", hastao)
 				.set("att", att);
-			if (result.cards?.length === 4) {
+			if (result?.cards?.length === 4) {
 				const suits = result.cards.map(card => get.suit(card)).toUniqued();
 				const tao = get.autoViewAs({ name: "tao", isCard: true });
-				if (suits.length == 4 && target.canUse(tao, tosave)) await target.useCard(tao, tosave);
+				if (suits.length == 4 && lib.filter.cardSavable(tao, target, tosave)) await target.useCard(tao, tosave);
 			}
 		},
 		ai: {
