@@ -1059,16 +1059,16 @@ const skills = {
 				.chooseToGive(
 					(card, player) => {
 						const name = get.name(card, player);
-						return name != get.event("name") && get.type2(name) == get.event("type");
+						return name != get.event("namex") && get.type2(name) == get.event("type");
 					},
 					`交给${get.translation(player)}一张不为【${get.translation(name)}】的${get.translation(type)}牌，或成为${get.translation(card)}的额外目标`,
 					player
 				)
 				.set("ai", card => {
 					const { player, target } = get.event();
-					return get.attitude(player, target) >= 0 ? 1 : -1;
+					return (Math.sign(Math.sign(get.attitude(player, target)) - 0.5)) * get.value(card);
 				})
-				.set("name", name)
+				.set("namex", name)
 				.set("type", type)
 				.forResultBool();
 			if (!bool) {

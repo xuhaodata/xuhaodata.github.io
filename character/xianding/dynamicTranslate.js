@@ -78,7 +78,7 @@ const dynamicTranslates = {
 		return '转换技。出牌阶段限一次，<span class="bluetext">阴：你可以弃置一张不为黑色的手牌。</span>阳：你可以弃置一张黑色手牌。';
 	},
 	dcluochong(player) {
-		return "一轮游戏开始时，你可以弃置任意名角色区域里的共计至多[" + (4 - player.countMark("dcluochong")) + "]张牌，然后若你以此法弃置了一名角色的至少三张牌，则你方括号内的数字-1。";
+		return "每轮开始时，你可以弃置任意名角色区域里的共计至多[" + (4 - player.countMark("dcluochong")) + "]张牌，然后若你以此法弃置了一名角色的至少三张牌，则你方括号内的数字-1。";
 	},
 	dczhangcai(player) {
 		return "当你使用或打出" + (player.hasSkill("dczhangcai_all") ? "" : "点数为8的") + "牌时，你可以摸X张牌（X为你手牌区里" + (player.hasSkill("dczhangcai_all") ? "与此牌点数相同" : "点数为8") + "的牌数且至少为1）。";
