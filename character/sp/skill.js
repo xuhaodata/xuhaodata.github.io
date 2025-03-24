@@ -160,11 +160,11 @@ const skills = {
 		trigger: { global: "recoverEnd" },
 		filter(event, player) {
 			if (player.hasSkill("olyintian_effect")) return false;
-			return game.getGlobalHistory("changeHp", evt => evt.getParent().name === "recover").indexOf(event) === 0;
+			return game.getGlobalHistory("everything", evt => evt.name == "recover").indexOf(event) === 0;
 		},
 		forced: true,
 		content() {
-			player.addSkill("olyintian_effect");
+			player.addSkill(event.name + "_effect");
 		},
 		subSkill: {
 			effect: {
@@ -190,7 +190,7 @@ const skills = {
 					.getGlobalHistory("everything", evt => {
 						if (!evt.name || !["gain", "loseAsync"].includes(evt.name)) return false;
 						if (evt.type === "draw" || evt.getParent().name === "draw") return false;
-						return game.hasPlayer2(t => (evt.getg?.(t) ?? []).length > 0);
+						return game.hasPlayer2(current => (evt.getg?.(current) ?? []).length > 0);
 					})
 					.indexOf(event) === 0
 			);
@@ -587,20 +587,24 @@ const skills = {
 	},
 	spolzhujiu: {
 		audio: 2,
+		onChooseToUse(event) {
+			if (!game.online && !event.spolzhujiu) {
+				event.set("spolzhujiu", event.player.getHistory("useCard", evt => get.name(evt.card) == "jiu").length + 1);
+			}
+		},
 		enable: "chooseToUse",
 		viewAs: {
 			name: "jiu",
 			isCard: true,
 		},
 		position: "hes",
-		viewAsFilter(player) {
-			const num = player.countUsed({ name: "jiu" }, true) + 1;
-			return player.countCards("hes") >= num;
+		filter(event, player) {
+			const num = event.spolzhujiu;
+			return typeof num == "number" && player.countCards("hes") >= num;
 		},
 		filterCard: true,
 		selectCard() {
-			const player = get.player();
-			const num = player.countUsed({ name: "jiu" }, true) + 1;
+			const num = get.event().spolzhujiu;
 			return [num, Infinity];
 		},
 		log: false,
@@ -614,6 +618,8 @@ const skills = {
 				if (get.position(card) == "h") return 4;
 				return 6 - ui.selected.cards.length - get.value(card);
 			}
+			const num = get.event().spolzhujiu;
+			if (typeof num == "number" && ui.selected.cards.length >= num) return 0;
 			return 6 - get.value(card);
 		},
 		ai: {
@@ -625,6 +631,10 @@ const skills = {
 				return 1;
 			},
 			result: { player: 1 },
+			nokeep: true,
+			skillTagFilter(player, tag, arg) {
+				if (tag === "nokeep") return (!arg || (arg?.card && get.name(arg.card) === "tao")) && get.event()?.type === "phase" && game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1) && player.hasCard(card => get.name(card) !== "tao", "h");
+			},
 		},
 	},
 	spoljinglei: {

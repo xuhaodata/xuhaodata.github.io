@@ -259,8 +259,9 @@ const skills = {
 			player.storage.sbjingceCount = 0;
 		},
 		audio: 9,
-		trigger: {
-			player: "phaseEnd",
+		trigger: { player: "phaseEnd" },
+		filter(event, player) {
+			return player.countExpansions("sbjingce_expansions");
 		},
 		logAudio: index => (typeof index === "number" ? "sbjingce" + index + ".mp3" : 2),
 		async cost(event, trigger, player) {
@@ -333,16 +334,14 @@ const skills = {
 		subSkill: {
 			expansions: {
 				audio: ["sbjingce1.mp3", "sbjingce2.mp3"],
-				trigger: {
-					player: "phaseBegin",
-				},
+				trigger: { player: "phaseBegin" },
 				mark: true,
 				intro: {
 					content: "expansion",
 					markcount: "expansion",
 				},
 				filter(event, player) {
-					return player.getExpansions("sbjingce_expansions").length == 0;
+					return !player.countExpansions("sbjingce_expansions");
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -370,9 +369,7 @@ const skills = {
 				},
 			},
 			check: {
-				trigger: {
-					global: ["equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter"],
-				},
+				trigger: { global: ["equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter"] },
 				forced: true,
 				popup: false,
 				filter(event, player) {
