@@ -16,7 +16,7 @@ const characterSort = {
 	mobile_xlqk4: ["nanhualaoxian", "shichangshi", "sunhanhua"],
 	mobile_xlqk5: ["mb_zhangfen"],
 	mobile_longxue: ["mb_simazhao", "mb_simafu", "mb_wenqin", "mb_simazhou", "mb_sp_guanqiujian", "mb_caomao", "chengji", "lizhaojiaobo", "mb_wangjing", "mb_jiachong"],
-	mobile_bingshiPack: ["pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	mobile_bingshiPack: ["pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji", "mb_xiahoushang", "pangxi", "sunsháo", "mb_yanghong", "pot_chendao"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
 	mobile_laoyouji: ["friend_zhugeliang", "friend_xushu", "friend_pangtong", "friend_cuijun", "friend_shitao"],
 	mobile_standard: ["xin_xiahoudun", "xin_zhangfei", "old_yuanshu"],
 	mobile_shenhua_feng: ["re_xiaoqiao", "xin_zhoutai"],
@@ -32,7 +32,7 @@ const characterSort = {
 	mobile_yijiang5: ["xin_zhangyi", "xin_sunxiu", "xin_quancong", "xin_zhuzhi", "xin_caoxiu"],
 	mobile_yijiang7: ["re_jikang", "mb_xuezong"],
 	mobile_changshi: ["scs_zhangrang", "scs_zhaozhong", "scs_sunzhang", "scs_bilan", "scs_xiayun", "scs_hankui", "scs_lisong", "scs_duangui", "scs_guosheng", "scs_gaowang"],
-	mobile_others: ["pangxi", "sunsháo", "mb_xiahoushang", "mb_yanghong"],
+	mobile_others: [],
 };
 
 const characterSortTranslate = {

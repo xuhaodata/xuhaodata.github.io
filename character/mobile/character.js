@@ -1,4 +1,6 @@
 const characters = {
+	pot_chendao: ["male", "shu", 4, ["potwanglie", "pothongyi"]],
+	mb_xingdaorong: ["male", "qun", 4, ["mbkuangwu"]],
 	wuke: ["female", "wu", 3, ["mbanda", "mbzhuguo"], ["name:吴|null"]],
 	mb_yanghong: ["male", "qun", 3, ["mbjianji", "mbyuanmo"]],
 	mb_xiahoushang: ["male", "wei", 4, ["mbtanfeng"]],

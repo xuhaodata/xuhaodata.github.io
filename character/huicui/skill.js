@@ -14804,7 +14804,7 @@ const skills = {
 					max = Math.min(
 						num,
 						player.countCards("he"),
-						game.countPlayer(target => target != player)
+						game.countPlayer()
 					);
 				await player.draw(num);
 				let list = [];

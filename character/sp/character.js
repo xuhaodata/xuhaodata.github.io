@@ -128,7 +128,7 @@ const characters = {
 	simahui: ["male", "qun", 3, ["jianjie", "xinfu_chenghao", "xinfu_yinshi"], ["name:司马|徽"]],
 	baosanniang: ["female", "shu", 4, ["olwuniang", "olxushen"], []],
 
-	yangxiu: ["male", "wei", 3, ["jilei", "danlao"]],
+	yangxiu: ["male", "wei", 3, ["jilei", "danlao"], ["clan:弘农杨氏"]],
 	chenlin: ["male", "wei", 3, ["bifa", "songci"]],
 	caohong: ["male", "wei", 4, ["yuanhu"]],
 	xiahouba: ["male", "shu", 4, ["baobian"], ["name:夏侯|霸"]],

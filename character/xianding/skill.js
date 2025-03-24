@@ -147,7 +147,7 @@ const skills = {
 	},
 	dcsbshimou: {
 		audio: 2,
-		audioname: ["dc_sb_xunyou_shadow"],
+		audioname: ["dc_sb_xunyu_shadow"],
 		enable: "phaseUse",
 		usable: 1,
 		zhuanhuanji(player, skill) {
