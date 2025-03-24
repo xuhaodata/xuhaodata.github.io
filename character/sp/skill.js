@@ -1098,7 +1098,7 @@ const skills = {
 					global: ["loseAsyncAfter", "cardsDiscardAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
 				},
 				filter(event, player) {
-					return event.getd(player).some(i => get.color(i, player) === "red");
+					return event.getd(player, "cards2").some(i => get.color(i, player) === "red");
 				},
 				forced: true,
 				locked: true,

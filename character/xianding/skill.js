@@ -218,9 +218,14 @@ const skills = {
 			let range = [1, 1];
 			if (bool1) range[1]++;
 			const result2 = await player
-				.chooseTarget( `势谋：请为${get.translation(target)}选择${get.translation(card)}的目标`, (card, player, target) => {
-					return lib.filter.targetEnabled2(get.event("cardx"), get.event("source"), target);
-				}, true, range)
+				.chooseTarget(
+					`势谋：请为${get.translation(target)}选择${get.translation(card)}的目标`,
+					(card, player, target) => {
+						return lib.filter.targetEnabled2(get.event("cardx"), get.event("source"), target);
+					},
+					true,
+					range
+				)
 				.set("source", target)
 				.set("cardx", card)
 				.set("ai", target => {
@@ -6263,7 +6268,6 @@ const skills = {
 			},
 			filter(button, player) {
 				const target = get.event().getParent().result.targets[0];
-				const link = button.link;
 				if (button.link === "equip" && target.isMin()) return false;
 				return true;
 			},
@@ -6300,17 +6304,12 @@ const skills = {
 								await game.delayx();
 							}
 						}
-						target.addTempSkill("dchuiji_effect");
-						target.markAuto("dchuiji_effect", [event]);
-						await target.chooseUseTarget(
-							{
-								name: "wugu",
-								storage: {
-									fixedShownCards: [],
-								},
-							},
-							true
-						);
+						if (target.countCards("h") >= game.countPlayer()) {
+							target.addTempSkill("dchuiji_effect");
+							target.markAuto("dchuiji_effect", [event]);
+							const card = new lib.element.VCard({ name: "wugu", storage: { fixedShownCards: [] } });
+							if (target.hasUseTarget(card)) await target.chooseUseTarget(card, true, false);
+						}
 					},
 				};
 			},
@@ -13666,22 +13665,11 @@ const skills = {
 		audio: 2,
 		trigger: {
 			player: "loseAfter",
-			global: ["cardsDiscardAfter", "loseAsyncAfter", "equipAfter"],
+			global: ["loseAsyncAfter", "cardsDiscardAfter", "equipAfter", "addJudgeAfter", "addToExpansionAfter"],
 		},
 		filter(event, player) {
 			if (player.countMark("dcxialei_clear") >= 3) return false;
-			if (event.name != "cardsDiscard") {
-				return event.getd(player, "cards2").some(i => get.color(i, player) == "red");
-			} else {
-				if (!event.cards.filterInD("d").some(i => get.color(i, player) == "red")) return false;
-				var evt = event.getParent();
-				if (evt.name != "orderingDiscard") return false;
-				var evtx = evt.relatedEvent || evt.getParent();
-				if (evtx.player != player) return false;
-				return player.hasHistory("lose", evtxx => {
-					return evtx == (evtxx.relatedEvent || evtxx.getParent()) && evtxx.cards2.length > 0;
-				});
-			}
+			return event.getd(player, "cards2").some(i => get.color(i, player) === "red");
 		},
 		async content(event, trigger, player) {
 			let cards = get.cards(3 - player.countMark("dcxialei_clear"));
