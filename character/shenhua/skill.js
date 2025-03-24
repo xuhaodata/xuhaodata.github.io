@@ -6146,7 +6146,7 @@ const skills = {
 				str += "不为";
 				str += get.translation(colors[i]);
 			}
-			str += "的牌当做【决斗】使用";
+			str += "的手牌当做【决斗】使用";
 			return str;
 		},
 		check(card) {

@@ -126,6 +126,9 @@ window.noname_character_rank = {
 		"mb_sp_zhenji",
 	],
 	a: [
+		"huan_caochong",
+		"huan_caopi",
+		"pot_chendao",
 		"sb_lvbu",
 		"shen_pangtong",
 		"olsbchoulie",
@@ -422,6 +425,9 @@ window.noname_character_rank = {
 		"dc_sb_xunyu",
 	],
 	am: [
+		"clan_yangci",
+		"clan_yangxiu",
+		"huan_dianwei",
 		"xuxin",
 		"houcheng",
 		"hanshiwuhu",
@@ -791,6 +797,7 @@ window.noname_character_rank = {
 		"yue_zhouyu",
 	],
 	bp: [
+		"huan_caozhi",
 		"dongwan",
 		"ol_guohuai",
 		"ol_fuhuanghou",
@@ -1382,6 +1389,8 @@ window.noname_character_rank = {
 		"friend_cuijun",
 	],
 	b: [
+		"tw_zhangyun",
+		"mb_xingdaorong",
 		"ol_peiyuanshao",
 		"pangxi",
 		"sunsháo",
@@ -2204,6 +2213,13 @@ window.noname_character_rank = {
 			"ol_sb_dongzhuo",
 		],
 		epic: [
+			"clan_yangci",
+			"clan_yangxiu",
+			"huan_dianwei",
+			"huan_caopi",
+			"huan_caozhi",
+			"huan_caochong",
+			"pot_chendao",
 			"sb_lvbu",
 			"ol_xiahouen",
 			"xuxin",
@@ -2616,6 +2632,8 @@ window.noname_character_rank = {
 			"dc_sb_xunyu",
 		],
 		rare: [
+			"tw_zhangyun",
+			"mb_xingdaorong",
 			"ol_peiyuanshao",
 			"pangxi",
 			"sunsháo",
