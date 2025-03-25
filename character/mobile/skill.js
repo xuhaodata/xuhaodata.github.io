@@ -2980,7 +2980,7 @@ const skills = {
 		getIndex: () => 1,
 		async cost(event, trigger, player) {
 			if (trigger.name == "damage") {
-				const dialog = ui.create.dialog("请选择一项", "hidden");
+				const dialog = ui.create.dialog("妙略：请选择摸两张牌或获得指定牌名的牌", "hidden");
 				dialog.add([[["draw", "摸两张牌"]], "textbutton"]);
 				dialog.add([get.zhinangs(), "vcard"]);
 				const {
@@ -2999,7 +2999,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "damage") {
-				console.log(event.cost_data);
 				if (event.cost_data[0] == "draw") await player.draw(2);
 				else {
 					const card = get.cardPile(card => card.name == event.cost_data[0][2]);
