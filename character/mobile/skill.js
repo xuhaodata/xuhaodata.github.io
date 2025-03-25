@@ -234,10 +234,10 @@ const skills = {
 	//吴珂 —— by 刘巴
 	mbzhuguo: {
 		audio: 3,
+		logAudio: index => (typeof index === "number" ? "mbzhuguo" + index + ".mp3" : "mbzhuguo" + get.rand(1, 2) + ".mp3"),
 		usable: 1,
 		enable: "phaseUse",
 		filterTarget: true,
-		logAudio: index => (typeof index === "number" ? "mbzhuguo" + index + ".mp3" : 2),
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			const num = target.maxHp - target.countCards("h");
@@ -322,6 +322,7 @@ const skills = {
 	//用同一张牌拼点神将
 	mbjianji: {
 		audio: 3,
+		logAudio: index => (typeof index === "number" ? "mbjianji" + index + ".mp3" : "mbjianji" + get.rand(2, 3) + ".mp3"),
 		enable: "phaseUse",
 		usable: 1,
 		filter: (event, player) => player.hasCard(true, "h"),
@@ -331,7 +332,6 @@ const skills = {
 			}
 			return true;
 		},
-		logAudio: index => (typeof index === "number" ? "mbjianji" + index + ".mp3" : 2),
 		targetprompt: ["发起者", "拼点目标"],
 		filterCard: true,
 		discard: false,
@@ -684,7 +684,7 @@ const skills = {
 		popup: false,
 		async cost(event, trigger, player) {
 			//照搬谋曹操的清正（包括ai）
-			player.logSkill("mbzhuji", null, null, null, [get.rand(1, 2)]);
+			player.logSkill("mbzhuji", null, null, null, [get.rand(3, 4)]);
 			await Promise.all(event.next);
 			event.videoId = lib.status.videoId++;
 			if (player.isUnderControl()) game.swapPlayerAuto(player);
@@ -895,7 +895,7 @@ const skills = {
 				if (evt.type == "discard" && evt.getParent(2) == event) num += evt.cards.length;
 			});
 			if (num >= es) {
-				player.logSkill("mbzhuji", null, null, null, [get.rand(3, 4)]);
+				player.logSkill("mbzhuji", null, null, null, [get.rand(1, 2)]);
 				await player.chooseDrawRecover(2, true);
 			}
 		},
