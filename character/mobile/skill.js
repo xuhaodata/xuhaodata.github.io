@@ -279,7 +279,7 @@ const skills = {
 		trigger: { global: "dying" },
 		usable: 1,
 		check: (event, player) => get.attitude(player, event.player) > 0,
-		filter: event => event.getParent().name == "damage" && event.getParent()?.source.isIn(),
+		filter: event => event.getParent().name == "damage" && event.getParent().source?.isIn(),
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const source = trigger.getParent().source;
@@ -3536,6 +3536,8 @@ const skills = {
 										case "countplayer":
 											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow4");
 									}
+								} else {
+									player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow1");
 								}
 							}
 						}
