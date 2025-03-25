@@ -7316,6 +7316,7 @@ const skills = {
 			}, "hes");
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const next = player.chooseToUse();
 			next.set("openskilldialog", `###${get.prompt("olsuji")}###将一张黑色牌当【杀】使用${player == trigger.player ? "" : `。若${get.translation(trigger.player)}受到了此【杀】的伤害，你获得其一张牌。`}`);
@@ -9281,6 +9282,7 @@ const skills = {
 			return event.player.getHp() > player.getHp() && event.player.getHistory("useCard", card => card.card.name == "sha").length && player.countCards("hes", card => get.color(card, player) == "black" && player.canUse(get.autoViewAs({ name: "sha" }, [card]), event.player, false));
 		},
 		direct: true,
+		clearTime: true,
 		content() {
 			var next = player.chooseToUse();
 			next.set("openskilldialog", "逆乱：是否将一张黑色牌当作【杀】对" + get.translation(trigger.player) + "使用？");
@@ -21755,6 +21757,7 @@ const skills = {
 			return event.player != player && (event.player.hp > player.hp || event.player.getHistory("useCard", card => card.card.name == "sha").length > 0);
 		},
 		direct: true,
+		clearTime: true,
 		content() {
 			var next = player.chooseToUse();
 			next.logSkill = "niluan";
