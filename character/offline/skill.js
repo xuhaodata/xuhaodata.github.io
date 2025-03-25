@@ -5082,6 +5082,7 @@ const skills = {
 			);
 		},
 		direct: true,
+		clearTime: true,
 		async content(event, trigger, player) {
 			const next = player.chooseToUse();
 			next.set("openskilldialog", `${get.translation(event.name)}：是否将一张牌当作刺【杀】对${get.translation(trigger.player)}使用？`);
@@ -10478,6 +10479,7 @@ const skills = {
 		direct: true,
 		groupSkill: "shu",
 		seatRelated: true,
+		clearTime: true,
 		content() {
 			player
 				.chooseToUse(function (card, player, event) {
@@ -12533,6 +12535,7 @@ const skills = {
 		audio: 2,
 		trigger: { player: ["shaMiss", "eventNeutralized"] },
 		direct: true,
+		clearTime: true,
 		filter(event, player) {
 			if (!event.card || event.card.name != "sha") return false;
 			return event.target.isIn() && player.canUse("sha", event.target, false) && (player.hasSha() || (_status.connectMode && player.countCards("h")));
@@ -12560,6 +12563,7 @@ const skills = {
 			return event.card && event.card.name == "sha" && event.getParent(2).player == player && event.notLink() && player.isPhaseUsing();
 		},
 		direct: true,
+		clearTime: true,
 		content() {
 			"step 0";
 			player
@@ -16077,39 +16081,39 @@ const skills = {
 	},
 	//桌游志贴纸
 	spyinzhi: {
-						trigger: { player: "damageEnd" },
-						frequent: true,
-						filter(event, player) {
-							return event.num > 0;
-						},
-						getIndex: event => event.num,
-						async content(event, trigger, player) {
-							let cards = get.cards(2);
-							await game.cardsGotoOrdering(cards);
-							await player.showCards(cards);
-							const { source } = trigger;
-							let count = cards.filter(card => get.suit(card) == "spade").length;
-							while (count-- && source?.isIn() && game.hasPlayer(current => current != source && source.countGainableCards(current, "h"))) {
-								const { result } = await player
-									.chooseTarget(`令一名角色获得${get.translation(source)}的一张手牌`, (card, player, target) => {
-										const source = get.event().source;
-										return target != source && source.countGainableCards(target, "h");
-									})
-									.set("source", source)
-									.set("ai", target => {
-										const { player, source } = get.event();
-										return get.effect(target, { name: "shunshou_copy", position: "h" }, source, player);
-									});
-								if (result?.targets?.length) {
-									const [target] = result.targets;
-									player.line([source, target], "green");
-									if (source.countGainableCards(target, "h")) await target.gainPlayerCard(source, "h", true);
-								}
-							}
-							cards = cards.filter(card => get.suit(card) != "spade");
-							if (cards.length) await player.gain(cards, "gain2", "log");
-						},
-					},
+		trigger: { player: "damageEnd" },
+		frequent: true,
+		filter(event, player) {
+			return event.num > 0;
+		},
+		getIndex: event => event.num,
+		async content(event, trigger, player) {
+			let cards = get.cards(2);
+			await game.cardsGotoOrdering(cards);
+			await player.showCards(cards);
+			const { source } = trigger;
+			let count = cards.filter(card => get.suit(card) == "spade").length;
+			while (count-- && source?.isIn() && game.hasPlayer(current => current != source && source.countGainableCards(current, "h"))) {
+				const { result } = await player
+					.chooseTarget(`令一名角色获得${get.translation(source)}的一张手牌`, (card, player, target) => {
+						const source = get.event().source;
+						return target != source && source.countGainableCards(target, "h");
+					})
+					.set("source", source)
+					.set("ai", target => {
+						const { player, source } = get.event();
+						return get.effect(target, { name: "shunshou_copy", position: "h" }, source, player);
+					});
+				if (result?.targets?.length) {
+					const [target] = result.targets;
+					player.line([source, target], "green");
+					if (source.countGainableCards(target, "h")) await target.gainPlayerCard(source, "h", true);
+				}
+			}
+			cards = cards.filter(card => get.suit(card) != "spade");
+			if (cards.length) await player.gain(cards, "gain2", "log");
+		},
+	},
 	spmingjian: {
 		trigger: { global: "phaseBegin" },
 		direct: true,
