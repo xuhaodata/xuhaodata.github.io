@@ -160,7 +160,12 @@ const skills = {
 		trigger: { global: "recoverEnd" },
 		filter(event, player) {
 			if (player.hasSkill("olyintian_effect")) return false;
-			return game.getGlobalHistory("everything", evt => evt.name == "recover").indexOf(event) === 0;
+			return (
+				game
+					.getGlobalHistory("changeHp", evt => evt.getParent().name === "recover")
+					.map(evt => evt.getParent())
+					.indexOf(event) === 0
+			);
 		},
 		forced: true,
 		content() {
