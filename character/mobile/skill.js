@@ -3393,12 +3393,13 @@ const skills = {
 			const target = event.targets[0];
 			for (const drawer of [player, target]) {
 				const num = (() => {
-					const numx = {
-						hp: drawer.getHp(),
-						damagedHp: drawer.getDamagedHp(),
-						countplayer: game.countPlayer(),
-					}[player.storage.pothanzhan];
-					return (typeof numx === "number" ? numx : drawer.maxHp) - drawer.countCards("h");
+					return (
+						({
+							hp: target.getHp(),
+							damagedHp: target.getDamagedHp(),
+							countplayer: game.countPlayer(),
+						}[player.storage.pothanzhan] ?? target.maxHp) - target.countCards("h")
+					);
 				})();
 				if (num > 0) await drawer.draw(Math.min(num, 3));
 			}
@@ -3424,7 +3425,7 @@ const skills = {
 											hp: target.getHp(),
 											damagedHp: target.getDamagedHp(),
 											countplayer: game.countPlayer(),
-										}[player.storage.pothanzhan] || target.maxHp) - target.countCards("h")
+										}[player.storage.pothanzhan] ?? target.maxHp) - target.countCards("h")
 									);
 								})()
 							)

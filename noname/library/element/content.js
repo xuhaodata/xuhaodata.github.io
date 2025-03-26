@@ -5065,13 +5065,13 @@ export const Content = {
 	},
 	chooseToCompareMeanwhile: function () {
 		"step 0";
-		if (player.countCards("h") == 0) {
+		if (player.countCards("h") == 0 && (!event.fixedResult || !event.fixedResult[player.playerid])) {
 			event.result = { cancelled: true, bool: false };
 			event.finish();
 			return;
 		}
 		for (var i = 0; i < targets.length; i++) {
-			if (targets[i].countCards("h") == 0) {
+			if (targets[i].countCards("h") == 0 && (!event.fixedResult || !event.fixedResult[targets[i].playerid])) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;
@@ -5249,13 +5249,13 @@ export const Content = {
 	},
 	chooseToCompareMultiple: function () {
 		"step 0";
-		if (player.countCards("h") == 0) {
+		if ((!event.fixedResult || !event.fixedResult[player.playerid]) && player.countCards("h") == 0) {
 			event.result = { cancelled: true, bool: false };
 			event.finish();
 			return;
 		}
 		for (var i = 0; i < targets.length; i++) {
-			if (targets[i].countCards("h") == 0) {
+			if ((!event.fixedResult || !event.fixedResult[targets[i].playerid]) && targets[i].countCards("h") == 0) {
 				event.result = { cancelled: true, bool: false };
 				event.finish();
 				return;

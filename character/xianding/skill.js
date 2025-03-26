@@ -1385,15 +1385,27 @@ const skills = {
 			2: {
 				audio: 2,
 				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
-				filter(event, player) {
-					if (event.preserve) return false;
+				filter(event, player, name) {
+					if (event.preserve || event.dcshenduan_2|| event.result?.cancelled) return false;
+					console.log(event.result);
+					console.log(event.fixedResult);
 					return lib.skill.dcshenduan_2.logTarget(event, player).length;
 				},
 				logTarget(event, player) {
-					return [
-						[event.player, event.num1],
-						[event.target, event.num2],
-					]
+					let list = [];
+					if (event.targets?.length) {
+						list.push([event.player, event.result.num1[0], event.result.player]);
+						for (const i in event.targets) {
+							list.push([event.targets[i], event.result.num2[i], event.result.targets[i]]);
+						}
+					} else{
+						list = [
+							[event.player, event.num1, event.card1],
+							[event.target, event.num2, event.card2],
+						];
+					}
+					event.set("dcshenduan_list", list);
+					return list
 						.filter(arr => arr[1] == 13)
 						.map(arr => arr[0])
 						.filter(target => target.isIn());
@@ -1401,6 +1413,7 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
+					if (trigger.getParent().name == "chooseToCompare") trigger.getParent().set("dcshenduan_2", true);
 					const targets = [player].concat(event.targets.sortBySeat());
 					for (const target of targets) {
 						const card = lib.skill.dcshenduan.getExtreCard("min");
@@ -1409,9 +1422,9 @@ const skills = {
 							await target.gain(card, "draw");
 						} else break;
 					}
-					const putter = trigger.result.winner;
+					const putter = trigger?.winner || trigger.result?.winner;
 					if (putter?.isIn()) {
-						const card = putter === trigger.player ? trigger.card1 : trigger.card2;
+						const card = trigger.dcshenduan_list?.filter(arr => arr[0] === putter)[0][2];
 						if (!["o", "d"].includes(get.position(card))) return;
 						game.log(putter, "将", card, "置于牌堆底");
 						await game.cardsGotoPile(card);
