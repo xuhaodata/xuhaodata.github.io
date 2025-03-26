@@ -556,7 +556,7 @@ const skills = {
 	},
 	//夏侯尚 —— by 刘巴
 	mbtanfeng: {
-		audio: 2,
+		audio: "twtanfeng",
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			const result = await player
