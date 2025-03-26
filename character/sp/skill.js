@@ -3525,7 +3525,11 @@ const skills = {
 				return dialog;
 			},
 			filter(button, player) {
-				if (button.link == "discard" && !player.countCards("he")) return false;
+				if (button.link == "discard")
+					return player.hasCard(card => {
+						if (!lib.filter.cardDiscardable(card, player, "renxia_discard")) return false;
+						return card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5);
+					}, "he");
 				return true;
 			},
 			check(button) {
@@ -3545,19 +3549,19 @@ const skills = {
 				audio: "olrenxia",
 				async content(event, trigger, player) {
 					while (true) {
-						await player.chooseToDiscard(2, "he", true).set("ai", card => {
-							let player = get.player();
-							let bool = card => get.type(card) == "trick" && get.tag(card, "damage") > 0.5;
-							if (card.name == "sha" || bool(card)) return 10 - get.value(card);
-							return 5 - get.value(card);
-						});
 						if (
-							!player.countCards("h", card => {
-								if (card.name == "sha") return true;
-								return get.type(card) == "trick" && get.tag(card, "damage") > 0.5;
-							})
-						)
-							break;
+							player.hasCard(card => {
+								if (!lib.filter.cardDiscardable(card, player, "renxia_discard")) return false;
+								return card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5);
+							}, "he")
+						) {
+							await player.chooseToDiscard(2, "he", true).set("ai", card => {
+								let player = get.player();
+								let bool = card => get.type(card) == "trick" && get.tag(card, "damage") > 0.5;
+								if (card.name == "sha" || bool(card)) return 10 - get.value(card);
+								return 5 - get.value(card);
+							});
+						} else break;
 					}
 					const evt = event.getParent("phaseUse", true);
 					if (!evt || event.name == "renxia_discard") return;
@@ -3576,8 +3580,7 @@ const skills = {
 				async content(event, trigger, player) {
 					while (true) {
 						await player.draw(2);
-						if (player.countCards("h", card => card.name == "sha")) break;
-						if (player.countCards("h", card => get.type(card) == "trick" && get.tag(card, "damage") > 0.5)) break;
+						if (player.hasCard(card => card.name == "sha" || (get.type(card) == "trick" && get.tag(card, "damage") > 0.5), "h")) break;
 					}
 					const evt = event.getParent("phaseUse", true);
 					if (!evt || event.name == "renxia_draw") return;
@@ -3594,9 +3597,7 @@ const skills = {
 		},
 		ai: {
 			order: 1,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 	},
 	//孔淑
