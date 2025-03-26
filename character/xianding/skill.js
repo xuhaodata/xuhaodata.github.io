@@ -1386,7 +1386,7 @@ const skills = {
 				audio: 2,
 				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
 				filter(event, player, name) {
-					if (event.preserve || event.dcshenduan_2|| event.result?.cancelled) return false;
+					if (event.preserve || event.dcshenduan_2 || event.result?.cancelled) return false;
 					console.log(event.result);
 					console.log(event.fixedResult);
 					return lib.skill.dcshenduan_2.logTarget(event, player).length;
@@ -1398,7 +1398,7 @@ const skills = {
 						for (const i in event.targets) {
 							list.push([event.targets[i], event.result.num2[i], event.result.targets[i]]);
 						}
-					} else{
+					} else {
 						list = [
 							[event.player, event.num1, event.card1],
 							[event.target, event.num2, event.card2],
