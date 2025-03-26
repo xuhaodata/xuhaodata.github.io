@@ -2980,17 +2980,20 @@ const skills = {
 		getIndex: () => 1,
 		async cost(event, trigger, player) {
 			if (trigger.name == "damage") {
-				const dialog = ui.create.dialog("妙略：请选择摸两张牌或获得指定牌名的牌", "hidden");
+				const dialog = ["妙略：请选择摸两张牌或获得指定牌名的牌"];
 				dialog.add([[["draw", "摸两张牌"]], "textbutton"]);
 				dialog.add([get.zhinangs(), "vcard"]);
 				const {
 					result: { bool, links },
-				} = await player.chooseButton(dialog).set("ai", button => {
-					const player = get.player();
-					const { link } = button;
-					if (typeof link == "string") return get.effect(player, { name: "draw" }, player, player) * 2;
-					return player.getUseValue({ name: link[2] });
-				});
+				} = await player
+					.chooseButton()
+					.set("createDialog", dialog)
+					.set("ai", button => {
+						const player = get.player();
+						const { link } = button;
+						if (typeof link == "string") return get.effect(player, { name: "draw" }, player, player) * 2;
+						return player.getUseValue({ name: link[2] });
+					});
 				event.result = {
 					bool: bool,
 					cost_data: links,
