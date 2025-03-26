@@ -1386,10 +1386,10 @@ const skills = {
 				audio: 2,
 				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
 				filter(event, player, name) {
-					if (event.preserve || event.dcshenduan_2 || event.result?.cancelled) return false;
-					console.log(event.result);
-					console.log(event.fixedResult);
-					return lib.skill.dcshenduan_2.logTarget(event, player).length;
+					if (event.preserve || event.result?.cancelled) return false;
+					if (!lib.skill.dcshenduan_2.logTarget(event, player).length) return false;
+					if (event.name == "compareMultiple") return true;
+					return !event.compareMultiple;
 				},
 				logTarget(event, player) {
 					let list = [];
@@ -1413,7 +1413,6 @@ const skills = {
 				forced: true,
 				locked: false,
 				async content(event, trigger, player) {
-					if (trigger.getParent().name == "chooseToCompare") trigger.getParent().set("dcshenduan_2", true);
 					const targets = [player].concat(event.targets.sortBySeat());
 					for (const target of targets) {
 						const card = lib.skill.dcshenduan.getExtreCard("min");
@@ -1422,10 +1421,10 @@ const skills = {
 							await target.gain(card, "draw");
 						} else break;
 					}
-					const putter = trigger?.winner || trigger.result?.winner;
+					const putter = trigger.name == "compareMultiple" ? trigger.winner : trigger.result.winner;
 					if (putter?.isIn()) {
 						const card = trigger.dcshenduan_list?.filter(arr => arr[0] === putter)[0][2];
-						if (!["o", "d"].includes(get.position(card))) return;
+						if (get.owner(card)) return;
 						game.log(putter, "将", card, "置于牌堆底");
 						await game.cardsGotoPile(card);
 					}

@@ -3395,10 +3395,10 @@ const skills = {
 				const num = (() => {
 					return (
 						({
-							hp: target.getHp(),
-							damagedHp: target.getDamagedHp(),
+							hp: drawer.getHp(),
+							damagedHp: drawer.getDamagedHp(),
 							countplayer: game.countPlayer(),
-						}[player.storage.pothanzhan] ?? target.maxHp) - target.countCards("h")
+						}[player.storage.pothanzhan] ?? drawer.maxHp) - drawer.countCards("h")
 					);
 				})();
 				if (num > 0) await drawer.draw(Math.min(num, 3));
