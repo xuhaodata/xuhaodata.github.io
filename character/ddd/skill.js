@@ -3165,6 +3165,7 @@ const skills = {
 					}
 					const next = player.chooseButton([1, 2], forced).set("createDialog", dialog);
 					next.set("filterButton", button => {
+						const player = get.player();
 						const type = typeof button.link;
 						return type == "number" && player.countExpansions(`dddmiaoxing_${button.link + 1}`) != player.countCards("h");
 					});
