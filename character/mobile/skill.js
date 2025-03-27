@@ -115,7 +115,7 @@ const skills = {
 			event.result = { bool: true, cost_data: result.index };
 		},
 		async content(event, trigger, player) {
-			player.logSkill("pothongyi", null, null, null, [get.rand(3, 4)]);
+			player.logSkill("pothongyi", null, null, null, [get.rand(1, 2)]);
 			const control = event.cost_data;
 			const num = player.countMark("pothongyi");
 			if (!num) return;
@@ -138,7 +138,7 @@ const skills = {
 		group: "pothongyi_mark",
 		subSkill: {
 			mark: {
-				audio: ["pothongyi1.mp3", "pothongyi2.mp3"],
+				audio: ["pothongyi3.mp3", "pothongyi4.mp3"],
 				trigger: {
 					global: "phaseBefore",
 					source: "damageSource",
