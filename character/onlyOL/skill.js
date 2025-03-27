@@ -2,6 +2,60 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL界关兴张苞
+	olfuhun: {
+		inherit: "fuhun",
+		global: ["olfuhun_block"],
+		group: ["olfuhun_effect", "olfuhun_mark"],
+		subSkill: {
+			effect: {
+				audio: 2,
+				trigger: {
+					source: "damageSource",
+				},
+				forced: true,
+				filter(event, player) {
+					if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) return false;
+					return event.getParent().skill == "olfuhun";
+				},
+				content() {
+					player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
+				},
+			},
+			mark: {
+				audio: 2,
+				forced: true,
+				locked: false,
+				trigger: { player: "useCard" },
+				firstDo: true,
+				filter(event, player) {
+					return event.card?.name == "sha" && get.is.convertedCard(event.card);
+				},
+				content() {
+					if (!trigger.card.storage) trigger.card.storage = {};
+					trigger.card.storage.olfuhun = true;
+				},
+			},
+			//根据思召剑和谋韩当的弓骑修改
+			block: {
+				mod: {
+					cardEnabled(card, player) {
+						let evt = get.event();
+						if (evt.name != "chooseToUse") evt = evt.getParent("chooseToUse");
+						if (!evt?.respondTo || !evt.respondTo[1]?.storage?.olfuhun) return;
+						const color1 = get.color(card),
+							color2 = get.color(evt.respondTo[1]),
+							hs = player.getCards("h"),
+							cards = [card];
+						if (color1 === "unsure") return;
+						if (Array.isArray(card.cards)) cards.addArray(card.cards);
+						if (color1 != color2 || !cards.containsSome(...hs)) return false; //
+					},
+				},
+				charlotte: true,
+			},
+		},
+	},
 	//闪刘宏
 	olchaozheng: {
 		audio: "jsrgchaozheng",

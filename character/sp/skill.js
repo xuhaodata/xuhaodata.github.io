@@ -29604,7 +29604,7 @@ const skills = {
 		},
 	},
 	reyingbing: {
-		audio: "yingbin",
+		audio: "yingbing",
 		trigger: { global: "useCard" },
 		forced: true,
 		filter(event, player) {
@@ -29626,12 +29626,6 @@ const skills = {
 		ai: {
 			combo: "rezhoufu",
 		},
-	},
-	zhoufu: {
-		audio: 2,
-	},
-	yingbin: {
-		audio: 2,
 	},
 	kuiwei: {
 		audio: 2,
