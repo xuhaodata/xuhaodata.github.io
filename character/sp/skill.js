@@ -2,6 +2,161 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//OL猴子
+	olkuangjuan: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(target => get.info("olkuangjuan").filterTarget(null, player, target));
+		},
+		filterTarget(card, player, target) {
+			return target.countCards("h") > player.countCards("h") && !player.getStorage("olkuangjuan_used").includes(target);
+		},
+		content() {
+			player.addTempSkill("olkuangjuan_used");
+			player.markAuto("olkuangjuan_used", [target]);
+			player.drawTo(target.countCards("h")).gaintag.add("olkuangjuan_effect");
+		},
+		ai: {
+			order: 0.1,
+			result: {
+				player(player, target) {
+					return target.countCards("h") - player.countCards("h");
+				},
+			},
+		},
+		subSkill: {
+			used: {
+				charlotte: true,
+				onremove: true,
+			},
+			effect: {
+				charlotte: true,
+				trigger: { player: "useCard0" },
+				filter(event, player) {
+					if (event.addCount === false) return false;
+					return player.hasHistory("lose", evt => {
+						if (event.getParent() !== event) return false;
+						return Object.values(evt.gaintag_map).flat().includes("olkuangjuan_effect");
+					});
+				},
+				forced: true,
+				popup: false,
+				firstDo: true,
+				content() {
+					trigger.addCount = false;
+					player.getStat("card")[trigger.card.name]--;
+				},
+				mod: {
+					cardUsable(card, player) {
+						if (!card.cards || card.cards.length !== 1) return;
+						if (get.itemtype(card.cards[0]) === "card" && card.cards[0].hasGaintag("olkuangjuan_effect")) return true;
+					},
+				},
+			},
+		},
+	},
+	olfeibian: {
+		audio: 2,
+		trigger: { global: "useCardAfter" },
+		filter(event, player) {
+			if (event.player === player) return _status.currentPhase === player;
+			return event.targets?.includes(player);
+		},
+		forced: true,
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			const cards = target.getDiscardableCards(target, "h");
+			if (cards.length) await target.discard(cards.randomGets(1));
+			const info = target.forceCountChoose;
+			if (_status.countDown) return;
+			let time;
+			if (typeof info?.["chooseToUse"] === "number") time = info["chooseToUse"];
+			else if (info?.default) time = info.default;
+			else {
+				if (!_status.connectMode) return;
+				time = lib.configOL.choose_timeout;
+			}
+			if (time) {
+				time = parseInt(time);
+				if (time > 1) {
+					time--;
+					target.addTempSkill("olfeibian_time", "roundStart");
+					target.addMark("olfeibian_time", 1, false);
+					game.broadcastAll(
+						(player, time) => {
+							if (!player.forceCountChoose) player.forceCountChoose = {};
+							player.forceCountChoose.phaseUse = time;
+							player.forceCountChoose.chooseToUse = time;
+						},
+						target,
+						time
+					);
+					game.log(target, "出牌时限", "#y-1s");
+				}
+			}
+		},
+		group: ["olfeibian_init", "olfeibian_loseHp"],
+		init() {
+			game.broadcastAll(() => {
+				const countDown = game.countDown;
+				if (typeof countDown !== "function") return;
+				game.countDown = function () {
+					const event = get.event();
+					if (event?.name === "chooseToUse" && event.player?.isIn()) {
+						event.player.addTempSkill("olfeibian_effect");
+					}
+					return countDown.apply(this, arguments);
+				};
+			});
+		},
+		subSkill: {
+			effect: { charlotte: true },
+			time: {
+				charlotte: true,
+				onremove(player, skill) {
+					game.broadcastAll(
+						(player, time) => {
+							player.forceCountChoose.phaseUse = time;
+							player.forceCountChoose.chooseToUse = time;
+						},
+						player,
+						player.forceCountChoose.chooseToUse + player.countMark(skill)
+					);
+					delete player.storage[skill];
+				},
+			},
+			init: {
+				audio: "olfeibian",
+				trigger: { global: "phaseBefore", player: "enterGame" },
+				filter: event => event.name !== "phase" || game.phaseNumber === 0,
+				forced: true,
+				content() {
+					game.broadcastAll(player => {
+						if (!player.forceCountChoose) player.forceCountChoose = {};
+						player.forceCountChoose.phaseUse = 15;
+						player.forceCountChoose.chooseToUse = 15;
+					}, player);
+					game.log(player, "的出牌时限改为了", "#g15s");
+				},
+			},
+			loseHp: {
+				audio: "olfeibian",
+				trigger: { global: "phaseEnd" },
+				filter(event, player) {
+					return game.hasPlayer(target => target.hasSkill("olfeibian_effect"));
+				},
+				logTarget(event, player) {
+					return game.filterPlayer(target => target.hasSkill("olfeibian_effect"));
+				},
+				forced: true,
+				content() {
+					for (const i of event.targets) i.loseHp();
+				},
+			},
+		},
+	},
 	//OL裴元绍
 	olfulve: {
 		audio: 2,
@@ -640,6 +795,9 @@ const skills = {
 			skillTagFilter(player, tag, arg) {
 				if (tag === "nokeep") return (!arg || (arg?.card && get.name(arg.card) === "tao")) && get.event()?.type === "phase" && game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1) && player.hasCard(card => get.name(card) !== "tao", "h");
 			},
+		},
+		hiddenCard(player, name) {
+			return !player.isTempBanned("spolzhujiu") && name === "jiu";
 		},
 	},
 	spoljinglei: {
