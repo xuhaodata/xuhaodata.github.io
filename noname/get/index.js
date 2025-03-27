@@ -90,27 +90,30 @@ export class Get extends GetCompatible {
 			} else if (name2.indexOf("lose_") == 0) name2 = name2.slice(5);
 			else if (name2.indexOf("_lose") != -1 && name2.length - name2.indexOf("_lose") == 5) name2 = name2.slice(0, name2.length - 5);
 		}
-		if (name1 == "useSkill") name1 = evt1.skill;
-		if (name2 == "useSkill") name2 = evt2.skill;
+		if (name1 == "useSkill") name1 = get.sourceSkillFor(evt1.skill);
+		if (name2 == "useSkill") name2 = get.sourceSkillFor(evt2.skill);
+		if (get.event().name == "judge" && get.event().getParent().name == "phaseJugde") {
+			(name1 = name), (name2 = _status.event.getParent().name), (th_skill = false), (evt1 = get.event()), (evt2 = get.event().getParent());
+		}
 		if (_status.event.skill) {
 			let skill = _status.event.skill;
-			if (info[skill]) {
+			if (info[get.sourceSkillFor(skill)]) {
 				th_skill = true;
-				eventInfo += info[skill];
+				eventInfo += info[get.sourceSkillFor(skill)];
 				if (sourceEvent) return _status.event;
 			}
-		} else if ((name1 && info[name1]) || (evt1.skill && info[evt1.skill])) {
+		} else if ((name1 && info[name1]) || (evt1.skill && info[get.sourceSkillFor(evt1.skill)])) {
 			if (name1 && info[name1]) {
 				if (lib.card[name1] && evt1.card && evt1.card.nature && info[evt1.card.nature]) eventInfo += info[evt1.card.nature];
 				eventInfo += info[name1];
-			} else eventInfo += info[evt1.skill];
+			} else eventInfo += info[get.sourceSkillFor(evt1.skill)];
 			th_skill = true;
 			if (sourceEvent) return evt1;
-		} else if ((name2 && info[name2]) || (evt2.skill && info[evt2.skill])) {
+		} else if ((name2 && info[name2]) || (evt2.skill && info[get.sourceSkillFor(evt2.skill)])) {
 			if (name2 && info[name2]) {
 				if (lib.card[name2] && evt2.card && evt2.card.nature && info[evt2.card.nature]) eventInfo += info[evt2.card.nature];
 				eventInfo += info[name2];
-			} else eventInfo += info[evt2.skill];
+			} else eventInfo += info[get.sourceSkillFor(evt2.skill)];
 			th_skill = true;
 			if (sourceEvent) return evt2;
 		}
