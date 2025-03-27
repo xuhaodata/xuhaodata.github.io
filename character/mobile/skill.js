@@ -21477,7 +21477,8 @@ const skills = {
 		},
 		content() {
 			game.broadcastAll(function (player) {
-				player.forceCountChoose = { phaseUse: 5 };
+				if (!player.forceCountChoose) player.forceCountChoose = {};
+				player.forceCountChoose.phaseUse = 5;
 			}, player);
 			player.addSkill("kuangcai_use");
 			player.addSkill("kuangcai_cancel");
