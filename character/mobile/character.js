@@ -29,6 +29,7 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		skills: ["mbtanfeng"],
+		dieAudios: ["tw_xiahoushang"],
 	},
 	sunsháo: {
 		sex: "male",
