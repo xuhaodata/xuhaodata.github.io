@@ -1349,12 +1349,16 @@ export class Game extends GameCompatible {
 	countChoose(clear) {
 		if (_status.imchoosing) return;
 		_status.imchoosing = true;
+		let num;
+		let info = _status.event?.player?.forceCountChoose;
 		if (_status.connectMode && !_status.countDown) {
 			ui.timer.show();
-			let num;
-			//这么一大行都是为了祢衡
-			if (_status.event && _status.event.name == "chooseToUse" && _status.event.type == "phase" && _status.event.player && _status.event.player.forceCountChoose && typeof _status.event.player.forceCountChoose.phaseUse == "number") {
-				num = _status.event.player.forceCountChoose.phaseUse;
+			if (_status.event?.name == "chooseToUse" && _status.event.type == "phase" && typeof info?.phaseUse == "number") {
+				num = info.phaseUse;
+			} else if (typeof info?.[_status.event.name] == "number") {
+				num = info[_status.event.name];
+			} else if (info.default) {
+				num = info.default;
 			} else if (_status.connectMode) {
 				num = lib.configOL.choose_timeout;
 			} else {
@@ -1374,9 +1378,7 @@ export class Game extends GameCompatible {
 					game.me.showTimer();
 				}
 			}
-		} else if (_status.event.player.forceCountChoose && _status.event.isMine() && !_status.countDown) {
-			let info = _status.event.player.forceCountChoose;
-			let num;
+		} else if (info && _status.event.isMine() && !_status.countDown) {
 			if (_status.event.name == "chooseToUse" && _status.event.type == "phase" && typeof info.phaseUse == "number") {
 				num = info.phaseUse;
 			} else if (typeof info[_status.event.name] == "number") {
