@@ -287,7 +287,7 @@ const skills = {
 		trigger: { global: "dying" },
 		usable: 1,
 		check: (event, player) => get.attitude(player, event.player) > 0,
-		filter: event => event.getParent().name == "damage" && event.getParent()?.source.isIn(),
+		filter: event => event.getParent().name == "damage" && event.getParent().source?.isIn(),
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const source = trigger.getParent().source;
@@ -3000,17 +3000,20 @@ const skills = {
 		getIndex: () => 1,
 		async cost(event, trigger, player) {
 			if (trigger.name == "damage") {
-				const dialog = ui.create.dialog("请选择一项", "hidden");
+				const dialog = ["妙略：请选择摸两张牌或获得指定牌名的牌"];
 				dialog.add([[["draw", "摸两张牌"]], "textbutton"]);
 				dialog.add([get.zhinangs(), "vcard"]);
 				const {
 					result: { bool, links },
-				} = await player.chooseButton(dialog).set("ai", button => {
-					const player = get.player();
-					const { link } = button;
-					if (typeof link == "string") return get.effect(player, { name: "draw" }, player, player) * 2;
-					return player.getUseValue({ name: link[2] });
-				});
+				} = await player
+					.chooseButton()
+					.set("createDialog", dialog)
+					.set("ai", button => {
+						const player = get.player();
+						const { link } = button;
+						if (typeof link == "string") return get.effect(player, { name: "draw" }, player, player) * 2;
+						return player.getUseValue({ name: link[2] });
+					});
 				event.result = {
 					bool: bool,
 					cost_data: links,
@@ -3019,7 +3022,6 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "damage") {
-				console.log(event.cost_data);
 				if (event.cost_data[0] == "draw") await player.draw(2);
 				else {
 					const card = get.cardPile(card => card.name == event.cost_data[0][2]);
@@ -3416,7 +3418,7 @@ const skills = {
 							hp: drawer.getHp(),
 							damagedHp: drawer.getDamagedHp(),
 							countplayer: game.countPlayer(),
-						}[player.storage.pothanzhan] || drawer.maxHp) - drawer.countCards("h")
+						}[player.storage.pothanzhan] ?? drawer.maxHp) - drawer.countCards("h")
 					);
 				})();
 				if (num > 0) await drawer.draw(Math.min(num, 3));
@@ -3443,7 +3445,7 @@ const skills = {
 											hp: target.getHp(),
 											damagedHp: target.getDamagedHp(),
 											countplayer: game.countPlayer(),
-										}[player.storage.pothanzhan] || target.maxHp) - target.countCards("h")
+										}[player.storage.pothanzhan] ?? target.maxHp) - target.countCards("h")
 									);
 								})()
 							)
@@ -3556,6 +3558,8 @@ const skills = {
 										case "countplayer":
 											player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow4");
 									}
+								} else {
+									player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow1");
 								}
 							}
 						}

@@ -1,4 +1,8 @@
 const translates = {
+	ol_guanzhang: "OL界关兴张苞",
+	ol_guanzhang_prefix: "OL界",
+	olfuhun: "父魂",
+	olfuhun_info: "你可将两张牌当【杀】使用或打出。你使用的转化【杀】目标角色只能使用颜色相同的手牌响应；你于出牌阶段使用【杀】造成伤害后，你本回合获得〖武圣〗和〖咆哮〗。",
 	ol_sunxiu: "OL界孙休",
 	ol_sunxiu_prefix: "OL界",
 	ol_sb_zhangxiu: "OL谋张绣",
