@@ -18665,7 +18665,7 @@ const skills = {
 		},
 	},
 	xinyingbing: {
-		audio: "yingbin",
+		audio: "yingbing",
 		trigger: { player: "useCardToPlayered" },
 		forced: true,
 		logTarget: "target",

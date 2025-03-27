@@ -1697,16 +1697,16 @@ const skills = {
 		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
-			return event.type === "dying" && player !== event.dyin;
+			return event.type === "dying" && player == event.dying;
 		},
 		skillAnimation: true,
 		animationColor: "soil",
 		async content(event, trigger, player) {
-			player.awakenSkill("olfuli");
+			player.awakenSkill(event.name);
 			const sum = game.countGroup();
 			await player.recoverTo(sum);
 			await player.drawTo(sum);
-			const maxDamage = player.getAllHistory("sourceDamage").forEach(evt => (maxDamage += evt.num));
+			const maxDamage = player.getAllHistory("sourceDamage").reduce((num, evt) => num + evt.num, 0);
 			if (maxDamage < sum) await player.turnOver();
 		},
 		ai: {
