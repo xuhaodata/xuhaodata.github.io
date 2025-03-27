@@ -87,7 +87,6 @@ const skills = {
 					game.broadcastAll(
 						(player, time) => {
 							if (!player.forceCountChoose) player.forceCountChoose = {};
-							player.forceCountChoose.phaseUse = time;
 							player.forceCountChoose.chooseToUse = time;
 						},
 						target,
@@ -118,7 +117,6 @@ const skills = {
 				onremove(player, skill) {
 					game.broadcastAll(
 						(player, time) => {
-							player.forceCountChoose.phaseUse = time;
 							player.forceCountChoose.chooseToUse = time;
 						},
 						player,
@@ -135,7 +133,6 @@ const skills = {
 				content() {
 					game.broadcastAll(player => {
 						if (!player.forceCountChoose) player.forceCountChoose = {};
-						player.forceCountChoose.phaseUse = 15;
 						player.forceCountChoose.chooseToUse = 15;
 					}, player);
 					game.log(player, "的出牌时限改为了", "#g15s");
