@@ -797,6 +797,8 @@ window.noname_character_rank = {
 		"yue_zhouyu",
 	],
 	bp: [
+		"dc_sb_dongcheng",
+		"ol_guanzhang",
 		"huan_caozhi",
 		"dongwan",
 		"ol_guohuai",
@@ -2632,6 +2634,8 @@ window.noname_character_rank = {
 			"dc_sb_xunyu",
 		],
 		rare: [
+			"dc_sb_dongcheng",
+			"ol_guanzhang",
 			"tw_zhangyun",
 			"mb_xingdaorong",
 			"ol_peiyuanshao",

@@ -730,7 +730,7 @@ const skills = {
 					if (get.type(name) != "basic" && get.type(name) != "trick") return false;
 					return !(event.clanchengqi || []).includes(name);
 				})
-				.some(card => event.filterCard({ name: card[2], nature: card[3] }, player, event));
+				.some(card => event.filterCard(get.autoViewAs({ name: card[2], nature: card[3] }, "unsure"), player, event));
 		},
 		onChooseToUse(event) {
 			if (!game.online && !event.clanchengqi) {
@@ -746,7 +746,7 @@ const skills = {
 						if (get.type(name) != "basic" && get.type(name) != "trick") return false;
 						return !(event.clanchengqi || []).includes(name);
 					})
-					.filter(card => event.filterCard({ name: card[2], nature: card[3] }, player, event));
+					.filter(card => event.filterCard(get.autoViewAs({ name: card[2], nature: card[3] }, "unsure"), player, event));
 				return ui.create.dialog("承启", [list, "vcard"]);
 			},
 			check(button) {
