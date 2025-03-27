@@ -3,6 +3,125 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//谋董承
+	dcsbbaojia: {
+		audio: 2,
+		trigger: {
+			global: "phaseBefore",
+			player: "enterGame",
+		},
+		filter(event, player) {
+			return event.name != "phase" || game.phaseNumber == 0;
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget("###保驾###选择一名其他角色，为其保驾护航", true, lib.filter.notMe)
+				.set("ai", target => {
+					return get.attitude(get.player(), target);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const target = event.targets[0];
+			player.storage.dcsbbaojia_effect = target;
+			player.markSkillCharacter("dcsbbaojia_effect", target, "保驾", `你为${get.translation(target)}保驾护航`);
+		},
+		group: ["dcsbbaojia_effect"],
+		subSkill: {
+			effect: {
+				audio: 2,
+				onremove: true,
+				trigger: {
+					global: "damageBegin4",
+				},
+				filter(event, player) {
+					const target = player.storage.dcsbbaojia_effect;
+					if (!target || target !== event.player) return false;
+					return (
+						event.card &&
+						player.hasEnabledSlot() &&
+						game
+							.getGlobalHistory(
+								"everything",
+								evt => {
+									return evt.name == "damage" && evt.player == event.player && evt.card;
+								},
+								event
+							)
+							.indexOf(event) === 0
+					);
+				},
+				async cost(event, trigger, player) {
+					const list = [1, 2, 3, 4, 5].filter(num => player.hasEnabledSlot(num)).map(num => "equip" + num),
+						target = player.storage.dcsbbaojia_effect;
+					const result = await player
+						.chooseControl(list, "cancel2")
+						.set("prompt", `###${get.prompt("dcsbbaojia_effect", target)}###废除1个装备栏并防止其受到的伤害，且${get.translation(trigger.card)}结算完毕后你获得之。`)
+						.set("ai", () => {
+							if (get.attitude(get.player(), get.event().target) < 0) return "cancel2";
+							for (var i = 5; i > 0; i--) {
+								if (player.hasEmptySlot(i)) return "equip" + i;
+							}
+							return "cancel2";
+						})
+						.set("target", target)
+						.forResult();
+					if (result.control != "cancel2") {
+						event.result = {
+							bool: true,
+							cost_data: result.control,
+						};
+					}
+				},
+				async content(event, trigger, player) {
+					const slot = event.cost_data;
+					player.line(trigger.player);
+					await player.disableEquip(slot);
+					trigger.cancel();
+					player
+						.when({ global: "useCardAfter" })
+						.filter(evt => evt === trigger.getParent(2))
+						.then(() => {
+							const cards = (trigger.cards || []).filterInD("od");
+							if (cards.length) player.gain(cards, "gain2");
+						});
+				},
+			},
+		},
+	},
+	dcsbdouwei: {
+		audio: 2,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.hasCard(card => get.tag(card, "damage") > 0.5, "h");
+		},
+		filterCard(card, player) {
+			const cardx = get.autoViewAs({ name: get.name(card, player), nature: get.nature(card, player), isCard: true });
+			return game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
+		},
+		async content(event, trigger, player) {
+			const card = event.cards[0],
+				cardx = get.autoViewAs({ name: get.name(card, player), nature: get.nature(card, player), isCard: true, storage: { dcsbdouwei: true } });
+			await player.chooseUseTarget(cardx, [1, Infinity], true, false).set("filterTarget", (card, player, target) => {
+				if (player === target || !player.inRangeOf(target)) return false;
+				return lib.filter.targetEnabledx(card, player, target);
+			});
+		},
+		group: ["dcsbdouwei_effect"],
+		subSkill: {
+			effect: {
+				silent: true,
+				trigger: { global: "dying" },
+				filter(event, player) {
+					return event.reason?.card?.storage?.dcsbdouwei;
+				},
+				content() {
+					if (player.isDamaged()) player.recover();
+					player.tempBanSkill("dcsbdouwei");
+				},
+			},
+		},
+	},
 	//谋荀彧
 	dcsbbizuo: {
 		audio: 2,
@@ -1385,15 +1504,27 @@ const skills = {
 			2: {
 				audio: 2,
 				trigger: { global: ["chooseToCompareAfter", "compareMultipleAfter"] },
-				filter(event, player) {
-					if (event.preserve) return false;
-					return lib.skill.dcshenduan_2.logTarget(event, player).length;
+				filter(event, player, name) {
+					if (event.preserve || event.result?.cancelled) return false;
+					if (!lib.skill.dcshenduan_2.logTarget(event, player).length) return false;
+					if (event.name == "compareMultiple") return true;
+					return !event.compareMultiple;
 				},
 				logTarget(event, player) {
-					return [
-						[event.player, event.num1],
-						[event.target, event.num2],
-					]
+					let list = [];
+					if (event.targets?.length) {
+						list.push([event.player, event.result.num1[0], event.result.player]);
+						for (const i in event.targets) {
+							list.push([event.targets[i], event.result.num2[i], event.result.targets[i]]);
+						}
+					} else {
+						list = [
+							[event.player, event.num1, event.card1],
+							[event.target, event.num2, event.card2],
+						];
+					}
+					event.set("dcshenduan_list", list);
+					return list
 						.filter(arr => arr[1] == 13)
 						.map(arr => arr[0])
 						.filter(target => target.isIn());
@@ -1409,10 +1540,10 @@ const skills = {
 							await target.gain(card, "draw");
 						} else break;
 					}
-					const putter = trigger.result.winner;
+					const putter = trigger.name == "compareMultiple" ? trigger.winner : trigger.result.winner;
 					if (putter?.isIn()) {
-						const card = putter === trigger.player ? trigger.card1 : trigger.card2;
-						if (!["o", "d"].includes(get.position(card))) return;
+						const card = trigger.dcshenduan_list?.filter(arr => arr[0] === putter)[0][2];
+						if (get.owner(card)) return;
 						game.log(putter, "将", card, "置于牌堆底");
 						await game.cardsGotoPile(card);
 					}

@@ -306,7 +306,7 @@ const skills = {
 				},
 				forced: true,
 				filter(event, player) {
-					return lib.skill.twhuiyu_effect.logTarget(event, player).isIn() && player.isPhaseUsing();
+					return lib.skill.twhuiyu_effect.logTarget(event, player)?.isIn() && player.isPhaseUsing();
 				},
 				content() {
 					const source = event.targets[0];
