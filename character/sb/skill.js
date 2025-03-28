@@ -4,8 +4,11 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//谋吕布
 	sbwushuang: {
-		audio: 2,
+		audio: 6,
 		inherit: "wushuang",
+		init(player) {
+			player.storage.sbwushuangCount = 0;
+		},	
 		trigger: { source: "damageBegin1" },
 		filter(event, player) {
 			const target = event.player;
@@ -27,6 +30,11 @@ const skills = {
 		},
 		forced: true,
 		logTarget: "player",
+		logAudio(event, player) {
+			const storage = player.storage.sbwushuangCount;
+			if (storage>0) return ["sbwushuang1.mp3", "sbwushuang2.mp3"];
+			return ["sbwushuang5.mp3", "sbwushuang6.mp3"];
+		},
 		content() {
 			trigger.num++;
 		},
@@ -34,21 +42,23 @@ const skills = {
 		preHidden: ["sbwushuang_1", "sbwushuang_2"],
 		subSkill: {
 			1: {
-				audio: "wushuang1",
+				audio: ["sbwushuang3.mp3","sbwushuang4.mp3"],
 				inherit: "wushuang1",
 			},
 			2: {
-				audio: "wushuang2",
+				audio: ["sbwushuang3.mp3","sbwushuang4.mp3"],
 				inherit: "wushuang2",
 			},
 		},
 	},
 	sbliyu: {
-		audio: 2,
+		audio: 5,
+		logAudio: index => (typeof index === "number" ? "sbliyu" + index + ".mp3" : 2),
 		trigger: { source: "damageSource" },
 		filter(event, player) {
 			return event.player != player && event?.card?.name == "sha" && event.player.countGainableCards(player, "hej") > 0 && event.player.isIn();
 		},
+		popup: false,
 		async cost(event, trigger, player) {
 			event.result = await player.gainPlayerCard(get.prompt2("sbliyu"), trigger.player, "hej", [1, trigger.num]).set("chooseOnly", true).forResult();
 		},
@@ -61,6 +71,7 @@ const skills = {
 				.map(list => list.map(card => get.type2(card)))
 				.flat()
 				.unique();
+			player.logSkill("sbliyu", [target], null, null, [types.length >= 3 ? 3 : [get.rand(1,2)]]);
 			if (types.length >= 3) {
 				let list = [`${get.translation(player)}视为对你指定的另一名其他角色使用一张【决斗】`, `你获得技能〖无双〗直至你下个回合结束`];
 				let result;
@@ -83,6 +94,7 @@ const skills = {
 						})
 						.forResult();
 				}
+				player.logSkill("sbliyu", null, null, null, [result.control == "选项一" ? 4 : 5]);
 				if (result.control == "选项一") {
 					const result2 = await target
 						.chooseTarget(
@@ -102,6 +114,7 @@ const skills = {
 					await player.useCard({ name: "juedou", isCard: true }, result2.targets[0], "noai");
 				} else {
 					await target.addTempSkills("sbwushuang", { player: "phaseAfter" });
+					target.storage.sbwushuangCount++;
 				}
 			}
 		},
