@@ -136,6 +136,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["twlifeng", "twniwo"],
+		clans: ["吴郡陆氏"],
 	},
 	huan_liushan: {
 		sex: "male",

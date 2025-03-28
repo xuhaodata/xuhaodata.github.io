@@ -290,6 +290,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["olcangxin", "olrunwei"],
+		clans: ["吴郡陆氏"],
 	},
 	caoxi: {
 		sex: "male",

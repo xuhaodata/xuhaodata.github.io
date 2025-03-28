@@ -354,6 +354,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["tyqianshou", "tytanlong", "tyxibei"],
+		clans: ["吴郡陆氏"],
 	},
 	ty_shen_liubei: {
 		sex: "male",
@@ -453,7 +454,6 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["tyzhuan"],
-		img: "image/character/chenshi.jpg",
 	},
 	ty_liubei: {
 		sex: "male",
