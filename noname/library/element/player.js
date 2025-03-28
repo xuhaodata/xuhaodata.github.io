@@ -2160,8 +2160,8 @@ export class Player extends HTMLDivElement {
 		game.expandSkills(skills);
 		for (let i = 0; i < skills.length; i++) {
 			const skill = skills[i],
-				hiddenCard = ifo.hiddenCard,
-				ifo = get.info(skills[i]);
+				ifo = get.info(skill),
+				hiddenCard = ifo.hiddenCard;
 			if (ifo.usable !== undefined) {
 				let num = ifo.usable;
 				if (typeof num === "function") num = ifo.usable(skill, player);
