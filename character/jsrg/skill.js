@@ -260,7 +260,7 @@ const skills = {
 			//仅能对自己使用桃
 			save: true,
 			skillTagFilter(player, arg, target) {
-				if (player != target || player.storage.jsrgdangren) return false;
+				return (player == target) != player.storage.jsrgdangren;
 			},
 		},
 		group: "jsrgdangren_save",
