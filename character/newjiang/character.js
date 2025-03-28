@@ -170,7 +170,7 @@ const characters = {
 		group: "jin",
 		hp: 3,
 		skills: ["mpjiusong", "mpmaotao", "mpbishi"],
-		doubleGroup: ["wei:qun", "jin"],
+		doubleGroup: ["wei", "qun", "jin"],
 	},
 	mp_xiangxiu: {
 		sex: "male",
