@@ -1763,7 +1763,7 @@ const skills = {
 		},
 	},
 	//幻丁尚涴
-	twshshiyi: {
+	twshiyi: {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
