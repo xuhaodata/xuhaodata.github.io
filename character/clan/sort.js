@@ -5,6 +5,7 @@ const characterSort = {
 	clan_wang: ["clan_wangshen", "clan_wangling", "clan_wangyun", "clan_wanghun", "clan_wanglun", "clan_wangguang", "clan_wangmingshan", "clan_wangchang"],
 	clan_zhong: ["clan_zhongyan", "clan_zhonghui", "clan_zhongyu", "clan_zhongyao"],
 	clan_yang: ["clan_yangci", "clan_yangxiu"],
+	clan_lu: [],
 };
 
 const characterSortTranslate = {
@@ -14,6 +15,7 @@ const characterSortTranslate = {
 	clan_wang: "太原·王氏",
 	clan_zhong: "颍川·钟氏",
 	clan_yang: "弘农·杨氏",
+	clan_lu: "吴郡·陆氏",
 };
 
 export { characterSort, characterSortTranslate };

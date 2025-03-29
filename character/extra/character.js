@@ -257,6 +257,7 @@ const characters = {
 		hp: 4,
 		skills: ["nzry_junlve", "nzry_cuike", "nzry_dinghuo"],
 		groupInGuozhan: "wu",
+		clans: ["吴郡陆氏"],
 	},
 	shen_zhangliao: {
 		sex: "male",

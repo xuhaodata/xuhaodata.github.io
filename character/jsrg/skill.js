@@ -214,7 +214,7 @@ const skills = {
 		zhuanhuanji: true,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (player.storage.jsrgdangren || event.name != "chooseToUse") return false;
+			if (player.storage.jsrgdangren) return false; // || event.name != "chooseToUse"
 			const card = get.autoViewAs({ name: "tao", isCard: true });
 			return event.filterCard(card, player, event) && event.filterTarget(card, player, player);
 		},
@@ -254,6 +254,13 @@ const skills = {
 			content(storage) {
 				if (storage) return "当你可以对其他角色使用【桃】时，你须视为使用之。";
 				return "当你需要对自己使用【桃】时，你可以视为使用之";
+			},
+		},
+		ai: {
+			//仅能对自己使用桃
+			save: true,
+			skillTagFilter(player, arg, target) {
+				return (player == target) != player.storage.jsrgdangren;
 			},
 		},
 		group: "jsrgdangren_save",

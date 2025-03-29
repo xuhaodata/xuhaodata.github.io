@@ -211,7 +211,6 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["sidai", "jieyu"],
-		img: "image/character/tw_huojun.jpg",
 		dieAudios: ["tw_huojun"],
 	},
 	muludawang: {
@@ -837,6 +836,7 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["zhaohan", "rangjie", "yizheng"],
+		clans: ["弘农杨氏"],
 	},
 	re_sp_zhugeliang: {
 		sex: "male",

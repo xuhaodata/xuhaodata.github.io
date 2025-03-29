@@ -593,6 +593,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["reqianxun", "relianying"],
+		clans: ["吴郡陆氏"],
 	},
 	re_daqiao: {
 		sex: "female",
