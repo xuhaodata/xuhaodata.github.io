@@ -606,7 +606,7 @@ export class GameEvent {
 					var filter = evt._backup.filterCard;
 					if (filter && !filter(card, player, evt)) return false;
 					if (evt._backup.filterOk && !evt._backup.filterOk()) return false;
-					if (info.filterOk != undefined) return get.filter(info.filterOk());
+					if (info.filterOk != undefined) return info.filterOk();
 					return true;
 				};
 				if (info.selectCard != undefined) this.selectCard = info.selectCard;
