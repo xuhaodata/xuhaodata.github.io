@@ -840,6 +840,12 @@ const translates = {
 	dcsbbaojia_info: "游戏开始时，你选择一名其他角色。其每回合首次受到渠道为牌的伤害时，你可废除1个装备栏并防止此伤害，且此牌结算完毕后你获得之。",
 	dcsbdouwei: "斗围",
 	dcsbdouwei_info: "出牌阶段，你可弃置一张伤害牌，视为对任意名攻击范围内包含你的其他角色使用之，当目标因此进入濒死时，你回复一点体力然后本回合此技能失效。",
+	dc_sb_caohong: "新杀谋曹洪",
+	dc_sb_caohong_prefix: "新杀谋",
+	dcsbyingjia: "迎驾",
+	dcsbyingjia_info: "锁定技，你对距离不为1的其他角色使用牌后，本回合你计算与其距离为1，然后若你与所有其他角色距离均为1，可获得一名其他角色所有手牌，然后交给其等量的牌。",
+	dcsbxianju: "险拒",
+	dcsbxianju_info: "出牌阶段限一次，你可获得攻击范围内所有角色各1张牌，若如此做，出牌阶段结束时，你弃置等同于攻击范围外角色数的牌。",
 };
 
 export default translates;

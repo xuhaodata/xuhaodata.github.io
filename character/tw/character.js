@@ -58,7 +58,7 @@ const characters = {
 		sex: "female",
 		group: "wei",
 		hp: 3,
-		skills: ["twshshiyi", "twchunhui"],
+		skills: ["twshiyi", "twchunhui"],
 	},
 	huan_huanggai: {
 		sex: "male",
@@ -136,6 +136,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["twlifeng", "twniwo"],
+		clans: ["吴郡陆氏"],
 	},
 	huan_liushan: {
 		sex: "male",

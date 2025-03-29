@@ -483,7 +483,7 @@ export class GameEvent {
 	 */
 	sendAsync() {
 		return new Promise(resolve => {
-			this.send()
+			this.send();
 			if (!lib.node?.waitForResult || !this.player.playerid) {
 				resolve(null);
 				return;
@@ -599,17 +599,16 @@ export class GameEvent {
 						return get.filter(evt.filterCard2).apply(this, arguments);
 					};
 				}
-				if (info.filterOk == undefined) {
-					this.filterOk = function () {
-						var evt = _status.event;
-						var card = get.card(),
-							player = get.player();
-						var filter = evt._backup.filterCard;
-						if (filter && !filter(card, player, evt)) return false;
-						if (evt._backup.filterOk) return evt._backup.filterOk();
-						return true;
-					};
-				} else this.filterOk = info.filterOk;
+				this.filterOk = function () {
+					var evt = _status.event;
+					var card = get.card(),
+						player = get.player();
+					var filter = evt._backup.filterCard;
+					if (filter && !filter(card, player, evt)) return false;
+					if (evt._backup.filterOk && !evt._backup.filterOk()) return false;
+					if (info.filterOk != undefined) return info.filterOk();
+					return true;
+				};
 				if (info.selectCard != undefined) this.selectCard = info.selectCard;
 				if (info.position != undefined) this.position = info.position;
 				//if(info.forced!=undefined) this.forced=info.forced;

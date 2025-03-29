@@ -2139,39 +2139,47 @@ export class Player extends HTMLDivElement {
 	 * @returns { boolean | undefined }
 	 */
 	hasUsableCard(name, type) {
+		const player = this;
 		if (typeof type !== "string") type = type ? "limit" : "all";
+		let event = get.event();
+		let evtNames = typeof type !== "string" || type === "all" ? ["chooseToUse", "chooseToRespond"] : ["chooseTo" + type.slice(0, 1).toUpperCase() + type.slice(1)];
 		if (
-			this.hasCard(i => {
-				if (get.name(i, this) !== name) return false;
+			player.hasCard(i => {
+				if (get.name(i, player) !== name) return false;
 				if (type === "all") return true;
-				let event = _status.event,
-					evt = event.getParent("chooseToUse");
-				if (get.itemtype(evt) !== "event") evt = event;
-				if (type === "respond") return lib.filter.cardRespondable(i, this, evt);
-				return lib.filter.cardEnabled(i, this, type === "limit" ? evt : "forceEnable");
+				return evtNames.some(evtName => {
+					let evt = event.getParent(evtName);
+					if (get.itemtype(evt) !== "event") evt = event;
+					if (type === "respond") return lib.filter.cardRespondable(i, player, evt);
+					return lib.filter.cardEnabled(i, player, type === "limit" ? evt : "forceEnable");
+				});
 			}, "hs")
 		)
 			return true;
-		const skills = this.getSkills("invisible").concat(lib.skill.global);
+		const skills = player.getSkills("invisible").concat(lib.skill.global);
 		game.expandSkills(skills);
 		for (let i = 0; i < skills.length; i++) {
-			const ifo = get.info(skills[i]),
+			const skill = skills[i],
+				ifo = get.info(skill),
 				hiddenCard = ifo.hiddenCard;
+			if (ifo.usable !== undefined) {
+				let num = ifo.usable;
+				if (typeof num === "function") num = ifo.usable(skill, player);
+				if (typeof num === "number" && get.skillCount(skill, player) >= num) continue;
+			}
 			if (ifo.viewAs && typeof ifo.viewAs !== "function" && typeof ifo.viewAs !== "string" && ifo.viewAs.name === name) {
-				const goon = !ifo.viewAsFilter || ifo.viewAsFilter(this) !== false;
+				const goon = !ifo.viewAsFilter || ifo.viewAsFilter(player) !== false;
 				const bool =
 					!ifo.filter ||
-					(() => {
-						let evtNames = typeof type !== "string" || type === "all" ? ["chooseToUse", "chooseToRespond"] : ["chooseTo" + type.slice(0, 1).toUpperCase() + type.slice(1)];
-						return evtNames.some(evtName => {
-							let evt = get.event().getParent(evtName);
-							if (get.itemtype(evt) !== "event") evt = get.event();
-							return ifo.filter(evt, this, evt.triggername);
-						});
-					})();
+					evtNames.some(evtName => {
+						let evt = event.getParent(evtName);
+						if (get.itemtype(evt) !== "event") evt = get.event();
+						if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+						return ifo.filter(evt, player, evt.triggername);
+					});
 				if (goon && bool) return true;
 			} else if (typeof hiddenCard == "function") {
-				if (hiddenCard(this, name)) return true;
+				if (hiddenCard(player, name)) return true;
 			}
 		}
 		return false;

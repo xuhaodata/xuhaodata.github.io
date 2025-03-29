@@ -10,7 +10,7 @@ const skills = {
 			return name === "tao" && player.countCards("h") > 0 && !player.hasSkillTag("noCompareSource");
 		},
 		filter(event, player) {
-			if (event.twfushu || event.name != "chooseToUse") return false;
+			if (event.twfushu) return false; // || event.name != "chooseToUse"
 			return event.filterCard({ name: "tao", isCard: true }, player, event) && player.countCards("h") && !player.hasSkillTag("noCompareSource");
 		},
 		filterCard: () => true,
@@ -161,9 +161,16 @@ const skills = {
 			isCard: true,
 		},
 		ai: {
+			save: true,
+			skillTagFilter(player, tag, arg) {
+				return player.countCards("h") > 0 && !player.hasSkillTag("noCompareSource");
+			},
 			order: 7,
 			result: {
-				player: 1,
+				player(player) {
+					if (_status.event.dying) return get.attitude(player, _status.event.dying);
+					return 1;
+				},
 			},
 		},
 		subSkill: {
@@ -203,7 +210,7 @@ const skills = {
 				})
 				.set("ai", target => {
 					const num = get.player().countCards("h") - target.countCards("h");
-					return get.attitude(get.player, target) * (num / 2);
+					return get.attitude(get.player(), target) * (num / 2);
 				})
 				.forResult();
 		},
@@ -321,7 +328,7 @@ const skills = {
 	},
 	twbeixing: {
 		round: 1,
-		trigger: { global: "phaseUseBegin" },
+		trigger: { global: "phaseUseEnd" },
 		filter(event, player) {
 			return player != event.player && event.player.countCards("h") && !event.player.hasHistory("sourceDamage");
 		},
@@ -1756,7 +1763,7 @@ const skills = {
 		},
 	},
 	//幻丁尚涴
-	twshshiyi: {
+	twshiyi: {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,

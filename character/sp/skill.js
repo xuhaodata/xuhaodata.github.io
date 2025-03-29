@@ -793,9 +793,6 @@ const skills = {
 				if (tag === "nokeep") return (!arg || (arg?.card && get.name(arg.card) === "tao")) && get.event()?.type === "phase" && game.hasPlayer(current => current.hasSkill("spoljinglei") && !current.storage.counttrigger?.spoljinglei && get.attitude(current, player) > 0 && current.getHp() > 1) && player.hasCard(card => get.name(card) !== "tao", "h");
 			},
 		},
-		hiddenCard(player, name) {
-			return !player.isTempBanned("spolzhujiu") && name === "jiu";
-		},
 	},
 	spoljinglei: {
 		audio: 2,
@@ -822,12 +819,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.damage("thunder", "nosource");
-			if (
-				!game.hasPlayer(target => {
-					return target.hasSkill("spolzhujiu", null, null, false);
-				})
-			)
-				return;
+			if (!player.isIn() || !game.hasPlayer(target => target.hasSkill("spolzhujiu", null, null, false))) return;
 			const result = await player
 				.chooseTarget(
 					"惊雷：请选择一名拥有〖煮酒〗的角色",

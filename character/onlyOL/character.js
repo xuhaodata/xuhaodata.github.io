@@ -4,6 +4,7 @@ const characters = {
 		group: "shu",
 		hp: 4,
 		skills: ["olfuhun"],
+		names: "关|兴-张|苞",
 	},
 	ol_jsrg_liuhong: {
 		sex: "male",

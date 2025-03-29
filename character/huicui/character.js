@@ -547,6 +547,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["zhente", "zhiwei"],
+		clans: ["吴郡陆氏"],
 	},
 	huaxin: {
 		sex: "male",

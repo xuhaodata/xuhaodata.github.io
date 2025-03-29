@@ -237,6 +237,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["nzry_huaiju", "nzry_yili", "nzry_zhenglun"],
+		clans: ["吴郡陆氏"],
 	},
 	sunliang: {
 		sex: "male",
@@ -290,6 +291,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["drlt_qianjie", "drlt_jueyan", "drlt_poshi"],
+		clans: ["吴郡陆氏"],
 	},
 	yl_yuanshu: {
 		sex: "male",
