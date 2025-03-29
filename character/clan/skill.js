@@ -771,7 +771,7 @@ const skills = {
 						return (
 							(ui.selected.cards || []).reduce((sum, card) => {
 								return sum + get.cardNameLength(card);
-							}, 0) >= get.cardNameLength(lib.skill.clanchengqi_backup.viewAs.name) && get.event()._backup.filterCard(get.card(), get.player(), get.event())
+							}, 0) >= get.cardNameLength(lib.skill.clanchengqi_backup.viewAs.name)
 						);
 					},
 					ai1(card) {
