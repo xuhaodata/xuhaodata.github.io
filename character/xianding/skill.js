@@ -3575,7 +3575,7 @@ const skills = {
 						let draw = player.maxHp * get.effect(player, { name: "draw" }, player, player),
 							damage = trigger.targets.reduce((sum, target) => {
 								return sum + get.damageEffect(target, player, player);
-							}, 0);
+							}, 0) || 0;
 						if (trigger.cards)
 							damage += trigger.cards.reduce((acc, card) => {
 								return acc + get.value(card, player);
