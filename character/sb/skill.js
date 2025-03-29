@@ -32,7 +32,7 @@ const skills = {
 		logTarget: "player",
 		logAudio(event, player) {
 			const storage = player.storage.sbwushuangCount;
-			if (storage>0) return ["sbwushuang1.mp3", "sbwushuang2.mp3"];
+			if (storage > 0) return ["sbwushuang1.mp3", "sbwushuang2.mp3"];
 			return ["sbwushuang5.mp3", "sbwushuang6.mp3"];
 		},
 		content() {
