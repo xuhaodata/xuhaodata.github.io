@@ -175,12 +175,25 @@ const skills = {
 			return player.hasCard(card => get.tag(card, "damage") > 0.5, "h");
 		},
 		filterCard(card, player) {
-			const cardx = get.autoViewAs({ name: get.name(card, player), nature: get.nature(card, player), isCard: true });
+			const cardx = get.autoViewAs({
+				name: get.name(card, player),
+				nature: get.nature(card, player),
+				suit: get.suit(card, player),
+				number: get.number(card, player),
+				isCard: true,
+			});
 			return game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
 		},
 		async content(event, trigger, player) {
 			const card = event.cards[0],
-				cardx = get.autoViewAs({ name: get.name(card, player), nature: get.nature(card, player), isCard: true, storage: { dcsbdouwei: true } });
+				cardx = get.autoViewAs({
+					name: get.name(card, player),
+					nature: get.nature(card, player),
+					suit: get.suit(card, player),
+					number: get.number(card, player),
+					isCard: true,
+					storage: { dcsbdouwei: true },
+				});
 			await player.chooseUseTarget(cardx, [1, Infinity], true, false).set("filterTarget", (card, player, target) => {
 				if (player === target || !player.inRangeOf(target)) return false;
 				return lib.filter.targetEnabledx(card, player, target);

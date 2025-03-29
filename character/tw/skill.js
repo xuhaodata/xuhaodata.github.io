@@ -210,7 +210,7 @@ const skills = {
 				})
 				.set("ai", target => {
 					const num = get.player().countCards("h") - target.countCards("h");
-					return get.attitude(get.player, target) * (num / 2);
+					return get.attitude(get.player(), target) * (num / 2);
 				})
 				.forResult();
 		},

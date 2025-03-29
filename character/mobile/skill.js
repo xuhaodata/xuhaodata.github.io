@@ -1649,12 +1649,12 @@ const skills = {
 				result = await player
 					.chooseControl()
 					.set("choiceList", [
-						"视为使用" +
+						"视为使用两张" +
 							names
 								.filter(i => !target.hasCard({ name: i }, "h"))
 								.map(i => "【" + get.translation(i) + "】")
 								.join("、") +
-							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "中的一张牌" : "") +
+							(names.filter(i => !target.hasCard({ name: i }, "h")).length > 1 ? "中的牌" : "") +
 							"（无距离和次数限制）",
 						"将你与其手牌中的" + allNames.map(i => "【" + get.translation(i) + "】").join("、") + "替换为牌堆中等量的【杀】且这些牌不计入各自手牌上限直到各自结束阶段",
 					])
@@ -1678,15 +1678,18 @@ const skills = {
 					.set("list", [target, names, allNames])
 					.forResult();
 			if (result.index === 0) {
-				const list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false));
-				const [choice] =
-					list.length > 1
+				for(let i=0;i<2;i++){
+					let list = get.inpileVCardList(info => names.includes(info[2]) && !target.hasCard({ name: info[2] }, "h")).filter(info => player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), false));
+					if(!list.length) break;
+					const [choice] =
+						list.length > 1
 						? await player
 								.chooseButton([get.translation(event.name) + "：请选择你要视为使用的基本牌", [list, "vcard"]], true)
 								.set("ai", button => get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }), false))
 								.forResult("links")
 						: list;
-				if (choice) await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false);
+					if (choice) await player.chooseUseTarget(new lib.element.VCard({ name: choice[2], nature: choice[3] }), true, false);
+				}
 			} else {
 				const cards = [player.getCards("h", { name: allNames }), target.getCards("h", { name: allNames })];
 				await game
