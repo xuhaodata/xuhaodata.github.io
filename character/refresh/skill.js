@@ -10891,243 +10891,217 @@ const skills = {
 			if (name == "phaseBefore") return game.phaseNumber == 0;
 			return player.storage.rehuashen?.character?.length > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			var name = event.triggername;
-			if (trigger.name != "phase" || (name == "phaseBefore" && game.phaseNumber == 0)) {
-				player.logSkill("rehuashen");
-				lib.skill.rehuashen.addHuashens(player, 3);
-				event.logged = true;
-			}
+		async cost(event, trigger, player) {
 			_status.noclearcountdown = true;
-			event.videoId = lib.status.videoId++;
-			var cards = player.storage.rehuashen.character.slice(0);
-			var skills = [];
-			var sto = player.storage.rehuashen;
-			for (var i in player.storage.rehuashen.map) {
-				skills.addArray(player.storage.rehuashen.map[i]);
+			if (trigger.name !== "phase" || event.triggername === "phaseBefore") {
+				event.result = { bool: true, cost_data: ["替换当前化身"] };
+				return;
 			}
-			var cond = "out";
-			if (event.triggername == "phaseBegin") {
-				cond = "in";
+			const prompt = "###" + get.prompt(event.skill) + '###<div class="text center">替换当前化身牌或制衡至多两张其他化身牌</div>';
+			const result = await player
+				.chooseControl("替换当前化身", "制衡其他化身", "cancel2")
+				.set("ai", () => {
+					const { player, cond } = get.event();
+					let skills = player.storage.rehuashen.character.map(i => get.character(i).skills).flat();
+					skills.randomSort();
+					skills.sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
+					if (skills[0] === player.storage.rehuashen.current2 || get.skillRank(skills[0], cond) < 1) return "制衡其他化身";
+					return "替换当前化身";
+				})
+				.set("cond", event.triggername)
+				.set("prompt", prompt)
+				.forResult();
+			const control = result.control;
+			event.result = { bool: typeof control === "string" && control !== "cancel2", cost_data: control };
+		},
+		async content(event, trigger, player) {
+			let choice = event.cost_data;
+			if (Array.isArray(choice)) {
+				lib.skill.rehuashen.addHuashens(player, 3);
+				[choice] = choice;
 			}
-			skills.randomSort();
-			skills.sort(function (a, b) {
-				return get.skillRank(b, cond) - get.skillRank(a, cond);
-			});
-			event.aiChoice = skills[0];
-			var choice = "更换技能";
-			if (event.aiChoice == player.storage.rehuashen.current2 || get.skillRank(event.aiChoice, cond) < 1) choice = "弃置化身";
+			const id = lib.status.videoId++,
+				prompt = choice === "替换当前化身" ? "化身：请选择你要更换的武将牌" : "化身：选择制衡至多两张武将牌";
+			const cards = player.storage.rehuashen.character;
 			if (player.isOnline2()) {
 				player.send(
-					function (cards, id) {
-						var dialog = ui.create.dialog("是否发动【化身】？", [cards, (item, type, position, noclick, node) => lib.skill.rehuashen.$createButton(item, type, position, noclick, node)]);
+					(cards, prompt, id) => {
+						const dialog = ui.create.dialog(prompt, [cards, lib.skill.rehuashen.$createButton]);
 						dialog.videoId = id;
 					},
 					cards,
-					event.videoId
+					prompt,
+					id
 				);
 			}
-			var dialog = (event.dialog = ui.create.dialog(get.prompt("rehuashen"), [cards, (item, type, position, noclick, node) => lib.skill.rehuashen.$createButton(item, type, position, noclick, node)]));
-			event.dialog.videoId = event.videoId;
-			var buttons = dialog.content.querySelector(".buttons");
-			var array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== "none");
-			var choosed = player.storage.rehuashen.choosed;
-			var groups = array
-				.map(i => get.character(i.link).group)
-				.unique()
-				.sort((a, b) => {
-					const getNum = g => (lib.group.includes(g) ? lib.group.indexOf(g) : lib.group.length);
-					return getNum(a) - getNum(b);
-				});
-			if (choosed.length > 0 || groups.length > 1) {
-				event.dialog.style.bottom = (parseInt(event.dialog.style.top || "0", 10) + get.is.phoneLayout() ? 230 : 220) + "px";
-				event.dialog.addPagination({
-					data: array,
-					totalPageCount: groups.length + Math.sign(choosed.length),
-					container: dialog.content,
-					insertAfter: buttons,
-					onPageChange(state) {
-						const { pageNumber, data, pageElement } = state;
-						const { groups, choosed } = pageElement;
-						data.forEach(item => {
-							item.classList[
-								(() => {
-									const name = item.link,
-										goon = choosed.length > 0;
-									if (goon && pageNumber === 1) return choosed.includes(name);
-									const group = get.character(name).group;
-									return groups.indexOf(group) + (1 + goon) === pageNumber;
-								})()
-									? "remove"
-									: "add"
-							]("nodisplay");
-						});
-						ui.update();
-					},
-					pageLimitForCN: ["←", "→"],
-					pageNumberForCN: (choosed.length > 0 ? ["常用"] : []).concat(
-						groups.map(i => {
-							const isChineseChar = char => {
-								const regex = /[\u4e00-\u9fff\u3400-\u4dbf\ud840-\ud86f\udc00-\udfff\ud870-\ud87f\udc00-\udfff\ud880-\ud88f\udc00-\udfff\ud890-\ud8af\udc00-\udfff\ud8b0-\ud8bf\udc00-\udfff\ud8c0-\ud8df\udc00-\udfff\ud8e0-\ud8ff\udc00-\udfff\ud900-\ud91f\udc00-\udfff\ud920-\ud93f\udc00-\udfff\ud940-\ud97f\udc00-\udfff\ud980-\ud9bf\udc00-\udfff\ud9c0-\ud9ff\udc00-\udfff]/u;
-								return regex.test(char);
-							}; //友情提醒：regex为基本汉字区间到扩展G区的Unicode范围的正则表达式，非加密/混淆
-							const str = get.plainText(lib.translate[i + "2"] || lib.translate[i] || "无");
-							return isChineseChar(str.slice(0, 1)) ? str.slice(0, 1) : str;
-						})
-					),
-					changePageEvent: "click",
-					pageElement: {
-						groups: groups,
-						choosed: choosed,
-					},
-				});
-			}
-			if (!event.isMine()) {
-				event.dialog.style.display = "none";
-			}
-			if (event.logged) event._result = { control: "更换技能" };
-			else
-				player
-					.chooseControl("弃置化身", "更换技能", "cancel2")
-					.set("ai", function () {
-						return _status.event.choice;
-					})
-					.set("choice", choice);
-			"step 1";
-			event.control = result.control;
-			if (event.control == "cancel2") {
-				if (player.isOnline2()) {
-					player.send("closeDialog", event.videoId);
+			const dialog = ui.create.dialog(prompt, [cards, lib.skill.rehuashen.$createButton]);
+			dialog.videoId = id;
+			if (!event.isMine()) event.dialog.style.display = "none";
+			if (choice === "替换当前化身") {
+				const buttons = dialog.content.querySelector(".buttons");
+				const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== "none");
+				const choosed = player.storage.rehuashen.choosed;
+				const groups = array
+					.map(i => get.character(i.link).group)
+					.unique()
+					.sort((a, b) => {
+						const getNum = g => (lib.group.includes(g) ? lib.group.indexOf(g) : lib.group.length);
+						return getNum(a) - getNum(b);
+					});
+				if (choosed.length > 0 || groups.length > 1) {
+					dialog.style.bottom = (parseInt(dialog.style.top || "0", 10) + get.is.phoneLayout() ? 230 : 220) + "px";
+					dialog.addPagination({
+						data: array,
+						totalPageCount: groups.length + Math.sign(choosed.length),
+						container: dialog.content,
+						insertAfter: buttons,
+						onPageChange(state) {
+							const { pageNumber, data, pageElement } = state;
+							const { groups, choosed } = pageElement;
+							data.forEach(item => {
+								item.classList[
+									(() => {
+										const name = item.link,
+											goon = choosed.length > 0;
+										if (goon && pageNumber === 1) return choosed.includes(name);
+										const group = get.character(name).group;
+										return groups.indexOf(group) + (1 + goon) === pageNumber;
+									})()
+										? "remove"
+										: "add"
+								]("nodisplay");
+							});
+							ui.update();
+						},
+						pageLimitForCN: ["←", "→"],
+						pageNumberForCN: (choosed.length > 0 ? ["常用"] : []).concat(
+							groups.map(i => {
+								const isChineseChar = char => {
+									const regex = /[\u4e00-\u9fff\u3400-\u4dbf\ud840-\ud86f\udc00-\udfff\ud870-\ud87f\udc00-\udfff\ud880-\ud88f\udc00-\udfff\ud890-\ud8af\udc00-\udfff\ud8b0-\ud8bf\udc00-\udfff\ud8c0-\ud8df\udc00-\udfff\ud8e0-\ud8ff\udc00-\udfff\ud900-\ud91f\udc00-\udfff\ud920-\ud93f\udc00-\udfff\ud940-\ud97f\udc00-\udfff\ud980-\ud9bf\udc00-\udfff\ud9c0-\ud9ff\udc00-\udfff]/u;
+									return regex.test(char);
+								}; //友情提醒：regex为基本汉字区间到扩展G区的Unicode范围的正则表达式，非加密/混淆
+								const str = get.plainText(lib.translate[i + "2"] || lib.translate[i] || "无");
+								return isChineseChar(str.slice(0, 1)) ? str.slice(0, 1) : str;
+							})
+						),
+						changePageEvent: "click",
+						pageElement: {
+							groups: groups,
+							choosed: choosed,
+						},
+					});
 				}
+			}
+			const finish = () => {
+				if (player.isOnline2()) player.send("closeDialog", id);
+				dialog.close();
 				delete _status.noclearcountdown;
-				if (!_status.noclearcountdown) {
-					game.stopCountChoose();
-				}
-				event.dialog.close();
-				event.finish();
-				return;
-			}
-			if (!event.logged) {
-				player.logSkill("rehuashen");
-				event.logged = true;
-			}
-			var next = player.chooseButton(true).set("dialog", event.videoId);
-			if (event.control == "弃置化身") {
-				next.set("selectButton", [1, 2]);
-				next.set("filterButton", function (button) {
-					return button.link != _status.event.current;
-				});
-				next.set("current", player.storage.rehuashen.current);
-			} else {
-				next.set("ai", function (button) {
-					return player.storage.rehuashen.map[button.link].includes(_status.event.choice) ? 2.5 : 1 + Math.random();
-				});
-				next.set("choice", event.aiChoice);
-			}
-			var prompt = event.control == "弃置化身" ? "选择制衡至多两张化身" : "选择要切换的化身";
-			var func = function (id, prompt) {
-				var dialog = get.idDialog(id);
-				if (dialog) dialog.content.childNodes[0].innerHTML = prompt;
+				if (!_status.noclearcountdown) game.stopCountChoose();
 			};
-			if (player.isOnline2()) {
-				player.send(func, event.videoId, prompt);
-			} else if (event.isMine()) {
-				func(event.videoId, prompt);
-			}
-			"step 2";
-			if (result.bool && event.control != "弃置化身") {
-				event.card = result.links[0];
-				var func = function (card, id) {
-					var dialog = get.idDialog(id);
-					if (dialog) {
-						//禁止翻页
-						var paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
-						if (paginationInstance?.state) paginationInstance.state.pageRefuseChanged = true;
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							if (dialog.buttons[i].link == card) {
-								dialog.buttons[i].classList.add("selectedx");
-							} else {
-								dialog.buttons[i].classList.add("unselectable");
+			while (true) {
+				const next = player.chooseButton(true).set("dialog", id);
+				if (choice === "制衡其他化身") {
+					next.set("selectButton", [1, 2]);
+					next.set("filterButton", button => button.link !== get.event().current);
+					next.set("current", player.storage.rehuashen.current);
+				} else {
+					next.set("ai", button => {
+						const { player, cond } = get.event();
+						let skills = player.storage.rehuashen.character.map(i => get.character(i).skills).flat();
+						skills.randomSort();
+						skills.sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
+						return player.storage.rehuashen.map[button.link].includes(skills[0]) ? 2.5 : 1 + Math.random();
+					});
+					next.set("cond", event.triggername);
+				}
+				const result = await next.forResult();
+				if (choice === "制衡其他化身") {
+					finish();
+					lib.skill.rehuashen.removeHuashen(player, result.links);
+					lib.skill.rehuashen.addHuashens(player, result.links.length);
+					return;
+				} else {
+					const card = result.links[0];
+					const func = function (card, id) {
+						const dialog = get.idDialog(id);
+						if (dialog) {
+							//禁止翻页
+							const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
+							if (paginationInstance?.state) paginationInstance.state.pageRefuseChanged = true;
+							for (let i = 0; i < dialog.buttons.length; i++) {
+								if (dialog.buttons[i].link == card) {
+									dialog.buttons[i].classList.add("selectedx");
+								} else {
+									dialog.buttons[i].classList.add("unselectable");
+								}
 							}
 						}
+					};
+					if (player.isOnline2()) {
+						player.send(func, card, id);
+					} else if (event.isMine()) {
+						func(card, id);
 					}
-				};
-				if (player.isOnline2()) {
-					player.send(func, event.card, event.videoId);
-				} else if (event.isMine()) {
-					func(event.card, event.videoId);
-				}
-				var list = player.storage.rehuashen.map[event.card].slice(0);
-				list.push("返回");
-				player
-					.chooseControl(list)
-					.set("choice", event.aiChoice)
-					.set("ai", function () {
-						return _status.event.choice;
-					});
-			} else {
-				lib.skill.rehuashen.removeHuashen(player, result.links.slice(0));
-				lib.skill.rehuashen.addHuashens(player, result.links.length);
-			}
-			"step 3";
-			if (result.control == "返回") {
-				var func = function (id) {
-					var dialog = get.idDialog(id);
-					if (dialog) {
-						//允许翻页
-						var paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
-						if (paginationInstance?.state) paginationInstance.state.pageRefuseChanged = false;
-						for (var i = 0; i < dialog.buttons.length; i++) {
-							dialog.buttons[i].classList.remove("selectedx");
-							dialog.buttons[i].classList.remove("unselectable");
+					const result2 = await player
+						.chooseControl(player.storage.rehuashen.map[card], "返回")
+						.set("ai", () => {
+							const { player, cond, controls } = get.event();
+							let skills = controls.slice();
+							skills.randomSort();
+							skills.sort((a, b) => get.skillRank(b, cond) - get.skillRank(a, cond));
+							return skills[0];
+						})
+						.set("cond", event.triggername)
+						.forResult();
+					const control = result2.control;
+					if (control === "返回") {
+						const func2 = function (card, id) {
+							const dialog = get.idDialog(id);
+							if (dialog) {
+								//允许翻页
+								const paginationInstance = dialog.paginationMap?.get(dialog.content.querySelector(".buttons"));
+								if (paginationInstance?.state) paginationInstance.state.pageRefuseChanged = false;
+								for (let i = 0; i < dialog.buttons.length; i++) {
+									dialog.buttons[i].classList.remove("selectedx");
+									dialog.buttons[i].classList.remove("unselectable");
+								}
+							}
+						};
+						if (player.isOnline2()) {
+							player.send(func2, card, id);
+						} else if (event.isMine()) {
+							func2(card, id);
 						}
+					} else {
+						finish();
+						player.storage.rehuashen.choosed.add(card);
+						if (player.storage.rehuashen.current != card) {
+							const old = player.storage.rehuashen.current;
+							player.storage.rehuashen.current = card;
+							game.broadcastAll(
+								(player, character, old) => {
+									player.tempname.remove(old);
+									player.tempname.add(character);
+									player.sex = lib.character[character][0];
+								},
+								player,
+								card,
+								old
+							);
+							game.log(player, "将性别变为了", "#y" + get.translation(get.character(card).sex) + "性");
+							player.changeGroup(get.character(card).group);
+						}
+						player.storage.rehuashen.current2 = control;
+						if (!player.additionalSkills.rehuashen?.includes(control)) {
+							player.flashAvatar("rehuashen", card);
+							player.syncStorage("rehuashen");
+							player.updateMarks("rehuashen");
+							await player.addAdditionalSkills("rehuashen", control);
+							// lib.skill.rehuashen.createAudio(card,link,'re_zuoci');
+						}
+						return;
 					}
-				};
-				if (player.isOnline2()) {
-					player.send(func, event.videoId);
-				} else if (event.isMine()) {
-					func(event.videoId);
 				}
-				event._result = { control: "更换技能" };
-				event.goto(1);
-				return;
-			}
-			if (player.isOnline2()) {
-				player.send("closeDialog", event.videoId);
-			}
-			event.dialog.close();
-			delete _status.noclearcountdown;
-			if (!_status.noclearcountdown) {
-				game.stopCountChoose();
-			}
-			if (event.control == "弃置化身") return;
-			player.storage.rehuashen.choosed.add(event.card);
-			if (player.storage.rehuashen.current != event.card) {
-				const old = player.storage.rehuashen.current;
-				player.storage.rehuashen.current = event.card;
-				game.broadcastAll(
-					function (player, character, old) {
-						player.tempname.remove(old);
-						player.tempname.add(character);
-						player.sex = lib.character[character][0];
-					},
-					player,
-					event.card,
-					old
-				);
-				game.log(player, "将性别变为了", "#y" + get.translation(lib.character[event.card][0]) + "性");
-				player.changeGroup(lib.character[event.card][1]);
-			}
-			var link = result.control;
-			player.storage.rehuashen.current2 = link;
-			if (!player.additionalSkills.rehuashen || !player.additionalSkills.rehuashen.includes(link)) {
-				player.addAdditionalSkills("rehuashen", link);
-				player.flashAvatar("rehuashen", event.card);
-				player.syncStorage("rehuashen");
-				player.updateMarks("rehuashen");
-				// lib.skill.rehuashen.createAudio(event.card,link,'re_zuoci');
 			}
 		},
 		init(player, skill) {
