@@ -216,8 +216,8 @@ class SkillAudio {
 		for (const name of [this.player.name, this.player.name1, this.player.name2]) {
 			if (!name) continue;
 			if (filter(name)) return name;
-			const tempname = get.character(name).tempname.find(i => filter(i));
-			if (tempname) return tempname;
+			const tempname2 = get.character(name).tempname.find(i => filter(i));
+			if (tempname2) return tempname2;
 		}
 		return "";
 	}

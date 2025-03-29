@@ -853,7 +853,7 @@ export class Get extends GetCompatible {
 			if (num === 3 || num === 4) return [];
 			return;
 		}
-		return info || get.convertedCharacter({ isNull: true });
+		return get.convertedCharacter(info || { isNull: true });
 	}
 	characterInitFilter(name) {
 		const info = get.character(name);
