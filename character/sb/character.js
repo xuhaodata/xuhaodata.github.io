@@ -338,6 +338,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["sbqianxun", "sblianying"],
+		clans: ["吴郡陆氏"],
 	},
 };
 

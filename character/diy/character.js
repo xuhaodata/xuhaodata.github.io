@@ -165,6 +165,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["luweiyan", "qianxun"],
+		clans: ["吴郡陆氏"],
 	},
 	diy_weiyan: {
 		sex: "male",
@@ -425,6 +426,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["nshuaishuang", "nsfengli"],
+		clans: ["吴郡陆氏"],
 	},
 	ns_chengpu: {
 		sex: "male",

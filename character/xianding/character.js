@@ -1,4 +1,10 @@
 const characters = {
+	dc_sb_caohong: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcsbyingjia", "dcsbxianju"],
+	},
 	dc_sb_dongcheng: {
 		sex: "male",
 		group: "qun",
@@ -61,6 +67,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["dcshenduan", "dckegou", "dcdixian"],
+		clans: ["吴郡陆氏"],
 	},
 	two_dc_sp_machao: {
 		sex: "male",
@@ -391,6 +398,7 @@ const characters = {
 		group: "wu",
 		hp: 3,
 		skills: ["dcxiongmu", "dczhangcai", "dcruxian"],
+		clans: ["吴郡陆氏"],
 	},
 	dc_xujing: {
 		sex: "male",
@@ -606,6 +614,7 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["dczhaohan", "dcjinjie", "dcjue"],
+		clans: ["弘农杨氏"],
 	},
 	dc_tengfanglan: {
 		sex: "female",
