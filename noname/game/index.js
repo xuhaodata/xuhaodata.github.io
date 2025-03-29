@@ -1357,7 +1357,7 @@ export class Game extends GameCompatible {
 				num = info.phaseUse;
 			} else if (typeof info?.[_status.event.name] == "number") {
 				num = info[_status.event.name];
-			} else if (info.default) {
+			} else if (typeof info?.default == "number") {
 				num = info.default;
 			} else if (_status.connectMode) {
 				num = lib.configOL.choose_timeout;

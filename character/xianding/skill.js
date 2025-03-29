@@ -3,6 +3,85 @@ import cards from "../sp2/card.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//谋曹洪
+	dcsbyingjia: {
+		trigger: { player: "useCardAfter" },
+		forced: true,
+		filter(event, player) {
+			return lib.skill.dcsbyingjia.logTarget(event, player).length;
+		},
+		logTarget(event, player) {
+			return event.targets?.filter(target => target != player && get.distance(player, target) != 1);
+		},
+		async content(event, trigger, player) {
+			const targets = event.targets.sortBySeat();
+			player.addTempSkill("dcsbyingjia_distance");
+			player.markAuto("dcsbyingjia_distance", targets);
+			if (!game.hasPlayer(target => target != player && get.distance(player, target) != 1)) {
+				const result = await player
+					.chooseTarget(`迎驾：你可以获得一名其他角色所有手牌，然后交给其等量张牌`, (card, player, target) => {
+						return player != target && target.countCards("h");
+					})
+					.set("ai", target => -get.attitude(get.player, target) * target.countCards("h"))
+					.forResult();
+				if (result.bool) {
+					const target = result.targets[0];
+					player.line(target);
+					const resultx = await player.gainPlayerCard(target, true, "h", target.countCards("h")).forResult();
+					const num = resultx.cards?.length;
+					await player.chooseToGive(target, num, true, "he");
+				}
+			}
+		},
+		subSkill: {
+			distance: {
+				onremove: true,
+				charlotte: true,
+				mark: true,
+				intro: {
+					content: "本回合你计算与 $ 的距离为1",
+				},
+				mod: {
+					globalFrom(from, to) {
+						if (from.getStorage("dcsbyingjia_distance").includes(to)) return -Infinity;
+					},
+				},
+			},
+		},
+	},
+	dcsbxianju: {
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return game.hasPlayer(target => target != player && target.inRangeOf(player) && target.countGainableCards(player, "he"));
+		},
+		filterTarget(card, player, target) {
+			return target != player && target.inRangeOf(player);
+		},
+		selectTarget: -1,
+		multiline: true,
+		multitarget: true,
+		async content(event, trigger, player) {
+			await player.gainMultiple(event.targets, "he");
+			player
+				.when("phaseUseEnd")
+				.filter(evt => evt === event.getParent("phaseUse"))
+				.then(() => {
+					const num = game.countPlayer(target => target != player && !target.inRangeOf(player));
+					if (!num) return;
+					if (player.countDiscardableCards(player, "he")) {
+						player.chooseToDiscard(num, "he", true);
+					}
+				});
+		},
+		ai: {
+			order: 2,
+			result: {
+				player: 1,
+				target: -1,
+			},
+		},
+	},
 	//谋董承
 	dcsbbaojia: {
 		audio: 2,
@@ -96,12 +175,25 @@ const skills = {
 			return player.hasCard(card => get.tag(card, "damage") > 0.5, "h");
 		},
 		filterCard(card, player) {
-			const cardx = get.autoViewAs({ name: get.name(card, player), nature: get.nature(card, player), isCard: true });
+			const cardx = get.autoViewAs({
+				name: get.name(card, player),
+				nature: get.nature(card, player),
+				suit: get.suit(card, player),
+				number: get.number(card, player),
+				isCard: true,
+			});
 			return game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
 		},
 		async content(event, trigger, player) {
 			const card = event.cards[0],
-				cardx = get.autoViewAs({ name: get.name(card, player), nature: get.nature(card, player), isCard: true, storage: { dcsbdouwei: true } });
+				cardx = get.autoViewAs({
+					name: get.name(card, player),
+					nature: get.nature(card, player),
+					suit: get.suit(card, player),
+					number: get.number(card, player),
+					isCard: true,
+					storage: { dcsbdouwei: true },
+				});
 			await player.chooseUseTarget(cardx, [1, Infinity], true, false).set("filterTarget", (card, player, target) => {
 				if (player === target || !player.inRangeOf(target)) return false;
 				return lib.filter.targetEnabledx(card, player, target);
