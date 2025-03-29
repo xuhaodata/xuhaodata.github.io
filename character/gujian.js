@@ -1260,7 +1260,6 @@ game.import("character", function () {
 					if (player.countCards("h") == 0) return false;
 					return true;
 				},
-				// alter:true,
 				filterTarget(card, player, target) {
 					return target != player && target.countCards("h") > 0 && target.hp > 0 && target.hp <= player.maxHp;
 				},
@@ -1277,9 +1276,6 @@ game.import("character", function () {
 					}
 					"step 2";
 					player.changeHp(event.num);
-					if (get.is.altered("duhun")) {
-						event.finish();
-					}
 					"step 3";
 					event.target.changeHp(-event.num);
 					"step 4";
@@ -2081,7 +2077,6 @@ game.import("character", function () {
 				filter(event, player) {
 					return player.maxHp > player.hp && player.countCards("he", { color: "red" }) > 0;
 				},
-				// alter:true,
 				content() {
 					"step 0";
 					player.chooseCardTarget({
@@ -2104,11 +2099,7 @@ game.import("character", function () {
 					if (result.bool) {
 						event.target = result.targets[0];
 						player.logSkill("xuelu", event.target, "fire");
-						if (get.is.altered("xuelu")) {
-							event.num = 1;
-						} else {
-							event.num = Math.min(2, Math.ceil((player.maxHp - player.hp) / 2));
-						}
+						event.num = Math.min(2, Math.ceil((player.maxHp - player.hp) / 2));
 						player.discard(result.cards);
 					} else {
 						event.finish();
@@ -2142,7 +2133,6 @@ game.import("character", function () {
 				skillAnimation: true,
 				animationColor: "fire",
 				derivation: "juejing",
-				// alter:true,
 				filter(event, player) {
 					return !player.storage.shahun && player.hp <= 0;
 				},
@@ -2463,7 +2453,6 @@ game.import("character", function () {
 				intro: {
 					content: "time",
 				},
-				// alter:true,
 				ai: {
 					noh: true,
 					threaten: 0.8,
@@ -2525,7 +2514,6 @@ game.import("character", function () {
 					cardEnabled(card, player) {
 						if (_status.currentPhase != player) return;
 						var num = 2;
-						if (get.is.altered("yuling")) num = 1;
 						if (player.countUsed() >= player.maxHp + num) return false;
 					},
 				},
@@ -2620,7 +2608,6 @@ game.import("character", function () {
 			shishui_info: "锁定技，每当你使用一张红色牌，你令目标失去1点体力。",
 			duhun: "渡魂",
 			duhun_info: "濒死阶段，你可以与一名体力值不超过你的体力上限的角色拼点，若你赢，你失去1点体力上限并与该角色交换体力值；若你没赢，你立即死亡。",
-			duhun_info_alter: "濒死阶段，你可以与一名体力值不超过你的体力上限的角色拼点，若你赢，你失去1点体力上限并将体力值回复至与该角色相同；若你没赢，你立即死亡。",
 			chizhen: "驰阵",
 			chizhen_info: "出牌阶段开始时，你可以摸X张牌并弃置X张牌，若你弃置了【杀】，可以视为使用一张决斗（X为你已损失的体力值且至少为1）。",
 			xidie: "戏蝶",
@@ -2649,13 +2636,11 @@ game.import("character", function () {
 			yuehua_info: "每当你于回合外使用、打出或弃置红色牌，你可以摸一张牌。",
 			xuelu: "血戮",
 			xuelu_info: "结束阶段，若你已受伤，你可以弃置一张红色牌并对一名其他角色造成1点火焰伤害；若你已损失体力值不少于3，改为造成2点火焰伤害。",
-			xuelu_info_alter: "结束阶段，若你已受伤，你可以弃置一张红色牌并对一名其他角色造成1点火焰伤害。",
 			fanshi: "反噬",
 			fanshi_info: "锁定技，弃牌阶段结束时，若你本回合内造成过伤害，你失去1点体力并摸一张牌。",
 			shahun: "煞魂",
 			shahun2: "煞魂",
 			shahun_info: "限定技，濒死阶段，你可以复原武将牌，弃置所有牌并摸三张牌，然后将体力回复至1；若如此做，你失去技能〖反噬〗，获得技能〖绝境〗，并于两回合后立即死亡。",
-			shahun_info_alter: "限定技，濒死阶段，你可以复原武将牌，弃置所有牌并摸三张牌，然后将体力回复至1；若如此做，你失去技能〖反噬〗，获得技能〖绝境〗，并于两回合后立即死亡。",
 
 			yanjia: "偃甲",
 			yanjia_info: "出牌阶段，你可以将两张非特殊装备牌合成为一张强化装备。",
@@ -2686,7 +2671,6 @@ game.import("character", function () {
 			zhaolu_info: "锁定技，每隔X回合，你失去1点体力上限，每当你受到1点伤害或有人死亡，视为减少两个回合，X为现存角色数且至多为5。",
 			jiehuo_info: "限定技，出牌阶段，你可以对一名其他角色造成2点火焰伤害，然后死亡。",
 			yuling_info: "锁定技，你没有摸牌和弃牌阶段，你的手牌数始终为5，你在一个出牌阶段最多使用X+2张牌，X为你的体力上限。",
-			yuling_info_alter: "锁定技，你没有摸牌和弃牌阶段，你的手牌数始终为5，你在一个出牌阶段最多使用X+1张牌，X为你的体力上限。",
 		},
 	};
 });

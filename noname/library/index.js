@@ -8741,7 +8741,6 @@ export class Library {
 			const characters = lib.config.all.characters.slice(0);
 			characters.remove("standard");
 			characters.remove("old");
-			game.saveConfig("vintageSkills", vintage);
 			game.saveConfig("favouriteCharacter", favs);
 			game.saveConfig("favouriteMode", favmodes);
 			game.saveConfig("theme", "simple");

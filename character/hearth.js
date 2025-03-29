@@ -3291,7 +3291,6 @@ game.import("character", function () {
 				filter(event, player) {
 					return event.type == "dying" && player.countCards("he", { color: "black" }) > 0;
 				},
-				// alter:true,
 				filterCard: { color: "black" },
 				position: "he",
 				check(card) {
@@ -3303,7 +3302,7 @@ game.import("character", function () {
 				selectTarget: -1,
 				content() {
 					target.recover();
-					if (!get.is.altered("yuelu")) target.changeHujia();
+					target.changeHujia();
 				},
 				ai: {
 					order: 10,
@@ -3450,7 +3449,6 @@ game.import("character", function () {
 				},
 			},
 			qingzun: {
-				// alter:true,
 				subSkill: {
 					count: {
 						trigger: { player: "useCard" },
@@ -3466,7 +3464,6 @@ game.import("character", function () {
 					draw1: {
 						trigger: { player: "phaseBegin" },
 						filter(event, player) {
-							if (get.is.altered("qingzun")) return player.storage.qingzun >= 3;
 							return player.storage.qingzun >= 2;
 						},
 						frequent: true,
@@ -3477,7 +3474,6 @@ game.import("character", function () {
 					draw2: {
 						trigger: { player: "phaseEnd" },
 						filter(event, player) {
-							if (get.is.altered("qingzun")) return player.storage.qingzun >= 9;
 							return player.storage.qingzun >= 6;
 						},
 						frequent: true,
@@ -3500,14 +3496,8 @@ game.import("character", function () {
 					content(storage, player) {
 						if (!storage) return "未使用过青玉牌";
 						var str = "手牌上限+" + storage;
-						var num1, num2;
-						if (get.is.altered("qingzun")) {
-							num1 = 3;
-							num2 = 9;
-						} else {
-							num1 = 2;
+						var num1 = 2,
 							num2 = 6;
-						}
 						if (storage >= num2) {
 							str += "；准备阶段和结束阶段，你可以摸一张牌";
 						} else if (storage >= num1) {
@@ -5874,10 +5864,8 @@ game.import("character", function () {
 			xshixin: {
 				trigger: { source: "damageEnd" },
 				forced: true,
-				// alter:true,
 				filter(event, player) {
 					if (event._notrigger.includes(event.player)) return false;
-					if (get.is.altered("xshixin") && event.player.hp < player.hp) return false;
 					return event.player.isAlive() && event.player != player;
 				},
 				content() {
@@ -5893,7 +5881,6 @@ game.import("character", function () {
 				filterTarget(card, player, target) {
 					return player.countCards("h") != target.countCards("h");
 				},
-				// alter:true,
 				content() {
 					var num = player.countCards("h") - target.countCards("h");
 					if (num > 0) {
@@ -5944,7 +5931,6 @@ game.import("character", function () {
 				filterTarget(card, player, target) {
 					return player.countCards("h") != target.countCards("h");
 				},
-				// alter:true,
 				content() {
 					var num = player.countCards("h") - target.countCards("h");
 					if (num > 0) {
@@ -6032,15 +6018,14 @@ game.import("character", function () {
 			guozai: {
 				enable: "phaseUse",
 				usable: 1,
-				// alter:true,
 				filter(event, player) {
-					return player.countCards("h") < (get.is.altered("guozai") ? 3 : 4);
+					return player.countCards("h") < 4;
 				},
 				init(player) {
 					player.storage.guozai2 = 0;
 				},
 				content() {
-					var num = (get.is.altered("guozai") ? 3 : 4) - player.countCards("h");
+					var num = 4 - player.countCards("h");
 					player.draw(num);
 					player.addSkill("guozai2");
 					player.storage.guozai2 += num;
@@ -6105,14 +6090,12 @@ game.import("character", function () {
 			hanshuang: {
 				trigger: { source: "damageEnd" },
 				forced: true,
-				// alter:true,
 				filter(event, player) {
 					if (event._notrigger.includes(event.player)) return false;
 					return event.card && get.color(event.card) == "black" && !event.player.isTurnedOver() && event.player.isAlive();
 				},
 				content() {
 					trigger.player.turnOver();
-					if (get.is.altered("hanshuang")) trigger.player.draw();
 					player.loseHp();
 				},
 				ai: {
@@ -6129,7 +6112,6 @@ game.import("character", function () {
 			oldhanshuang: {
 				trigger: { source: "damageEnd" },
 				forced: true,
-				// alter:true,
 				filter(event, player) {
 					if (event._notrigger.includes(event.player)) return false;
 					return event.card && get.color(event.card) == "black" && !event.player.isTurnedOver() && event.player.isAlive();
@@ -6211,10 +6193,9 @@ game.import("character", function () {
 						return Infinity;
 					},
 					targetInRange() {
-						if (!get.is.altered("fengnu")) return true;
+						return true;
 					},
 				},
-				// alter:true,
 				trigger: { player: "useCard" },
 				filter(event, player) {
 					if (_status.currentPhase != player) return false;
@@ -6338,12 +6319,11 @@ game.import("character", function () {
 			liechao: {
 				enable: "phaseUse",
 				usable: 1,
-				// alter:true,
 				filter(event, player) {
 					return !player.isTurnedOver() && player.countCards("h") <= player.hp;
 				},
 				content() {
-					player.draw(get.is.altered("liechao") ? 3 : 4);
+					player.draw(4);
 					player.turnOver();
 					player.skip("phaseDiscard");
 				},
@@ -7003,7 +6983,6 @@ game.import("character", function () {
 				trigger: { player: "chooseToRespondBegin" },
 				direct: true,
 				usable: 1,
-				// alter:true,
 				filter(event, player) {
 					if (event.responded) return false;
 					return game.hasPlayer(function (current) {
@@ -7016,9 +6995,6 @@ game.import("character", function () {
 						if (target == player) return false;
 						var nh = target.countCards("h");
 						if (nh == 0) return false;
-						if (get.is.altered("jingxiang")) {
-							return nh <= player.countCards("h");
-						}
 						return true;
 					}).ai = function (target) {
 						return 1 - get.attitude(player, target);
@@ -8902,7 +8878,6 @@ game.import("character", function () {
 			shouwang: "守望",
 			shouwang2: "守望",
 			shouwang_info: "每名角色每局限一次，当一名角色进入濒死状态时，你可以令其回复1点体力并获得1点护甲。",
-			shouwang_info_alter: "每名角色每局限一次，当一名角色进入濒死状态时，你可以令其回复1点体力。",
 			qingtian: "擎天",
 			qingtian_info: "锁定技，若你的体力值为全场最多，你受到的伤害始终+1。",
 			qianfu: "潜伏",
@@ -8957,7 +8932,6 @@ game.import("character", function () {
 			midian_info: "出牌阶段限一次，你可以弃置一张锦囊牌，然后随机获得三张锦囊牌。",
 			yuelu: "月露",
 			yuelu_info: "在一名角色的濒死阶段，你可以弃置一张黑色牌令其回复1点体力并获得1点护甲。",
-			yuelu_info_alter: "在一名角色的濒死阶段，你可以弃置一张黑色牌令其回复1点体力。",
 			xingluo: "星落",
 			xingluo_info: "准备阶段，你可以令任意名手牌数多于你的角色各弃置一张手牌，然后你可以从弃置的牌中选择一张加入手牌。",
 			yushou: "御兽",
@@ -8982,7 +8956,6 @@ game.import("character", function () {
 			ayuling_info: "每当你受到一次伤害，你可以获得一张随机青玉牌。",
 			qingzun: "青樽",
 			qingzun_info: "本局对战中，每当你使用一张青玉牌，你的手牌上限+1；当你累计使用两张青玉牌后，你可以于准备阶段摸一张牌；当你累计使用六张青玉牌后，你可以于结束阶段摸一张牌。",
-			qingzun_info_alter: "本局对战中，每当你使用一张青玉牌，你的手牌上限+1；当你累计使用三张青玉牌后，你可以于准备阶段摸一张牌；当你累计使用九张青玉牌后，你可以于结束阶段摸一张牌。",
 			lianjin: "炼金",
 			lianjin_info: "出牌阶段限一次，你可以弃置一张牌并获得一张由三张随机牌组成的药水；当你因弃置而失去药水牌时，你随机获得药水的组成卡牌之一。",
 			shouji: "收集",
@@ -9169,14 +9142,12 @@ game.import("character", function () {
 			mieshi_info: "锁定技，结束阶段，你失去1点体力，并对一名随机的其他角色造成1点火焰伤害。",
 			xshixin: "蚀心",
 			xshixin_info: "锁定技，每当你对一名其他角色造成一次伤害，受伤害角色与你各失去1点体力。",
-			xshixin_info_alter: "锁定技，每当你对一名其他角色造成一次伤害，若受伤害角色体力值不小于你，其与你各失去1点体力。",
 			xmojian: "魔箭",
 			xmojian_info: "每当你的武将牌翻至正面时，你可以指定一名角色视为对其使用了一张【杀】。",
 			enze: "恩泽",
 			enze_info: "出牌阶段限一次，你可以指定一名角色令其手牌数与你相等（最多摸或弃三张牌）。",
 			oldenze: "恩泽",
 			oldenze_info: "出牌阶段限一次，你可以指定一名角色令其手牌数与你相等。",
-			enze_info_alter: "出牌阶段限一次，你可以指定一名角色令其手牌数与你相等（最多摸或弃两张牌）。",
 			chongsheng: "重生",
 			chongsheng_bg: "生",
 			chongsheng_info: "濒死阶段，你可弃置所有牌，将体力回复至2-X，并摸2-X张牌，X为你本局发动此技能的次数。每局最多发动2次。",
@@ -9186,7 +9157,6 @@ game.import("character", function () {
 			guozai2: "过载",
 			guozai2_bg: "载",
 			guozai_info: "出牌阶段限一次，你可将手牌补至四张，并于此阶段结束时弃置等量的牌。",
-			guozai_info_alter: "出牌阶段限一次，你可将手牌补至三张，并于此阶段结束时弃置等量的牌。",
 			guozaix: "过载",
 			guozaix2: "过载",
 			guozaix2_bg: "载",
@@ -9195,14 +9165,12 @@ game.import("character", function () {
 			oldhanshuang_info: "锁定技，你使用黑色牌对一名未翻面角色造成伤害后，你令受伤害角色翻面。",
 			hanshuang: "寒霜",
 			hanshuang_info: "锁定技，你使用黑色牌对一名未翻面角色造成伤害后，你令受伤害角色翻面，然后你失去1点体力。",
-			hanshuang_info_alter: "锁定技，你使用黑色牌对一名未翻面角色造成伤害后，你令受伤害角色翻面并摸一张牌，然后你失去1点体力。",
 			bingshi: "冰噬",
 			bingshi_info: "锁定技，你死亡时，对所有其他角色造成1点伤害。",
 			huanwu: "唤雾",
 			huanwu_info: "出牌阶段限一次，你可以令一名角色增加1点体力上限，回复1点体力，并摸两张牌（每名角色限发动一次）。",
 			fengnu: "风怒",
 			fengnu_info: "锁定技，你使用的任何卡牌无数量及距离限制；当你于回合内重复使用同名卡牌时，你摸一张牌（每回合最多以此法摸三张牌）。",
-			fengnu_info_alter: "锁定技，你使用的任何卡牌无数量限制；当你于回合内重复使用同名卡牌时，你摸一张牌（每回合最多以此法摸三张牌）。",
 			shengdun: "圣盾",
 			shengdun_info: "锁定技，准备阶段，若你没有护甲，你获得1点护甲。",
 			jingmeng: "镜梦",
@@ -9223,7 +9191,6 @@ game.import("character", function () {
 			qingliu_info: "锁定技，你防止即将受到的火焰伤害。",
 			liechao: "猎潮",
 			liechao_info: "出牌阶阶段限一次，若你的武将牌正面朝上且手牌数不大于当前体力值，你可以翻面并摸四张牌，若如此做，你跳过本回合的弃牌阶段。",
-			liechao_info_alter: "出牌阶阶段限一次，若你的武将牌正面朝上且手牌数不大于当前体力值，你可以翻面并摸三张牌，若如此做，你跳过本回合的弃牌阶段。",
 			aoshu: "奥术",
 			aoshu_info: "出牌阶段限一次，你可以将一张黑桃牌当作无中生有使用。",
 
@@ -9264,7 +9231,6 @@ game.import("character", function () {
 			zuzhou_info: "锁定技，准备阶段，若场上没有浮雷且你手牌中有黑桃牌，你将牌堆中的一张浮雷置于你的判定区；当一名角色受到浮雷伤害时，你移去此浮雷。",
 			jingxiang: "镜像",
 			jingxiang_info: "每回合限一次，当你需要打出卡牌时，你可以观看一名角色的手牌并将其视为你的手牌打出。",
-			jingxiang_info_alter: "每回合限一次，当你需要打出卡牌时，你可以观看一名手牌数不多于你的角色的手牌并将其视为你的手牌打出。",
 			tuteng: "图腾",
 			tuteng_info: "出牌阶段，你可以获得一个随机基础图腾；每当你受到一次伤害，你随机失去一个图腾。",
 			zuling: "祖灵",

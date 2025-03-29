@@ -1539,37 +1539,37 @@ export class Get extends GetCompatible {
 		return num / list.length;
 	}
 	rank(name, num) {
-		if (typeof name == "object" && name.name) {
-			name = name.name;
+		if (typeof name === "object" && name.name) name = name.name;
+		num = num === true ? 9 : typeof num === "number" ? num : false;
+
+		if (name === _status.lord) {
+			return num ? Math.round((7 * (num - 1)) / 8 + 1) : "ap";
 		}
-		if (num == true) num = 9;
-		if (typeof num != "number") num = false;
-		if (name == _status.lord) return num ? Math.round((7 * (num - 1)) / 8 + 1) : "ap";
-		var rank = lib.rank;
-		if (lib.characterPack.standard[name] || lib.characterPack.shenhua[name]) {
-			var skills = get.character(name, 3);
-			for (var i = 0; i < skills.length; i++) {
-				if (skills[i].alter && !lib.config.vintageSkills.includes(skills[i])) {
-					name = lib.rank.a[0];
-					break;
-				}
+
+		const RANK_MAP = [
+			{ key: "s", factor: 8, ref: lib.rank.s },
+			{ key: "ap", factor: 7, ref: lib.rank.ap },
+			{ key: "a", factor: 6, ref: lib.rank.a },
+			{ key: "am", factor: 5, ref: lib.rank.am },
+			{ key: "bp", factor: 4, ref: lib.rank.bp }, // 中位数等级
+			{ key: "b", factor: 3, ref: lib.rank.b },
+			{ key: "bm", factor: 2, ref: lib.rank.bm },
+			{ key: "c", factor: 1, ref: lib.rank.c },
+			{ key: "d", factor: 0, ref: lib.rank.d },
+		];
+		for (const { key, factor, ref } of RANK_MAP) {
+			if (ref.includes(name)) {
+				return num ? Math.round((factor * (num - 1)) / 8 + 1) : key;
 			}
 		}
-		if (rank.s.includes(name)) return num ? Math.round((8 * (num - 1)) / 8 + 1) : "s";
-		if (rank.ap.includes(name)) return num ? Math.round((7 * (num - 1)) / 8 + 1) : "ap";
-		if (rank.a.includes(name)) return num ? Math.round((6 * (num - 1)) / 8 + 1) : "a";
-		if (rank.am.includes(name)) return num ? Math.round((5 * (num - 1)) / 8 + 1) : "am";
-		if (rank.bp.includes(name)) return num ? Math.round((4 * (num - 1)) / 8 + 1) : "bp";
-		if (rank.b.includes(name)) return num ? Math.round((3 * (num - 1)) / 8 + 1) : "b";
-		if (rank.bm.includes(name)) return num ? Math.round((2 * (num - 1)) / 8 + 1) : "bm";
-		if (rank.c.includes(name)) return num ? Math.round((1 * (num - 1)) / 8 + 1) : "c";
-		if (rank.d.includes(name)) return num ? Math.round((0 * (num - 1)) / 8 + 1) : "d";
-		if (lib.character[name]) {
-			if (lib.character[name].isBoss || lib.character[name].isBossAllowed || lib.character[name].isHiddenBoss) {
-				return num ? Math.round((9 * (num - 1)) / 8 + 1) : "sp";
-			}
+
+		const charInfo = lib.character[name];
+		if (charInfo?.isBoss || charInfo?.isBossAllowed || charInfo?.isHiddenBoss) {
+			return num ? Math.round((9 * (num - 1)) / 8 + 1) : "sp";
 		}
-		return num ? Math.round((9 * (num - 1)) / 8 + 1) : "x";
+
+		console.warn(`"${name}"未配置等级，已按众数"bp"处理`);
+		return num ? Math.round((4 * (num - 1)) / 8 + 1) : "bp";
 	}
 	skillRank(skill, type, grouped) {
 		var info = lib.skill[skill];
