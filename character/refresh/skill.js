@@ -10892,7 +10892,6 @@ const skills = {
 			return player.storage.rehuashen?.character?.length > 0;
 		},
 		async cost(event, trigger, player) {
-			_status.noclearcountdown = true;
 			if (trigger.name !== "phase" || event.triggername === "phaseBefore") {
 				event.result = { bool: true, cost_data: ["替换当前化身"] };
 				return;
@@ -10920,6 +10919,7 @@ const skills = {
 				lib.skill.rehuashen.addHuashens(player, 3);
 				[choice] = choice;
 			}
+			_status.noclearcountdown = true;
 			const id = lib.status.videoId++,
 				prompt = choice === "替换当前化身" ? "化身：请选择你要更换的武将牌" : "化身：选择制衡至多两张武将牌";
 			const cards = player.storage.rehuashen.character;
