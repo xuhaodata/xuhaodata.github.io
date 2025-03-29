@@ -182,7 +182,7 @@ const skills = {
 				number: get.number(card, player),
 				isCard: true,
 			});
-			return game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
+			return get.tag(card, "damage") > 0.5 && game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
 		},
 		async content(event, trigger, player) {
 			const card = event.cards[0],
@@ -3573,9 +3573,10 @@ const skills = {
 					"value",
 					(function () {
 						let draw = player.maxHp * get.effect(player, { name: "draw" }, player, player),
-							damage = trigger.targets.reduce((sum, target) => {
-								return sum + get.damageEffect(target, player, player);
-							}, 0) || 0;
+							damage =
+								trigger.targets.reduce((sum, target) => {
+									return sum + get.damageEffect(target, player, player);
+								}, 0) || 0;
 						if (trigger.cards)
 							damage += trigger.cards.reduce((acc, card) => {
 								return acc + get.value(card, player);
