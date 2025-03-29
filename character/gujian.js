@@ -512,7 +512,6 @@ game.import("character", function () {
 						});
 						event.card = card;
 						game.log(player, "将", trigger.card, "变为", card);
-						// if(!event.isMine()) game.delayx();
 						trigger.card = get.autoViewAs(card);
 						trigger.cards = [card];
 						game.cardsGotoOrdering(card).relatedEvent = trigger;
@@ -941,10 +940,6 @@ game.import("character", function () {
 						player.logSkill("lianjing", result.targets);
 						player.insertEvent("lianjing", lib.skill.lianjing.content_phase);
 						player.storage.lianjing_targets = result.targets.slice(0);
-						// player.storage.lianjing--;
-						// if(player.storage.lianjing<=0){
-						// 	player.unmarkSkill('lianjing');
-						// }
 						game.delay();
 					}
 				},
@@ -1889,7 +1884,6 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					player.chooseTarget(get.prompt("fanyin"), function (card, player, target) {
-						// if(player==target) return false;
 						if (target.isLinked()) return true;
 						if (target.isTurnedOver()) return true;
 						if (target.countCards("j")) return true;
@@ -2559,7 +2553,6 @@ game.import("character", function () {
 			yunyou: "云游",
 			yunyou_info: "每两轮限一次，出牌阶段，你可以发现一张地图牌本局未使用过的地图牌并使用之。",
 			xuanzhen: "玄阵",
-			// xuanzhen_bg:'阵',
 			xuanzhen_info: "每轮限一次，当你成为一名其他角色的卡牌惟一目标时，你可以发现一张牌代替此牌。",
 			qingshu: "青书",
 			qingshu_info: "结束阶段，你可以令一名角色永久获得一个你使用过且不是当前地图的地图牌效果（每个地图最多发动一次）。",

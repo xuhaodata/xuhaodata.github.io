@@ -686,18 +686,6 @@ game.import("character", function () {
 			},
 			liangou2: {
 				mod: {
-					// cardEnabled:function(card,player){
-					// 	return false;
-					// },
-					// cardUsable:function(card,player){
-					// 	return false;
-					// },
-					// cardRespondable:function(card,player){
-					// 	return false;
-					// },
-					// cardSavable:function(card,player){
-					// 	return false;
-					// },
 					globalTo(from, to) {
 						if (from == to.storage.liangou2) return -Infinity;
 					},
@@ -710,14 +698,6 @@ game.import("character", function () {
 				content() {
 					trigger.num++;
 				},
-				// ai:{
-				//     effect:{
-				//         target:function(card,player,target){
-				//             if(get.tag(card,'damage')) return [1,-2];
-				//             if(get.tag(card,'respond')) return [1,-1];
-				//         }
-				//     }
-				// }
 			},
 			xiyang: {
 				trigger: { player: "phaseEnd" },
@@ -978,7 +958,6 @@ game.import("character", function () {
 					return !target.hujia;
 				},
 				selectCard: 2,
-				// usable:1,
 				content() {
 					target.changeHujia();
 				},
@@ -2509,7 +2488,6 @@ game.import("character", function () {
 						current.removeSkill("luan2");
 					}
 					target.addSkill("luan2");
-					// target.storage.luan='now';
 					target.storage.luan2 = player;
 				},
 				ai: {

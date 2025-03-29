@@ -706,7 +706,6 @@ game.import("character", function () {
 				content() {
 					player.storage.anwugu2--;
 					if (player.storage.anwugu2 <= 0) {
-						// player.loseHp();
 						player.removeSkill("anwugu2");
 					} else {
 						player.updateMarks();
@@ -1683,7 +1682,6 @@ game.import("character", function () {
 				init(player) {
 					player.storage.qixia = [];
 				},
-				// mark:true,
 				intro: {
 					content(storage) {
 						if (!storage.length) {
@@ -2813,18 +2811,6 @@ game.import("character", function () {
 				},
 			},
 			xuanyan: {
-				// trigger:{source:'damageBefore'},
-				// forced:true,
-				// priority:5,
-				// check:function(event,player){
-				// 	return player.hp>3;
-				// },
-				// filter:function(event){
-				// 	return event.card&&get.color(event.card)=='red';
-				// },
-				// content:function(){
-				// 	trigger.nature='fire';
-				// },
 				group: ["xuanyan2", "xuanyan3"],
 			},
 			xuanyan2: {
@@ -3232,12 +3218,6 @@ game.import("character", function () {
 					if (result.bool) {
 						var cards = player.getCards("hej");
 						var target = result.targets[0];
-						// if(player.storage.shuiyun&&player.storage.shuiyun.length){
-						// 	target.gainMaxHp();
-						// 	target.recover(player.storage.shuiyun.length);
-						// 	cards=cards.concat(player.storage.shuiyun);
-						// 	player.storage.shuiyun.length=0;
-						// }
 						player.$give(cards, target);
 						target.gain(cards);
 						target.addSkill("changnian2");

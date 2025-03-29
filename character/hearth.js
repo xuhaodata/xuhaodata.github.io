@@ -625,7 +625,7 @@ game.import("character", function () {
 				group: "qun",
 				hp: 1,
 				skills: [],
-				isUnseen: true,
+				isUnseen: false,
 			},
 			hs_ashamoer: {
 				sex: "female",
@@ -1076,7 +1076,6 @@ game.import("character", function () {
 						});
 						event.card = card;
 						game.log(player, "将", trigger.card, "变为", card);
-						// if(!event.isMine()) game.delayx();
 						trigger.card = get.autoViewAs(card);
 						trigger.cards = [card];
 						game.cardsGotoOrdering(card).relatedEvent = trigger;
@@ -1158,13 +1157,6 @@ game.import("character", function () {
 				},
 				group: ["hshuanling_count"],
 				subSkill: {
-					// clear:{
-					// 	trigger:{player:'phaseAfter'},
-					// 	silent:true,
-					// 	content(){
-					// 		player.storage.hshuanling.length=0;
-					// 	}
-					// },
 					count: {
 						trigger: { global: "useCard" },
 						silent: true,
@@ -1173,7 +1165,6 @@ game.import("character", function () {
 							if (!event.player.isEnemiesOf(player)) return false;
 							if (get.type(event.card) != "trick") return false;
 							if (event.targets.length != 1) return false;
-							// if(!event.targets[0].isFriendsOf(player)) return false;
 							if (get.info(event.card).multitarget) return false;
 							if (get.info(event.card).singleCard) return false;
 							if (!get.info(event.card).enable) return false;
@@ -1286,11 +1277,6 @@ game.import("character", function () {
 				ai: {
 					threaten: 0.7,
 				},
-				// onremove(player){
-				// 	delete player.storage.ylyuchu;
-				// 	delete player.storage.ylyuchu2;
-				// 	delete player.storage.ylyuchu3;
-				// },
 				group: ["ylyuchu_swap", "ylyuchu_phase"],
 				subSkill: {
 					chosen: {},
@@ -1377,7 +1363,6 @@ game.import("character", function () {
 							maxHp: 2,
 							hs: get.cards(2),
 							skill: skill,
-							// intro:'下个敌方回合开始前，随机切换至此随从',
 							intro2: "当前回合结束后进行一个额外回合并切换回本体",
 							onremove(player) {
 								player.storage.ylyuchu.remove(skill);
@@ -1592,7 +1577,6 @@ game.import("character", function () {
 						intro: {
 							content(storage, player) {
 								var skill = player.storage.hsnitai_card_skill;
-								// var skill=storage.name.slice(8);
 								return '<div class="skill">【' + lib.translate[skill] + "】</div><div>" + get.skillInfoTranslation(skill) + "</div>";
 							},
 						},
@@ -2143,7 +2127,6 @@ game.import("character", function () {
 					return false;
 				},
 				content() {
-					// player.tempHide();
 					player.gain(game.createCard("shan"), "gain2");
 				},
 			},
@@ -2173,7 +2156,6 @@ game.import("character", function () {
 						player.draw();
 					} else {
 						player.discoverCard(list);
-						// player.gain(game.createCard(list.randomGet()),'draw');
 					}
 				},
 				ai: {
@@ -2543,7 +2525,6 @@ game.import("character", function () {
 				trigger: { player: "phaseBefore" },
 				unique: true,
 				skillAnimation: true,
-				//forceunique: true,
 				filter() {
 					return game.roundNumber >= 3;
 				},
@@ -3578,9 +3559,6 @@ game.import("character", function () {
 					return 8 - get.value(card);
 				},
 				position: "he",
-				// discard:false,
-				// lose:false,
-				// delay:false,
 				content() {
 					"step 0";
 					var names = [];
@@ -3625,27 +3603,6 @@ game.import("character", function () {
 					}
 					var fakecard = game.createCard(name, cards[0].suit, cards[0].number);
 					player.gain(fakecard, "gain2");
-					// cards[0].style.transitionDuration='0.2s';
-					// ui.refresh(cards[0]);
-					// cards[0].classList.add('opaque');
-					// event.cardname=name;
-					// if(player!=game.me){
-					// 	var fakecard=game.createCard(name);
-					// 	fakecard.node.info.remove();
-					// 	player.$draw(fakecard);
-					// }
-					// game.delay(0,200);
-					// stp 1
-					// cards[0].style.transitionDuration='0s';
-					// ui.refresh(cards[0]);
-					// cards[0].classList.remove('fullskin');
-					// cards[0].init([cards[0].suit,cards[0].number,event.cardname]);
-					// game.delay(0,100);
-					// stp 2
-					// cards[0].style.transitionDuration='';
-					// ui.refresh(cards[0]);
-					// cards[0].classList.remove('opaque');
-					// game.delay(0,200);
 				},
 				template: {
 					type: "hsyaoshui",
@@ -4615,17 +4572,11 @@ game.import("character", function () {
 				},
 				derivation: ["hsbaowu_cangbaotu", "hsbaowu_huangjinyuanhou"],
 				priority: 1,
-				// filterCard:true,
-				// check(card){
-				// 	return 6-get.value(card);
-				// },
-				// position:'he',
 				content() {
 					"step 0";
 					event.card = game.createCard("hsbaowu_cangbaotu");
 					player.storage.xunbao2 = event.card;
 					player.storage.xunbao2_markcount = player.storage.xunbao2.number;
-					// player.$draw(player.storage.xunbao2);
 					player.addSkill("xunbao2");
 					game.delay(2);
 					event.node = event.card.copy("thrown", "center", "thrownhighlight", ui.arena).addTempClass("start");
@@ -6502,11 +6453,6 @@ game.import("character", function () {
 						player: 1,
 					},
 				},
-				// mod:{
-				// 	globalFrom(from,to,distance){
-				// 		return distance-from.hujia;
-				// 	}
-				// },
 			},
 			oldzhanhou: {
 				enable: "phaseUse",
@@ -6672,17 +6618,6 @@ game.import("character", function () {
 					}
 					return false;
 				},
-				// check(event,player){
-				// 	var eff=get.effect(event.targets[0],event.card,event.player,player);
-				// 	if(eff<=0) return true;
-				// 	if(get.value(event.card,event.player,'raw')<5){
-				// 		return true;
-				// 	}
-				// 	return false;
-				// },
-				// prompt2(event,player){
-				// 	return '发现一张牌代替你对'+get.translation(event.targets[0])+'使用的'+get.translation(event.card);
-				// },
 				autodelay: true,
 				content() {
 					"step 0";
@@ -6743,7 +6678,6 @@ game.import("character", function () {
 						});
 						event.card = card;
 						game.log(player, "将", trigger.card, "变为", card);
-						// if(!event.isMine()) game.delayx();
 						trigger.card = get.autoViewAs(card);
 						trigger.cards = [card];
 						game.cardsGotoOrdering(card).relatedEvent = trigger;
@@ -6932,7 +6866,6 @@ game.import("character", function () {
 					"step 1";
 					player.judging[0] = player.storage.mdzhoufu2;
 					trigger.position.appendChild(player.storage.mdzhoufu2);
-					// trigger.untrigger();
 					game.log(player, "的判定牌改为", player.storage.mdzhoufu2);
 					delete player.storage.mdzhoufu2;
 					delete player.storage.mdzhoufu3;
@@ -7299,9 +7232,6 @@ game.import("character", function () {
 								}
 								player.addSkill(rand.randomGet());
 							}
-							// if(rand2.length>=3){
-							// 	player.removeSkill(rand2.randomGet());
-							// }
 							game.delay();
 							event.finish();
 						}
@@ -7372,7 +7302,6 @@ game.import("character", function () {
 				forced: true,
 				unique: true,
 				filter(event, player) {
-					// if(player.storage.huanfeng_awake) return false;
 					var skills = ["tuteng1", "tuteng2", "tuteng3", "tuteng4"];
 					for (var i = 0; i < skills.length; i++) {
 						if (!player.hasSkill(skills[i])) {
@@ -7382,12 +7311,10 @@ game.import("character", function () {
 					return true;
 				},
 				content() {
-					// player.storage.huanfeng_awake=true;
 					player.removeSkill("tuteng1");
 					player.removeSkill("tuteng2");
 					player.removeSkill("tuteng3");
 					player.removeSkill("tuteng4");
-					// player.awakenSkill('huanfeng');
 					player.storage.huanfeng_end = player.addSubPlayer({
 						name: "hs_alakir",
 						hp: 3,
@@ -7396,9 +7323,7 @@ game.import("character", function () {
 						hs: get.cards(4),
 					});
 					player.callSubPlayer(player.storage.huanfeng_end);
-					// if(lib.filter.filterTrigger(trigger,player,'phaseBegin','shengdun')) game.createTrigger('phaseBegin','shengdun',player,trigger);
 				},
-				// group:'huanfeng_end',
 				subSkill: {
 					end: {
 						temp: true,

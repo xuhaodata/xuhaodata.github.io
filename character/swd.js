@@ -34,7 +34,7 @@ game.import("character", function () {
 				group: "qun",
 				hp: 4,
 				skills: ["aojian", "miles_xueyi", "mohua2"],
-				isUnseen: true,
+				isUnseen: false,
 			},
 			swd_nicole: {
 				sex: "female",
@@ -362,14 +362,14 @@ game.import("character", function () {
 				group: "qun",
 				hp: 4,
 				skills: ["xuanzhou", "bingfeng"],
-				isUnseen: true,
+				isUnseen: false,
 			},
 			swd_chengyaojin: {
 				sex: "male",
 				group: "qun",
 				hp: 4,
 				skills: ["jiuchi", "jufu"],
-				isUnseen: true,
+				isUnseen: false,
 			},
 			swd_shanxiaoxiao: {
 				sex: "female",
@@ -389,14 +389,14 @@ game.import("character", function () {
 				group: "qun",
 				hp: 3,
 				skills: ["huajing", "pingxu"],
-				isUnseen: true,
+				isUnseen: false,
 			},
 			swd_zhanglie: {
 				sex: "male",
 				group: "qun",
 				hp: 4,
 				skills: ["huajin", "poxiao"],
-				isUnseen: true,
+				isUnseen: false,
 			},
 
 			swd_hanluo: {
@@ -1561,7 +1561,6 @@ game.import("character", function () {
 						},
 						precontent() {
 							player.link();
-							// player.getStat().card.sha--;
 						},
 						filterCard() {
 							return false;
@@ -1570,7 +1569,6 @@ game.import("character", function () {
 						prompt: "横置武将牌，视为使用一张无视距离的杀",
 						ai: {
 							order() {
-								// if(_status.event.player.countCards('h',{type:'equip'})) return 9;
 								return 3.15;
 							},
 							skillTagFilter(player, tag, arg) {
@@ -2405,11 +2403,9 @@ game.import("character", function () {
 					if (result.bool && result.targets[0]) {
 						var target = result.targets[0];
 						player.line(target, "green");
-						// player.logSkill('guozao',target,'green',true);
 						var cards = target.getCards("h");
 						target.lose(cards)._triggered = null;
 						game.log(target, "弃置了", cards, "，并获得三张牌");
-						// target.$draw(3);
 						target.$throw(cards);
 						target.gain(event.cards, "draw")._triggered = null;
 					} else {
@@ -4009,7 +4005,6 @@ game.import("character", function () {
 					};
 					"step 1";
 					if (result.bool) {
-						// game.delay(2);
 						trigger.cancel();
 					}
 				},
@@ -4356,8 +4351,6 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					target.damage();
-					"step 1";
-					// target.draw();
 				},
 				ai: {
 					order: 9,
@@ -4389,7 +4382,7 @@ game.import("character", function () {
 					return player.hp < player.maxHp && player.countCards("h", { color: "red" }) > 0;
 				},
 				filterTarget(card, player, target) {
-					return player != target; //&&get.distance(player,target,'attack')<=1;
+					return player != target;
 				},
 				selectTarget() {
 					return ui.selected.cards.length;
@@ -4411,8 +4404,6 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					target.damage("fire");
-					"step 1";
-					// target.draw();
 				},
 				ai: {
 					order: 9,
@@ -4708,7 +4699,6 @@ game.import("character", function () {
 					};
 					"step 1";
 					if (result.bool) {
-						// player.chooseToDiscard('h',true);
 						trigger.cancel();
 						trigger.player.hp = 1;
 						if (trigger.player.maxHp < 1) trigger.player.maxHp = 1;
@@ -4898,7 +4888,6 @@ game.import("character", function () {
 					return false;
 				},
 				prepare: "throw",
-				// selectTarget:[1,2],
 				selectCard: [2, 2],
 				check(card) {
 					return 6 - get.useful(card);
@@ -5949,20 +5938,6 @@ game.import("character", function () {
 				content() {
 					player.removeSkill("tanlin2");
 				},
-				// mod:{
-				// 	cardEnabled:function(){
-				// 		return false;
-				// 	},
-				// 	cardUsable:function(){
-				// 		return false;
-				// 	},
-				// 	cardRespondable:function(){
-				// 		return false;
-				// 	},
-				// 	cardSavable:function(){
-				// 		return false;
-				// 	}
-				// },
 			},
 			tanlin3: {
 				trigger: { global: "phaseAfter" },
@@ -6285,7 +6260,6 @@ game.import("character", function () {
 				},
 				content() {
 					"step 0";
-					// target.gain(cards,player);
 					event.skillai = function (list) {
 						return get.max(list, get.skillRank, "item");
 					};
@@ -6361,13 +6335,9 @@ game.import("character", function () {
 				filter(event, player) {
 					return player.countCards("h") > 0;
 				},
-				// filterTarget:function(card,player,target){
-				// 	return player!=target&&target.countCards('h')>0;
-				// },
 				check(card) {
 					return 7 - get.value(card);
 				},
-				// selectTarget:[1,2],
 				content() {
 					"step 0";
 					event.list = game
@@ -6401,10 +6371,6 @@ game.import("character", function () {
 							}
 							return 0;
 						},
-						// target:function(player,target){
-						// 	if(target.countCards('h')==1) return -1.5;
-						// 	return -1;
-						// }
 					},
 				},
 			},
@@ -6990,7 +6956,6 @@ game.import("character", function () {
 				},
 				filterCard: true,
 				selectCard: -1,
-				// viewAs:{name:'sha'},
 				discard: false,
 				prepare: "throw",
 				filterTarget(card, player, target) {
@@ -7161,10 +7126,6 @@ game.import("character", function () {
 				},
 				filterTarget(card, player, target) {
 					if (target.hp <= 1) return false;
-					// if(get.mode()=='identity'&&_status.mode=='zhong'&&game.zhu&&!game.zhu.isZhu){
-					// 	return target==game.zhong;
-					// }
-					// if(target.identity=='zhu'||get.is.jun(target)) return false;
 					return player != target;
 				},
 				content() {
@@ -7319,7 +7280,6 @@ game.import("character", function () {
 					if (get.color(result.card) == "black") {
 						if (trigger.target.countCards("he")) {
 							player.discardPlayerCard(true, trigger.target, "he");
-							// trigger.target.discard(trigger.target.getCards('he').randomGet());
 						}
 					} else if (trigger.cards && trigger.cards.length) {
 						player.gain(trigger.cards);
