@@ -1378,21 +1378,18 @@ const skills = {
 				player.markAuto(effect, [control]);
 				player.storage[effect].sort((a, b) => list.indexOf(a) - list.indexOf(b));
 				player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, color) => str + get.translation(color), " "));
+				player.addTempSkill("oljiaoyu_phaseChange", "roundStart");
 				const cards = event.cards.filter(card => get.color(card) === control);
 				if (cards.length) await player.gain(cards, "gain2");
 			}
 		},
-		group: "oljiaoyu_phaseChange",
 		subSkill: {
 			phaseChange: {
 				audio: "oljiaoyu",
 				trigger: { player: "phaseEnd" },
-				filter(event, player) {
-					return !player.getRoundHistory("custom", evt => evt.oljiaoyu).length;
-				},
 				forced: true,
 				async content(event, trigger, player) {
-					player.getHistory("custom").push({ oljiaoyu: true });
+					player.removeSkill(event.name);
 					player.addSkill("oljiaoyu_ban");
 					trigger.phaseList.splice(trigger.num, 0, "phaseUse|oljiaoyu");
 				},
