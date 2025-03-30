@@ -10936,7 +10936,7 @@ const skills = {
 			}
 			const dialog = ui.create.dialog(prompt, [cards, lib.skill.rehuashen.$createButton]);
 			dialog.videoId = id;
-			if (!event.isMine()) event.dialog.style.display = "none";
+			if (!event.isMine()) dialog.style.display = "none";
 			if (choice === "替换当前化身") {
 				const buttons = dialog.content.querySelector(".buttons");
 				const array = dialog.buttons.filter(item => !item.classList.contains("nodisplay") && item.style.display !== "none");

@@ -6866,41 +6866,32 @@ const skills = {
 		limited: true,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
-			return target != player;
+			return target !== player;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill("nshaoling");
-			event.targets = game.filterPlayer();
-			event.targets.remove(player);
-			event.targets.remove(target);
-			event.targets.sortBySeat();
-			"step 1";
-			if (event.targets.length) {
-				event.current = event.targets.shift();
-				if (event.current.countCards("he") && target.isAlive()) {
-					event.current.chooseToUse({ name: "sha" }, target, -1, "号令").set("prompt2", "选择一项：1. 对" + get.translation(event.current) + "使用一张杀；2. 取消并交给" + get.translation(player) + "一张牌，然后视" + get.translation(player) + "为对你使用一张杀");
+			const target = event.target;
+			let targets = game
+				.filterPlayer(cur => {
+					return cur !== player && cur !== target;
+				})
+				.sortBySeat();
+			while (targets.length) {
+				const current = targets.shift();
+				if (target.isAlive() && current.countCards("he")) {
+					const result = await current
+						.chooseToUse({ name: "sha" }, target, -1, "号令")
+						.set("prompt2", "选择一项：1. 对" + get.translation(target) + "使用一张【杀】；2. 取消并交给" + get.translation(player) + "一张牌，然后其视为对你使用一张【杀】")
+						.forResult();
+					if (result.bool) continue;
+					if (current.countCards("he")) {
+						const cards = await current.chooseCard("he", true, "交给" + get.translation(player) + "一张牌").forResultCards();
+						if (cards) await current.give(cards, player);
+					} else {
+						await player.useCard({ name: "sha" }, current, false);
+					}
 				}
-			} else {
-				event.finish();
 			}
-			"step 2";
-			if (result.bool == false) {
-				if (event.current.countCards("he")) {
-					event.current.chooseCard("he", true, "交给" + get.translation(player) + "一张牌");
-				} else {
-					event.goto(4);
-				}
-			} else {
-				event.goto(1);
-			}
-			"step 3";
-			if (result.bool) {
-				event.current.give(result.cards, player);
-			}
-			"step 4";
-			player.useCard({ name: "sha" }, event.current, false);
-			event.goto(1);
 		},
 		ai: {
 			order: 5,
