@@ -11355,7 +11355,6 @@ export default () => {
 			stone_huoshe: "火舌图腾",
 			stone_huoyuansu: "火元素",
 			stone_tuyuansu: "土元素",
-			stone_wujiyuansu: "无羁元素",
 			stone_xuejuren: "穴居人",
 			stone_huoli: "活力图腾",
 			stone_tutengshi: "图腾师",

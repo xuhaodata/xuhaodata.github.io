@@ -132,7 +132,7 @@ game.import("character", function () {
 				group: "wu",
 				hp: 4,
 				skills: ["gwchuanxin"],
-				isUnseen: true,
+				isUnseen: false,
 			},
 
 			gw_aigeleisi: {
@@ -408,7 +408,6 @@ game.import("character", function () {
 						var target = result.targets[0];
 						player.line(target, "fire");
 						target.damage("fire", "nocard");
-						// player.discoverCard(ui.cardPile.childNodes);
 					} else {
 						player.gain(event.current, "draw");
 					}
@@ -870,21 +869,7 @@ game.import("character", function () {
 						targets[1].useCard({ name: cards[0].name }, targets[0], "noai");
 					}
 				},
-				// group:'gwminxiang_draw',
 				multiline: true,
-				// subSkill:{
-				// 	draw:{
-				// 		trigger:{global:'damageAfter'},
-				// 		silent:true,
-				// 		filter(event,player){
-				// 			var evt=event.getParent(3);
-				// 			return evt.name=='gwminxiang'&&evt.player==player;
-				// 		},
-				// 		content(){
-				// 			trigger.getParent(3).draw+=trigger.num;
-				// 		}
-				// 	}
-				// },
 				ai: {
 					order: 8,
 					result: {
@@ -1021,8 +1006,6 @@ game.import("character", function () {
 			gwjingshi: {
 				enable: "phaseUse",
 				usable: 1,
-				//direct:true,
-				//delay:0,
 				filter(event, player) {
 					return game.hasPlayer(function (current) {
 						return current.countCards("h");
@@ -1115,10 +1098,6 @@ game.import("character", function () {
 				},
 				content() {
 					player.changeHujia();
-					// var num=Math.min(trigger.cards.length,3-player.hujia);
-					// if(num>0){
-					// 	player.changeHujia();
-					// }
 				},
 				init(player) {
 					player.storage.gwweitu = 0;
@@ -1437,13 +1416,6 @@ game.import("character", function () {
 						return player.canUse("gw_ciguhanshuang", target);
 					}
 				},
-				// changeTarget(player,targets){
-				// 	if(!player.getStat('damage')){
-				// 		game.filterPlayer(function(current){
-				//             return get.distance(targets[0],current,'pure')==1;
-				//         },targets);
-				// 	}
-				// },
 				selectTarget() {
 					if (_status.event.player.getStat("damage")) {
 						return [1, 3];
@@ -2388,7 +2360,6 @@ game.import("character", function () {
 						},
 					},
 				},
-				// group:'junchi_gold'
 			},
 			hupeng: {
 				enable: "phaseUse",
@@ -2570,27 +2541,6 @@ game.import("character", function () {
 								})
 							) {
 								return -1;
-							}
-						},
-					},
-				},
-				// group:'hunmo_draw',
-				subSkill: {
-					draw: {
-						trigger: { player: "phaseEnd" },
-						filter(event, player) {
-							return player.getStat("skill").hunmo >= 3;
-						},
-						frequent: true,
-						content() {
-							"step 0";
-							player.chooseTarget(get.prompt("魂墨：造成1点伤害")).ai = function (target) {
-								return get.damageEffect(target, player, player);
-							};
-							"step 1";
-							if (result.bool) {
-								player.logSkill("hunmo_draw", result.targets);
-								result.targets[0].damage();
 							}
 						},
 					},
@@ -3011,7 +2961,6 @@ game.import("character", function () {
 					return get.effect(event.target, { name: "sha" }, player, player) > 0;
 				},
 				logTarget: "target",
-				// logLine:false,
 				content() {
 					"step 0";
 					var cards = get.cards();
@@ -3062,20 +3011,6 @@ game.import("character", function () {
 					threaten: 1.5,
 					noautowuxie: true,
 				},
-				// group:'fengjian_hide',
-				// subSkill:{
-				// 	hide:{
-				// 		trigger:{source:'damageEnd'},
-				// 		forced:true,
-				// 		popup:false,
-				// 		filter(event,player){
-				// 			return event.getParent(3).name=='fengjian';
-				// 		},
-				// 		content(){
-				// 			player.tempHide();
-				// 		}
-				// 	}
-				// }
 			},
 			huandie: {
 				trigger: { player: "phaseBegin" },
@@ -4433,8 +4368,6 @@ game.import("character", function () {
 
 			gw_saqiya: "萨琪亚",
 
-			// sqlongyin:'龙影',
-			// sqlongyin_info:'',
 			sqlongnu: "龙怒",
 			sqlongnu_info: "准备阶段，你可以发现一张牌堆中的牌，若你手牌中有同名牌，你可以改为造成1点火属性伤害锁定技。准备阶段开始时，你随机切换至一种形态。",
 			sqlonghuo: "龙火",
