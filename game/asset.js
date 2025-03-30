@@ -7628,7 +7628,6 @@ window.noname_asset_list = [
 	"image/character/diy_lukang.jpg",
 	"image/character/diy_luxun.jpg",
 	"image/character/diy_tianyu.jpg",
-	"image/character/diy_weiyan.jpg",
 	"image/character/diy_wenyang.jpg",
 	"image/character/diy_xizhenxihong.jpg",
 	"image/character/diy_yangyi.jpg",

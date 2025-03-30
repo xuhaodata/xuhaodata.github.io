@@ -167,13 +167,6 @@ const characters = {
 		skills: ["luweiyan", "qianxun"],
 		clans: ["吴郡陆氏"],
 	},
-	diy_weiyan: {
-		sex: "male",
-		group: "shu",
-		hp: 4,
-		skills: ["diykuanggu"],
-		names: "魏|延",
-	},
 	diy_zhenji: {
 		sex: "female",
 		group: "wei",
@@ -457,31 +450,6 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["nsmanzhi"],
-	},
-
-	diy_zhujun: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		maxHp: 4,
-		skills: ["xinyangjie", "diy_juxiang", "houfeng"],
-		img: "image/character/sp_zhujun.jpg",
-	},
-	diy_liaohua: {
-		sex: "male",
-		group: "shu",
-		hp: 4,
-		maxHp: 4,
-		skills: ["redangxian", "diy_fuli"],
-		img: "image/character/xin_liaohua.jpg",
-	},
-	diy_zhangfei: {
-		sex: "male",
-		group: "shu",
-		hp: 4,
-		maxHp: 4,
-		skills: ["diy_paoxiao", "diy_tishen"],
-		img: "image/character/re_zhangfei.jpg",
 	},
 
 	junk_zhangrang: {
