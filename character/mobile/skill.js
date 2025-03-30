@@ -919,10 +919,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0]; //兼容匡襄后续效果才这么写的
 			const isMax = target.isMaxHandcard();
-			player.logSkill("mbxuye", [target], null, null, [get.rand(2, 3)]);
 			await target.draw(2);
+			player.logSkill("mbxuye", [target], null, null, !isMax && target.isMaxHandcard() && target.countCards("ej") > 0 ? [1] : [get.rand(2, 3)]);
 			if (!isMax && target.isMaxHandcard() && target.countCards("ej") > 0) {
-				player.logSkill("mbxuye", [target], null, null, [1]);
 				const result = await player.choosePlayerCard(`蓄业：将${get.translation(target)}场上一张牌置于牌堆顶`, target, "ej", true).forResult();
 				const card = result.cards[0];
 				target.$throw(card, 1000);
