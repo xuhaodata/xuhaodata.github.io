@@ -16,7 +16,7 @@ const skills = {
 				forced: true,
 				filter(event, player) {
 					if (["new_rewusheng", "olpaoxiao"].every(skill => player.hasSkill(skill, null, false, false))) return false;
-					return event.getParent().skill == "olfuhun";
+					return player.isPhaseUsing && event.card?.name == "sha";
 				},
 				content() {
 					player.addTempSkills(["new_rewusheng", "olpaoxiao"]);
@@ -3704,9 +3704,11 @@ const skills = {
 			trigger.num += game.countGroup();
 			player
 				.when("phaseJieshuBegin")
-				.filter(evt => evt.getParent() == trigger.getParent() && player.hasHistory("sourceDamage", evtx => evtx.player != player) && player.countCards("he"))
+				.filter(evt => evt.getParent() == trigger.getParent())
 				.then(() => {
-					player.chooseToDiscard("he", game.countGroup(), true);
+					if (player.hasHistory("useCard", evtx => get.tag(evtx.card, "damage") > 0.5) && player.countDiscardableCards("he")) {
+						player.chooseToDiscard("he", game.countGroup(), true);
+					}
 				});
 		},
 		ai: {
@@ -3733,9 +3735,9 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = trigger.source;
 			trigger.cancel();
-			await target.draw();
 			player.addSkill("olzongshi_record");
 			player.markAuto("olzongshi_record", [target.group]);
+			if (player.countGainableCards(target, "hej")) await target.gainPlayerCard(player, "hej", true);
 		},
 		ai: {
 			filterDamage: true,
