@@ -1084,33 +1084,23 @@ const skills = {
 			dialog(event, player) {
 				return ui.create.dialog(
 					"并肩",
-					// [[
-					// 	[2,'调整至两张'],
-					// 	[4,'调整至四张']
-					// ],'tdnodes'],
 					[["sha", "shan"], "vcard"],
 					"hidden"
 				);
 			},
-			// select:2,
 			filter(button, player) {
 				if (ui.selected.buttons.length) {
 					if (typeof button.link == typeof ui.selected.buttons[0].link) return false;
 				}
-				// if(typeof button.link=='number'){
-				// 	return button.link!=player.countCards('h');
-				// }
 				return _status.event.getParent().filterCard({
 					name: button.link[2],
 					isCard: true,
 				});
 			},
 			check(button) {
-				// if(typeof button.link=='number') return button.link;
 				return 1;
 			},
 			backup(links, player) {
-				// if(typeof links[0]=='number') links.reverse();
 				var skill = {
 					viewAs: {
 						name: links[0][2],
@@ -1140,7 +1130,6 @@ const skills = {
 				return skill;
 			},
 			prompt(links, player) {
-				// if(typeof links[0]=='number') links.reverse();
 				var num = 2 - player.countCards("h");
 				if (num > 0) {
 					return "摸" + get.cnNumber(num) + "张牌并视为使用" + get.translation(links[0][2]);
@@ -2971,25 +2960,16 @@ const skills = {
 					var storage = player.getStorage("dddchashi");
 					if (!storage || !storage.length) return false;
 					if (event.player != storage[1] || !event.player.isIn()) return false;
-					// if(!player.getCards('he').includes(storage[0])||!storage[0].hasGaintag('dddchashi')) return false;
 					if (get.suit(event.card) != get.suit(storage[0]) && get.type2(event.card) != get.type2(storage[0])) return false;
-					// var evt=event.getParent('phaseUse');
-					// if(evt.player)
-					// if(event.player.getHistory('useCard',function(evtx){
-					// 	return evtx.getParent('phaseUse')==evt;
-					// }).indexOf(event)!=0) return false;
 					return true;
 				},
 				content() {
 					var storage = player.getStorage("dddchashi");
-					// storage[1].gain(storage[0],player,'give');
-					// player.draw();
 					game.asyncDraw([player, storage[1]].sortBySeat(_status.currentPhase));
 					player.removeSkill("dddchashi_effect");
 				},
 				onremove(player, storage) {
 					delete player.storage["dddchashi"];
-					// player.removeGaintag('dddchashi');
 				},
 			},
 			ai: {
@@ -3004,7 +2984,6 @@ const skills = {
 		},
 		content() {
 			player.draw(2);
-			// player.addTempSkill('dddqice_effect');
 			player.setStorage("dddqice", true);
 			player
 				.when("useCard1")
@@ -3822,7 +3801,6 @@ const skills = {
 			"step 1";
 			var send = function (targets) {
 				var next = game.createEvent("dddfenye_choose", false);
-				// next.player=game.me;
 				next.targets = targets;
 				next.ai = event.ai;
 				next.fixedResult = event.fixedResult;
@@ -4568,10 +4546,6 @@ const skills = {
 			remove: {
 				trigger: { player: "dying" },
 				forced: true,
-				// direct:true,
-				// filter(event,player){
-				// 	return event.source&&event.source.isIn()&&event.source.getEquips(1).length>0;
-				// },
 				content() {
 					player.removeSkills("dddxiaoxing");
 				},
@@ -4718,7 +4692,6 @@ const skills = {
 		audio: 2,
 		zhuSkill: true,
 		trigger: {
-			// global:['discardBegin','drawBegin'],
 			global: "dieAfter",
 		},
 		filter(event, player) {
@@ -5485,7 +5458,6 @@ const skills = {
 			"step 2";
 			if (!result.bool) {
 				player.line(target);
-				// player.trySkillAnimate('dddbailei_animate','dddbailei_animate',player.checkShow('dddbailei'));
 				target.damage();
 				game.delayx();
 			} else event.finish();

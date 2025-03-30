@@ -4821,7 +4821,6 @@ const skills = {
 			"step 1";
 			var target = player.storage.ns_chuanshu2;
 			player.line(target, "green");
-			//target.addSkill('ns_chuanshu');
 			target.restoreSkill("ns_chuanshu");
 			target.update();
 		},
@@ -4911,18 +4910,6 @@ const skills = {
 				if (get.info(card).multitarget) return;
 				if (card.name == "sha" || get.type(card) == "trick") range[1] = game.countPlayer();
 			},
-			// playerEnabled(card,player,target,current){
-			// 	if(current==false) return;
-			// 	var filter=get.info(card).modTarget;
-			// 	if(typeof filter=='boolean'&&filter) return 'forceEnable';
-			// 	if(typeof filter=='function'&&filter(card,player,target)) return 'forceEnable';
-			// }
-			// targetInRange(card,player){
-			// 	if(_status.auto) return;
-			// 	if(get.position(card)!='h'||get.owner(card)!=player) return;
-			// 	if(get.info(card).multitarget) return;
-			// 	if(card.name=='sha'||get.type(card)=='trick') return true;
-			// }
 		},
 		ai: {
 			combo: "nsanruo",
@@ -5781,9 +5768,6 @@ const skills = {
 					if (Math.abs(targets[0].hp - targets[1].hp) == 1) {
 						player.loseHp();
 					}
-					//else{
-					//player.die();
-					//}
 				},
 				player,
 				targets
@@ -5945,9 +5929,6 @@ const skills = {
 					return 9 - get.value(card);
 				},
 				filter(event, player) {
-					// if(!player.storage.nstuiyan2_done&&player.getStat().skill.nsbugua_use){
-					// 	return false;
-					// }
 					return player.countCards("he");
 				},
 				position: "he",
@@ -7096,9 +7077,6 @@ const skills = {
 			player.update();
 			if (_status.currentPhase == player) {
 				var num = 4;
-				// if(game.countPlayer()>=7){
-				// 	num=5;
-				// }
 				if (!player.hasSkill("nspinmin_used") && player.maxHp < num) {
 					player.gainMaxHp(true);
 					player.addTempSkill("nspinmin_used");
@@ -7558,15 +7536,6 @@ const skills = {
 				},
 			},
 		},
-		// mod:{
-		// 	globalFrom(from,to,distance){
-		//
-		// 	},
-		// 	globalTo(from,to,distance){
-		//
-		// 	}
-		// },
-		// global:'nshuanxian_choose',
 		subSkill: {
 			chosen: {},
 			leftdist: {
@@ -7783,7 +7752,6 @@ const skills = {
 	},
 	nsnongquan: {
 		enable: "phaseUse",
-		// usable:4,
 		filter(event, player) {
 			return player.countCards("h") == 1 && player.canUse("wuzhong", player);
 		},
@@ -8596,7 +8564,6 @@ const skills = {
 		},
 	},
 	diy_jiaoxia: {
-		//audio:['jiaoxia',2],
 		trigger: { target: "useCardToBegin" },
 		filter(event, player) {
 			return event.card && get.color(event.card) == "red";
@@ -8660,10 +8627,6 @@ const skills = {
 			target.recover();
 			"step 3";
 			target.draw(2);
-			// if(lib.config.mode=='identity'){
-			// 	player.node.identity.style.backgroundColor=get.translation('weiColor');
-			// 	player.group='wei';
-			// }
 		},
 		ai: {
 			skillTagFilter(player) {

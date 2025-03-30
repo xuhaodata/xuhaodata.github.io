@@ -2596,8 +2596,6 @@ const skills = {
 			}
 			"step 5";
 			if (event.index2 != 2) {
-				//if(event.target1) event.target1.lose(card,ui.special);
-				//else card.goto(ui.special);
 				event.way = result.control;
 			} else {
 				event.target2 = result.targets[0];
@@ -2782,7 +2780,6 @@ const skills = {
 							if (evt.gaintag_map[i].includes("fuuko_chuanyuan")) return true;
 						}
 					});
-					//return false;
 				},
 				content() {
 					trigger.addCount = false;
@@ -3320,7 +3317,6 @@ const skills = {
 				}
 			}
 			"step 2";
-			//player.recover();
 			player.draw();
 		},
 		content3() {
@@ -3393,7 +3389,6 @@ const skills = {
 					event.color = color;
 					event.goto(1);
 				} else if (color == event.color) event.goto(1);
-				//player.draw();
 			}
 			"step 4";
 			if (event.count > 0) player.recover(event.count);
@@ -4295,7 +4290,6 @@ const skills = {
 			var chooseButton = function () {
 				lib.skill.yufeng.$playFlappyBird(5, "小空飞天");
 			};
-			//event.switchToAuto=switchToAuto;
 			game.broadcastAll(createDialog, player, event.videoId);
 			if (event.isMine()) {
 				chooseButton();
@@ -10426,7 +10420,6 @@ const skills = {
 				player.chooseControl(list).set("prompt", "选择获得一个技能");
 			}
 			"step 4";
-			//player.addSkills(result.control,get.groupnature(event.temp.group)||'key');
 			player.addSkills(result.control);
 			var info = get.info(result.control);
 			if (info.zhuSkill) {
