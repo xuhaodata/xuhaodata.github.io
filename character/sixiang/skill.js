@@ -211,7 +211,7 @@ const skills = {
 				if (bannedList.length == indexs.length) break;
 			}
 			list.removeArray(bannedList);
-			ist.sort((a, b) => indexs.indexOf(a) - indexs.indexOf(b));
+			list.sort((a, b) => indexs.indexOf(a) - indexs.indexOf(b));
 			if (!list.length) return;
 			const dialog = ["诬诽：弃置一种颜色的所有牌并摸一张牌"];
 			for (let i = 0; i < list.length; i++) {
