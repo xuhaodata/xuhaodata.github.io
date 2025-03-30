@@ -1343,13 +1343,11 @@ const skills = {
 				await judgeEvent;
 			}
 			if (!event.cards.length) return;
+			const list = Object.keys(lib.color);
 			const color = event.cards
 				.map(card => get.color(card))
 				.unique()
-				.sort((a, b) => {
-					const list = Object.keys(lib.color);
-					return list.indexOf(b) - list.indexOf(a);
-				});
+				.sort((a, b) => list.indexOf(a) - list.indexOf(b));
 			if (!color.length) return;
 			const dialog = ["椒遇：选择获得一种颜色的牌"];
 			for (let i = 0; i < color.length; i++) {
@@ -1365,16 +1363,7 @@ const skills = {
 								let { player, controls } = get.event();
 								const { cards } = get.event().getParent();
 								return controls.sort((a, b) => {
-									return (
-										cards.reduce((sum, card) => {
-											if (get.color(card) === b) num += get.value(card, player);
-											return sum;
-										}, 0) -
-										cards.reduce((sum, card) => {
-											if (get.color(card) === a) num += get.value(card, player);
-											return sum;
-										}, 0)
-									);
+									return get.value(cards.filter(card => get.color(card) === b)) - get.value(cards.filter(card => get.color(card) === a));
 								})[0];
 							})
 							.set("dialog", dialog)
@@ -1387,7 +1376,7 @@ const skills = {
 				const effect = "oljiaoyu_effect";
 				player.addTempSkill(effect, "roundStart");
 				player.markAuto(effect, [control]);
-				player.storage[effect].sort((a, b) => lib.color.indexOf(b) - lib.color.indexOf(a));
+				player.storage[effect].sort((a, b) => list.indexOf(a) - list.indexOf(b));
 				player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, color) => str + get.translation(color), " "));
 				const cards = event.cards.filter(card => get.color(card) === control);
 				if (cards.length) await player.gain(cards, "gain2");
@@ -9437,6 +9426,7 @@ const skills = {
 				check(card) {
 					return 5 - get.value(card);
 				},
+				log: false,
 			},
 		},
 	},
