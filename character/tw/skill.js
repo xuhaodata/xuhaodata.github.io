@@ -1840,6 +1840,7 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;
 		},
+		logTarget: "target",
 		async content(event, trigger, player) {
 			const { target } = trigger;
 			trigger.getParent().set("twchunhui_actived", true);
