@@ -182,7 +182,7 @@ const skills = {
 				number: get.number(card, player),
 				isCard: true,
 			});
-			return game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
+			return get.tag(card, "damage") > 0.5 && game.hasPlayer(target => player !== target && player.inRangeOf(target) && player.canUse(cardx, target, false, false));
 		},
 		async content(event, trigger, player) {
 			const card = event.cards[0],
@@ -3544,11 +3544,11 @@ const skills = {
 	dckengqiang: {
 		audio: 2,
 		trigger: {
-			source: "damageBegin1",
+			player: "useCard",
 		},
 		filter(event, player) {
 			const num = player.storage.dcshangjue ? 2 : 1;
-			return player.getStorage("dckengqiang_used").length < num;
+			return player.getStorage("dckengqiang_used").length < num && get.tag(event.card, "damage") > 0.5;
 		},
 		async cost(event, trigger, player) {
 			const result = await player
@@ -3557,7 +3557,7 @@ const skills = {
 					[
 						[
 							["draw", "摸体力上限张牌"],
-							["damage", "令此伤害+1" + (trigger.cards?.length ? `并获得${get.translation(trigger.cards)}` : "")],
+							["damage", `令${get.translation(trigger.card)}伤害+1` + (trigger.cards?.length ? `并获得${get.translation(trigger.cards)}` : "")],
 						],
 						"textbutton",
 					],
@@ -3573,7 +3573,10 @@ const skills = {
 					"value",
 					(function () {
 						let draw = player.maxHp * get.effect(player, { name: "draw" }, player, player),
-							damage = get.damageEffect(trigger.player, player, player, trigger.nature);
+							damage =
+								trigger.targets.reduce((sum, target) => {
+									return sum + get.damageEffect(target, player, player);
+								}, 0) || 0;
 						if (trigger.cards)
 							damage += trigger.cards.reduce((acc, card) => {
 								return acc + get.value(card, player);
@@ -3593,8 +3596,9 @@ const skills = {
 			player.markAuto("dckengqiang_used", result);
 			if (result == "draw") await player.draw(player.maxHp);
 			else {
-				trigger.num++;
-				if (trigger.cards?.length) await player.gain(trigger.cards, "gain2");
+				trigger.baseDamage++;
+				const cards = trigger.cards?.filterInD("od");
+				if (cards.length) await player.gain(cards, "gain2");
 				else await game.delay();
 			}
 		},

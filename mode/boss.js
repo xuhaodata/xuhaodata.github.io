@@ -3085,13 +3085,24 @@ export default () => {
 					if (game.phaseNumber <= 50 && _status.shidianyanluo_level == 2 && _status.shidianyanluo_mengpodie == true) {
 						list = ["boss_dizangwang"];
 					}
-					if (_status.shidianyanluo_level == 2 && game.boss.getEnemies().some(cur => {
-						const names = get.nameList(cur);
-						for (let name of names) {
-							if (lib.skill.boss_yingzhong.getList().includes(name)) return true;
-						}
-						return false;
-					})) list.push("boss_shikieiki");
+					if (
+						_status.shidianyanluo_level == 2 &&
+						game.boss
+							.getEnemies()
+							.map(cur => {
+								const names = get.nameList(cur);
+								for (let name of names) {
+									if (lib.rank.s.includes(name) || lib.rank.ap.includes(name) || lib.rank.a.includes(name)) return name;
+								}
+								return false;
+							})
+							.reduce((val, name) => {
+								if (lib.rank.s.includes(name)) return val + 1;
+								if (lib.rank.ap.includes(name)) return val + 0.36;
+								if (lib.rank.a.includes(name)) return val + 0.06;
+							}, 0) > Math.random()
+					)
+						list = ["boss_shikieiki"];
 					if (list.length == 1) event._result = { control: list[0] };
 					else {
 						player
@@ -9717,7 +9728,6 @@ export default () => {
 
 			boss_huangyueying: "奇智女杰",
 			boss_zhangchunhua: "冷血皇后",
-			boss_satan: "堕落天使",
 			boss_dongzhuo: "乱世魔王",
 			boss_lvbu1: "最强神话",
 			boss_lvbu2: "暴怒战神",

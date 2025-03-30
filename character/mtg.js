@@ -71,12 +71,7 @@ game.import("character", function () {
 				ai: {
 					order: 1,
 					result: {
-						player(player, target) {
-							return 1;
-							// if(player.hp<=1) return 1;
-							// if(!player.needsToDiscard(player.hp-1)) return 1;
-							// return 0;
-						},
+						player: 1,
 					},
 				},
 				subSkill: {

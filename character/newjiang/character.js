@@ -191,16 +191,18 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["chuanxie", "yjqiaosi"],
-		...["character", "die"].map(i => i + ":yj_majun"),
 		names: "马|钧",
+		dieAudios: ["yj_majun"],
+		img: "image/character/yj_majun.jpg",
 	},
 	qq_majun: {
 		sex: "male",
 		group: "wei",
 		hp: 3,
 		skills: ["yuliao", "qiqiao", "yanxie"],
-		...["character", "die"].map(i => i + ":yj_majun"),
 		names: "马|钧",
+		dieAudios: ["yj_majun"],
+		img: "image/character/yj_majun.jpg",
 	},
 	new_yj_dongzhuo: {
 		sex: "male",
@@ -221,8 +223,9 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["xjzhitu", "dcxiujue"],
-		...["character", "die"].map(i => i + ":fj_peixiu"),
 		names: "裴|秀",
+		dieAudios: ["fj_peixiu"],
+		img: "image/character/fj_peixiu.jpg",
 	},
 };
 

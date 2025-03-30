@@ -6449,7 +6449,7 @@ const skills = {
 		trigger: { player: "phaseBegin" },
 		forced: true,
 		audio: 2,
-		audioname2: {guansuo: "dangxian_guansuo"},
+		audioname2: { guansuo: "dangxian_guansuo" },
 		async content(event, trigger, player) {
 			trigger.phaseList.splice(trigger.num, 0, `phaseUse|${event.name}`);
 		},
@@ -12554,7 +12554,7 @@ const skills = {
 		ai: {
 			effect: {
 				target(card, player, target) {
-					if (get.tag(card, "damage" && target.countCards("h"))) {
+					if (get.tag(card, "damage") && target.countCards("h")) {
 						return 0.8;
 					}
 				},
