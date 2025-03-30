@@ -6887,9 +6887,8 @@ const skills = {
 					if (current.countCards("he")) {
 						const cards = await current.chooseCard("he", true, "交给" + get.translation(player) + "一张牌").forResultCards();
 						if (cards) await current.give(cards, player);
-					} else {
-						await player.useCard({ name: "sha" }, current, false);
 					}
+					await player.useCard({ name: "sha" }, current, false);
 				}
 			}
 		},
