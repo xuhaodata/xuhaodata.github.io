@@ -1,8 +1,6 @@
 window.noname_character_rank = {
-	s: ["diy_liaohua", "hm_shen_huangfusong", "sp_sunce", "gjqt_bailitusu", "gjqt_beiluo", "gjqt_xieyi", "hs_malorne", "hs_medivh", "hs_sthrall", "pal_yuejinzhao", "swd_cheyun", "swd_duguningke", "swd_guyue", "swd_huanglei", "swd_murongshi", "swd_muyun", "swd_septem", "swd_tuobayuer", "swd_xuanyuanjianxian", "swd_yuxiaoxue", "swd_zhaoyun", "key_shiki", "shen_zhaoyun", "shen_ganning", "re_liuzan", "chunyuqiong", "yangbiao", "dc_zhaoxiang", "sp_xiahoushi", "ns_zhangwei", "wanglang", "caojinyu", "dc_zhangmancheng", "wu_zhugeliang", "sunlingluan", "wu_luxun", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "sb_machao", "dc_zhouxuān", "key_iriya", "dc_zhaoyun", "jd_simayan"],
+	s: ["hm_shen_huangfusong", "sp_sunce", "gjqt_bailitusu", "gjqt_beiluo", "gjqt_xieyi", "hs_malorne", "hs_medivh", "hs_sthrall", "pal_yuejinzhao", "swd_cheyun", "swd_duguningke", "swd_guyue", "swd_huanglei", "swd_murongshi", "swd_muyun", "swd_septem", "swd_tuobayuer", "swd_xuanyuanjianxian", "swd_yuxiaoxue", "swd_zhaoyun", "key_shiki", "shen_zhaoyun", "shen_ganning", "re_liuzan", "chunyuqiong", "yangbiao", "dc_zhaoxiang", "sp_xiahoushi", "ns_zhangwei", "wanglang", "caojinyu", "dc_zhangmancheng", "wu_zhugeliang", "sunlingluan", "wu_luxun", "key_mio", "key_midori", "key_yuri", "key_yui", "key_lucia", "db_key_hina", "sp_key_kanade", "key_shizuru", "key_sakuya", "boss_zhaoyun", "noname", "ns_shijian", "sb_machao", "dc_zhouxuān", "key_iriya", "dc_zhaoyun", "jd_simayan"],
 	ap: [
-		"diy_zhangfei",
-		"diy_zhujun",
 		"hm_shen_zhangjiao",
 		"hm_shen_zhangbao",
 		"hm_shen_zhangliang",
@@ -879,7 +877,6 @@ window.noname_character_rank = {
 		"diy_liuzan",
 		"diy_luxun",
 		"diy_lukang",
-		"diy_weiyan",
 		"diy_zhouyu",
 		"diy_yangyi",
 		"gjqt_hongyu",
@@ -2878,7 +2875,6 @@ window.noname_character_rank = {
 			"swd_xuanyuanjiantong",
 			"swd_maixing",
 			"diy_luxun",
-			"diy_weiyan",
 			"hs_jaina",
 			"gjqt_xiangling",
 			"swd_jiuyou",
