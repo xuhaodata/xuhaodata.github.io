@@ -4345,7 +4345,7 @@ const skills = {
 			player.line(target, "green");
 			var type = get.type(trigger.card, "trick");
 			target
-				.chooseCard("###滔乱###交给" + get.translation(player) + "一张不为" + get.translation(type) + "牌的牌，或令其失去1点体力且滔乱无效直到回合结束", "he", num, function (card, player, target) {
+				.chooseCard("###滔乱###交给" + get.translation(player) + "一张不为" + get.translation(type) + "牌的牌，或令其失去1点体力且滔乱无效直到回合结束", "he", function (card, player, target) {
 					return get.type(card, "trick") != _status.event.cardType;
 				})
 				.set("cardType", type)
