@@ -1748,6 +1748,7 @@ const skills = {
 				.set("eff", [
 					Boolean(get.tag(trigger.card, "damage")),
 					trigger.targets.reduce((acc, target) => {
+						if (trigger.card.name === "tao" && target.getDamagedHp() < 2) return acc;
 						return acc + get.effect(target, trigger.card, trigger.player, player);
 					}, 0),
 				])
@@ -1761,6 +1762,7 @@ const skills = {
 				if (
 					(get.mode() !== "identity" || player.identity !== "nei") &&
 					trigger.targets.reduce((acc, target) => {
+						if (trigger.card.name === "tao" && target.getDamagedHp() < 2) return acc;
 						return acc + get.effect(target, trigger.card, trigger.player, player);
 					}, 0) > 6
 				)
