@@ -1733,16 +1733,38 @@ const skills = {
 			return game.getGlobalHistory("everything", evt => evt.name === "useCard" && get.type(evt.card) === "basic").indexOf(event) === 0;
 		},
 		async cost(event, trigger, player) {
-			const { result } = await player.chooseCard("he", "请重铸一张锦囊牌").set("filterCard", function (card) {
-				return get.type2(card) == "trick";
-			});
-			event.result = result;
+			event.result = await player
+				.chooseCard("he")
+				.set("filterCard", function (card) {
+					return get.type2(card) === "trick";
+				})
+				.set("prompt", get.prompt(event.name.slice(0, -5)))
+				.set("prompt2", "你可重铸一张锦囊牌。若重铸牌为" + (Boolean(get.tag(trigger.card, "damage")) ? "" : "非") + "伤害类，则" + get.translation(trigger.card) + "对相同目标再结算一次。")
+				.set("ai", card => {
+					const eff = get.event("eff");
+					if (get.tag(card, "damage") === Boolean(eff[0])) return 6 - get.value(card) + eff;
+					return 6 - get.value(card);
+				})
+				.set("eff", [
+					Boolean(get.tag(trigger.card, "damage")),
+					trigger.targets.reduce((acc, target) => {
+						return acc + get.effect(target, trigger.card, trigger.player, player);
+					}, 0),
+				])
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
 			const card = event.cards[0];
-			if (Boolean(get.tag(card, "damage")) == Boolean(get.tag(trigger.card, "damage"))) {
+			if (Boolean(get.tag(card, "damage")) === Boolean(get.tag(trigger.card, "damage"))) {
 				trigger.effectCount++;
+				if (
+					(get.mode() !== "identity" || player.identity !== "nei") &&
+					trigger.targets.reduce((acc, target) => {
+						return acc + get.effect(target, trigger.card, trigger.player, player);
+					}, 0) > 6
+				)
+					player.addExpose(0.16);
 			}
 		},
 	},
