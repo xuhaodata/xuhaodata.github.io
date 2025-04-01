@@ -2548,10 +2548,10 @@ export default () => {
 					return characters.randomSort();
 				},
 				trigger: {
-					player: "phaseBefore",
+					player: "phaseBegin",
 				},
 				filter: function (event, player, name) {
-					return player.phaseNumber === 0;
+					return player.phaseNumber === 1;
 				},
 				forced: true,
 				async content(event, trigger, player) {
@@ -2570,7 +2570,7 @@ export default () => {
 						if (func(name)) num--;
 						if (!num) break;
 					}
-					if (!num && lib.rank) {
+					if (num && lib.rank) {
 						//备用方案
 						for (const r of ["s", "ap", "a", "am"]) {
 							if (!Array.isArray(lib.rank[r])) continue;
