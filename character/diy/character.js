@@ -273,6 +273,7 @@ const characters = {
 		group: "qun",
 		hp: 4,
 		skills: ["nspinmin", "nsshishou"],
+		names: "姜|荆轲",
 	},
 	ns_yanliang: {
 		sex: "male",
