@@ -265,7 +265,7 @@ const translates = {
 	std_tianfeng: "标田丰",
 	std_tianfeng_prefix: "标",
 	stdgangjian: "刚谏",
-	stdgangjian_info: "其他角色的准备阶段，你可以令其视为对你使用一张【杀】，若此【杀】为造成伤害，其本回合不能使用锦囊牌。",
+	stdgangjian_info: "其他角色的准备阶段，你可以令其视为对你使用一张【杀】，若此【杀】未造成伤害，其本回合不能使用锦囊牌。",
 	stdguijie: "瑰杰",
 	stdguijie_info: "当你需要使用或打出一张【闪】时，你可以弃置两张红色牌并摸一张牌，视为使用或打出之。",
 	std_liuxie: "标刘协",
