@@ -3180,7 +3180,7 @@ const skills = {
 				return get.attitude(get.player(), target) > 0;
 			});
 			await target.draw(num);
-			await target.chooseToDiscard(true, player.countMark("mbjiexun_used"));
+			await target.chooseToDiscard("he", true, player.countMark("mbjiexun_used"));
 			if (target.countCards("h") === 0) {
 				player.addSkill("mbfunan_rewrite");
 			}
