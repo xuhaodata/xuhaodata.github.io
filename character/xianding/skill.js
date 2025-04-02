@@ -159,7 +159,7 @@ const skills = {
 					trigger.cancel();
 					player
 						.when({ global: "useCardAfter" })
-						.filter(evt => evt === trigger.getParent(2))
+						.filter(evt => evt === trigger.getParent("useCard"))
 						.then(() => {
 							const cards = (trigger.cards || []).filterInD("od");
 							if (cards.length) player.gain(cards, "gain2");

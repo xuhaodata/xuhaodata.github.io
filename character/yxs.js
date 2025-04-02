@@ -88,6 +88,7 @@ game.import("character", function () {
 				group: "qun",
 				hp: 3,
 				skills: ["cike", "qiangxi"],
+				names: "姜|荆轲",
 			},
 			yxs_libai: {
 				sex: "male",

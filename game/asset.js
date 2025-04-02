@@ -7183,7 +7183,6 @@ window.noname_asset_list = [
 	"image/card/mianlijinzhen.png",
 	"image/card/miki_binoculars.png",
 	"image/card/miki_hydrogladiator.png",
-	"image/card/mingguangkai.png",
 	"image/card/minguangkai.png",
 	"image/card/mizhilianou.png",
 	"image/card/molicha.png",

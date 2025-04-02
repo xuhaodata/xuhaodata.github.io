@@ -522,7 +522,7 @@ const skills = {
 				return true;
 			},
 			check(button) {
-				return player.getUseValue(button.link);
+				return get.player().getUseValue(button.link);
 			},
 			backup(links) {
 				return {

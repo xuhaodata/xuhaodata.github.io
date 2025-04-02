@@ -1241,6 +1241,7 @@ export default () => {
 					group: "qun",
 					hp: 3,
 					skills: ["boss_panguan", "boss_juhun", "boss_wangxiang", "boss_newhuanren"],
+					names: "蒋|子文",
 					groupInGuozhan: "shu",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1251,6 +1252,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["weimu", "refankui", "boss_bingfeng"],
+					names: "厉|温",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1260,6 +1262,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["boss_heisheng", "boss_shengfu", "enyuan"],
+					names: "余|懃",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1269,6 +1272,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["boss_zhiwang", "boss_gongzheng", "boss_xuechi"],
+					names: "吕|岱",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1278,6 +1282,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["boss_tiemian", "boss_zhadao", "boss_zhuxin"],
+					names: "包|拯",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1287,6 +1292,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["boss_leizhou", "boss_leifu", "boss_leizhu"],
+					names: "毕|元宾",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1296,6 +1302,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["boss_fudu", "boss_kujiu", "boss_renao"],
+					names: "董|和",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1305,6 +1312,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["boss_remen", "boss_zhifen", "boss_huoxing"],
+					names: "黄|中庸",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1314,6 +1322,7 @@ export default () => {
 					group: "qun",
 					hp: 4,
 					skills: ["boss_suozu", "boss_abi", "boss_pingdeng"],
+					names: "陆|游",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1323,6 +1332,7 @@ export default () => {
 					group: "qun",
 					hp: 6,
 					skills: ["boss_modao", "boss_lunhui", "boss_wangsheng", "boss_zlfanshi"],
+					names: "薛|礼",
 					groupInGuozhan: "shu",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1350,6 +1360,7 @@ export default () => {
 					group: "qun",
 					hp: 8,
 					skills: ["boss_yingzhong"],
+					names: "夜魔仙那度|四季映姬",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isHiddenBoss: false,
@@ -1361,6 +1372,7 @@ export default () => {
 					group: "shen",
 					hp: 8,
 					skills: ["mashu", "wushuang", "boss_baonu", "boss_jingjia", "boss_aozhan"],
+					names: "吕|布",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1371,6 +1383,7 @@ export default () => {
 					group: "shen",
 					hp: 6,
 					skills: ["mashu", "wushuang", "xiuluo", "shenwei", "shenji"],
+					names: "吕|布",
 					groupInGuozhan: "qun",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1381,6 +1394,7 @@ export default () => {
 					group: "shen",
 					hp: 6,
 					skills: ["wushuang", "shenqu", "jiwu"],
+					names: "吕|布",
 					groupInGuozhan: "qun",
 					isHiddenBoss: true,
 					isBossAllowed: true,
@@ -1392,6 +1406,7 @@ export default () => {
 					group: "shen",
 					hp: 12,
 					skills: ["boss_guixin", "xiongcai"],
+					names: "曹|操",
 					groupInGuozhan: "wei",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1402,6 +1417,7 @@ export default () => {
 					group: "shen",
 					hp: 4,
 					skills: ["tiandu", "boss_guimou", "boss_yuance", "boss_qizuo"],
+					names: "郭|嘉",
 					groupInGuozhan: "wei",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1412,6 +1428,7 @@ export default () => {
 					group: "shen",
 					hp: 4,
 					skills: ["jueqing", "boss_wuxin", "shangshix"],
+					names: "张|春华",
 					groupInGuozhan: "wei",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1422,6 +1439,7 @@ export default () => {
 					group: "shen",
 					hp: 4,
 					skills: ["tashui", "lingbo", "jiaoxia", "fanghua"],
+					names: "甄|宓",
 					groupInGuozhan: "wei",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1433,6 +1451,7 @@ export default () => {
 					group: "shen",
 					hp: 8,
 					skills: ["xiaoxiong", "boss_zhangwu"],
+					names: "刘|备",
 					groupInGuozhan: "shu",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1443,6 +1462,7 @@ export default () => {
 					group: "shen",
 					hp: "Infinity/Infinity",
 					skills: ["xiangxing", "yueyin", "fengqi", "gaiming"],
+					names: "诸葛|亮",
 					groupInGuozhan: "shu",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1453,6 +1473,7 @@ export default () => {
 					group: "shen",
 					hp: 4,
 					skills: ["boss_gongshen", "boss_jizhi", "qicai", "boss_guiyin"],
+					names: "黄|月英",
 					groupInGuozhan: "shu",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1463,6 +1484,7 @@ export default () => {
 					group: "shen",
 					hp: 4,
 					skills: ["boss_tianyu", "qiwu", "niepan", "boss_yuhuo"],
+					names: "庞|统",
 					groupInGuozhan: "shu",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1474,6 +1496,7 @@ export default () => {
 					group: "shen",
 					hp: 6,
 					skills: ["huoshen", "boss_honglian", "boss_xianyin"],
+					names: "周|瑜",
 					groupInGuozhan: "wu",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1485,6 +1508,7 @@ export default () => {
 					group: "shen",
 					hp: 4,
 					skills: ["beige", "boss_hujia", "boss_guihan"],
+					names: "蔡|琰",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1495,6 +1519,7 @@ export default () => {
 					group: "shen",
 					hp: 8,
 					skills: ["boss_leiji", "tiandao", "jidian"],
+					names: "张|角",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1505,6 +1530,7 @@ export default () => {
 					group: "shen",
 					hp: 0,
 					skills: ["huanhua"],
+					names: "左|慈",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1526,6 +1552,7 @@ export default () => {
 					group: "shen",
 					hp: 6,
 					skills: ["chulao", "mazui", "boss_shengshou", "guizhen", "wuqin"],
+					names: "华|佗",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1536,6 +1563,7 @@ export default () => {
 					group: "shen",
 					hp: 20,
 					skills: ["jiuchi", "boss_qiangzheng", "boss_baolin"],
+					names: "董|卓",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1547,6 +1575,7 @@ export default () => {
 					group: "shen",
 					hp: "1/8",
 					skills: ["boss_jiang", "boss_hunzi", "boss_hunyou", "boss_taoni"],
+					names: "孙|策",
 					groupInGuozhan: "qun",
 					isBoss: true,
 					isBossAllowed: true,
@@ -1570,6 +1599,7 @@ export default () => {
 		},
 		init() {
 			for (var i in lib.characterPack.mode_boss) {
+				if (!lib.characterPack.mode_boss[i].names) lib.characterPack.mode_boss[i].names = "null|null";
 				if (lib.characterPack.mode_boss[i].isHiddenBoss) continue;
 				lib.mode.boss.config[i + "_boss_config"] = {
 					name: get.translation(i),
@@ -3092,14 +3122,15 @@ export default () => {
 							.map(cur => {
 								const names = get.nameList(cur);
 								for (let name of names) {
-									if (lib.rank.s.includes(name) || lib.rank.ap.includes(name) || lib.rank.a.includes(name)) return name;
+									if (lib.rank.s.includes(name) || lib.rank.ap.includes(name) || lib.rank.a.includes(name) || lib.rank.am.includes(name)) return name;
 								}
 								return false;
 							})
 							.reduce((val, name) => {
 								if (lib.rank.s.includes(name)) return val + 1;
 								if (lib.rank.ap.includes(name)) return val + 0.36;
-								if (lib.rank.a.includes(name)) return val + 0.06;
+								if (lib.rank.a.includes(name)) return val + 0.13;
+								if (lib.rank.am.includes(name)) return val + 0.05;
 							}, 0) > Math.random()
 					)
 						list = ["boss_shikieiki"];
@@ -10294,7 +10325,7 @@ export default () => {
 
 			boss_newhuanren: "关卡说明",
 			boss_newhuanren_info: "",
-			boss_newhuanren_info_boss: "第一关：挑战秦广王<br>第二关：挑战楚江王，宋帝王，五官王，阎罗王中的一个<br>第三关：挑战卞城王，泰山王，都市王，平等王中的一个<br>第四关：挑战转轮王<br>注：孟婆将在每局前三个阶段随机一个阶段登场<br>地藏王登场规则为，50回合内通过第三关，并且在前三关中成功击杀孟婆。<li>选陆逊左慈张春华于吉蒋费孔融自动变孙笨",
+			boss_newhuanren_info_boss: "第一关：挑战秦广王<br>第二关：挑战楚江王，宋帝王，五官王，阎罗王中的一个<br>第三关：挑战卞城王，泰山王，都市王，平等王中的一个<br>第四关：挑战转轮王<br>注：孟婆将在每局前三个阶段随机一个阶段登场<br>地藏王登场规则为，50回合内通过第三关，并且在前三关中成功击杀孟婆。<br>选用的武将越阴间、占比越高，四季映姬登场概率就越大。<li>选陆逊左慈张春华于吉蒋费孔融自动变孙笨",
 			lingsheji: "灵蛇髻",
 			lingsheji2: "灵蛇髻",
 			shanrangzhaoshu: "禅让诏书",
