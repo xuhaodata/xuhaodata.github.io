@@ -1934,7 +1934,6 @@ const skills = {
 			return event.hasNature("fire");
 		},
 		forced: true,
-		locked: true,
 		async content(event, trigger, player) {
 			await player.draw();
 			await trigger.player.loseMaxHp();
