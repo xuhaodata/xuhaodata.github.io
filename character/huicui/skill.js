@@ -9282,32 +9282,34 @@ const skills = {
 	dctujue: {
 		audio: 2,
 		trigger: { player: "dying" },
-		direct: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "gray",
 		filter(event, player) {
 			return player.countCards("he") > 0;
 		},
-		content() {
-			"step 0";
-			player
-				.chooseTarget(lib.filter.notMe, get.prompt2("dctujue"))
-				.set("ai", function (target) {
-					if (_status.event.skip) return 0;
-					return 200 + get.attitude(_status.event.player, target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(lib.filter.notMe, get.prompt2(event.skill))
+				.set("ai", target => {
+					const { skip, player } = get.event();
+					if (skip) return 0;
+					return 200 + get.attitude(player, target);
 				})
-				.set("skip", player.countCards("hs", { name: ["tao", "jiu"] }) + player.hp > 0);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dctujue", target);
-				player.awakenSkill("dctujue");
-				var cards = player.getCards("he");
-				player.give(cards, target);
-				player.recover(cards.length);
-				player.draw(cards.length);
-			}
+				.set("skip", player.countCards("hs", { name: ["tao", "jiu"] }) + player.hp > 0)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const {
+				targets: [target],
+			} = event;
+			const cards = player.getCards("he");
+			if (!cards.length) return;
+			const num = Math.max(5, cards.length);
+			await player.give(cards, target);
+			await player.recover(num);
+			await player.draw(num);
 		},
 	},
 	//尹夫人
