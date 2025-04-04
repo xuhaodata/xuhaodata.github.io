@@ -74,7 +74,7 @@ const skills = {
 			if (_status.countDown) return;
 			let time;
 			if (typeof info?.["chooseToUse"] === "number") time = info["chooseToUse"];
-			else if (info?.default) time = info.default;
+			else if (typeof info?.default === "number") time = info.default;
 			else {
 				if (!_status.connectMode) return;
 				time = lib.configOL.choose_timeout;
@@ -102,12 +102,13 @@ const skills = {
 			game.broadcastAll(() => {
 				const countDown = game.countDown;
 				if (typeof countDown !== "function") return;
-				game.countDown = function () {
-					const event = get.event();
-					if (event?.name === "chooseToUse" && event.player?.isIn()) {
-						event.player.addTempSkill("olfeibian_effect");
-					}
-					return countDown.apply(this, arguments);
+				game.countDown = function (time, onEnd) {
+					const newOnEnd = () => {
+						const event = get.event();
+						if (event?.name === "chooseToUse" && event.player?.isIn()) event.player.addTempSkill("olfeibian_effect");
+						if (typeof onEnd === "function") onEnd();
+					};
+					return countDown.call(this, time, newOnEnd);
 				};
 			});
 		},
