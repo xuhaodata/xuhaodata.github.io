@@ -1248,8 +1248,9 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
-			const { bool, cards } = await target.chooseCard("展示两张手牌", "h", 2, true).forResult();
-			if (!bool) return;
+			const { result } = await target.chooseCard("展示两张手牌", "h", 2, true);
+			if (!result?.cards?.length) return;
+			const { cards } = result;
 			await target.showCards(cards);
 			if (event.name == "danxin_jiaozhao") {
 				const result = await player
@@ -1259,10 +1260,9 @@ const skills = {
 						return get.value(button.link) + 1;
 					})
 					.forResult();
-				if (result.bool) {
-					await target.give(result.links, player);
-				}
+				if (result?.bool && result?.links?.length) await player.gain(result.links, target, "giveAuto");
 			} else {
+				if (!player.countCards("h")) return;
 				const cardx = player.getCards("h").sort((a, b) => player.getUseValue(a) - player.getUseValue(b))[0];
 				const result = await player
 					.chooseButton(2, ["你的手牌", player.getCards("h"), `${get.translation(target)}展示的手牌`, cards])
@@ -1285,7 +1285,7 @@ const skills = {
 						return player.getUseValue(button.link) + 1;
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool && result?.links?.length) {
 					const cards1 = result.links.filter(card => !cards.includes(card)),
 						cards2 = result.links.filter(card => cards.includes(card));
 					await player.swapHandcards(target, cards1, cards2);

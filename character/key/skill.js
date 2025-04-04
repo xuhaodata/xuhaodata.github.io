@@ -6922,6 +6922,7 @@ const skills = {
 		log: false,
 		precontent() {
 			player.logSkill("shizuru_nianli");
+			player.addTempSkill("shizuru_nianli_clear");
 			player.addTempSkill("shizuru_nianli_round", "roundStart");
 			player.showCards(get.translation(player) + "发动了【念力】", event.result.cards.slice(0));
 			event.result.card.cards = [];
@@ -6989,13 +6990,14 @@ const skills = {
 			if (name == "tao") return player.countCards("h", { suit: "heart" }) > 0 && !player.hasSkill("shizuru_nianli_round");
 			return false;
 		},
-		group: "shizuru_nianli_clear",
 		subSkill: {
 			round: {
+				charlotte: true,
 				mark: true,
 				intro: { content: "本轮已发动" },
 			},
 			clear: {
+				charlotte: true,
 				trigger: { player: "useCardAfter" },
 				lastDo: true,
 				silent: true,

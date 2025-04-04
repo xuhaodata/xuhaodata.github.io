@@ -5,6 +5,7 @@ const skills = {
 	//OL界关兴张苞
 	olfuhun: {
 		inherit: "fuhun",
+		position: "hes",
 		global: ["olfuhun_block"],
 		group: ["olfuhun_effect", "olfuhun_mark"],
 		subSkill: {
