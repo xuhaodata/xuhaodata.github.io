@@ -759,6 +759,7 @@ const skills = {
 			result: { player: 1 },
 		},
 		subSkill: { backup: {} },
+		derivation: "dcretanluan",
 	},
 	dcretanluan: {
 		init(player, skill) {
