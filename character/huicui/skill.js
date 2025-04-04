@@ -90,12 +90,12 @@ const skills = {
 					cardname(card) {
 						const evt = get.event();
 						if (evt.name !== "chooseToUse") return;
-						if (card.hasGaintag("dcxianniang_tag")) return "jiu";
+						if (get.type(card) == "basic" && card.hasGaintag("dcxianniang_tag")) return "jiu";
 					},
 					cardnature(card) {
 						const evt = get.event();
 						if (evt.name !== "chooseToUse") return;
-						if (card.hasGaintag("dcxianniang_tag")) return false;
+						if (get.type(card) == "basic" && card.hasGaintag("dcxianniang_tag")) return false;
 					},
 				},
 			},
@@ -172,6 +172,7 @@ const skills = {
 	//庞宏
 	dcpingzhi: {
 		audio: 2,
+		mark: true,
 		zhuanhuanji: true,
 		marktext: "☯",
 		usable: 1,
