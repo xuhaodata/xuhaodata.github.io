@@ -15,6 +15,7 @@ const skills = {
 		content() {
 			player.addTempSkill("olkuangjuan_used");
 			player.markAuto("olkuangjuan_used", [target]);
+			player.addTempSkill("olkuangjuan_effect");
 			player.drawTo(target.countCards("h")).gaintag.add("olkuangjuan_effect");
 		},
 		ai: {
@@ -36,7 +37,7 @@ const skills = {
 				filter(event, player) {
 					if (event.addCount === false) return false;
 					return player.hasHistory("lose", evt => {
-						if (event.getParent() !== event) return false;
+						if (evt.getParent() !== event) return false;
 						return Object.values(evt.gaintag_map).flat().includes("olkuangjuan_effect");
 					});
 				},
