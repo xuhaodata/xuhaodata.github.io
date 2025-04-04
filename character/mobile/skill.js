@@ -552,8 +552,10 @@ const skills = {
 					.chooseBool("远谟", `是否令${get.translation(drawer)}摸${get.cnNumber(num)}张牌？`)
 					.set("choice", get.effect(drawer, { name: "draw" }, player, player) > 0)
 					.forResult();
-				if (result?.bool) player.logSkill("mbyuanmo", [drawer], null, null, [1]);
-				await drawer.draw(num);
+				if (result?.bool) {
+					player.logSkill("mbyuanmo", [drawer], null, null, [1]);
+					await drawer.draw(num);
+				}
 			}
 		},
 	},

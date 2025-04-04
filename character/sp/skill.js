@@ -16109,7 +16109,7 @@ const skills = {
 			player.markAuto("olshengong_destroy", [card]);
 			if (
 				!game.hasPlayer(function (current) {
-					return current.canEquip(card);
+					return current.canEquip(card, true);
 				})
 			) {
 				event.finish();
