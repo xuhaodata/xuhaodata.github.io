@@ -2208,16 +2208,14 @@ const skills = {
 	},
 	//神张梁
 	hm_jijun: {
-		trigger: {
-			target: "useCardToPlayered",
-		},
+		trigger: { target: "useCardToPlayered" },
 		frequent: true,
 		filter(event, player) {
 			if (!event.isFirstTarget) return false;
 			return event.player == player;
 		},
 		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
+			const cards = player.getExpansions(skill);
 			if (cards.length) player.loseToDiscardpile(cards);
 		},
 		intro: {
@@ -2231,19 +2229,28 @@ const skills = {
 		async content(event, trigger, player) {
 			const next = player.judge();
 			const { result } = await next;
-			const next2 = player.chooseControl([`获得${get.translation(result.card)}`, `将${get.translation(result.card)}置于武将牌`]);
+			const card = result?.card;
+			if (!card || get.owner(card)) return;
+			const next2 = player
+				.chooseControl([`获得${get.translation(card)}`, `将${get.translation(card)}置于武将牌`])
+				.set("ai", () => {
+					const { player, cardx } = get.event();
+					if (player.getUseValue(cardx) > 3) return 0;
+					return player.hasSkill("hm_fangtong") ? 1 : 0;
+				})
+				.set("cardx", card);
 			const { result: result2 } = await next2;
 			if (result2.index == 0) {
-				await player.gain([result.card]);
+				await player.gain(card, "gain2");
 			} else {
-				await player.addToExpansion("giveAuto", [result.card], player).gaintag.add("hm_jijun");
+				const next = player.addToExpansion("giveAuto", card, player);
+				next.gaintag.add(event.name);
+				await next;
 			}
 		},
 	},
 	hm_fengtong: {
-		trigger: {
-			player: "phaseUseEnd",
-		},
+		trigger: { player: "phaseUseEnd" },
 		getAuto(player) {
 			var hs = player.getCards("h");
 			var ss = player.getExpansions("xinfu_jijun");
@@ -2276,33 +2283,30 @@ const skills = {
 			return list;
 		},
 		filter(event, player) {
-			return player.getExpansions("hm_jijun").length > 0;
+			return player.getExpansions("hm_jijun").length && player.hasCard(lib.filter.cardRecastable, "h");
 		},
 		async cost(event, trigger, player) {
-			const next = player.chooseCard("h");
-			next.set("prompt", "重铸一张手牌");
-			const { result } = await next;
-			event.result = result;
+			event.result = await player.chooseCard(get.prompt2(event.skill), "h", lib.filter.cardRecastable).forResult();
 		},
 		async content(event, trigger, player) {
 			const { cards } = event;
 			await player.recast(cards);
-			const next = player.chooseCardButton(player.getExpansions("hm_jijun"), [1, Infinity]);
+			const expansions = player.getExpansions("hm_jijun");
+			if (!expansions.length) return;
+			let result;
+			const next = player.chooseCardButton(expansions, [1, Infinity]);
 			next.set("num", get.number(cards[0]));
-			next.set("filterOk", function () {
-				const evt = get.event();
-				let sum = evt.num;
+			next.set("filterOk", () => {
+				let sum = get.event("num");
 				ui.selected.buttons.forEach(button => {
-					const num = get.number(button);
-					if (num) {
-						sum += num;
-					}
+					const num = get.number(button.link);
+					if (typeof num == "number") sum += num;
 				});
 				return sum === 36;
 			});
 			next.set("autolist", lib.skill.xinfu_fangtong.getAuto(player));
-			next.set("processAI", function () {
-				if (_status.event.autolist && _status.event.autolist.length > 0) {
+			next.set("processAI", () => {
+				if (_status.event.autolist?.length) {
 					return {
 						bool: true,
 						links: _status.event.autolist,
@@ -2311,18 +2315,20 @@ const skills = {
 				return { bool: false };
 			});
 			next.set("complexSelect", true);
-			const { result } = await next;
-			if (result.bool) {
+			result = await next.forResult();
+			if (result?.bool && result?.links?.length) {
 				await player.loseToDiscardpile(result.links);
-				const next2 = player.chooseTarget("【方统】：对一名其他角色造成3点雷电伤害", lib.filter.notMe, true);
-				next2.set("ai", function (target) {
-					const evt = get.event();
-					return get.damageEffect(evt.player, target, evt.player, "thunder");
+				if (!game.hasPlayer(current => player != current)) return;
+				const next = player.chooseTarget("【方统】：对一名其他角色造成3点雷电伤害", lib.filter.notMe, true);
+				next.set("ai", target => {
+					const player = get.player();
+					return get.damageEffect(player, target, player, "thunder");
 				});
-				const result2 = await next2.forResult();
-				await result2.targets[0].damage("thunder", 3, player);
+				result = await next.forResult();
+				if (result?.bool && result?.targets?.length) await result.targets[0].damage("thunder", 3, player);
 			}
 		},
+		ai: { combo: "hm_jijun" },
 	},
 	//三兄弟都有的玩意
 	hm_sanshou: {

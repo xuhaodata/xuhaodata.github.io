@@ -808,16 +808,11 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return (
-				player.countCards("he") > 0 &&
-				game.hasPlayer(function (current) {
-					return current != player && current.countCards("h") > 0;
-				})
-			);
+			return player.hasCard(lib.filter.cardRecastable, "he") && game.hasPlayer(current => get.info("chongxin").filterTarget(null, player, current));
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardRecastable,
 		filterTarget(card, player, target) {
-			return target != player && target.countCards("h") > 0;
+			return target != player && target.countCards("h");
 		},
 		check(card) {
 			return 6 - get.value(card);
@@ -826,17 +821,12 @@ const skills = {
 		lose: false,
 		delay: false,
 		position: "he",
-		content() {
-			"step 0";
-			player.recast(cards);
-			"step 1";
-			if (target.countCards("he") > 0) {
-				target.chooseCard("he", true, "请重铸一张牌", lib.filter.cardRecastable);
-			} else event.finish();
-			"step 2";
-			if (result.bool) {
-				target.recast(result.cards);
-			}
+		async content(event, trigger, player) {
+			const { cards, target } = event;
+			await player.recast(cards);
+			if (!target.hasCard(lib.filter.cardRecastable, "he")) return;
+			const { result } = await target.chooseCard("he", true, "请重铸一张牌", lib.filter.cardRecastable);
+			if (result?.bool && result?.cards?.length) target.recast(result.cards);
 		},
 		ai: {
 			order: 6,
