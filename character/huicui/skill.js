@@ -5910,10 +5910,7 @@ const skills = {
 					.set("ai", button => {
 						const player = get.player(),
 							{ link } = button;
-						if (!game.hasPlayer(current => get.attitude(player, current)) > 0) {
-							if (player.getHp() < 3) return -get.value(link);
-							return 0;
-						}
+						if (!game.hasPlayer(current => player != current && get.attitude(player, current)) > 0) return 6.5 - get.value(link);
 						return get.value(link);
 					})
 					.forResult();
