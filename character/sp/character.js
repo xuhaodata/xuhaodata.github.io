@@ -1,4 +1,16 @@
 const characters = {
+	ol_yangfu: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["olpingzhong", "olsuyi"],
+	},
+	ol_lifeng: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["oljiyun", "olshuliang"],
+	},
 	ol_miheng: {
 		sex: "male",
 		group: "qun",

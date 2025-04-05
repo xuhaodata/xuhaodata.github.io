@@ -2,6 +2,77 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//族荀爽 —— by 刘巴
+	clanyangji: {
+		trigger: {
+			player: "phaseZhunbeiBegin",
+			global: "phaseEnd",
+		},
+		filter(event, player) {
+			if (event.name === "phase" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.num !== 0)) return false;
+			return player.countCards("h");
+		},
+		async content(event, trigger, player) {
+			let cards = player.getCards("h"),
+				goon = () => !player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && cards.some(c => player.hasCard(a => a === c, "h") && player.hasUseTarget(c, null, false) && get.color(c, player) === "black");
+			await player.showCards(cards, `${get.translation(player)}发动了〖佯疾〗`);
+			while (goon()) {
+				const result = await player
+					.chooseToUse(function (card, player, event) {
+						return cards.includes(card) && get.color(card, player) === "black" && lib.filter.filterCard.apply(this, arguments);
+					}, "佯疾：请使用一张黑色牌")
+					.set("forced", true)
+					.set("addCount", false)
+					.forResult();
+				if (!goon()) {
+					const card = result.cards[0],
+						target = _status.currentPhase;
+					if (card && get.suit(card, player) == "spade" && !get.owner(card) && target.canAddJudge(get.autoViewAs({ name: "lebu" }, card))) {
+						await target.addJudge({ name: "lebu" }, card);
+					}
+				}
+			}
+		},
+	},
+	clandandao: {
+		trigger: {
+			player: "judgeAfter",
+		},
+		forced: true,
+		content() {
+			const target = _status.currentPhase;
+			target.addTempSkill(event.name + "_add");
+			target.addMark(event.name + "_add", 3, false);
+		},
+		subSkill: {
+			add: {
+				charlotte: true,
+				onremove: true,
+				markimage: "image/card/handcard.png",
+				intro: {
+					content: "手牌上限+#",
+				},
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("clandandao_add");
+					},
+				},
+			},
+		},
+	},
+	clanqingli: {
+		trigger: {
+			global: "phaseEnd",
+		},
+		forced: true,
+		filter(event, player) {
+			return player.countCards("h") < player.getHandcardLimit();
+		},
+		async content(event, trigger, player) {
+			const num = Math.min(player.getHandcardLimit() - player.countCards("h"), 5);
+			if (num > 0) await player.draw(num);
+		},
+	},
 	//族杨修 —— by 刘巴
 	clanjiewu: {
 		audio: 2,
@@ -771,7 +842,8 @@ const skills = {
 						return (
 							(ui.selected.cards || []).reduce((sum, card) => {
 								return sum + get.cardNameLength(card);
-							}, 0) >= get.cardNameLength(lib.skill.clanchengqi_backup.viewAs.name)
+							}, 0) >= get.cardNameLength(lib.skill.clanchengqi_backup.viewAs.name)&&
+							get.event()._backup.filterCard(get.card(),get.player(),get.event())
 						);
 					},
 					ai1(card) {

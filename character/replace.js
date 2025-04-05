@@ -138,7 +138,7 @@ window.noname_character_replace = {
 	kebineng: ["kebineng", "ol_kebineng", "ddd_kebineng"],
 	kongrong: ["ol_sb_kongrong", "dc_kongrong", "sp_kongrong", "jsrg_kongrong", "kongrong"],
 	liaohua: ["liaohua", "ol_liaohua", "xin_liaohua", "re_liaohua", "ty_liaohua", "diy_liaohua"],
-	lifeng: ["dc_lifeng", "lifeng"],
+	lifeng: ["ol_lifeng", "dc_lifeng", "lifeng"],
 	lijue: ["lijue", "std_lijue", "ns_lijue"],
 	lingcao: ["lingcao", "dc_lingcao"],
 	lingju: ["lingju", "old_lingju"],
@@ -398,4 +398,6 @@ window.noname_character_replace = {
 	peiyuanshao: ["ol_peiyuanshao", "peiyuanshao"],
 	xingdaorong: ["xingdaorong", "mb_xingdaorong"],
 	yangxiu: ["yangxiu", "clan_yangxiu"],
+	yangfu: ["ol_yangfu", "yangfu"],
+	xiahouxuan: ["xiahouxuan", "dc_xiahouxuan"],
 };

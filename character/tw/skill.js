@@ -10,7 +10,7 @@ const skills = {
 			return name === "tao" && player.countCards("h") > 0 && !player.hasSkillTag("noCompareSource");
 		},
 		filter(event, player) {
-			if (event.twfushu) return false; // || event.name != "chooseToUse"
+			if (event.twfushu) return false;
 			return event.filterCard({ name: "tao", isCard: true }, player, event) && player.countCards("h") && !player.hasSkillTag("noCompareSource");
 		},
 		filterCard: () => true,
@@ -342,7 +342,6 @@ const skills = {
 			if (target.countDiscardableCards(player, "h") > 0) {
 				await player.discardPlayerCard(target, "h", true);
 			}
-			//淩越还不知道什么意思，就干脆先当常驻效果了
 			const targets = player
 				.getAllHistory("useSkill", evt => evt.skill == "twhuiyu")
 				.reduce((list, evt) => {
@@ -351,7 +350,8 @@ const skills = {
 				.filter(targetx => {
 					return target.countGainableCards(targetx, "h") > 0;
 				});
-			if (targets.length) {
+			if (targets.length && player.hp > target.hp) {
+				//淩越·体力
 				const result = await player
 					.chooseTarget(`狈行：你可令一名角色获得${get.translation(target)}的一张手牌`, (card, player, target) => {
 						return get.event().targets.includes(target) && target != get.event().sourcex;
