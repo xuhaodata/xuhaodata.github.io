@@ -3909,7 +3909,9 @@ const skills = {
 	olsbhongtu: {
 		audio: 6,
 		trigger: {
-			global: ["phaseZhunbeiEnd", "phaseJudgeEnd", "phaseDrawEnd", "phaseUseEnd", "phaseDiscardEnd", "phaseJieshuEnd"],
+			get global() {
+				return (lib.phaseName || []).map(i => i + "End");
+			},
 		},
 		filter(event, player) {
 			let count = 0;
@@ -3945,7 +3947,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.draw(3);
-			if (player.countCards("h") < 3) return;
+			if (player.countCards("h") < 3 || !game.hasPlayer(current => player != current)) return;
 			const [cards, targets] = await player
 				.chooseCardTarget({
 					prompt: "鸿图：请展示三张手牌并选择一名角色",
@@ -3988,7 +3990,7 @@ const skills = {
 					},
 				})
 				.forResult("cards", "targets");
-			if (!cards || !cards.length || !targets || !targets.length) return;
+			if (!cards?.length || !targets?.length) return;
 			const [target] = targets;
 			player.line(target, "green");
 			await player.showCards(cards, `${get.translation(player)}对${get.translation(target)}发动了【鸿图】`);
@@ -4010,19 +4012,16 @@ const skills = {
 					return get.player().getUseValue(button.link);
 				})
 				.forResultLinks();
-			if (!links || !links.length) {
+			if (!links?.length) {
 				for (const current of [target, player]) {
 					if (!current.isIn()) continue;
 					player.line(current, "fire");
 					await current.damage("fire");
 				}
 			} else {
-				const numbers = cards
-						.map(card => get.number(card, player))
-						.toUniqued()
-						.sort((a, b) => a - b),
-					min = numbers[0],
-					max = numbers.at(-1);
+				const numbers = cards.map(card => get.number(card, player)).toUniqued();
+				const min = Math.min(...numbers);
+				const max = Math.max(...numbers);
 				const [card] = links;
 				cards.remove(card);
 				const cardx = get.autoViewAs(
@@ -4067,6 +4066,7 @@ const skills = {
 					target.addSkill("olsbhongtu_limit");
 					if (!target.storage.olsbhongtu_limit) target.storage.olsbhongtu_limit = [0, 0];
 					target.storage.olsbhongtu_limit[0] += 2;
+					target.markSkill("olsbhongtu_limit");
 				} else if (num != min && num != max) {
 					skill = "qianxi";
 				}
@@ -4101,7 +4101,7 @@ const skills = {
 				markimage: "image/card/handcard.png",
 				intro: {
 					content(storage, player) {
-						return "手牌上限+" + storage;
+						return "手牌上限+" + storage[0];
 					},
 				},
 				charlotte: true,
@@ -4110,23 +4110,20 @@ const skills = {
 						return num + player.storage.olsbhongtu_limit[0];
 					},
 				},
-				trigger: {
-					player: "phaseEnd",
-				},
+				trigger: { player: "phaseEnd" },
 				silent: true,
 				lastDo: true,
-				content() {
-					player.storage.olsbhongtu_limit = [player.storage.olsbhongtu_limit[1], 0];
-					if (!player.storage.olsbhongtu_limit[0]) player.removeSkill("olsbhongtu_limit");
+				async content(event, trigger, player) {
+					const skillName = event.name;
+					player.storage[skillName] = [player.storage[skillName][1], 0];
+					if (!player.storage[skillName][0]) player.removeSkill(skillName);
 				},
 			},
 		},
 	},
 	olsbqiwu: {
 		audio: 6,
-		trigger: {
-			player: "damageBegin4",
-		},
+		trigger: { player: "damageBegin4" },
 		filter(event, player) {
 			if (!event.source) return false;
 			if (event.source !== player && !event.source.inRangeOf(player)) return false;

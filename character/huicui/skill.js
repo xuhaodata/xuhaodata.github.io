@@ -5931,7 +5931,7 @@ const skills = {
 					} else if (att > 0) {
 						return att / (1 + target.countCards("h"));
 					} else {
-						return att / 100;
+						return Math.max(0.1, att) / 100;
 					}
 				})
 				.set("enemy", get.value(toGive[0], player, "raw") < 0)
