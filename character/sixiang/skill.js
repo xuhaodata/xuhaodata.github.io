@@ -1247,11 +1247,13 @@ const skills = {
 			return target != player && target.countCards("h") > 1;
 		},
 		async content(event, trigger, player) {
-			const target = event.target;
-			const { bool, cards } = await target.chooseCard("展示两张手牌", "h", 2, true).forResult();
-			if (!bool) return;
+			const { target } = event;
+			if (!target.countCards("h")) return;
+			const { result } = await target.chooseCard("展示两张手牌", "h", 2, true);
+			if (!result?.cards?.length) return;
+			const { cards } = result;
 			await target.showCards(cards);
-			if (event.name == "danxin_jiaozhao") {
+			if (event.getParent(2).name == "stddanxin") {
 				const result = await player
 					.chooseButton(["是否选择其中一张牌获得？", cards])
 					.set("ai", button => {
@@ -1259,10 +1261,9 @@ const skills = {
 						return get.value(button.link) + 1;
 					})
 					.forResult();
-				if (result.bool) {
-					await target.give(result.links, player);
-				}
+				if (result?.bool && result?.links?.length) await player.gain(result.links, target, "giveAuto");
 			} else {
+				if (!player.countCards("h")) return;
 				const cardx = player.getCards("h").sort((a, b) => player.getUseValue(a) - player.getUseValue(b))[0];
 				const result = await player
 					.chooseButton(2, ["你的手牌", player.getCards("h"), `${get.translation(target)}展示的手牌`, cards])
@@ -1285,7 +1286,7 @@ const skills = {
 						return player.getUseValue(button.link) + 1;
 					})
 					.forResult();
-				if (result.bool) {
+				if (result?.bool && result?.links?.length) {
 					const cards1 = result.links.filter(card => !cards.includes(card)),
 						cards2 = result.links.filter(card => cards.includes(card));
 					await player.swapHandcards(target, cards1, cards2);
@@ -1303,12 +1304,10 @@ const skills = {
 	},
 	stddanxin: {
 		audio: "redanxin",
-		trigger: {
-			player: "damageEnd",
-		},
+		trigger: { player: "damageEnd" },
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("stddanxin"))
+				.chooseTarget(get.prompt2(event.skill))
 				.set("filterTarget", (card, player, target) => {
 					return target != player && target.countCards("h") > 1;
 				})
@@ -1318,13 +1317,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			const target = event.targets[0];
-			player.logSkill("stdjiaozhao", target);
-			const next = game.createEvent("danxin_jiaozhao");
-			next.player = player;
-			next.target = target;
-			next.setContent(lib.skill.stdjiaozhao.content);
-			await next;
+			await player.useSkill("stdjiaozhao", event.targets);
 		},
 	},
 	//吕范

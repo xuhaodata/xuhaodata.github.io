@@ -3628,7 +3628,9 @@ game.import("card", function () {
 							event.wuxieresult2 = result;
 							game.broadcast("cancel", id);
 							return function () {
-								if (_status.event.id == id && _status.event.name == "chooseToUse" && _status.paused) event.resultOL = _status.event.resultOL;
+								var evt = get.event();
+								if (evt.getParent().name == "chooseToUse") evt = evt.getParent();
+								if (evt.id == id && evt.name == "chooseToUse" && _status.paused) event.resultOL = _status.event.resultOL;
 								if (_status.event._parent_id == id) {
 									ui.click.cancel();
 									if (_status.event.getParent().name == "chooseToUse" && _status.event.getParent().id == id) {
@@ -3650,7 +3652,9 @@ game.import("card", function () {
 								}
 							};
 						} else {
-							if (_status.event.id == id && _status.event.name == "chooseToUse" && _status.paused) {
+							var evt = get.event();
+							if (evt.getParent().name == "chooseToUse") evt = evt.getParent();
+							if (evt.id == id && evt.name == "chooseToUse" && _status.paused) {
 								return function () {
 									event.resultOL = _status.event.resultOL;
 								};

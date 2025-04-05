@@ -552,8 +552,10 @@ const skills = {
 					.chooseBool("远谟", `是否令${get.translation(drawer)}摸${get.cnNumber(num)}张牌？`)
 					.set("choice", get.effect(drawer, { name: "draw" }, player, player) > 0)
 					.forResult();
-				if (result?.bool) player.logSkill("mbyuanmo", [drawer], null, null, [1]);
-				await drawer.draw(num);
+				if (result?.bool) {
+					player.logSkill("mbyuanmo", [drawer], null, null, [1]);
+					await drawer.draw(num);
+				}
 			}
 		},
 	},
@@ -3628,7 +3630,7 @@ const skills = {
 			effect: {
 				mod: {
 					aiOrder(player, card, num) {
-						if (num > 0) return num + 15 * (player.getStorage("mbzhijie_effect").includes(get.type2(card)) ? 1 : -1);
+						if (num > 0) return num + 1.5 * (player.getStorage("mbzhijie_effect").some(list => list[1] == get.type2(card)) ? 1 : -1);
 					},
 				},
 				charlotte: true,

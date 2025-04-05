@@ -15,6 +15,7 @@ const skills = {
 		content() {
 			player.addTempSkill("olkuangjuan_used");
 			player.markAuto("olkuangjuan_used", [target]);
+			player.addTempSkill("olkuangjuan_effect");
 			player.drawTo(target.countCards("h")).gaintag.add("olkuangjuan_effect");
 		},
 		ai: {
@@ -36,7 +37,7 @@ const skills = {
 				filter(event, player) {
 					if (event.addCount === false) return false;
 					return player.hasHistory("lose", evt => {
-						if (event.getParent() !== event) return false;
+						if (evt.getParent() !== event) return false;
 						return Object.values(evt.gaintag_map).flat().includes("olkuangjuan_effect");
 					});
 				},
@@ -73,7 +74,7 @@ const skills = {
 			if (_status.countDown) return;
 			let time;
 			if (typeof info?.["chooseToUse"] === "number") time = info["chooseToUse"];
-			else if (info?.default) time = info.default;
+			else if (typeof info?.default === "number") time = info.default;
 			else {
 				if (!_status.connectMode) return;
 				time = lib.configOL.choose_timeout;
@@ -101,12 +102,13 @@ const skills = {
 			game.broadcastAll(() => {
 				const countDown = game.countDown;
 				if (typeof countDown !== "function") return;
-				game.countDown = function () {
-					const event = get.event();
-					if (event?.name === "chooseToUse" && event.player?.isIn()) {
-						event.player.addTempSkill("olfeibian_effect");
-					}
-					return countDown.apply(this, arguments);
+				game.countDown = function (time, onEnd) {
+					const newOnEnd = () => {
+						const event = get.event();
+						if (event?.name === "chooseToUse" && event.player?.isIn()) event.player.addTempSkill("olfeibian_effect");
+						if (typeof onEnd === "function") onEnd();
+					};
+					return countDown.call(this, time, newOnEnd);
 				};
 			});
 		},
@@ -16107,7 +16109,7 @@ const skills = {
 			player.markAuto("olshengong_destroy", [card]);
 			if (
 				!game.hasPlayer(function (current) {
-					return current.canEquip(card);
+					return current.canEquip(card, true);
 				})
 			) {
 				event.finish();

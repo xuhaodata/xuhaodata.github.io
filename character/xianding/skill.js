@@ -10024,7 +10024,7 @@ const skills = {
 					},
 				},
 				mod: {
-					selectCard(card, player, range) {
+					selectTarget(card, player, range) {
 						var source = player.storage.dcpandi_effect;
 						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.storage.dcpandi_effect) == "player") return;
 						var range,
