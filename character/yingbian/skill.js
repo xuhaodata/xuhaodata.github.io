@@ -826,7 +826,7 @@ const skills = {
 			await player.recast(cards);
 			if (!target.hasCard(lib.filter.cardRecastable, "he")) return;
 			const { result } = await target.chooseCard("he", true, "请重铸一张牌", lib.filter.cardRecastable);
-			if (result?.bool && result?.cards?.length) target.recast(result.cards);
+			if (result?.bool && result?.cards?.length) await target.recast(result.cards);
 		},
 		ai: {
 			order: 6,

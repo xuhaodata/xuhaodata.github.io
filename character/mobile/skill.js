@@ -3630,7 +3630,7 @@ const skills = {
 			effect: {
 				mod: {
 					aiOrder(player, card, num) {
-						if (num > 0) return num + 15 * (player.getStorage("mbzhijie_effect").includes(get.type2(card)) ? 1 : -1);
+						if (num > 0) return num + 1.5 * (player.getStorage("mbzhijie_effect").some(list => list[1] == get.type2(card)) ? 1 : -1);
 					},
 				},
 				charlotte: true,
