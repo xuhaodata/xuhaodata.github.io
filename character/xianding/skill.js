@@ -575,7 +575,7 @@ const skills = {
 			self: {
 				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
-					return player.maxHp < 8 && event.isFirstTarget && event.targets.includes(player);
+					return event.isFirstTarget && event.targets.includes(player);
 				},
 				forced: true,
 				popup: false,
