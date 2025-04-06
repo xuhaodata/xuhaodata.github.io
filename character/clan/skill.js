@@ -1461,6 +1461,7 @@ const skills = {
 		mark: true,
 		intro: {
 			markcount(storage = {}) {
+				if (!storage) return 0;
 				return Object.keys(storage).length;
 			},
 			/*
@@ -1479,6 +1480,7 @@ const skills = {
 			},
 			*/
 			mark(dialog, storage = {}) {
+				if (!storage) return "当前暂无记录";
 				const addNewRow = lib.element.dialog.addNewRow.bind(dialog);
 				dialog.css({ width: "50%" });
 				if (get.is.phoneLayout()) dialog.classList.add("fullheight");
