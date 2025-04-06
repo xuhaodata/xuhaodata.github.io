@@ -2387,18 +2387,13 @@ const skills = {
 	//祖郎
 	xkxijun: {
 		enable: ["chooseToUse", "chooseToRespond"],
-		trigger: {
-			player: "damageEnd",
-		},
+		trigger: { player: "damageEnd" },
 		filter(event, player) {
 			if (player.countMark("xkxijun_used") >= 2) return false;
 			if (!player.countCards("hes", { color: "black" })) return false;
-			if (event?.name == "damage") return true;
+			if (event.name == "damage") return ["sha", "juedou"].some(name => player.countCards("hes", card => get.color(card) == "black" && player.hasUseTarget(get.autoViewAs({ name: name }, [card]), false, false)));
 			if (!player.isPhaseUsing()) return false;
-			for (const name of ["sha", "juedou"]) {
-				if (event.filterCard(get.autoViewAs({ name: name }, "unsure"), player, event)) return true;
-			}
-			return false;
+			return ["sha", "juedou"].some(name => event.filterCard(get.autoViewAs({ name: name }, "unsure"), player, event));
 		},
 		direct: true,
 		async content(event, trigger, player) {
@@ -2416,7 +2411,7 @@ const skills = {
 				.set("filterButton", button => {
 					const name = button.link[2],
 						player = get.player();
-					return player.hasUseTarget({ name: name });
+					return player.countCards("hes", card => get.color(card) == "black" && player.hasUseTarget(get.autoViewAs({ name: name }, [card]), false, false));
 				})
 				.set("ai", button => {
 					const name = button.link[2],
@@ -2424,27 +2419,26 @@ const skills = {
 					return player.getUseValue({ name: name });
 				})
 				.forResult();
-			if (!result.bool) return;
-			const card = { name: result.links[0][2] };
-			game.broadcastAll(function (card) {
-				lib.skill.xkxijun_use.viewAs = card;
-				lib.skill.xkxijun_use.prompt = "袭军：是否将一张黑色牌当做" + get.translation(card) + "使用？";
+			if (!result?.bool || !result?.links?.length) return;
+			const card = { name: result.links[0][2], storage: { xkxijun: true } };
+			game.broadcastAll(card => {
+				lib.skill.xkxijun_backup.viewAs = card;
 			}, card);
 			const next = player.chooseToUse();
 			next.set("openskilldialog", "袭军：是否将一张黑色牌当做" + get.translation(card) + "使用？");
 			next.set("norestore", true);
 			next.set("addCount", false);
-			next.set("_backupevent", "xkxijun_use");
+			next.set("_backupevent", "xkxijun_backup");
 			next.set("custom", {
 				add: {},
 				replace: { window() {} },
 			});
-			next.backup("xkxijun_use");
+			next.backup("xkxijun_backup");
 			await next;
 		},
 		chooseButton: {
 			dialog(event, player) {
-				var list = [];
+				const list = [];
 				for (const name of ["sha", "juedou"]) {
 					if (event.filterCard(get.autoViewAs({ name: name }, "unsure"), player, event)) list.push([get.type(name), "", name]);
 				}
@@ -2454,24 +2448,12 @@ const skills = {
 				const player = _status.event.player;
 				return player.getUseValue({
 					name: button.link[2],
-					nature: button.link[3],
 				});
 			},
 			backup(links, player) {
-				return {
-					filterCard: card => get.color(card) == "black",
-					audio: "xkxijun",
-					popname: true,
-					check(card) {
-						return 8 - get.value(card);
-					},
-					position: "hes",
-					viewAs: { name: links[0][2], nature: links[0][3] },
-					precontent() {
-						player.addTempSkill("xkxijun_used");
-						player.addMark("xkxijun_used", 1, false);
-					},
-				};
+				const backup = get.copy(lib.skill["xkxijun_backup"]);
+				backup.viewAs = { name: links[0][2], storage: { xkxijun: true } };
+				return backup;
 			},
 			prompt(links, player) {
 				return "将一张黑色牌当做" + get.translation(links[0][2]) + "使用或打出";
@@ -2489,9 +2471,7 @@ const skills = {
 				if (player.countMark("xkxijun_used") >= 2 || !player.countCards("hes", { color: "black" })) return false;
 			},
 			order: 1,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		group: "xkxijun_effect",
 		subSkill: {
@@ -2514,14 +2494,10 @@ const skills = {
 				},
 			},
 			effect: {
-				trigger: {
-					global: "damageEnd",
-				},
+				trigger: { global: "damageEnd" },
 				filter(event, player) {
-					if (!event.card || !event.player.isIn()) return false;
-					const evt = event.getParent("useCard", true);
-					if (!evt || evt.card != event.card) return false;
-					return evt.skill == "xkxijun_backup";
+					if (!event.player.isIn()) return false;
+					return event.card?.storage?.xkxijun;
 				},
 				firstDo: true,
 				logTarget: "player",
@@ -2534,17 +2510,15 @@ const skills = {
 				onremove: true,
 				charlotte: true,
 			},
-			backup: {},
-			use: {
-				filterCard(card) {
-					return get.itemtype(card) == "card" && get.color(card) == "black";
+			backup: {
+				audio: "xkxijun",
+				filterCard: card => get.itemtype(card) == "card" && get.color(card) == "black",
+				popname: true,
+				check(card) {
+					return 8 - get.value(card);
 				},
 				position: "hes",
-				selectCard: 1,
-				check: card => 7 - get.value(card),
-				popname: true,
-				precontent() {
-					event.result.skill = "xkxijun_backup";
+				async precontent(event, trigger, player) {
 					player.addTempSkill("xkxijun_used");
 					player.addMark("xkxijun_used", 1, false);
 				},

@@ -533,7 +533,7 @@ const skills = {
 						const card = lib.skill.twqianxiong_backup.card;
 						const result = await player
 							.chooseTarget(`潜凶：将${get.translation(card)}正面向下置于一名角色的武将牌上`, true)
-							.set("ai", target => -get.attitude(get.player, target))
+							.set("ai", target => -get.attitude(get.player(), target))
 							.forResult();
 						const target = result.targets[0];
 						player.line(target);
@@ -554,9 +554,7 @@ const skills = {
 		},
 		ai: {
 			order: 5,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		group: ["twqianxiong_effect"],
 		subSkill: {
@@ -578,9 +576,7 @@ const skills = {
 			},
 			effect: {
 				audio: 2,
-				trigger: {
-					global: "phaseUseBegin",
-				},
+				trigger: { global: "phaseUseBegin" },
 				filter(event, player) {
 					return event.player.getExpansions("twqianxiong").length;
 				},
@@ -674,9 +670,7 @@ const skills = {
 		subSkill: {
 			change: {
 				audio: 2,
-				trigger: {
-					global: ["roundStart", "dieAfter"],
-				},
+				trigger: { global: ["roundStart", "dieAfter"] },
 				filter(event, player) {
 					if (!player.hasSkill("twjunsi")) return false;
 					return event.name == "die" ? event.player.hasSkill("twjunsi") : game.roundNumber == 1;
