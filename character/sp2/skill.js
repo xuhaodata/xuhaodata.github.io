@@ -4049,6 +4049,15 @@ const skills = {
 		},
 	},
 	dcbingji: {
+		mod: {
+			cardUsable(card, player, num) {
+				if (card.storage?.dcbingji) return Infinity;
+			},
+			cardEnabled(card, player) {
+				if (card.storage?.dcbingji) return true;
+			},
+		},
+		locked: false,
 		audio: 2,
 		enable: "phaseUse",
 		filter(event, player) {

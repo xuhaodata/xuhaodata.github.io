@@ -17,19 +17,20 @@ const skills = {
 			const targets = event.targets.sortBySeat();
 			player.addTempSkill("dcsbyingjia_distance");
 			player.markAuto("dcsbyingjia_distance", targets);
-			if (!game.hasPlayer(target => target != player && get.distance(player, target) != 1)) {
+			if (!game.hasPlayer(target => target != player && get.distance(player, target) != 1 && target.countCards("h"))) {
 				const result = await player
 					.chooseTarget(`迎驾：你可以获得一名其他角色所有手牌，然后交给其等量张牌`, (card, player, target) => {
 						return player != target && target.countCards("h");
 					})
-					.set("ai", target => -get.attitude(get.player, target) * target.countCards("h"))
+					.set("ai", target => -get.attitude(get.player(), target) * target.countCards("h"))
 					.forResult();
-				if (result.bool) {
+				if (result?.bool && result?.targets?.length) {
 					const target = result.targets[0];
 					player.line(target);
-					const resultx = await player.gainPlayerCard(target, true, "h", target.countCards("h")).forResult();
-					const num = resultx.cards?.length;
-					await player.chooseToGive(target, num, true, "he");
+					const cards = target.getGainableCards(player, "h");
+					if (!cards.length) return;
+					await player.gain(cards, target, "giveAuto", "bySelf");
+					if (player.countCards("he")) await player.chooseToGive(target, cards.length, true, "he");
 				}
 			}
 		},
@@ -38,9 +39,7 @@ const skills = {
 				onremove: true,
 				charlotte: true,
 				mark: true,
-				intro: {
-					content: "本回合你计算与 $ 的距离为1",
-				},
+				intro: { content: "本回合你计算与 $ 的距离为1" },
 				mod: {
 					globalFrom(from, to) {
 						if (from.getStorage("dcsbyingjia_distance").includes(to)) return -Infinity;
@@ -765,7 +764,7 @@ const skills = {
 			return ![player, ...ui.selected.targets].includes(target);
 		},
 		selectTarget: 2,
-		targetprompt: ["发起者", "承担着"],
+		targetprompt: ["发起者", "承担者"],
 		complexTarget: true,
 		async cost(event, trigger, player) {
 			const info = get.info(event.skill);
@@ -784,25 +783,24 @@ const skills = {
 			const [source, target] = event.targets;
 			player.line2(event.targets);
 			await game.delayx();
-			const bool = await source
+			const result = await source
 				.chooseToUse(function (card, player, event) {
-					const hs = player.getCards("h"),
-						cards = [card];
-					if (Array.isArray(card.cards)) cards.addArray(card.cards);
-					return cards.every(i => hs.includes(i)) && lib.filter.cardEnabled.apply(this, arguments);
+					if (get.itemtype(card) != "card" || (get.position(card) != "h" && get.position(card) != "s")) return false;
+					return lib.filter.filterCard.apply(this, arguments);
 				}, get.translation(event.name) + "：是否对" + get.translation(target) + "使用一张手牌？")
 				.set("filterTarget", function (card, player, target) {
 					const source = get.event().sourcex;
 					if (target !== source && !ui.selected.targets.includes(source)) return false;
-					return lib.filter.targetEnabled.apply(this, arguments);
+					return lib.filter.filterTarget.apply(this, arguments);
 				})
+				.set("targetRequired", true)
 				.set("complexSelect", true)
 				.set("sourcex", target)
 				.set("addCount", false)
-				.forResult("bool");
-			if (bool) await player.draw(2);
-			if (!bool || !source.hasHistory("sourceDamage", evt => evt.getParent(4) === event)) {
-				const goon = await player
+				.forResult();
+			if (result?.bool) await player.draw(2);
+			if (!result?.bool || !source.hasHistory("sourceDamage", evt => evt.getParent(4) === event)) {
+				const result = await player
 					.chooseBool("是否令" + get.translation(source) + "失去1点体力？")
 					.set(
 						"choice",
@@ -810,8 +808,8 @@ const skills = {
 							return get.effect(source, { name: "losehp" }, player, player) > 0;
 						})()
 					)
-					.forResult("bool");
-				if (goon) await source.loseHp();
+					.forResult();
+				if (result?.bool) await source.loseHp();
 				player.tempBanSkill(event.name, ["phaseBefore", "phaseAfter", "phaseChange", ...lib.phaseName]);
 			}
 		},

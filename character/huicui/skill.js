@@ -309,12 +309,12 @@ const skills = {
 					cardname(card) {
 						const evt = get.event();
 						if (evt.name !== "chooseToUse") return;
-						if (get.type(card) == "basic" && card.hasGaintag("dcxianniang_tag")) return "jiu";
+						if (get.type(card, null, false) == "basic" && card.hasGaintag("dcxianniang_tag")) return "jiu";
 					},
 					cardnature(card) {
 						const evt = get.event();
 						if (evt.name !== "chooseToUse") return;
-						if (get.type(card) == "basic" && card.hasGaintag("dcxianniang_tag")) return false;
+						if (get.type(card, null, false) == "basic" && card.hasGaintag("dcxianniang_tag")) return false;
 					},
 				},
 			},

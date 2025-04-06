@@ -3549,7 +3549,7 @@ const skills = {
 								let changeList = [];
 								for (const link of result.links) {
 									const [change, skill] = link.split("|");
-									changeList.push(change);
+									if (skill == "pothanzhan") changeList.push(change);
 									player.storage[skill] = change;
 									player.popup(skill);
 									game.log(player, "修改", "#g【" + get.translation(skill) + "】", "的", "#yX", "为", "#g" + list.find(item => item[0] === change)[1]);
