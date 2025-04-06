@@ -784,7 +784,7 @@ const translates = {
 	twfenxian: "焚险",
 	twfenxian_info: "出牌阶段限一次， 你可令一名角色选择一项：1、其将你或其场上的一张牌当做【决斗】对一名除你以外的角色使用；2、你视为对其使用一张【火攻】。",
 	twjuyan: "炬湮",
-	twjuyan_info: "当你对一名角色造成火焰伤害后，你摸一张牌，然后令其减1点体力上限。",
+	twjuyan_info: "锁定技。当你对一名角色造成火焰伤害后，你摸一张牌，然后令其减1点体力上限。",
 	huan_dingshangwan: "幻丁尚涴",
 	huan_dingshangwan_prefix: "幻",
 	twshiyi: "拾忆",

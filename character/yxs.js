@@ -88,6 +88,7 @@ game.import("character", function () {
 				group: "qun",
 				hp: 3,
 				skills: ["cike", "qiangxi"],
+				names: "姜|荆轲",
 			},
 			yxs_libai: {
 				sex: "male",
@@ -712,10 +713,6 @@ game.import("character", function () {
 			},
 			zbudao: {
 				trigger: { player: "phaseDrawBegin" },
-				//check:function(event,player){
-				//	if(player.hasFriend()) return true;
-				//	return false;
-				//},
 				content() {
 					trigger.num++;
 					player.addTempSkill("zbudao2", "phaseDrawAfter");
@@ -754,7 +751,6 @@ game.import("character", function () {
 							}
 							return att - 4;
 						},
-						//forced:true,
 						prompt: "将得到的一张牌交给一名其他角色，或点取消",
 					});
 					"step 1";

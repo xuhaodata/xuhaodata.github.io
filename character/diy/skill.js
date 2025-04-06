@@ -2,98 +2,6 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
-	//朱儁
-	diy_juxiang: {
-		audio: "zjjuxiang",
-		inherit: "zjjuxiang",
-		forced: true,
-		async content(event, trigger, player) {
-			trigger.player.damage();
-		},
-	},
-	//廖化
-	diy_fuli: {
-		skillAnimation: true,
-		animationColor: "soil",
-		audio: "xinfuli",
-		enable: "chooseToUse",
-		locked: true,
-		init(player, skill) {
-			player.storage[skill] = false;
-		},
-		mark: true,
-		filter(event, player) {
-			if (event.type != "dying") return false;
-			if (player != event.dying) return false;
-			if (player.storage.fuli) return false;
-			return true;
-		},
-		async content(event, trigger, player) {
-			await player.recoverTo(game.countGroup());
-			if (player.isMaxHp(true)) {
-				await player.turnOver();
-			}
-		},
-		ai: {
-			save: true,
-			skillTagFilter(player, arg, target) {
-				return player == target && player.storage.diy_fuli != true;
-			},
-			result: {
-				player: 10,
-			},
-			threaten(player, target) {
-				if (!target.storage.diy_fuli) return 0.9;
-			},
-		},
-		intro: {
-			content: "limited",
-		},
-	},
-	//张飞
-	diy_paoxiao: {
-		audio: "paoxiao",
-		trigger: { player: "shaMiss" },
-		forced: true,
-		content() {
-			player.addTempSkill("diy_paoxiao_damage");
-		},
-		mod: {
-			cardUsable(card, player, num) {
-				if (card.name == "sha") return Infinity;
-			},
-		},
-		subSkill: {
-			damage: {
-				trigger: { source: "damageBegin1" },
-				forced: true,
-				audio: "paoxiao",
-				filter(event, player) {
-					return event.card && event.card.name == "sha";
-				},
-				onremove: true,
-				content() {
-					trigger.num++;
-					player.removeSkill("diy_paoxiao_damage");
-				},
-				intro: { content: "本回合内下一次使用【杀】造成伤害时令伤害值+1" },
-			},
-		},
-	},
-	diy_tishen: {
-		audio: "retishen",
-		skillAnimation: true,
-		animationColor: "soil",
-		locked: true,
-		trigger: { player: "phaseZhunbeiBegin" },
-		filter(event, player) {
-			return player.isDamaged();
-		},
-		async content(event, trigger, player) {
-			player.recover(player.maxHp - player.hp);
-			player.draw(player.maxHp - player.hp);
-		},
-	},
 	//诗笺
 	nspianwu: {
 		skillTrigger(triggerName, player, skill) {
@@ -4437,7 +4345,7 @@ const skills = {
 			player.line(target, "green");
 			var type = get.type(trigger.card, "trick");
 			target
-				.chooseCard("###滔乱###交给" + get.translation(player) + "一张不为" + get.translation(type) + "牌的牌，或令其失去1点体力且滔乱无效直到回合结束", "he", num, function (card, player, target) {
+				.chooseCard("###滔乱###交给" + get.translation(player) + "一张不为" + get.translation(type) + "牌的牌，或令其失去1点体力且滔乱无效直到回合结束", "he", function (card, player, target) {
 					return get.type(card, "trick") != _status.event.cardType;
 				})
 				.set("cardType", type)
@@ -4821,7 +4729,6 @@ const skills = {
 			"step 1";
 			var target = player.storage.ns_chuanshu2;
 			player.line(target, "green");
-			//target.addSkill('ns_chuanshu');
 			target.restoreSkill("ns_chuanshu");
 			target.update();
 		},
@@ -4911,18 +4818,6 @@ const skills = {
 				if (get.info(card).multitarget) return;
 				if (card.name == "sha" || get.type(card) == "trick") range[1] = game.countPlayer();
 			},
-			// playerEnabled(card,player,target,current){
-			// 	if(current==false) return;
-			// 	var filter=get.info(card).modTarget;
-			// 	if(typeof filter=='boolean'&&filter) return 'forceEnable';
-			// 	if(typeof filter=='function'&&filter(card,player,target)) return 'forceEnable';
-			// }
-			// targetInRange(card,player){
-			// 	if(_status.auto) return;
-			// 	if(get.position(card)!='h'||get.owner(card)!=player) return;
-			// 	if(get.info(card).multitarget) return;
-			// 	if(card.name=='sha'||get.type(card)=='trick') return true;
-			// }
 		},
 		ai: {
 			combo: "nsanruo",
@@ -5781,9 +5676,6 @@ const skills = {
 					if (Math.abs(targets[0].hp - targets[1].hp) == 1) {
 						player.loseHp();
 					}
-					//else{
-					//player.die();
-					//}
 				},
 				player,
 				targets
@@ -5945,9 +5837,6 @@ const skills = {
 					return 9 - get.value(card);
 				},
 				filter(event, player) {
-					// if(!player.storage.nstuiyan2_done&&player.getStat().skill.nsbugua_use){
-					// 	return false;
-					// }
 					return player.countCards("he");
 				},
 				position: "he",
@@ -6977,41 +6866,31 @@ const skills = {
 		limited: true,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
-			return target != player;
+			return target !== player;
 		},
-		content() {
-			"step 0";
+		async content(event, trigger, player) {
 			player.awakenSkill("nshaoling");
-			event.targets = game.filterPlayer();
-			event.targets.remove(player);
-			event.targets.remove(target);
-			event.targets.sortBySeat();
-			"step 1";
-			if (event.targets.length) {
-				event.current = event.targets.shift();
-				if (event.current.countCards("he") && target.isAlive()) {
-					event.current.chooseToUse({ name: "sha" }, target, -1, "号令").set("prompt2", "选择一项：1. 对" + get.translation(event.current) + "使用一张杀；2. 取消并交给" + get.translation(player) + "一张牌，然后视" + get.translation(player) + "为对你使用一张杀");
+			const target = event.target;
+			let targets = game
+				.filterPlayer(cur => {
+					return cur !== player && cur !== target;
+				})
+				.sortBySeat();
+			while (targets.length) {
+				const current = targets.shift();
+				if (target.isAlive() && current.countCards("he")) {
+					const result = await current
+						.chooseToUse({ name: "sha" }, target, -1, "号令")
+						.set("prompt2", "选择一项：1. 对" + get.translation(target) + "使用一张【杀】；2. 取消并交给" + get.translation(player) + "一张牌，然后其视为对你使用一张【杀】")
+						.forResult();
+					if (result.bool) continue;
+					if (current.countCards("he")) {
+						const cards = await current.chooseCard("he", true, "交给" + get.translation(player) + "一张牌").forResultCards();
+						if (cards) await current.give(cards, player);
+					}
+					await player.useCard({ name: "sha" }, current, false);
 				}
-			} else {
-				event.finish();
 			}
-			"step 2";
-			if (result.bool == false) {
-				if (event.current.countCards("he")) {
-					event.current.chooseCard("he", true, "交给" + get.translation(player) + "一张牌");
-				} else {
-					event.goto(4);
-				}
-			} else {
-				event.goto(1);
-			}
-			"step 3";
-			if (result.bool) {
-				event.current.give(result.cards, player);
-			}
-			"step 4";
-			player.useCard({ name: "sha" }, event.current, false);
-			event.goto(1);
 		},
 		ai: {
 			order: 5,
@@ -7096,9 +6975,6 @@ const skills = {
 			player.update();
 			if (_status.currentPhase == player) {
 				var num = 4;
-				// if(game.countPlayer()>=7){
-				// 	num=5;
-				// }
 				if (!player.hasSkill("nspinmin_used") && player.maxHp < num) {
 					player.gainMaxHp(true);
 					player.addTempSkill("nspinmin_used");
@@ -7558,15 +7434,6 @@ const skills = {
 				},
 			},
 		},
-		// mod:{
-		// 	globalFrom(from,to,distance){
-		//
-		// 	},
-		// 	globalTo(from,to,distance){
-		//
-		// 	}
-		// },
-		// global:'nshuanxian_choose',
 		subSkill: {
 			chosen: {},
 			leftdist: {
@@ -7783,7 +7650,6 @@ const skills = {
 	},
 	nsnongquan: {
 		enable: "phaseUse",
-		// usable:4,
 		filter(event, player) {
 			return player.countCards("h") == 1 && player.canUse("wuzhong", player);
 		},
@@ -8596,7 +8462,6 @@ const skills = {
 		},
 	},
 	diy_jiaoxia: {
-		//audio:['jiaoxia',2],
 		trigger: { target: "useCardToBegin" },
 		filter(event, player) {
 			return event.card && get.color(event.card) == "red";
@@ -8626,17 +8491,6 @@ const skills = {
 			threaten: 1.3,
 		},
 	},
-	diykuanggu: {
-		trigger: { source: "damageEnd" },
-		forced: true,
-		content() {
-			if (get.distance(trigger.player, player, "attack") > 1) {
-				player.draw(trigger.num);
-			} else {
-				player.recover(trigger.num);
-			}
-		},
-	},
 	guihan: {
 		unique: true,
 		enable: "chooseToUse",
@@ -8660,10 +8514,6 @@ const skills = {
 			target.recover();
 			"step 3";
 			target.draw(2);
-			// if(lib.config.mode=='identity'){
-			// 	player.node.identity.style.backgroundColor=get.translation('weiColor');
-			// 	player.group='wei';
-			// }
 		},
 		ai: {
 			skillTagFilter(player) {

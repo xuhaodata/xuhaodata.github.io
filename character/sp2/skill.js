@@ -6032,13 +6032,12 @@ const skills = {
 	chaofeng: {
 		audio: 2,
 		trigger: { source: "damageBegin1" },
-		direct: true,
 		filter(event, player) {
-			return player.countCards("h") > 0 && player.isPhaseUsing() && !player.hasSkill("chaofeng2");
+			return player.countCards("h") > 0 && player.isPhaseUsing() && !player.hasSkill("chaofeng_used");
 		},
-		content() {
-			"step 0";
-			var str = "弃置一张手牌并摸一张牌",
+		popup: false,
+		async cost(event, trigger, player) {
+			let str = "弃置一张手牌并摸一张牌",
 				color,
 				type;
 			if (trigger.card) {
@@ -6047,13 +6046,12 @@ const skills = {
 				if (color != "none") str += "；若弃置" + get.translation(color) + "牌则改为摸两张牌";
 				if (type) str += "；若弃置类型为" + get.translation(type) + "的牌则伤害+1";
 			}
-			var next = player.chooseToDiscard("h", get.prompt("chaofeng", trigger.player), str);
-			next.set("ai", function (card) {
-				var player = _status.event.player,
-					att = _status.event.att;
-				var val = 4.2 - get.value(card);
-				if (get.color(card) == _status.event.color) val += 3;
-				if (get.type2(card) == _status.event.type) {
+			const next = player.chooseToDiscard("h", get.prompt(event.skill, trigger.player), str);
+			next.set("ai", card => {
+				const { player, att, color, type } = get.event();
+				let val = 4.2 - get.value(card);
+				if (get.color(card) == color) val += 3;
+				if (get.type2(card) == type) {
 					if (att < 0) val += 4;
 					else if (att === 0) val += 2;
 					else val = 0;
@@ -6062,53 +6060,48 @@ const skills = {
 			});
 			next.set("att", get.attitude(player, trigger.player));
 			next.logSkill = ["chaofeng", trigger.player];
-			if (color != "none") {
-				event.color = color;
-				next.set("color", color);
-			}
-			if (type) {
-				event.type = type;
-				next.set("type", type);
-			}
-			"step 1";
-			if (result.bool) {
-				player.addTempSkill("chaofeng2", "phaseUseEnd");
-				var card = result.cards[0];
-				player.draw(event.color && get.color(card, card.original == "h" ? player : false) == event.color ? 2 : 1);
-				if (event.type && get.type2(card, card.original == "h" ? player : false) == event.type) trigger.num++;
-			}
+			if (color != "none") next.set("color", color);
+			if (type) next.set("type", type);
+			event.result = await next.forResult();
+			event.result.cost_data = [color, type];
 		},
+		async content(event, trigger, player) {
+			player.addTempSkill(event.name + "_used", "phaseUseEnd");
+			const {
+				cards: [card],
+				cost_data: [color, type],
+			} = event;
+			await player.draw(color && get.color(card, card.original == "h" ? player : false) == color ? 2 : 1);
+			if (type && get.type2(card, card.original == "h" ? player : false) == type) trigger.num++;
+		},
+		subSkill: { used: { charlotte: true } },
 	},
-	chaofeng2: {},
 	chuanshu: {
 		audio: 2,
 		trigger: { player: ["phaseZhunbeiBegin", "die"] },
-		direct: true,
 		limited: true,
 		forceDie: true,
 		filter(event, player) {
-			return player.isDamaged() && (event.name == "die" || player.isIn());
+			return player.isDamaged() && (event.name == "die" || player.isIn()) && game.hasPlayer(current => current != player);
 		},
 		skillAnimation: true,
 		animationColor: "gray",
-		content() {
-			"step 0";
-			player
-				.chooseTarget(lib.filter.notMe, get.prompt("chuanshu"), "令一名其他角色获得〖朝凤〗")
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(lib.filter.notMe, get.prompt2(event.skill))
+				.set("ai", target => {
+					return get.attitude(get.player(), target);
 				})
-				.set("forceDie", true);
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				player.awakenSkill("chuanshu");
-				player.logSkill("chuanshu", target);
-				target.addSkills("chaofeng");
-				if (player.isDead()) event.finish();
-			} else event.finish();
-			"step 2";
-			player.addSkills(lib.skill.chuanshu.derivation);
+				.set("forceDie", true)
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const {
+				targets: [target],
+			} = event;
+			await target.addSkills("chaofeng");
+			if (player.isIn()) await player.addSkills(get.info(event.name).derivation);
 		},
 		derivation: ["ollongdan", "drlt_congjian", "chuanyun"],
 		ai: {
@@ -6116,7 +6109,7 @@ const skills = {
 			effect: {
 				target(card, player, target) {
 					if (get.tag(card, "damage")) {
-						if (target.isHealthy()) return [1, 3];
+						if (target.isHealthy() && target.maxHp > 1 && game.hasPlayer(current => current != target && get.attitude(current, target) > 0)) return [1, 1.6];
 					} else if (get.tag(card, "recover") && target.getDamagedHp() == 1) return [0, 0];
 				},
 			},

@@ -721,7 +721,6 @@ const characters = {
 		hp: 4,
 		skills: ["psmouchuan", "pszizhong", "psjizun", "psqingsuan"],
 		isZhugong: true,
-		img: "image/character/re_zhonghui.jpg",
 	},
 	yj_ehuan: {
 		sex: "male",

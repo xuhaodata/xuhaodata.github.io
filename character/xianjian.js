@@ -706,7 +706,6 @@ game.import("character", function () {
 				content() {
 					player.storage.anwugu2--;
 					if (player.storage.anwugu2 <= 0) {
-						// player.loseHp();
 						player.removeSkill("anwugu2");
 					} else {
 						player.updateMarks();
@@ -946,10 +945,8 @@ game.import("character", function () {
 			tianwu: {
 				trigger: { player: "useCardToBegin" },
 				filter(event, player) {
-					if (get.is.altered("tianwu") && player.hasSkill("tianwu2")) return false;
 					return event.targets && event.targets.length == 1 && player.getEnemies().includes(event.target);
 				},
-				// alter:true,
 				frequent: true,
 				content() {
 					trigger.target.getDebuff();
@@ -1229,7 +1226,6 @@ game.import("character", function () {
 			ywuhun: {
 				trigger: { player: "phaseBefore" },
 				forced: true,
-				// alter:true,
 				filter(event) {
 					return event.parent.name != "ywuhun";
 				},
@@ -1686,7 +1682,6 @@ game.import("character", function () {
 				init(player) {
 					player.storage.qixia = [];
 				},
-				// mark:true,
 				intro: {
 					content(storage) {
 						if (!storage.length) {
@@ -2095,7 +2090,6 @@ game.import("character", function () {
 				filter(event, player) {
 					return player.countCards("h", "sha") > 0;
 				},
-				// alter:true,
 				usable: 1,
 				group: "tianjian_discard",
 				subSkill: {
@@ -2104,7 +2098,6 @@ game.import("character", function () {
 						forced: true,
 						filter(event) {
 							if (event._notrigger.includes(event.player)) return false;
-							if (get.is.altered("tianjian")) return false;
 							return event.parent.skill == "tianjian" && event.player.countCards("he");
 						},
 						popup: false,
@@ -2287,12 +2280,11 @@ game.import("character", function () {
 				ai: {
 					threaten: 1.2,
 				},
-				// alter:true,
 				content() {
 					"step 0";
 					player.storage.danqing.length = 0;
 					player.updateMarks();
-					player.chooseTarget(get.prompt("danqing"), [1, get.is.altered("danqing") ? 2 : 4]).ai = function (target) {
+					player.chooseTarget(get.prompt("danqing"), [1, 4]).ai = function (target) {
 						return get.attitude(player, target);
 					};
 					"step 1";
@@ -2819,18 +2811,6 @@ game.import("character", function () {
 				},
 			},
 			xuanyan: {
-				// trigger:{source:'damageBefore'},
-				// forced:true,
-				// priority:5,
-				// check:function(event,player){
-				// 	return player.hp>3;
-				// },
-				// filter:function(event){
-				// 	return event.card&&get.color(event.card)=='red';
-				// },
-				// content:function(){
-				// 	trigger.nature='fire';
-				// },
 				group: ["xuanyan2", "xuanyan3"],
 			},
 			xuanyan2: {
@@ -2880,13 +2860,8 @@ game.import("character", function () {
 				filter(event) {
 					return event.num != 0;
 				},
-				// alter:true,
 				content() {
-					if (get.is.altered("xfenxin")) {
-						player.draw();
-					} else {
-						player.draw(Math.abs(trigger.num));
-					}
+					player.draw(Math.abs(trigger.num));
 				},
 				ai: {
 					effect: {
@@ -2903,9 +2878,6 @@ game.import("character", function () {
 			xfenxin2: {
 				trigger: { source: "dieAfter" },
 				forced: true,
-				filter() {
-					return !get.is.altered("xfenxin");
-				},
 				content() {
 					player.gainMaxHp();
 					player.recover();
@@ -3050,10 +3022,8 @@ game.import("character", function () {
 					player.storage.shuiyun = [];
 					player.storage.shuiyun_count = 0;
 				},
-				// alter:true,
 				filter(event, player) {
 					if (player.storage.shuiyun.length >= 3) return false;
-					if (player.storage.shuiyun.length >= 2 && get.is.altered("shuiyun")) return false;
 					var types = [];
 					for (var i = 0; i < player.storage.shuiyun.length; i++) {
 						types.add(get.type(player.storage.shuiyun[i], "trick"));
@@ -3109,7 +3079,6 @@ game.import("character", function () {
 					effect: {
 						player_use(card, player) {
 							if (_status.currentPhase != player) return;
-							if (get.is.altered("shuiyun")) return;
 							if (card.name == "wuzhong" || card.name == "yiyi" || card.name == "yuanjiao" || card.name == "shunshou") return;
 							if (!player.needsToDiscard()) {
 								var types = [];
@@ -3249,12 +3218,6 @@ game.import("character", function () {
 					if (result.bool) {
 						var cards = player.getCards("hej");
 						var target = result.targets[0];
-						// if(player.storage.shuiyun&&player.storage.shuiyun.length){
-						// 	target.gainMaxHp();
-						// 	target.recover(player.storage.shuiyun.length);
-						// 	cards=cards.concat(player.storage.shuiyun);
-						// 	player.storage.shuiyun.length=0;
-						// }
 						player.$give(cards, target);
 						target.gain(cards);
 						target.addSkill("changnian2");
@@ -3531,10 +3494,8 @@ game.import("character", function () {
 				filter(event, player) {
 					return player.storage.xuanning && player.countCards("he") + player.storage.xuanning >= 3;
 				},
-				// alter:true,
 				content() {
 					"step 0";
-					// trigger.cancel();
 					var ainum = 0;
 					var num = 3 - player.storage.xuanning;
 					var players = game.filterPlayer();
@@ -3610,7 +3571,6 @@ game.import("character", function () {
 			},
 			poyun: {
 				trigger: { source: "damageEnd" },
-				// alter:true,
 				filter(event, player) {
 					if (event._notrigger.includes(event.player)) return false;
 					return player.storage.xuanning > 0 && event.player.countCards("he") > 0;
@@ -3618,7 +3578,7 @@ game.import("character", function () {
 				direct: true,
 				content() {
 					"step 0";
-					player.discardPlayerCard(trigger.player, "he", get.prompt("poyun", trigger.player), [1, get.is.altered("poyun") ? 1 : 2]).logSkill = ["poyun", trigger.player];
+					player.discardPlayerCard(trigger.player, "he", get.prompt("poyun", trigger.player), [1, 2]).logSkill = ["poyun", trigger.player];
 					"step 1";
 					if (result.bool) {
 						player.storage.xuanning--;
@@ -3648,24 +3608,14 @@ game.import("character", function () {
 			poyun3: {},
 			zhuyue: {
 				enable: "phaseUse",
-				// alter:true,
 				filter(event, player) {
-					if (get.is.altered("zhuyue")) {
-						return player.hasCard(function (card) {
-							return get.color(card) == "black" && get.type(card) != "basic";
-						});
-					}
 					return player.countCards("h", { type: "basic" }) < player.countCards("he");
 				},
 				init(player) {
 					player.storage.zhuyue = [];
 				},
 				filterCard(card) {
-					if (get.is.altered("zhuyue")) {
-						return get.type(card) != "basic" && get.color(card) == "black";
-					} else {
-						return get.type(card) != "basic";
-					}
+					return get.type(card) != "basic";
 				},
 				selectTarget: [1, 2],
 				filterTarget(card, player, target) {
@@ -3904,7 +3854,6 @@ game.import("character", function () {
 				locked: true,
 				unique: true,
 				gainable: true,
-				// alter:true,
 				group: "xjzhimeng3",
 				content() {
 					"step 0";
@@ -3928,15 +3877,11 @@ game.import("character", function () {
 					"step 1";
 					if (result.bool) {
 						var target = result.targets[0];
-						if (get.is.altered("xjzhimeng")) {
-							target.draw();
-						} else {
-							var card = get.cards()[0];
-							target.$draw(card);
-							target.storage.xjzhimeng2 = card;
-							game.addVideo("storage", target, ["xjzhimeng2", get.cardInfo(card), "card"]);
-							target.addSkill("xjzhimeng2");
-						}
+						var card = get.cards()[0];
+						target.$draw(card);
+						target.storage.xjzhimeng2 = card;
+						game.addVideo("storage", target, ["xjzhimeng2", get.cardInfo(card), "card"]);
+						target.addSkill("xjzhimeng2");
 						player.logSkill("xjzhimeng", target);
 					}
 				},
@@ -4175,7 +4120,6 @@ game.import("character", function () {
 			chengxin_info: "每四轮限一次，当一名角色进入濒死状态时，你可以令其将体力值回复至1，然后该角色防止一切伤害直到下一回合结束。",
 			tianwu: "天舞",
 			tianwu_info: "每当你使用卡牌指定一名敌方角色为唯一目标，你可以对其施加一个随机的负面效果。",
-			tianwu_info_alter: "每当你使用卡牌指定一名敌方角色为唯一目标，你可以对其施加一个随机的负面效果，每回合限发动一次。",
 			liguang: "离光",
 			liguang_info: "结束阶段，你可以弃置一张手牌并将场上的一张牌移动到另一个合理的位置。",
 			shiying: "逝影",
@@ -4189,7 +4133,6 @@ game.import("character", function () {
 			ywuhun: "雾魂",
 			ywuhun_bg: "魂",
 			ywuhun_info: "锁定技，回合开始前，你获得一个额外的回合，并在此回合结束后复原场上及牌堆中的所有牌；当你在此回合中造成伤害后，终止所有结算并结束此回合。",
-			// ywuhun_info_alter:'锁定技，回合开始前，你获得一个额外的回合，并在此回合结束后复原场上及牌堆中的所有牌；当你在此回合中造成伤害后，终止所有结算并结束此回合。',
 			feichen: "飞尘",
 			feichen_info: "",
 			tanhua: "昙华",
@@ -4242,7 +4185,6 @@ game.import("character", function () {
 			xuanmo_info: "出牌阶段限一次，你可以将一张手牌置于牌堆顶并随机获得两张与之类别相同的牌。",
 			danqing: "丹青",
 			danqing_info: "结束阶段，若你累计使用了四张花色不同的牌，你可以选择至多4名角色随机获得一个正面效果。",
-			danqing_info_alter: "结束阶段，若你累计使用了四张花色不同的牌，你可以选择至多2名角色随机获得一个正面效果。",
 			zhangmu: "障目",
 			zhangmu_info: "每回合限一次，当你需要使用或打出一张闪时，你可以展示一张闪，视为使用或打出了此闪。",
 			feizhua: "飞爪",
@@ -4278,7 +4220,6 @@ game.import("character", function () {
 			xfenxin: "焚心",
 			xfenxin2: "焚心",
 			xfenxin_info: "锁定技，每当你的体力值发生改变，你摸等量的牌；每当你杀死一名角色，你增加1点体力上限并回复1点体力。",
-			xfenxin_info_alter: "锁定技，每当你的体力值发生改变，你摸一张牌。",
 			luanjian: "乱剑",
 			luanjian_info: "出牌阶段，你可以将两张【杀】当【杀】使用，此【杀】无视距离，可以指定任意名目标且有50%的机率伤害+1。",
 			ctianfu: "天符",
@@ -4291,7 +4232,6 @@ game.import("character", function () {
 			shuiyun5: "水蕴",
 			shuiyun3: "水蕴",
 			shuiyun_info: "结束阶段，你可以将一张与武将牌上的牌类别均不相同的手牌置于武将牌上称为“蕴”；任意一名角色处于濒死状态时，你可以弃置一张“蕴”令其回复1点体力。",
-			shuiyun_info_alter: "结束阶段，你可以将一张与武将牌上的牌类别均不相同的手牌置于武将牌上称为“蕴”（不能超过两张）；任意一名角色处于濒死状态时，你可以弃置一张“蕴”令其回复1点体力。",
 			wangyou: "忘忧",
 			wangyou_info: "其他角色的结束阶段，你可以弃置一张牌，令此回合内受过伤害的所有角色各摸一张牌。",
 			changnian: "长念",
@@ -4314,16 +4254,13 @@ game.import("character", function () {
 			qijian_info: "弃牌阶段结束时，你可以指定至多X名目标视为使用一张【杀】，X为你于此阶段弃置的卡牌数。",
 			poyun: "破云",
 			poyun_info: "每当你造成一次伤害，你可以弃置一枚玄凝标记，然后弃置对方两张牌。",
-			poyun_info_alter: "每当你造成一次伤害，你可以弃置一枚玄凝标记，然后弃置对方一张牌。",
 			qianfang: "千方",
 			qianfang_info: "准备阶段，若你有玄凝标记，你可以弃置3-X张牌和所有玄凝标记，视为使用了一张【万箭齐发】，每当一名敌方角色因此牌受到伤害，你摸一张牌。X为你的玄凝标记数。",
-			qianfang_info_alter: "准备阶段，若你有玄凝标记，可以弃置3-X张牌和所有玄凝标记，视为使用了一张【万箭齐发】，X为你的玄凝标记数。",
 			longxi: "龙息",
 			longxi2: "龙息",
 			longxi_info: "锁定技，在回合外每当你需要使用或打出一张卡牌时，若牌堆顶的前两张中有可使用或打出的牌，你立即获得之。",
 			zhuyue: "逐月",
 			zhuyue_info: "出牌阶段限一次，你可以弃置一张非基本牌并指定至多两个目标各随机弃置一张牌，若如此做，你本回合使用的【杀】须指定选中角色为目标。",
-			zhuyue_info_alter: "出牌阶段限一次，你可以弃置一张黑色非基本牌并指定至多两个目标各随机弃置一张牌，若如此做，你本回合使用的【杀】须指定选中角色为目标。",
 			guanri: "贯日",
 			guanri_info: "限制技，你可以弃置两张红色手牌并失去1点体力，然后对一名体力值不少于你的其他角色造成2点火焰伤害并弃置其所有装备牌。",
 			tianxian: "天弦",
@@ -4332,7 +4269,6 @@ game.import("character", function () {
 			xjzhimeng2: "织梦",
 			xjzhimeng3: "织梦",
 			xjzhimeng_info: "结束阶段，你可以选择一名其他角色将牌堆顶的一张牌置于该角色的武将牌上，直到你的下个准备阶段将其收入手牌。当一名角色武将牌上有织梦牌时，每当其成为与此牌类型相同的卡牌的目标，可以摸一张牌。",
-			xjzhimeng_info_alter: "结束阶段，你可以令一名其他角色摸一张牌。",
 			runxin: "润心",
 			runxin_info: "每当你使用或打出一张红桃牌，你可以令一名角色回复1点体力。",
 			tannang: "探囊",
@@ -4343,7 +4279,6 @@ game.import("character", function () {
 			xiaoyao_info: "每当你成为其他角色的卡牌目标，你可以弃置一张与之花色相同的手牌取消之。",
 			tianjian: "天剑",
 			tianjian_info: "出牌阶段限一次，你可以将一张【杀】当作【万箭齐发】使用，受到伤害的角色随机弃置一张牌。",
-			tianjian_info_alter: "出牌阶段限一次，你可以将一张【杀】当作【万箭齐发】使用。",
 			xjyufeng: "御风",
 			xjyufeng_info: "锁定技，当你失去手牌后，若手牌数少于2，你将手牌数补至2（每回合最多发动两次）。",
 			huimeng: "回梦",

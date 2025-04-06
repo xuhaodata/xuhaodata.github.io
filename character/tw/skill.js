@@ -522,7 +522,7 @@ const skills = {
 				return true;
 			},
 			check(button) {
-				return player.getUseValue(button.link);
+				return get.player().getUseValue(button.link);
 			},
 			backup(links) {
 				return {
@@ -1840,6 +1840,7 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;
 		},
+		logTarget: "target",
 		async content(event, trigger, player) {
 			const { target } = trigger;
 			trigger.getParent().set("twchunhui_actived", true);
@@ -1933,7 +1934,6 @@ const skills = {
 			return event.hasNature("fire");
 		},
 		forced: true,
-		locked: true,
 		async content(event, trigger, player) {
 			await player.draw();
 			await trigger.player.loseMaxHp();
@@ -2796,6 +2796,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
+			if ([player, target].some(current => !current.countCards("h"))) return;
 			const dialog = ["选择你与" + get.translation(target) + "的等量张手牌"];
 			if (player.countCards("h")) {
 				dialog.add("你的手牌");
@@ -2833,10 +2834,11 @@ const skills = {
 					return get.event("cards").includes(button.link);
 				})
 				.forResult();
+			if (!result?.links?.length) return;
 			for (const owner of [player, target]) {
 				owner.addTempSkill("twniwo_block");
 				owner.addGaintag(
-					result.links?.filter(i => get.owner(i) == owner),
+					result.links.filter(i => get.owner(i) == owner),
 					"twniwo"
 				);
 			}

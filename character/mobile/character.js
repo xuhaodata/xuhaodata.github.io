@@ -29,6 +29,8 @@ const characters = {
 		group: "wei",
 		hp: 4,
 		skills: ["mbtanfeng"],
+		dieAudios: ["tw_xiahoushang"],
+		names: "夏侯|尚",
 	},
 	sunsháo: {
 		sex: "male",
@@ -47,6 +49,7 @@ const characters = {
 		group: "wei",
 		hp: 3,
 		skills: ["mbxiezheng", "mbqiantun", "mbweisi", "mbzhaoxiong"],
+		names: "司马|昭",
 		img: "image/character/jsrg_simazhao.jpg",
 		dieAudios: ["jsrg_simazhao"],
 		groupBorder: "jin",

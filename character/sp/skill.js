@@ -326,6 +326,7 @@ const skills = {
 		content() {
 			player.addTempSkill("olkuangjuan_used");
 			player.markAuto("olkuangjuan_used", [target]);
+			player.addTempSkill("olkuangjuan_effect");
 			player.drawTo(target.countCards("h")).gaintag.add("olkuangjuan_effect");
 		},
 		ai: {
@@ -347,7 +348,7 @@ const skills = {
 				filter(event, player) {
 					if (event.addCount === false) return false;
 					return player.hasHistory("lose", evt => {
-						if (event.getParent() !== event) return false;
+						if (evt.getParent() !== event) return false;
 						return Object.values(evt.gaintag_map).flat().includes("olkuangjuan_effect");
 					});
 				},
@@ -384,7 +385,7 @@ const skills = {
 			if (_status.countDown) return;
 			let time;
 			if (typeof info?.["chooseToUse"] === "number") time = info["chooseToUse"];
-			else if (info?.default) time = info.default;
+			else if (typeof info?.default === "number") time = info.default;
 			else {
 				if (!_status.connectMode) return;
 				time = lib.configOL.choose_timeout;
@@ -412,12 +413,13 @@ const skills = {
 			game.broadcastAll(() => {
 				const countDown = game.countDown;
 				if (typeof countDown !== "function") return;
-				game.countDown = function () {
-					const event = get.event();
-					if (event?.name === "chooseToUse" && event.player?.isIn()) {
-						event.player.addTempSkill("olfeibian_effect");
-					}
-					return countDown.apply(this, arguments);
+				game.countDown = function (time, onEnd) {
+					const newOnEnd = () => {
+						const event = get.event();
+						if (event?.name === "chooseToUse" && event.player?.isIn()) event.player.addTempSkill("olfeibian_effect");
+						if (typeof onEnd === "function") onEnd();
+					};
+					return countDown.call(this, time, newOnEnd);
 				};
 			});
 		},
@@ -1654,13 +1656,11 @@ const skills = {
 				await judgeEvent;
 			}
 			if (!event.cards.length) return;
+			const list = Object.keys(lib.color);
 			const color = event.cards
 				.map(card => get.color(card))
 				.unique()
-				.sort((a, b) => {
-					const list = Object.keys(lib.color);
-					return list.indexOf(b) - list.indexOf(a);
-				});
+				.sort((a, b) => list.indexOf(a) - list.indexOf(b));
 			if (!color.length) return;
 			const dialog = ["椒遇：选择获得一种颜色的牌"];
 			for (let i = 0; i < color.length; i++) {
@@ -1676,16 +1676,7 @@ const skills = {
 								let { player, controls } = get.event();
 								const { cards } = get.event().getParent();
 								return controls.sort((a, b) => {
-									return (
-										cards.reduce((sum, card) => {
-											if (get.color(card) === b) num += get.value(card, player);
-											return sum;
-										}, 0) -
-										cards.reduce((sum, card) => {
-											if (get.color(card) === a) num += get.value(card, player);
-											return sum;
-										}, 0)
-									);
+									return get.value(cards.filter(card => get.color(card) === b)) - get.value(cards.filter(card => get.color(card) === a));
 								})[0];
 							})
 							.set("dialog", dialog)
@@ -1698,23 +1689,20 @@ const skills = {
 				const effect = "oljiaoyu_effect";
 				player.addTempSkill(effect, "roundStart");
 				player.markAuto(effect, [control]);
-				player.storage[effect].sort((a, b) => lib.color.indexOf(b) - lib.color.indexOf(a));
+				player.storage[effect].sort((a, b) => list.indexOf(a) - list.indexOf(b));
 				player.addTip(effect, get.translation(effect) + player.getStorage(effect).reduce((str, color) => str + get.translation(color), " "));
+				player.addTempSkill("oljiaoyu_phaseChange", "roundStart");
 				const cards = event.cards.filter(card => get.color(card) === control);
 				if (cards.length) await player.gain(cards, "gain2");
 			}
 		},
-		group: "oljiaoyu_phaseChange",
 		subSkill: {
 			phaseChange: {
 				audio: "oljiaoyu",
 				trigger: { player: "phaseEnd" },
-				filter(event, player) {
-					return !player.getRoundHistory("custom", evt => evt.oljiaoyu).length;
-				},
 				forced: true,
 				async content(event, trigger, player) {
-					player.getHistory("custom").push({ oljiaoyu: true });
+					player.removeSkill(event.name);
 					player.addSkill("oljiaoyu_ban");
 					trigger.phaseList.splice(trigger.num, 0, "phaseUse|oljiaoyu");
 				},
@@ -9748,6 +9736,7 @@ const skills = {
 				check(card) {
 					return 5 - get.value(card);
 				},
+				log: false,
 			},
 		},
 	},
@@ -16431,7 +16420,7 @@ const skills = {
 			player.markAuto("olshengong_destroy", [card]);
 			if (
 				!game.hasPlayer(function (current) {
-					return current.canEquip(card);
+					return current.canEquip(card, true);
 				})
 			) {
 				event.finish();

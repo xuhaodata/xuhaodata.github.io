@@ -159,7 +159,7 @@ const skills = {
 					trigger.cancel();
 					player
 						.when({ global: "useCardAfter" })
-						.filter(evt => evt === trigger.getParent(2))
+						.filter(evt => evt === trigger.getParent("useCard"))
 						.then(() => {
 							const cards = (trigger.cards || []).filterInD("od");
 							if (cards.length) player.gain(cards, "gain2");
@@ -575,7 +575,7 @@ const skills = {
 			self: {
 				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
-					return player.maxHp < 8 && event.isFirstTarget && event.targets.includes(player);
+					return event.isFirstTarget && event.targets.includes(player);
 				},
 				forced: true,
 				popup: false,
@@ -10024,7 +10024,7 @@ const skills = {
 					},
 				},
 				mod: {
-					selectCard(card, player, range) {
+					selectTarget(card, player, range) {
 						var source = player.storage.dcpandi_effect;
 						if (!source.isIn() || get.itemtype(source) != "player" || get.itemtype(source.storage.dcpandi_effect) == "player") return;
 						var range,
