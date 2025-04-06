@@ -3623,130 +3623,121 @@ const skills = {
 		trigger: { player: "judgeEnd" },
 		forced: true,
 		filter(event, player) {
-			return _status.currentPhase && _status.currentPhase.isIn() && (!player.storage.nsshengyan2 || !player.storage.nsshengyan2.includes(event.result.suit));
+			const { currentPhase } = _status;
+			return currentPhase?.isIn() && !player.getStorage("nsshengyan_record").includes(event.result.suit);
 		},
-		logTarget() {
-			return _status.currentPhase;
+		logTarget: () => _status.currentPhase,
+		async content(event, trigger, player) {
+			const record = event.name + "_record";
+			player.addTempSkill(record);
+			player.markAuto(record, [trigger.result.suit]);
+			player.storage[record].sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+			player.addTip(record, get.translation(record) + player.getStorage(record).reduce((str, suit) => str + get.translation(suit), ""));
+			const { currentPhase } = _status;
+			if (!currentPhase.isIn()) return;
+			currentPhase.addTempSkill(event.name + "_effect");
+			currentPhase.addMark(event.name + "_effect", 2, false);
 		},
-		content() {
-			player.addTempSkill("nsshengyan2");
-			if (!player.storage.nsshengyan2) player.storage.nsshengyan2 = [];
-			_status.currentPhase.addTempSkill("nsshengyan3");
-			player.storage.nsshengyan2.add(trigger.result.suit);
-			_status.currentPhase.addMark("nsshengyan3", 2, false);
-		},
-	},
-	nsshengyan2: { onremove: true },
-	nsshengyan3: {
-		mod: {
-			maxHandcard(player, num) {
-				return num + player.countMark("nsshengyan3");
+		subSkill: {
+			record: {
+				charlotte: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				intro: { content: "本回合已判定花色：$" },
+			},
+			effect: {
+				charlotte: true,
+				onremove: true,
+				markimage: "image/card/handcard.png",
+				intro: { content: "手牌上限+#" },
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("nsshengyan_effect");
+					},
+				},
+				marktext: "筵",
 			},
 		},
-		onremove: true,
-		intro: {
-			content: "本回合手牌上限+#",
-		},
-		marktext: "筵",
 	},
 	nsdaizhan: {
 		trigger: { player: "phaseZhunbeiBegin" },
-		direct: true,
 		filter(event, player) {
-			return (
-				(!player.hasJudge("lebu") || !player.hasJudge("bingliang")) &&
-				player.countCards("he", function (card) {
-					if (_status.connectMode) return true;
-					return get.type(card, "trick") != "trick";
-				})
-			);
+			return ["lebu", "bingliang"].some(name => player.hasCard(card => player.canAddJudge({ name: name, cards: [card] }) && (_status.connectMode || get.type2(card) != "trick"), "he"));
 		},
-		content() {
-			var next = player.chooseToUse();
+		async cost(event, trigger, player) {
+			const list = ["lebu", "bingliang"].filter(name => player.hasCard(card => player.canAddJudge({ name: name, cards: [card] }) && get.type2(card) != "trick", "he"));
+			const { result } = await player.chooseButton([get.prompt2(event.skill), [list.map(name => [get.type(name), "", name]), "vcard"]]).set("ai", button => {
+				const player = get.player();
+				if (button.link[2] == "lebu") return 0;
+				const delta = player.getHandcardLimit() + player.countCards("j") * 2 + 2 - player.hp;
+				if (delta >= 2) return 1 + Math.random();
+				if (delta >= 0 && !player.countCards("h", card => player.hasValueTarget(card))) return Math.random();
+				return 0;
+			});
+			event.result = {
+				bool: result?.bool,
+				cost_data: result?.links,
+				skill_popup: false,
+			};
+		},
+		async content(event, trigger, player) {
+			const { cost_data: links } = event;
+			const card = { name: links[0][2] };
+			game.broadcastAll(card => {
+				lib.skill.nsdaizhan_backup.viewAs = card;
+			}, card);
+			const next = player.chooseToUse();
+			next.set("openskilldialog", "怠战：是否将一张非锦囊牌当做" + get.translation(card) + "对自己使用？");
 			next.set("norestore", true);
-			next.set("_backupevent", "nsdaizhanx");
+			next.set("addCount", false);
+			next.set("_backupevent", "nsdaizhan_backup");
 			next.set("custom", {
 				add: {},
 				replace: { window() {} },
 			});
-			next.backup("nsdaizhanx");
+			next.backup("nsdaizhan_backup");
+			await next;
 		},
-	},
-	nsdaizhanx: {
-		chooseButton: {
-			dialog() {
-				var list = ["lebu", "bingliang"];
-				var list2 = [];
-				for (var i of list) {
-					list2.push(["延时锦囊", "", i]);
-				}
-				return ui.create.dialog(get.prompt("nsdaizhan"), [list2, "vcard"], "hidden");
+		subSkill: {
+			backup: {
+				filterCard(card, player) {
+					return (
+						get.itemtype(card) == "card" &&
+						get.type2(card) != "trick" &&
+						player.canAddJudge({
+							name: lib.skill.nsdaizhan_backup.viewAs.name,
+							cards: [card],
+						})
+					);
+				},
+				filterTarget(card, player, target) {
+					return player == target;
+				},
+				selectTarget: -1,
+				check(card) {
+					return 8 - get.value(card);
+				},
+				position: "he",
+				async precontent(event, trigger, player) {
+					player.addTempSkill("nsdaizhan_effect");
+				},
+				ai: { result: { target: 1 } },
 			},
-			filter(button, player) {
-				return !player.hasJudge(button.link[2]);
+			effect: {
+				charlotte: true,
+				trigger: { player: "phaseEnd" },
+				forced: true,
+				popup: false,
+				filter(event, player) {
+					return player.countCards("h") < player.getHandcardLimit();
+				},
+				async content(event, trigger, player) {
+					await player.drawTo(player.getHandcardLimit());
+				},
+				ai: { nowuxie_judge: true },
 			},
-			check(button) {
-				if (button.link[2] == "lebu") return 0;
-				var player = _status.event.player;
-				var delta = player.getHandcardLimit() + player.countCards("j") * 2 + 2 - player.hp;
-				if (delta >= 2) return 1 + Math.random();
-				if (
-					delta >= 0 &&
-					!player.countCards("h", function (card) {
-						return player.hasValueTarget(card);
-					})
-				)
-					return Math.random();
-				return 0;
-			},
-			backup(links, player) {
-				return {
-					filterCard(card, player) {
-						return (
-							get.itemtype(card) == "card" &&
-							get.type(card, "trick") != "trick" &&
-							player.canAddJudge({
-								name: links[0][2],
-								cards: [card],
-							})
-						);
-					},
-					filterTarget(card, player, target) {
-						return player == target;
-					},
-					check(card) {
-						return 8 - get.value(card);
-					},
-					viewAs: { name: links[0][2] },
-					position: "he",
-					precontent() {
-						player.addTempSkill("nsdaizhany");
-						event.result.skill = "nsdaizhan";
-					},
-					ai: {
-						result: {
-							target: 1,
-						},
-					},
-				};
-			},
-			prompt(links) {
-				return "将一张牌当做" + get.translation(links[0][2]) + "对自己使用";
-			},
-		},
-	},
-	nsdaizhany: {
-		trigger: { player: "phaseEnd" },
-		forced: true,
-		popup: false,
-		filter(event, player) {
-			return player.countCards("h") < player.getHandcardLimit();
-		},
-		content() {
-			player.drawTo(player.getHandcardLimit());
-		},
-		ai: {
-			nowuxie_judge: true,
 		},
 	},
 	nsjiquan: {
