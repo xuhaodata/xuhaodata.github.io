@@ -272,7 +272,8 @@ const skills = {
 			return true;
 		},
 		async cost(event, trigger, player) {
-			const targetprompt = Math.random() > 0.5 ? ["代替", "被代替"] : ["替罪羊", "躺赢狗"];
+			const targetprompt = Math.random() > 0.25 ? ["代替", "被代替"] : ["替罪羊", "躺赢狗"];
+			if (targetprompt[1] == "躺赢狗") trigger.set("twhuiyu_tyg", true);
 			event.result = await player
 				.chooseTarget(get.prompt2("twhuiyu"), 2)
 				.set("ai", target => {
@@ -296,6 +297,7 @@ const skills = {
 			if (target.storage[skill]) delete target.storage[skill];
 			target.markAuto(skill, [source]);
 			target.addTip(skill, get.translation(skill) + " " + get.translation(source));
+			if (trigger.twhuiyu_tyg) player.chat(`${get.translation(target)}的评分是3.0，躺赢狗！`);
 		},
 		subSkill: {
 			effect: {
