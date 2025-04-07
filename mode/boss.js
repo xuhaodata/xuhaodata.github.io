@@ -105,7 +105,7 @@ export default () => {
 					if (info[2] == Infinity) {
 						player.node.hp.innerHTML = "∞";
 					}
-					player.setIdentity(player.name);
+					player.setIdentity(get.rawName(player.name));
 					player.node.identity.dataset.color = info[5];
 					// bosslistlinks[cfg]=player;
 					player.classList.add("bossplayer");
