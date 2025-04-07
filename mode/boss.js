@@ -1460,7 +1460,7 @@ export default () => {
 				boss_zhugeliang: {
 					sex: "male",
 					group: "shen",
-					hp: "Infinity/Infinity",
+					hp: Infinity,
 					skills: ["xiangxing", "yueyin", "fengqi", "gaiming"],
 					names: "诸葛|亮",
 					groupInGuozhan: "shu",
