@@ -665,7 +665,7 @@ const skills = {
 				check(card) {
 					const player = get.player();
 					if (player.maxHp <= 1) return 0;
-					return player.getUseValue(get.autoViewAs({ name: "juedou" }, [card]), false) - get.value(card);
+					return player.getUseValue(get.autoViewAs(get.info("baoxi_backup").viewAs, [card]), false) - get.value(card);
 				},
 				log: false,
 				precontent() {
@@ -716,7 +716,7 @@ const skills = {
 				},
 				direct: true,
 				content() {
-					game.broadcastAll(() => (lib.skill.baoxi_backup.viewAs = { name: "juedou" }));
+					game.broadcastAll(() => (lib.skill.baoxi_backup.viewAs = { name: "sha" }));
 					const next = player.chooseToUse();
 					next.set("openskilldialog", "暴袭：是否将一张手牌当作【杀】使用？");
 					next.set("norestore", true);
