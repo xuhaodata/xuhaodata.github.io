@@ -40,6 +40,9 @@ export default () => {
 			}
 			lib.translate.restart = "返回";
 			lib.init.css(lib.assetURL + "layout/mode", "boss");
+			if (!_status.banlist) {
+				_status.banlist = {};
+			}
 			game.delay(0.1);
 			"step 1";
 			var bosslist = ui.create.div("#bosslist.hidden");
@@ -1822,6 +1825,25 @@ export default () => {
 					next._triggered = null;
 					next.custom.replace.target = event.customreplacetarget;
 					next.selectButton = [3, 3];
+					next.filterButton = function(button) {
+						let { current } = get.event().getParent("game");
+						if (current) {
+							let { name } = current;
+							let banrule  = _status.banlist[name];
+							if (!banrule) {
+								return true;
+							}
+							let { link } = button;
+							if (Array.isArray(banrule)) {
+								if (banrule.includes(link)) {
+									return false;
+								}
+							} else if (typeof banrule === "function") {
+								return banrule();
+							}
+						}
+						return true;
+					}
 					// next.custom.add.button=function(){
 					//		if(ui.cheat2&&ui.cheat2.backup) return;
 					//		_status.event.dialog.content.childNodes[1].innerHTML=
