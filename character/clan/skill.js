@@ -1415,70 +1415,47 @@ const skills = {
 			return !(key in storage);
 		},
 		forced: true,
-		content() {
-			"step 0";
-			var storage = player.storage.clanbaichu || {},
+		async content(event, trigger, player) {
+			const storage = player.storage.clanbaichu || {},
 				suit = get.suit(trigger.card);
 			if (suit != "none") {
-				var key = `${suit}+${get.type2(trigger.card)}`;
+				const key = `${suit}+${get.type2(trigger.card)}`;
 				if (key in storage) {
-					if (!player.hasSkill("qice")) {
-						player.addTempSkills("qice", "roundStart");
-						player.popup("奇策");
-						// game.log(player,'获得了技能','#g【奇策】');
-					}
-					event.goto(2);
+					if (!player.hasSkill("qice")) await player.addTempSkills("qice", "roundStart");
 				} else {
-					var list = lib.inpile.filter(name => get.type(name) == "trick");
+					const list = lib.inpile.filter(name => get.type(name) == "trick");
 					list.removeArray(Object.values(storage));
-					if (list.length > 0) {
-						var dialog = ["百出：选择记录一种普通锦囊牌", [list, "vcard"]];
-						player.chooseButton(dialog, true).set("ai", function (button) {
-							var player = _status.event.player,
+					if (list.length) {
+						const dialog = ["百出：选择记录一种普通锦囊牌", [list, "vcard"]];
+						const { result } = await player.chooseButton(dialog, true).set("ai", function (button) {
+							const player = get.player(),
 								name = button.link[2];
-							if (name == _status.event.getTrigger().card.name) return 1919810;
+							if (name == get.event().getTrigger().card.name) return 1919810;
 							if (name == "wuxie") return 114514;
 							return get.effect(player, { name: name }, player, player) * (1 + player.countCards("hs", name));
 						});
-					} else event.goto(2);
+						if (result?.bool && result?.links?.length) {
+							const key = `${get.suit(trigger.card)}+${get.type2(trigger.card)}`,
+								name = result.links[0][2];
+							player.storage.clanbaichu ??= {};
+							player.storage.clanbaichu[key] = name;
+							player.markSkill("clanbaichu");
+							game.log(player, "记录了", "#y" + get.translation(name));
+							await game.delayx();
+						}
+					}
 				}
-			} else event.goto(2);
-			"step 1";
-			if (result.bool) {
-				var key = `${get.suit(trigger.card)}+${get.type2(trigger.card)}`,
-					name = result.links[0][2];
-				if (!player.storage.clanbaichu) player.storage.clanbaichu = {};
-				player.storage.clanbaichu[key] = name;
-				player.markSkill("clanbaichu");
-				game.log(player, "记录了", "#y" + get.translation(name));
-				game.delayx();
 			}
-			"step 2";
-			if (Object.values(player.getStorage("clanbaichu")).includes(trigger.card.name)) {
-				player.chooseDrawRecover(true);
-			}
+			if (Object.values(player.getStorage("clanbaichu")).includes(trigger.card.name)) await player.chooseDrawRecover(true);
 		},
 		mark: true,
 		intro: {
 			markcount(storage = {}) {
+				if (!storage) return 0;
 				return Object.keys(storage).length;
 			},
-			/*
-			content(storage) {
-				if (!storage) return "当前暂无记录";
-				const keys = Object.keys(storage).map(i => i.split("+"));
-				keys.sort((a, b) => {
-					if (a[0] != b[0]) return lib.suit.indexOf(b[0]) - lib.suit.indexOf(a[0]);
-					return lib.sort.name(a[1], b[1]);
-				});
-				return keys
-					.map(item => {
-						return `<li>${get.translation(item[0])}+${get.translation(item[1])}:【${get.translation(storage[item.join("+")])}】`;
-					})
-					.join("<br>");
-			},
-			*/
 			mark(dialog, storage = {}) {
+				if (!storage) return "当前暂无记录";
 				const addNewRow = lib.element.dialog.addNewRow.bind(dialog);
 				dialog.css({ width: "50%" });
 				if (get.is.phoneLayout()) dialog.classList.add("fullheight");
@@ -4093,48 +4070,62 @@ const skills = {
 		},
 		forced: true,
 		clanSkill: true,
-		content() {
-			"step 0";
-			let skills = player.getSkills(null, false, false).filter(skill => {
+		async content(event, trigger, player) {
+			const skills = player.getSkills(null, false, false).filter(skill => {
 				let info = get.info(skill);
 				if (!info || info.charlotte || !get.is.locked(skill) || get.skillInfoTranslation(skill, player).length == 0) return false;
 				return true;
 			});
-			let list = [];
-			for (let skill of skills) {
-				list.push([skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]);
-			}
-			player
-				.chooseButton(["蹈节：失去一个锁定技，或点“取消”失去1点体力", [list, "textbutton"]])
-				.set("displayIndex", false)
-				.set("ai", button => {
-					const player = get.player();
-					let info = get.info(button.link);
-					if (info?.ai?.neg || info?.ai?.halfneg) return 3;
-					if (get.effect(player, { name: "losehp" }, player, player) >= 0 || player.hp > 3) return 0;
-					if (Math.random() < 0.75 && button.link == "clandaojie") return 2;
-					return 1;
-				});
-			"step 1";
-			if (result.bool) {
-				player.removeSkills(result.links[0]);
-			} else {
-				player.loseHp();
-			}
-			"step 2";
-			var targets = game.filterPlayer(current => current == player || current.hasClan("颍川荀氏"));
-			if (targets.length == 1) event._result = { bool: true, targets: targets };
-			else
-				player
-					.chooseTarget("蹈节：将" + get.translation(trigger.cards.filterInD()) + "交给一名颍川荀氏角色", true, (card, player, target) => {
-						return target == player || target.hasClan("颍川荀氏");
+			let result;
+			if (!skills.length) result = { bool: false };
+			else {
+				const list = skills.map(skill => [
+					skill,
+					'<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">' +
+						(() => {
+							let str = get.translation(skill);
+							if (!lib.skill[skill]?.nobracket) str = "【" + str + "】";
+							return str;
+						})() +
+						"</div><div>" +
+						lib.translate[skill + "_info"] +
+						"</div></div>",
+				]);
+				result = await player
+					.chooseButton(["蹈节：失去一个锁定技，或点“取消”失去1点体力", [list, "textbutton"]])
+					.set("displayIndex", false)
+					.set("ai", button => {
+						const player = get.player();
+						const skills = get.event("listx").slice();
+						skills.removeArray(["clanbaichu"]);
+						const { link } = button;
+						if (skills.includes(link)) return 0;
+						const info = get.info(link);
+						if (info?.ai?.neg || info?.ai?.halfneg) return 3;
+						if (get.effect(player, { name: "losehp" }, player, player) >= 0 || player.hp > 3 || player.countCards("hs", card => player.canSaveCard(card, player))) return 0;
+						if (Math.random() < 0.75 && link == "clandaojie") return 2;
+						return 1;
 					})
-					.set("ai", target => get.attitude(_status.event.player, target));
-			"step 3";
-			if (result.bool) {
-				var target = result.targets[0];
+					.set("listx", skills)
+					.forResult();
+			}
+			if (result?.bool && result?.links?.length) await player.removeSkills(result.links);
+			else await player.loseHp();
+			const targets = game.filterPlayer(current => current == player || current.hasClan("颍川荀氏"));
+			if (!targets.length || !trigger.cards.someInD()) return;
+			result =
+				targets.length == 1
+					? { bool: true, targets }
+					: await player
+							.chooseTarget("蹈节：将" + get.translation(trigger.cards.filterInD()) + "交给一名颍川荀氏角色", true, (card, player, target) => {
+								return target == player || target.hasClan("颍川荀氏");
+							})
+							.set("ai", target => get.attitude(get.player(), target))
+							.forResult();
+			if (result?.bool && result?.targets?.length) {
+				const target = result.targets[0];
 				player.line(target, "green");
-				target.gain(trigger.cards.filterInD(), player, "gain2");
+				if (trigger.cards.someInD()) await target.gain(trigger.cards.filterInD(), player, "gain2");
 			}
 		},
 	},
