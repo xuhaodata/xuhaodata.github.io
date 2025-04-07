@@ -10526,7 +10526,7 @@ const skills = {
 			}
 		},
 		filterTarget(card, player, target) {
-			return get.event().olxieju.includes(target) && target.hasUseTarget({ name: "sha" }, false);
+			return get.event().olxieju.includes(target) && target.hasUseTarget({ name: "sha" }, true, false);
 		},
 		selectTarget: [1, Infinity],
 		async content(event, trigger, player) {
