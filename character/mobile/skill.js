@@ -115,7 +115,7 @@ const skills = {
 			event.result = { bool: true, cost_data: result.index };
 		},
 		async content(event, trigger, player) {
-			player.logSkill("pothongyi", null, null, null, [get.rand(1, 2)]);
+			player.logSkill("pothongyi", null, null, null, [get.rand(3, 4)]);
 			const control = event.cost_data;
 			const num = player.countMark("pothongyi");
 			if (!num) return;
@@ -138,7 +138,7 @@ const skills = {
 		group: "pothongyi_mark",
 		subSkill: {
 			mark: {
-				audio: ["pothongyi3.mp3", "pothongyi4.mp3"],
+				audio: ["pothongyi1.mp3", "pothongyi2.mp3"],
 				trigger: {
 					global: "phaseBefore",
 					source: "damageSource",
@@ -2083,6 +2083,7 @@ const skills = {
 	//势于吉
 	potdaozhuan: {
 		audio: 2,
+		audioname: ["pot_yuji_shadow"],
 		enable: "chooseToUse",
 		filter(event, player) {
 			if (event.potdaozhuan) return false;
@@ -2181,6 +2182,8 @@ const skills = {
 							player.logSkill("potdaozhuan");
 							player.addTempSkill("potdaozhuan_used", "roundStart");
 							player.markAuto("potdaozhuan_used", [event.result.card.name]);
+							player.storage['potdaozhuan'] = !player.storage['potdaozhuan'];
+							player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji" + (player.storage['potdaozhuan'] ? "_shadow" : ""));
 							if (result.links?.length) {
 								const target = _status.currentPhase;
 								const owners = result.links.map(i => get.owner(i)).unique();
@@ -2266,7 +2269,8 @@ const skills = {
 		},
 	},
 	potfuji: {
-		audio: 2,
+		audio: 3,
+		audioname: ["pot_yuji_shadow"],
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.countPlayer(t => t.countCards("h")) > 0 && game.hasPlayer(target => target !== player);
@@ -2384,6 +2388,8 @@ const skills = {
 				},
 			},
 			sha: {
+				audio: "potfuji",
+				audioname: ["pot_yuji_shadow"],
 				charlotte: true,
 				mark: true,
 				marktext: "杀",
@@ -2402,6 +2408,8 @@ const skills = {
 				},
 			},
 			shan: {
+				audio: "potfuji",
+				audioname: ["pot_yuji_shadow"],
 				charlotte: true,
 				mark: true,
 				marktext: "闪",

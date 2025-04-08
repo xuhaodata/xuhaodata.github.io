@@ -1,4 +1,9 @@
 export default {
+	"#twbeixing1": "荆襄之地，容不得异根异刺。",
+	"#twbeixing2": "蔡氏帐下，敢有逆鳞者，当诛！",
+	"#twhuiyu1": "长子失德，当刑以正视听!",
+	"#twhuiyu2": "少子有成，当表儿母春风!",
+	"#tw_zhangyun:die": "荆襄大业，终毁于党同伐异。",
 	"#twfenxian1": "众将听令，举火离船!",
 	"#twfenxian2": "曹军百万之众，岂惧某一个老卒乎?",
 	"#twjuyan1": "火攻之计虽败，亦可舍生以助功成!",

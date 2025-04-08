@@ -572,7 +572,7 @@ const skills = {
 			},
 			prompt(result, player) {
 				let prompt = result.control == "弃置武器牌" ? "弃置一张武器牌" : `失去【${get.translation(result.control)}】`;
-				return `${prompt}，令一名角色弃置两张手牌`;
+				return `${prompt}，令一名角色弃置两张牌`;
 			},
 		},
 		subSkill: {
