@@ -2182,8 +2182,6 @@ const skills = {
 							player.logSkill("potdaozhuan");
 							player.addTempSkill("potdaozhuan_used", "roundStart");
 							player.markAuto("potdaozhuan_used", [event.result.card.name]);
-							player.storage['potdaozhuan'] = !player.storage['potdaozhuan'];
-							player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji" + (player.storage['potdaozhuan'] ? "_shadow" : ""));
 							if (result.links?.length) {
 								const target = _status.currentPhase;
 								const owners = result.links.map(i => get.owner(i)).unique();
@@ -2342,6 +2340,7 @@ const skills = {
 							})
 							.setContent("chooseToCompareLose");
 						await game.delayx();
+						player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
 						const gain_list = links.map((link, i) => [targets[i], [link]]);
 						await game
 							.loseAsync({
@@ -2362,6 +2361,9 @@ const skills = {
 							player.addTempSkill("potfuji_clear", { player: "phaseBegin" });
 							await player.addAdditionalSkills("potfuji_" + player.playerid, ["potfuji_sha", "potfuji_shan"], true);
 						}
+						player.when({ player: "phaseBegin" }).then(() => {
+							player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
+						});
 					},
 					ai: {
 						result: {
