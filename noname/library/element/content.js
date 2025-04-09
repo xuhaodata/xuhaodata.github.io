@@ -6134,6 +6134,75 @@ export const Content = {
 		}
 		if (event.dialog) event.dialog.close();
 	},
+	chooseButtonTarget: function () {
+		"step 0";
+		if (typeof event.dialog == "number") {
+			event.dialog = get.idDialog(event.dialog);
+		}
+		if (event.createDialog && !event.dialog) {
+			if (Array.isArray(event.createDialog)) {
+				event.createDialog.add("hidden");
+				event.dialog = ui.create.dialog.apply(this, event.createDialog);
+			}
+			event.closeDialog = true;
+		}
+		if (event.dialog == undefined) event.dialog = ui.dialog;
+		if (event.isMine() || event.dialogdisplay) {
+			event.dialog.style.display = "";
+			event.dialog.open();
+		}
+		// if (['chooseCharacter', 'chooseButtonOL'].includes(event.getParent().name)) event.complexSelect = true;
+		var filterButton =
+			event.filterButton ||
+			function () {
+				return true;
+			};
+		var selectButton = get.select(event.selectButton);
+		var buttons = event.dialog.buttons;
+		var buttonsx = [];
+		var num = 0;
+		for (var i = 0; i < buttons.length; i++) {
+			var button = buttons[i];
+			if (filterButton(button, player)) {
+				num++;
+				buttonsx.add(button);
+			}
+		}
+		if (event.isMine()) {
+			if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
+				ui.click.cancel();
+				return;
+			}
+			game.check();
+			game.pause();
+		} else if (event.isOnline()) {
+			event.send();
+		} else {
+			event.result = "ai";
+		}
+		"step 1";
+		if (event.result == "ai") {
+			game.check();
+			if (ai.basic.chooseButton(event.ai1) || forced) {
+				if ((ai.basic.chooseTarget(event.ai2) || forced) && (!event.filterOk || event.filterOk())) {
+					ui.click.ok();
+					_status.event._aiexclude.length = 0;
+				} else {
+					ui.click.cancel();
+				}
+			} else {
+				ui.click.cancel();
+			}
+		}
+		"step 2";
+		event.resume();
+		if (event.result.bool && event.animate !== false) {
+			for (var i = 0; i < event.result.targets.length; i++) {
+				event.result.targets[i].addTempClass("target");
+			}
+		}
+		if (event.dialog) event.dialog.close();
+	},
 	chooseControl: function () {
 		"step 0";
 		if (event.controls.length == 0) {

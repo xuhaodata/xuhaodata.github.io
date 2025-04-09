@@ -1,4 +1,34 @@
 const characters = {
+	guoyuan: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["mbqingdao", "mbxiugeng", "mbchenshe"],
+	},
+	mb_huangzu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["mbchizhang", "mbduanyang"],
+	},
+	mb_tianfeng: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["mbganggeng", "mbsijian"],
+	},
+	mb_luyusheng: {
+		sex: "female",
+		group: "wu",
+		hp: 3,
+		skills: ["mbrunwei", "mbshuanghuai"],
+	},
+	mb_guanyinping: {
+		sex: "female",
+		group: "shu",
+		hp: 3,
+		skills: ["mbxuehen", "mbhuxiao", "mbwuji"],
+	},
 	pot_chendao: {
 		sex: "male",
 		group: "shu",

@@ -8,6 +8,7 @@ const skills = {
 		position: "hes",
 		global: ["olfuhun_block"],
 		group: ["olfuhun_effect", "olfuhun_mark"],
+		prompt:"将两张牌当杀使用或打出",
 		subSkill: {
 			effect: {
 				audio: 2,
