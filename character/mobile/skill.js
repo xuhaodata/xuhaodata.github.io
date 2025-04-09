@@ -2340,7 +2340,6 @@ const skills = {
 							})
 							.setContent("chooseToCompareLose");
 						await game.delayx();
-						player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
 						const gain_list = links.map((link, i) => [targets[i], [link]]);
 						await game
 							.loseAsync({
@@ -2357,6 +2356,7 @@ const skills = {
 							}
 						}
 						if (player.isMinHandcard()) {
+							player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji_shadow");
 							await player.draw(2);
 							player.addTempSkill("potfuji_clear", { player: "phaseBegin" });
 							await player.addAdditionalSkills("potfuji_" + player.playerid, ["potfuji_sha", "potfuji_shan"], true);
