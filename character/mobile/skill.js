@@ -25,6 +25,10 @@ const skills = {
 								"tdnodes",
 							],
 						],
+						filterButton(button) {
+							if (button.link == "discard") return game.hasPlayer(target => target.countDiscardableCards(get.player(), "hej"));
+							return true;
+						},
 						filterTarget(card, player, target) {
 							return target.countDiscardableCards(player, "hej");
 						},
@@ -76,6 +80,10 @@ const skills = {
 							"tdnodes",
 						],
 					])
+					.set("filterButton", button => {
+						if (button.link == "use") return player.hasCard(card => get.player().hasUseTarget(card, false, false), "hs");
+						return true;
+					})
 					.set("ai", button => {
 						const player = get.player();
 						if (button.link == "use") {
@@ -550,25 +558,34 @@ const skills = {
 							return;
 						const red = cards.filter(card => get.color(card, false) == "red"),
 							black = cards.filter(card => get.color(card, false) == "black");
-						//创建新对话框
-						const dialog = ui.create.dialog(`润微：选择一名角色令其获得其中一种颜色的牌`);
-						//添加显示牌的部分，该部分不可点击
-						dialog.addNewRow({ item: get.translation("black"), retio: 1 }, { item: black, ratio: 3 }, { item: get.translation("red"), retio: 1 }, { item: red, ratio: 3 });
-						dialog.css({
-							position: "absolute",
-							top: "45%",
-						});
-						//正常添加按钮
-						dialog.add([
-							[
-								["black", "黑色"],
-								["red", "红色"],
-							],
-							"tdnodes",
-						]);
+						event.videoId = lib.status.videoId++;
+						const func = (id, red, black) => {
+							//创建新对话框
+							const dialog = ui.create.dialog(`润微：选择一名角色令其获得其中一种颜色的牌`);
+							//添加显示牌的部分，该部分不可点击
+							dialog.addNewRow({ item: get.translation("black"), retio: 1 }, { item: black, ratio: 3 }, { item: get.translation("red"), retio: 1 }, { item: red, ratio: 3 });
+							dialog.css({
+								position: "absolute",
+								top: "45%",
+							});
+							//正常添加按钮
+							dialog.add([
+								[
+									["black", "黑色"],
+									["red", "红色"],
+								],
+								"tdnodes",
+							]);
+							dialog.videoId = id;
+							return dialog;
+						};
+						if (player == game.me) func(event.videoId, red, black);
+						else if (player.isOnline2()) {
+							player.send(func, event.videoId, red, black);
+						}
 						const result = await player
 							.chooseButtonTarget({
-								dialog: dialog,
+								dialog: event.videoId,
 								forced: true,
 								black: black,
 								red: red,
@@ -589,6 +606,7 @@ const skills = {
 								},
 							})
 							.forResult();
+						game.broadcastAll("closeDialog", event.videoId);
 						if (result?.links && result?.targets) {
 							const target = result.targets[0],
 								gain = result.links[0] == "black" ? black : red;

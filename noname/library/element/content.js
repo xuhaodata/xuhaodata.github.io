@@ -6159,7 +6159,7 @@ export const Content = {
 					event.dialog.open();
 				}
 				game.check();
-				await game.pause();
+				game.pause();
 			} else if (event.isOnline()) {
 				event.result = await event.sendAsync();
 			} else {
