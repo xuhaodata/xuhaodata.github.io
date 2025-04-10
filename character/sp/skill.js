@@ -317,17 +317,22 @@ const skills = {
 	olkuangjuan: {
 		audio: 2,
 		enable: "phaseUse",
+		usable(skill, player) {
+			return player.maxHp;
+		},
 		filter(event, player) {
 			return game.hasPlayer(target => get.info("olkuangjuan").filterTarget(null, player, target));
 		},
 		filterTarget(card, player, target) {
-			return target.countCards("h") > player.countCards("h") && !player.getStorage("olkuangjuan_used").includes(target);
+			return target.countCards("h") != player.countCards("h");
 		},
-		content() {
-			player.addTempSkill("olkuangjuan_used");
-			player.markAuto("olkuangjuan_used", [target]);
+		async content(event, trigger, player) {
+			const num = player.countCards("h") - event.target.countCards("h");
 			player.addTempSkill("olkuangjuan_effect");
-			player.drawTo(target.countCards("h")).gaintag.add("olkuangjuan_effect");
+			if (num > 0) {
+				const result = await player.chooseToDiscard("h", num, true).forResult();
+				if (result?.cards) await player.draw(result.cards.length).set("gaintag", ["olkuangjuan_effect"]);
+			} else if (num < 0) await player.drawTo(event.target.countCards("h")).set("gaintag", ["olkuangjuan_effect"]);
 		},
 		ai: {
 			order: 0.1,
@@ -338,12 +343,11 @@ const skills = {
 			},
 		},
 		subSkill: {
-			used: {
-				charlotte: true,
-				onremove: true,
-			},
 			effect: {
 				charlotte: true,
+				onremove(player, skill) {
+					player.removeGaintag(skill);
+				},
 				trigger: { player: "useCard0" },
 				filter(event, player) {
 					if (event.addCount === false) return false;

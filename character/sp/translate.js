@@ -1480,7 +1480,7 @@ const translates = {
 	ol_miheng: "OL祢衡",
 	ol_miheng_prefix: "OL",
 	olkuangjuan: "狂狷",
-	olkuangjuan_info: "每回合每名角色限一次。出牌阶段，你可以将手牌摸至与一名其他角色相同（你使用以此法获得的牌无次数限制）。",
+	olkuangjuan_info: "出牌阶段限X次（X为你的体力上限），你可将手牌调整至与一名其他角色相同，然后你摸弃置牌数的牌。你因此技能获得的牌本回合无次数限制。",
 	olfeibian: "飞辩",
 	olfeibian_info: "锁定技。①游戏开始时，你调整出牌时间为15s。②当你于回合内使用一张牌后，或其他角色对你使用一张牌后。使用牌的角色随机弃置一张手牌，且本轮出牌时间-1s（至多减至1s）。③一名角色的回合结束时，你令所有本回合出牌超时的角色失去1点体力。",
 	olfeibian_append: '<span style="font-family: yuanli"><li>温馨提示：<br>单机模式人机没有出牌时限</span>',

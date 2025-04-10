@@ -4,6 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//OL界马岱
 	olqianxi: {
+		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		async content(event, trigger, player) {
 			await player.draw();
@@ -69,6 +70,7 @@ const skills = {
 		},
 		subSkill: {
 			damage: {
+				audio: "olqianxi",
 				charlotte: true,
 				forced: true,
 				onremove(player, skill) {
@@ -110,6 +112,7 @@ const skills = {
 	},
 	//OL谋卢植
 	olsibing: {
+		audio: 2,
 		trigger: {
 			player: "useCardToPlayer",
 			global: "useCardAfter",
@@ -174,6 +177,7 @@ const skills = {
 		},
 	},
 	olliance: {
+		audio: 2,
 		trigger: {
 			player: "loseAfter",
 			global: ["loseAsyncAfter", "equipAfter", "addToExpansionAfter", "gainAfter", "addJudgeAfter"],
@@ -193,6 +197,7 @@ const skills = {
 		},
 		subSkill: {
 			damage: {
+				audio: "olliance",
 				charlotte: true,
 				forced: true,
 				trigger: { global: "damageBegin1" },
