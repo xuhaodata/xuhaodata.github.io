@@ -2082,8 +2082,7 @@ const skills = {
 	},
 	//势于吉
 	potdaozhuan: {
-		audio: 2,
-		audioname: ["pot_yuji_shadow"],
+		audio: 4,
 		enable: "chooseToUse",
 		filter(event, player) {
 			if (event.potdaozhuan) return false;
@@ -2267,8 +2266,7 @@ const skills = {
 		},
 	},
 	potfuji: {
-		audio: 3,
-		audioname: ["pot_yuji_shadow"],
+		audio: 5,
 		enable: "phaseUse",
 		filter(event, player) {
 			return game.countPlayer(t => t.countCards("h")) > 0 && game.hasPlayer(target => target !== player);
@@ -2308,7 +2306,7 @@ const skills = {
 			backup(links) {
 				return {
 					giveCards: links,
-					audio: "potfuji",
+					logAudio: () => ["potfuji1.mp3", "potfuji2.mp3", "potfuji3.mp3"],
 					filterCard: () => false,
 					selectCard: -1,
 					filterTarget: true,
@@ -2390,8 +2388,7 @@ const skills = {
 				},
 			},
 			sha: {
-				audio: "potfuji",
-				audioname: ["pot_yuji_shadow"],
+				audio: ["potfuji4.mp3","potfuji5.mp3"],
 				charlotte: true,
 				mark: true,
 				marktext: "杀",
@@ -2410,8 +2407,7 @@ const skills = {
 				},
 			},
 			shan: {
-				audio: "potfuji",
-				audioname: ["pot_yuji_shadow"],
+				audio: ["potfuji4.mp3","potfuji5.mp3"],
 				charlotte: true,
 				mark: true,
 				marktext: "闪",
