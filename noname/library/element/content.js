@@ -6138,32 +6138,30 @@ export const Content = {
 	//该事件目前采用async contents的写法
 	chooseButtonTarget: [
 		async (event, _trigger, player) => {
-			//根据player.chooseButtonTarget获取到的dialog信息创建对话框，也支持createDialog
-			if (typeof event.dialog == "number") {
-				event.dialog = get.idDialog(event.dialog);
-			}
-			if (event.createDialog && !event.dialog) {
-				if (Array.isArray(event.createDialog)) {
-					event.createDialog.add("hidden");
-					event.dialog = ui.create.dialog.apply(this, event.createDialog);
-				}
-				event.closeDialog = true;
-			}
-			if (event.dialog == undefined) event.dialog = ui.dialog;
-			if (event.isMine() || event.dialogdisplay) {
-				event.dialog.style.display = "";
-				await event.dialog.open();
-			}
-			//处理选择的结果
 			if (event.isMine()) {
 				if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
 					ui.click.cancel();
 					return;
+				} //根据player.chooseButtonTarget获取到的dialog信息创建对话框，也支持createDialog
+				if (typeof event.dialog == "number") {
+					event.dialog = get.idDialog(event.dialog);
+				}
+				if (event.createDialog && !event.dialog) {
+					if (Array.isArray(event.createDialog)) {
+						event.createDialog.add("hidden");
+						event.dialog = ui.create.dialog.apply(this, event.createDialog);
+					}
+					event.closeDialog = true;
+				}
+				if (event.dialog == undefined) event.dialog = ui.dialog;
+				if (event.isMine() || event.dialogdisplay) {
+					event.dialog.style.display = "";
+					event.dialog.open();
 				}
 				game.check();
 				await game.pause();
 			} else if (event.isOnline()) {
-				const result = await event.sendAsync();
+				event.result = await event.sendAsync();
 			} else {
 				//考虑中途托管的情况
 				event.result = "ai";
@@ -6186,6 +6184,7 @@ export const Content = {
 			}
 		},
 		async (event, _trigger, player, result) => {
+			//处理选择的结果
 			event.resume();
 			if (event.result.bool && event.animate !== false) {
 				for (var i = 0; i < event.result.targets.length; i++) {

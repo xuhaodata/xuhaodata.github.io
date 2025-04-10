@@ -83,7 +83,7 @@ const skills = {
 								.getCards("hs", card => player.hasUseTarget(card, false, false))
 								.map(card => player.getUseValue(card))
 								.sort((a, b) => b - a);
-							return values.length ? values[0]*1.5 : 0;
+							return values.length ? values[0] * 1.5 : 0;
 						}
 						if (button.link == "sha") {
 							if (!player.countCards("h", "sha")) return get.effect(player, { name: "wuzhong" }, player, player);
@@ -346,7 +346,7 @@ const skills = {
 							.chooseControl()
 							.set("choiceList", [`获得${get.translation(basic)}`, `摸${cards.length}张牌`])
 							.set("ai", () => {
-								const cards=get.event().cardsx;
+								const cards = get.event().cardsx;
 								if (cards[0].length == cards[1].length) return "选项一";
 								return "选项二";
 							})
