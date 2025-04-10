@@ -327,6 +327,7 @@ const skills = {
 		},
 	},
 	twbeixing: {
+		audio: 2,
 		round: 1,
 		trigger: { global: "phaseUseEnd" },
 		filter(event, player) {
