@@ -6134,75 +6134,67 @@ export const Content = {
 		}
 		if (event.dialog) event.dialog.close();
 	},
-	chooseButtonTarget: function () {
-		"step 0";
-		if (typeof event.dialog == "number") {
-			event.dialog = get.idDialog(event.dialog);
-		}
-		if (event.createDialog && !event.dialog) {
-			if (Array.isArray(event.createDialog)) {
-				event.createDialog.add("hidden");
-				event.dialog = ui.create.dialog.apply(this, event.createDialog);
+	//先选择按钮再选择目标的函数，可以简化一些交互流程，目前不推荐用于视为使用卡牌（对话框有可能太大阻挡选择目标）
+	//该事件目前采用async contents的写法
+	chooseButtonTarget: [
+		async (event, _trigger, player) => {
+			//根据player.chooseButtonTarget获取到的dialog信息创建对话框，也支持createDialog
+			if (typeof event.dialog == "number") {
+				event.dialog = get.idDialog(event.dialog);
 			}
-			event.closeDialog = true;
-		}
-		if (event.dialog == undefined) event.dialog = ui.dialog;
-		if (event.isMine() || event.dialogdisplay) {
-			event.dialog.style.display = "";
-			event.dialog.open();
-		}
-		// if (['chooseCharacter', 'chooseButtonOL'].includes(event.getParent().name)) event.complexSelect = true;
-		var filterButton =
-			event.filterButton ||
-			function () {
-				return true;
-			};
-		var selectButton = get.select(event.selectButton);
-		var buttons = event.dialog.buttons;
-		var buttonsx = [];
-		var num = 0;
-		for (var i = 0; i < buttons.length; i++) {
-			var button = buttons[i];
-			if (filterButton(button, player)) {
-				num++;
-				buttonsx.add(button);
+			if (event.createDialog && !event.dialog) {
+				if (Array.isArray(event.createDialog)) {
+					event.createDialog.add("hidden");
+					event.dialog = ui.create.dialog.apply(this, event.createDialog);
+				}
+				event.closeDialog = true;
 			}
-		}
-		if (event.isMine()) {
-			if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
-				ui.click.cancel();
-				return;
+			if (event.dialog == undefined) event.dialog = ui.dialog;
+			if (event.isMine() || event.dialogdisplay) {
+				event.dialog.style.display = "";
+				await event.dialog.open();
 			}
-			game.check();
-			game.pause();
-		} else if (event.isOnline()) {
-			event.send();
-		} else {
-			event.result = "ai";
-		}
-		"step 1";
-		if (event.result == "ai") {
-			game.check();
-			if (ai.basic.chooseButton(event.ai1) || forced) {
-				if ((ai.basic.chooseTarget(event.ai2) || forced) && (!event.filterOk || event.filterOk())) {
-					ui.click.ok();
-					_status.event._aiexclude.length = 0;
+			//处理选择的结果
+			if (event.isMine()) {
+				if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
+					ui.click.cancel();
+					return;
+				}
+				game.check();
+				await game.pause();
+			} else if (event.isOnline()) {
+				const result = await event.sendAsync();
+			} else {
+				//考虑中途托管的情况
+				event.result = "ai";
+			}
+		},
+		async (event, _trigger, player, result) => {
+			//处理ai的选择结果
+			if (event.result == "ai") {
+				game.check();
+				if (ai.basic.chooseButton(event.ai1) || event.forced) {
+					if ((ai.basic.chooseTarget(event.ai2) || event.forced) && (!event.filterOk || event.filterOk())) {
+						ui.click.ok();
+						_status.event._aiexclude.length = 0;
+					} else {
+						ui.click.cancel();
+					}
 				} else {
 					ui.click.cancel();
 				}
-			} else {
-				ui.click.cancel();
 			}
-		}
-		"step 2";
-		event.resume();
-		if (event.result.bool && event.animate !== false) {
-			for (var i = 0; i < event.result.targets.length; i++) {
-				event.result.targets[i].addTempClass("target");
+		},
+		async (event, _trigger, player, result) => {
+			event.resume();
+			if (event.result.bool && event.animate !== false) {
+				for (var i = 0; i < event.result.targets.length; i++) {
+					event.result.targets[i].addTempClass("target");
+				}
 			}
-		}
-		if (event.dialog) event.dialog.close();
-	},
+			if (event.dialog) event.dialog.close();
+		},
+	],
 	chooseControl: function () {
 		"step 0";
 		if (event.controls.length == 0) {

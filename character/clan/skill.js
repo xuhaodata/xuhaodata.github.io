@@ -106,7 +106,7 @@ const skills = {
 				trigger: {
 					player: "useCardToPlayered",
 				},
-				filter: (event, player) => event.isFirstTarget,
+				filter: (event, player) => event.isFirstTarget && event.targets.some(target => target != player),
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget(get.prompt("clanjiewu"), "选择一名「捷悟」角色展示其一张手牌")
@@ -173,27 +173,76 @@ const skills = {
 			const num = player.getHistory("useSkill", evt => {
 				return ["clanjiewu", "clanjiewu_effect"].includes(evt.skill);
 			}).length;
-			const names = player.getHistory("useCard", evt => evt.isPhaseUsing()).map(evt => evt.card.name);
-			let cards = get.cards(num);
-			await game.cardsGotoOrdering(cards);
-			await player.showCards(cards, `${get.translation(player)}发动了〖高视〗`);
-			//game.log(player, "亮出了牌堆顶的", cards);
+			const names = player.getHistory("useCard").map(evt => evt.card.name),
+				cards = [];
+			event.forceDie = true;
+			event.includeOut = true;
+			while (cards.length < num) {
+				//周群亮出的写法
+				const judgestr = get.translation(player) + "展示的第" + get.cnNumber(cards.length + 1, true) + "张【高视】牌";
+				event.videoId = lib.status.videoId++;
+				const card = get.cards()[0];
+				cards.add(card);
+				await game.cardsGotoOrdering(card);
+				game.addVideo("judge1", player, [get.cardInfo(card), judgestr, event.videoId]);
+				game.broadcastAll(
+					function (player, card, str, id, cardid) {
+						let event;
+						if (game.online) {
+							event = {};
+						} else {
+							event = _status.event;
+						}
+						if (game.chess) {
+							event.node = card.copy("thrown", "center", ui.arena).addTempClass("start");
+						} else {
+							event.node = player.$throwordered(card.copy(), true);
+						}
+						if (lib.cardOL) lib.cardOL[cardid] = event.node;
+						event.node.cardid = cardid;
+						event.node.classList.add("thrownhighlight");
+						ui.arena.classList.add("thrownhighlight");
+						event.dialog = ui.create.dialog(str);
+						event.dialog.classList.add("center");
+						event.dialog.videoId = id;
+					},
+					player,
+					card,
+					judgestr,
+					event.videoId,
+					get.id()
+				);
+				game.log(player, "展示了牌堆顶的", card);
+				game.delay(2);
+				game.broadcastAll(function (id) {
+					var dialog = get.idDialog(id);
+					if (dialog) {
+						dialog.close();
+					}
+					ui.arena.classList.remove("thrownhighlight");
+				}, event.videoId);
+				game.addVideo("judge2", null, event.videoId);
+				if (names.includes(card.name)) break;
+			}
+			game.broadcastAll(function () {
+				ui.clear();
+			});
+			if (!cards.length) return;
 			while (cards.some(card => player.hasUseTarget(card))) {
 				const links = await player
 					.chooseButton([`高视：是否使用其中一张牌？`, cards])
 					.set("filterButton", button => {
 						const player = get.player(),
 							card = button.link;
-						return player.hasUseTarget(card) && !get.event().names.includes(card.name);
+						return player.hasUseTarget(card);
 					})
-					.set("names", names)
 					.set("ai", button => {
 						return get.player().getUseValue(button.link);
 					})
 					.forResultLinks();
 				if (!links?.length) break;
 				cards.remove(links[0]);
-				player.$gain(links[0], false);
+				player.$gain2(links[0], false);
 				await player.chooseUseTarget(links[0], true, false);
 			}
 			if (!cards.length) await player.draw(2);
@@ -233,10 +282,10 @@ const skills = {
 			} else {
 				const card = get.cards(1, true)[0];
 				await player.showCards([card]);
-				if (get.suit(card) == get.suit(trigger.card) || get.type2(card) == get.type2(trigger.card)) {
+				if (get.color(card) == get.color(trigger.card) || get.type2(card) == get.type2(trigger.card)) {
 					await player.gain(card, "gain2");
 				} else {
-					if (!player.countCards("h")) return;
+					if (!player.countCards("he")) return;
 					const result = await player.chooseCard(`切议：将一张牌置于牌堆顶`, "he", true).forResult();
 					const card = result.cards[0];
 					player.$throw(get.position(card) == "h" ? 1 : card, 1000);

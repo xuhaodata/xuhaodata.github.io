@@ -40,13 +40,27 @@ const skills = {
 							if (ui.selected.buttons.length) {
 								const link = ui.selected.buttons[0].link;
 								if (link == "discard") return ui.selected.targets.length == 1;
-								return !ui.selected.targets.length;
+								return true;
 							}
 							return false;
 						},
-						ai1(button) {},
-						ai2(card, player, target) {
-							return get.effect(target, { name: "guohe" }, player, player);
+						ai1(button) {
+							const player = get.player();
+							if (button.link == "discard") {
+								const values = game
+									.filterPlayer(target => target.countDiscardableCards(player, "hej"))
+									.map(target => get.effect(target, { name: "guohe_copy" }, player, player))
+									.sort((a, b) => b - a);
+								return values.length ? values[0] : 0;
+							}
+							if (button.link == "shan") {
+								if (!player.countCards("h", "shan")) return get.effect(player, { name: "wuzhong" }, player, player) * 2;
+								return get.effect(player, { name: "wuzhong" }, player, player) / 3;
+							}
+						},
+						ai2(target) {
+							if (ui.selected.buttons[0].link != "discard") return 1;
+							return get.effect(target, { name: "guohe_copy" }, get.player(), get.player());
 						},
 					})
 					.forResult();
@@ -63,17 +77,17 @@ const skills = {
 						],
 					])
 					.set("ai", button => {
+						const player = get.player();
 						if (button.link == "use") {
 							const values = player
 								.getCards("hs", card => player.hasUseTarget(card, false, false))
 								.map(card => player.getUseValue(card))
 								.sort((a, b) => b - a);
-							if (!values.length) return 0;
-							return values[0];
+							return values.length ? values[0]*1.5 : 0;
 						}
 						if (button.link == "sha") {
-							if (!player.countCards("h")) return get.effect(player, { name: "wuzhong" }, player, player);
-							return get.effect(player, { name: "wuzhong" }, player, player) / 2;
+							if (!player.countCards("h", "sha")) return get.effect(player, { name: "wuzhong" }, player, player);
+							return get.effect(player, { name: "wuzhong" }, player, player) / 3;
 						}
 					})
 					.forResult();
@@ -105,10 +119,14 @@ const skills = {
 				await player.chooseToUse({
 					filterCard(card) {
 						if (get.itemtype(card) != "card" || !["h", "s"].includes(get.position(card))) return false;
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					filterTarget(card, player, target) {
 						return lib.filter.targetEnabled.apply(this, arguments);
 					},
 					prompt: "清蹈：使用一张手牌",
 					addCount: false,
+					forced: true,
 				});
 			}
 		},
@@ -123,6 +141,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			for (const target of event.targets) {
+				target.removeSkill("mbxiugeng_effect");
 				target.storage["mbxiugeng_effect"] = target.countCards("h");
 				target.addSkill("mbxiugeng_effect");
 			}
@@ -133,7 +152,7 @@ const skills = {
 				forced: true,
 				init(player, skill) {
 					const storage = player.storage[skill];
-					if (storage) player.addTip(skill, `${get.translation(skill)} ${storage}`);
+					if (storage >= 0) player.addTip(skill, `${get.translation(skill)} ${storage}`);
 				},
 				onremove(player, skill) {
 					delete player.storage[skill];
@@ -208,12 +227,6 @@ const skills = {
 			targetInRange(card, player, target) {
 				if (get.tag(card, "damage") > 0.5) return true;
 			},
-		},
-		init(player, skill) {
-			player.addTip(skill, `${get.translation(skill)} 无视距离`);
-		},
-		onremove(player, skill) {
-			player.removeTip(skill);
 		},
 		locked: false,
 		trigger: { player: "useCardToPlayered" },
@@ -333,7 +346,8 @@ const skills = {
 							.chooseControl()
 							.set("choiceList", [`获得${get.translation(basic)}`, `摸${cards.length}张牌`])
 							.set("ai", () => {
-								if (get.event()[0].length == get.event()[1].length) return "选项一";
+								const cards=get.event().cardsx;
+								if (cards[0].length == cards[1].length) return "选项一";
 								return "选项二";
 							})
 							.set("cardsx", [basic, cards])
