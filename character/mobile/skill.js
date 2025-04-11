@@ -15,6 +15,7 @@ const skills = {
 				//新函数chooseButtonTarget第一次使用，用法跟chooseCardTarget类似
 				result = await player
 					.chooseButtonTarget({
+						canHidden: true,
 						createDialog: [
 							`###${get.prompt(event.skill)}###<div class="text center">从牌堆或弃牌堆中获得一张【闪】，或弃置一名角色区域内的一张牌</div>`,
 							[
@@ -564,9 +565,10 @@ const skills = {
 							const dialog = ui.create.dialog(`润微：选择一名角色令其获得其中一种颜色的牌`);
 							//添加显示牌的部分，该部分不可点击
 							dialog.addNewRow({ item: get.translation("black"), retio: 1 }, { item: black, ratio: 3 }, { item: get.translation("red"), retio: 1 }, { item: red, ratio: 3 });
+							//对移动端和PC端对话框高度分别做适配，加了addNewRow的默认高度有点高
 							dialog.css({
 								position: "absolute",
-								top: "45%",
+								top: get.is.phoneLayout() ? "35%" : "45%",
 							});
 							//正常添加按钮
 							dialog.add([
@@ -590,6 +592,7 @@ const skills = {
 								black: black,
 								red: red,
 								used: used,
+								canHidden: true,
 								filterButton(button) {
 									return get.event()[button.link].length;
 								},

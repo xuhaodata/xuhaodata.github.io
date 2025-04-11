@@ -27,6 +27,7 @@ const characters = {
 		sex: "female",
 		group: "shu",
 		hp: 3,
+		maxHp: 4,
 		skills: ["mbxuehen", "mbhuxiao", "mbwuji"],
 	},
 	pot_chendao: {
