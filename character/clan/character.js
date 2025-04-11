@@ -185,6 +185,13 @@ const characters = {
 		skills: ["clanjiewu", "clangaoshi", "clanquhuo"],
 		clans: ["弘农杨氏"],
 	},
+	clan_xunshuang: {
+		sex: "male",
+		group: "qun",
+		hp: 3,
+		skills: ["clanyangji", "clandandao", "clanqingli", "clandaojie"],
+		clans: ["颍川荀氏"],
+	},
 };
 
 export default characters;

@@ -1,5 +1,6 @@
 const characterSort = {
 	mobile_sp2: ["mb_sunluyu"],
+	mobile_sp3: ["mb_guanyinping"],
 	mobile_sp4: ["re_heqi"],
 	mobile_sp6: ["dongcheng", "re_weiwenzhugezhi"],
 	mobile_sp7: ["taoqian", "yangyi"],
@@ -17,7 +18,7 @@ const characterSort = {
 	mobile_xlqk4: ["nanhualaoxian", "shichangshi", "sunhanhua"],
 	mobile_xlqk5: ["mb_zhangfen"],
 	mobile_longxue: ["mb_simazhao", "mb_simafu", "mb_wenqin", "mb_simazhou", "mb_sp_guanqiujian", "mb_caomao", "chengji", "lizhaojiaobo", "mb_jiachong"],
-	mobile_bingshiPack: ["pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji", "mb_xiahoushang", "pangxi", "sunsháo", "mb_yanghong", "pot_chendao"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
+	mobile_bingshiPack: ["guoyuan", "mb_huangzu", "mb_tianfeng", "mb_luyusheng", "pot_taishici", "pot_dongzhao", "pot_lougui", "pot_yuji", "mb_xiahoushang", "pangxi", "sunsháo", "mb_yanghong", "pot_chendao"], //potential--潜在, 潜力, 可能, 电位, 潜能, 势
 	mobile_laoyouji: ["friend_zhugeliang", "friend_xushu", "friend_pangtong", "friend_cuijun", "friend_shitao"],
 	mobile_standard: ["xin_xiahoudun", "xin_zhangfei", "old_yuanshu"],
 	mobile_shenhua_feng: ["re_xiaoqiao", "xin_zhoutai"],
@@ -51,6 +52,7 @@ const characterSortTranslate = {
 	mobile_yijiang5: "手杀异构·将5",
 	mobile_yijiang7: "手杀异构·原7",
 	mobile_sp2: "SP·组2",
+	mobile_sp3: "SP·组3",
 	mobile_sp4: "SP·组4",
 	mobile_sp6: "SP·组6",
 	mobile_sp7: "SP·组7",
