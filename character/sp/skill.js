@@ -237,27 +237,28 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const cards = player.getExpansions("oljiyun");
-					event.result=await player
+					event.result = await player
 						.chooseBool()
-						.set("createDialog",[`###${get.prompt(event.skill)}###将任意张「集运」牌分配给至多等量角色`,cards])
-						.set('ai',()=>{
+						.set("createDialog", [`###${get.prompt(event.skill)}###将任意张「集运」牌分配给至多等量角色`, cards])
+						.set("ai", () => {
 							return true;
 						})
 						.forResult();
 				},
 				async content(event, trigger, player) {
 					if (_status.connectMode) game.broadcastAll(() => (_status.noclearcountdown = true));
-					const cards = player.getExpansions("oljiyun"),map={};
+					const cards = player.getExpansions("oljiyun"),
+						map = {};
 					while (cards.length) {
-						const result=await player
+						const result = await player
 							.chooseButtonTarget({
-								createDialog:[`集运：请选择要分配的牌和目标`,cards],
-								forced: Object.keys(map).length==0,
-								selectButton:[1,cards.length],
-								cardsx:cards,
-								filterTarget:true,
+								createDialog: [`集运：请选择要分配的牌和目标`, cards],
+								forced: Object.keys(map).length == 0,
+								selectButton: [1, cards.length],
+								cardsx: cards,
+								filterTarget: true,
 								ai1(button) {
-									if(get.event().cardsx.length<2) return false;
+									if (get.event().cardsx.length < 2) return false;
 									return !ui.selected.buttons.length && button.link.name == "du" ? 1 : 0;
 								},
 								ai2(target) {
@@ -268,13 +269,12 @@ const skills = {
 								},
 							})
 							.forResult();
-						if(result?.bool&&result.targets?.length&&result.links?.length){
+						if (result?.bool && result.targets?.length && result.links?.length) {
 							cards.removeArray(result.links);
 							const id = result.targets[0].playerid;
-                            if (!map[id]) map[id] = [];
-                            map[id].addArray(result.links);
-						}
-						else break;
+							if (!map[id]) map[id] = [];
+							map[id].addArray(result.links);
+						} else break;
 					}
 					if (_status.connectMode) {
 						game.broadcastAll(() => {
