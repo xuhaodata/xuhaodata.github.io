@@ -104,7 +104,7 @@ const skills = {
 				let cards = [];
 				trigger.player.checkHistory("lose", evt => {
 					if (evt.getParent() != trigger) return false;
-					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid].includes("oljiyun_effect") && !get.owner(card)));
+					cards.addArray(evt.cards.filter(card => evt.gaintag_map[card.cardid]?.includes("oljiyun_effect") && !get.owner(card)));
 				});
 				if (cards.length > 3 - player.getExpansions("oljiyun").length) {
 					const num = 3 - player.getExpansions("oljiyun").length;
@@ -237,78 +237,68 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const cards = player.getExpansions("oljiyun");
-					let map = {},
-						targetx = [],
-						exit = true;
-					if (_status.connectMode)
-						game.broadcastAll(function () {
-							_status.noclearcountdown = true;
-						});
-					do {
-						const str = exit ? `###${get.prompt("olshuliang")}###你可以将任意「粮」分配给至多等量角色` : `输粮：请选择要分配的牌或取消完成分配`;
-						const {
-							result: { bool, links },
-						} = await player.chooseCardButton(str, cards, [1, cards.length]).set("ai", button => {
-							if (ui.selected.buttons.length == 0) return 20 - get.value(button.link);
-							return 0;
-						});
-						if (!bool && exit) return;
-						else if (!bool && !exit) break;
-						exit = false;
-						cards.removeArray(links);
-						const togive = links.slice(0);
-						const {
-							result: { targets },
-						} = await player
-							.chooseTarget("选择一名角色获得" + get.translation(links), true)
-							.set("ai", target => {
-								const att = get.attitude(_status.event.player, target);
-								if (_status.event.enemy) {
-									return -att;
-								} else if (att > 0) {
-									return att / (1 + target.countCards("h"));
-								} else {
-									return att / 100;
-								}
+					event.result=await player
+						.chooseBool()
+						.set("createDialog",[`###${get.prompt(event.skill)}###将任意张「集运」牌分配给至多等量角色`,cards])
+						.set('ai',()=>{
+							return true;
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					if (_status.connectMode) game.broadcastAll(() => (_status.noclearcountdown = true));
+					const cards = player.getExpansions("oljiyun"),map={};
+					while (cards.length) {
+						const result=await player
+							.chooseButtonTarget({
+								createDialog:[`集运：请选择要分配的牌和目标`,cards],
+								forced: Object.keys(map).length==0,
+								selectButton:[1,cards.length],
+								cardsx:cards,
+								filterTarget:true,
+								ai1(button) {
+									if(get.event().cardsx.length<2) return false;
+									return !ui.selected.buttons.length && button.link.name == "du" ? 1 : 0;
+								},
+								ai2(target) {
+									const player = get.event().player;
+									const card = ui.selected.buttons[0].link;
+									if (card) return get.value(card, target) * get.attitude(player, target);
+									return 0;
+								},
 							})
-							.set("enemy", get.value(togive[0], player, "raw") < 0);
-						if (targets.length) {
-							targetx.addArray(targets);
-							const playerid = targets[0].playerid;
-							if (!map[playerid]) map[playerid] = [];
-							map[playerid].addArray(togive);
+							.forResult();
+						if(result?.bool&&result.targets?.length&&result.links?.length){
+							cards.removeArray(result.links);
+							const id = result.targets[0].playerid;
+                            if (!map[id]) map[id] = [];
+                            map[id].addArray(result.links);
 						}
-					} while (cards.length > 0);
+						else break;
+					}
 					if (_status.connectMode) {
-						game.broadcastAll(function () {
+						game.broadcastAll(() => {
 							delete _status.noclearcountdown;
 							game.stopCountChoose();
 						});
 					}
-					const list = [];
-					for (const i in map) {
-						const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
-						list.push([source, map[i]]);
+					if (Object.keys(map).length) {
+						const gain_list = [];
+						for (const i in map) {
+							const source = (_status.connectMode ? lib.playerOL : game.playerMap)[i];
+							player.line(source, "green");
+							gain_list.push([source, map[i]]);
+							game.log(source, "获得了", map[i]);
+						}
+						await game
+							.loseAsync({
+								gain_list: gain_list,
+								giver: player,
+								animate: "gain2",
+							})
+							.setContent("gaincardMultiple");
+						await player.draw(Object.keys(map).length);
 					}
-					event.result = {
-						bool: true,
-						targets: targetx,
-						cost_data: list,
-					};
-				},
-				async content(event, trigger, player) {
-					const list = event.cost_data;
-					const num = event.targets.length;
-					await game
-						.loseAsync({
-							gain_list: list,
-							player: player,
-							cards: list.map(i => i[1]).flat(),
-							giver: player,
-							animate: "gain2",
-						})
-						.setContent("gaincardMultiple");
-					await player.draw(num);
 				},
 			},
 		},
