@@ -4,6 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//国渊
 	mbqingdao: {
+		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
 			return event.player != player && get.tag(event.card, "damage") > 0.5 && event.targets.includes(player);
@@ -140,6 +141,9 @@ const skills = {
 		},
 	},
 	mbxiugeng: {
+		audio: 4,
+		logAudio: index => (typeof index === "number" ? "mbxiugeng" + index + ".mp3" : 2),
+		popup: false,
 		trigger: { player: "phaseBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -148,6 +152,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
+			player.logSkill("mbxiugeng", event.targets, null, null, [get.rand(1, 2)]);
 			for (const target of event.targets) {
 				target.removeSkill("mbxiugeng_effect");
 				target.storage["mbxiugeng_effect"] = target.countCards("h");
@@ -158,6 +163,7 @@ const skills = {
 			effect: {
 				charlotte: true,
 				forced: true,
+				popup: false,
 				init(player, skill) {
 					const storage = player.storage[skill];
 					if (storage >= 0) player.addTip(skill, `${get.translation(skill)} ${storage}`);
@@ -174,8 +180,9 @@ const skills = {
 				content() {
 					const record = player.storage[event.name];
 					if (record) {
+						player.logSkill("mbxiugeng", null, null, null, [player.countCards("h") >= record ? 4 : 3]);
 						if (player.countCards("h") >= record) {
-							player.addTempSkill("mbxiugeng_handcard");
+							player.addSkill("mbxiugeng_handcard");
 							player.addMark("mbxiugeng_handcard", 1, false);
 						} else player.drawTo(record);
 					}
@@ -183,6 +190,7 @@ const skills = {
 				},
 			},
 			handcard: {
+				markimage: "image/card/handcard.png",
 				charlotte: true,
 				onremove: true,
 				intro: {
@@ -198,6 +206,8 @@ const skills = {
 		},
 	},
 	mbchenshe: {
+		audio: 3,
+		logAudio: index => (typeof index === "number" ? "mbchenshe" + index + ".mp3" : 2),
 		trigger: { global: "dying" },
 		filter(event, player) {
 			return event.player != player && lib.skill.mbchenshe.logTarget(event, player).length;
@@ -224,6 +234,7 @@ const skills = {
 				if (result?.cards) cards.addArray(result.cards);
 			}
 			if (cards.length == 3 && cards.map(card => get.suit(card, false)).unique().length == 1) {
+				player.logSkill("mbchenshe", trigger.player, null, null, [3]);
 				await trigger.player.recoverTo(trigger.player.maxHp);
 				await player.removeSkills(event.name);
 			}
@@ -237,6 +248,7 @@ const skills = {
 			},
 		},
 		locked: false,
+		audio: 2,
 		trigger: { player: "useCardToPlayered" },
 		filter(event, player) {
 			return (
@@ -289,6 +301,8 @@ const skills = {
 		},
 	},
 	mbduanyang: {
+		audio: 3,
+		logAudio: index => (typeof index === "number" ? "mbduanyang" + index + ".mp3" : 2),
 		trigger: {
 			player: "loseAfter",
 			global: ["loseAsyncAfter", "equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter"],
@@ -312,6 +326,7 @@ const skills = {
 		group: ["mbduanyang_damage", "mbduanyang_use"],
 		subSkill: {
 			use: {
+				audio: ["mbduanyang1.mp3", "mbduanyang2.mp3"],
 				charlotte: true,
 				trigger: {
 					get global() {
@@ -332,6 +347,7 @@ const skills = {
 				},
 			},
 			damage: {
+				popup: false,
 				trigger: { source: "damageSource" },
 				filter(event, player) {
 					const target = event.player;
@@ -361,6 +377,7 @@ const skills = {
 							.set("cardsx", [basic, cards])
 							.forResult();
 					}
+					player.logSkill("mbduanyang", target, null, null, [3]);
 					if (result?.control == "选项一") {
 						await player.gain(basic, "gain2");
 					} else await player.draw(cards.length);
@@ -370,6 +387,8 @@ const skills = {
 	},
 	//手杀田丰
 	mbganggeng: {
+		audio: 4,
+		logAudio: index => (typeof index === "number" ? "mbganggeng" + index + ".mp3" : 2),
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
@@ -413,6 +432,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const targets = lib.skill[event.name].logTarget(trigger, player);
 					for (const target of targets) {
+						player.logSkill("mbganggeng", [target], null, null, [target.isMaxHandcard() ? 3 : 4]);
 						if (target.isMaxHandcard()) await player.draw();
 						else await player.discardPlayerCard(target, "hej", true);
 					}
@@ -429,6 +449,7 @@ const skills = {
 		},
 	},
 	mbsijian: {
+		audio: 2,
 		trigger: {
 			player: ["loseAfter", "dying"],
 			global: ["loseAsyncAfter", "equipAfter", "addJudgeAfter", "gainAfter", "addToExpansionAfter"],
@@ -523,7 +544,8 @@ const skills = {
 	},
 	//手杀陆郁生
 	mbrunwei: {
-		audio: 2,
+		audio: 4,
+		logAudio: index => (typeof index === "number" ? "mbrunwei" + index + ".mp3" : 2),
 		enable: "phaseUse",
 		usable: 1,
 		chooseButton: {
@@ -538,7 +560,6 @@ const skills = {
 			},
 			backup(result, player) {
 				return {
-					audio: "mbrunwei",
 					num: result.control,
 					log: false,
 					delay: false,
@@ -546,7 +567,7 @@ const skills = {
 						const num = lib.skill.mbrunwei_backup.num,
 							skill = "mbrunwei";
 						const cards = get.cards(num, true);
-						player.logSkill(skill);
+						player.logSkill("mbrunwei", null, null, null, [get.rand(1, 2)]);
 						await player.showCards(cards, `${get.translation(player)}发动了〖${get.translation(skill)}〗`);
 						const used = player.hasHistory("useSkill", evt => evt.skill == skill && evt.event.getParent("phaseUse") == event.getParent("phaseUse") && evt.event != event);
 						if (
@@ -624,6 +645,7 @@ const skills = {
 									.then(() => {
 										const cards = player.getCards("h", card => card.hasGaintag("mbrunwei"));
 										if (cards.length) {
+											player.logSkill("mbrunwei", null, null, null, [4]);
 											player.modedDiscard(cards).set("discarder", player);
 										}
 									});
@@ -671,6 +693,7 @@ const skills = {
 				content() {
 					const num = trigger.getl(player)?.cards2?.length;
 					if (num >= player.countMark(event.name)) {
+						player.logSkill("mbrunwei", null, null, null, [3]);
 						player.removeSkill(event.name);
 						delete player.getStat().skill.mbrunwei;
 						game.log(player, "的", `#g〖${get.translation(event.name)}〗`, `视为未发动过`);
@@ -683,6 +706,8 @@ const skills = {
 		},
 	},
 	mbshuanghuai: {
+		audio: 3,
+		logAudio: index => (typeof index === "number" ? "mbshuanghuai" + index + ".mp3" : 2),
 		init(player, skill) {
 			const history = player.getAllHistory("useSkill", evt => evt.skill == skill && evt.targets);
 			if (history.length) {
@@ -703,6 +728,7 @@ const skills = {
 		filter(event, player) {
 			return get.distance(player, event.player) <= 1;
 		},
+		popup: false,
 		logTarget: "player",
 		async cost(event, trigger, player) {
 			const result = await player
@@ -742,6 +768,7 @@ const skills = {
 			const link = event.cost_data,
 				target = trigger.player,
 				last = player.storage[event.name];
+			player.logSkill("mbshuanghuai", target, null, null, [last && last != target ? 1 : get.rand(2, 3)]);
 			if (link == "cancel") trigger.cancel();
 			else {
 				const card = get.discardPile("tao");
