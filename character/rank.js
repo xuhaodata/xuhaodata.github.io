@@ -2015,6 +2015,7 @@ window.noname_character_rank = {
 		"jsrg_hejin",
 	],
 	c: [
+		"yj_chezhou",
 		"zhugejing",
 		"luyi",
 		"jsrg_pangtong",

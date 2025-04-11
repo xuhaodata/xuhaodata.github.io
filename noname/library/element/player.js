@@ -5239,6 +5239,7 @@ export class Player extends HTMLDivElement {
 				return 1;
 			};
 		if (next.ai2 == undefined) next.ai2 = get.attitude2;
+		if (next.canHidden == undefined) next.canHidden = true;
 		next.setContent("chooseButtonTarget");
 		next._args = Array.from(arguments);
 		return next;

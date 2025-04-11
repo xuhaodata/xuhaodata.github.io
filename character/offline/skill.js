@@ -2,6 +2,69 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	// 车胄
+	// 沟槽的秘密指定还在追我
+	psanmou: {
+		trigger: {
+			player: "enterGame",
+			global: "phaseBefore",
+		},
+		forced: true,
+		filter(event, player) {
+			return (event.name != "phase" || game.phaseNumber == 0) && game.hasPlayer(target => target != player);
+		},
+		async content(event, trigger, player) {
+			const result = await player
+				.chooseTarget(`暗谋：请暗中指定一名其他角色，然后你与其互相对对方使用牌无次数限制`, true, lib.filter.notMe)
+				.set("ai", target => -get.attitude(get.player(), target))
+				.set("animate", false)
+				.forResult();
+			if (result?.targets) {
+				const target = result.targets[0],
+					skill = event.name + "_effect";
+				player.addSkill(skill);
+				//我自己选的我自己会不知道？(doge)
+				const func = (player, target, skill) => {
+					if (!player.storage[skill]) player.storage[skill] = [];
+					player.storage[skill].add(target);
+					player.storage[skill].sortBySeat();
+					player.markSkill(skill, null, null, true);
+				};
+				if (event.isMine()) func(player, target, skill);
+				else if (player.isOnline2()) player.send(func, player, target);
+				target.addSkill(skill);
+				target.markAuto(skill, [player]);
+			}
+		},
+		subSkill: {
+			effect: {
+				charlotte: true,
+				onremove: true,
+				intro: {
+					content: "players",
+				},
+				mod: {
+					cardUsableTarget(card, player, target) {
+						if (player.getStorage("psanmou_effect").includes(target)) return Infinity;
+					},
+				},
+			},
+		},
+	},
+	pstousuan: {
+		trigger: { global: "damageBegin1" },
+		filter(event, player) {
+			const skill = "psanmou_effect";
+			if (event.source != player && event.player != player) return false;
+			return event.source.getStorage(skill).includes(event.player) && !event.source.getRoundHistory("sourceDamage", evt => evt.player == player).length;
+		},
+		forced: true,
+		async content(event, trigger, player) {
+			trigger.num++;
+			await player.draw(3);
+			await player.removeSkills(event.name);
+		},
+	},
 	// 雍闿
 	// 你也有xiaofan？
 	psxiaofan: {

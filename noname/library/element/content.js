@@ -6134,7 +6134,7 @@ export const Content = {
 		}
 		if (event.dialog) event.dialog.close();
 	},
-	//先选择按钮再选择目标的函数，可以简化一些交互流程，目前不推荐用于视为使用卡牌（对话框有可能太大阻挡选择目标）
+	//先选择按钮再选择目标的函数，可以简化一些交互流程，目前可以隐藏弹窗
 	//该事件目前采用async contents的写法
 	chooseButtonTarget: [
 		async (event, _trigger, player) => {

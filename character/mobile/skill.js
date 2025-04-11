@@ -15,7 +15,6 @@ const skills = {
 				//新函数chooseButtonTarget第一次使用，用法跟chooseCardTarget类似
 				result = await player
 					.chooseButtonTarget({
-						canHidden: true,
 						createDialog: [
 							`###${get.prompt(event.skill)}###<div class="text center">从牌堆或弃牌堆中获得一张【闪】，或弃置一名角色区域内的一张牌</div>`,
 							[
@@ -592,7 +591,6 @@ const skills = {
 								black: black,
 								red: red,
 								used: used,
-								canHidden: true,
 								filterButton(button) {
 									return get.event()[button.link].length;
 								},

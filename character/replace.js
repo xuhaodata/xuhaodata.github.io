@@ -403,4 +403,5 @@ window.noname_character_replace = {
 	zhoufang: ["zhoufang", "std_zhoufang"],
 	yangfu: ["ol_yangfu", "yangfu"],
 	xiahouxuan: ["xiahouxuan", "dc_xiahouxuan"],
+	chezhou: ["chezhou", "yj_chezhou"],
 };
