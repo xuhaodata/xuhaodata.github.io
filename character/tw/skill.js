@@ -10,7 +10,7 @@ const skills = {
 			return name === "tao" && player.countCards("h") > 0 && !player.hasSkillTag("noCompareSource");
 		},
 		filter(event, player) {
-			if (event.twfushu) return false; // || event.name != "chooseToUse"
+			if (event.twfushu) return false;
 			return event.filterCard({ name: "tao", isCard: true }, player, event) && player.countCards("h") && !player.hasSkillTag("noCompareSource");
 		},
 		filterCard: () => true,
@@ -272,7 +272,8 @@ const skills = {
 			return true;
 		},
 		async cost(event, trigger, player) {
-			const targetprompt = Math.random() > 0.1 ? ["代替", "被代替"] : ["替罪羊", "躺赢狗"];
+			const targetprompt = Math.random() > 0.25 ? ["代替", "被代替"] : ["替罪羊", "躺赢狗"];
+			if (targetprompt[1] == "躺赢狗") trigger.set("twhuiyu_tyg", true);
 			event.result = await player
 				.chooseTarget(get.prompt2("twhuiyu"), 2)
 				.set("ai", target => {
@@ -295,12 +296,18 @@ const skills = {
 			//出现放权回合可能会重复指定，干脆直接覆盖掉原来的
 			if (target.storage[skill]) delete target.storage[skill];
 			target.markAuto(skill, [source]);
+			target.addTip(skill, get.translation(skill) + " " + get.translation(source));
+			if (trigger.twhuiyu_tyg) player.chat(`${get.translation(target)}的评分是3.0，躺赢狗！`);
 		},
 		subSkill: {
 			effect: {
 				charlotte: true,
-				onremove: true,
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
 				intro: {
+					markcount: () => 0,
 					content: "你出牌阶段的替罪羊为：$",
 				},
 				trigger: {
@@ -308,8 +315,7 @@ const skills = {
 				},
 				logTarget(event, player) {
 					const source = game.findPlayer(target => player.getStorage("twhuiyu_effect").includes(target));
-					if (source) return source;
-					return null;
+					return source;
 				},
 				forced: true,
 				filter(event, player) {
@@ -339,20 +345,20 @@ const skills = {
 		logTarget: "player",
 		async content(event, trigger, player) {
 			const target = trigger.player;
-			await target.showHandcards();
+			await player.showCards(target.getCards("h"), `${get.translation(player)}发动了〖${get.translation(event.name)}〗`);
 			if (target.countDiscardableCards(player, "h") > 0) {
-				await player.discardPlayerCard(target, "h", true);
+				await player.discardPlayerCard(target, "h", true, "visible");
 			}
-			//淩越还不知道什么意思，就干脆先当常驻效果了
 			const targets = player
 				.getAllHistory("useSkill", evt => evt.skill == "twhuiyu")
 				.reduce((list, evt) => {
-					return list.addArray(evt.targets);
+					return list.add(evt.targets[0]);
 				}, [])
 				.filter(targetx => {
-					return target.countGainableCards(targetx, "h") > 0;
+					return targetx.isIn() && target.countGainableCards(targetx, "h") > 0;
 				});
-			if (targets.length) {
+			if (targets.length && player.hp > target.hp) {
+				//淩越·体力
 				const result = await player
 					.chooseTarget(`狈行：你可令一名角色获得${get.translation(target)}的一张手牌`, (card, player, target) => {
 						return get.event().targets.includes(target) && target != get.event().sourcex;
@@ -365,7 +371,7 @@ const skills = {
 					.forResult();
 				const gainer = result.targets[0];
 				player.line(gainer);
-				await gainer.gainPlayerCard(target, "h", true);
+				await gainer.gainPlayerCard(target, "h", true, "visible");
 			}
 		},
 	},
