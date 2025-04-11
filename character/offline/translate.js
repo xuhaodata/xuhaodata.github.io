@@ -1085,6 +1085,11 @@ const translates = {
 	psquanpan_info: "吴势力技，当你获得装备牌后，你可以展示其中一张牌并交给一名其他角色。",
 	pshuoluan: "惑乱",
 	pshuoluan_info: "群势力技，锁定技。你与蜀势力角色互相对对方造成的伤害+1。",
+	yj_chezhou: "车胄",
+	psanmou: "暗谋",
+	psanmou_info: "锁定技，游戏开始时，你暗中指定一名其他角色，你与其互相对对方使用牌无次数限制。",
+	pstousuan: "偷算",
+	pstousuan_info: "锁定技，若你/“暗谋”角色于本轮游戏中首次对其/对你造成伤害时，令此伤害+1并摸三张牌，然后失去“偷算”。",
 };
 
 export default translates;

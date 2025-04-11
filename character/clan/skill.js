@@ -2,6 +2,77 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//族荀爽 —— by 刘巴
+	clanyangji: {
+		trigger: {
+			player: "phaseZhunbeiBegin",
+			global: "phaseEnd",
+		},
+		filter(event, player) {
+			if (event.name === "phase" && !game.hasGlobalHistory("changeHp", evt => evt.player === player && evt.num !== 0)) return false;
+			return player.countCards("h");
+		},
+		async content(event, trigger, player) {
+			let cards = player.getCards("h"),
+				goon = () => !player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && cards.some(c => player.hasCard(a => a === c, "h") && player.hasUseTarget(c, null, false) && get.color(c, player) === "black");
+			await player.showCards(cards, `${get.translation(player)}发动了〖佯疾〗`);
+			while (goon()) {
+				const result = await player
+					.chooseToUse(function (card, player, event) {
+						return cards.includes(card) && get.color(card, player) === "black" && lib.filter.filterCard.apply(this, arguments);
+					}, "佯疾：请使用一张黑色牌")
+					.set("forced", true)
+					.set("addCount", false)
+					.forResult();
+				if (!goon()) {
+					const card = result.cards[0],
+						target = _status.currentPhase;
+					if (card && get.suit(card, player) == "spade" && !get.owner(card) && target.canAddJudge(get.autoViewAs({ name: "lebu" }, card))) {
+						await target.addJudge({ name: "lebu" }, card);
+					}
+				}
+			}
+		},
+	},
+	clandandao: {
+		trigger: {
+			player: "judgeAfter",
+		},
+		forced: true,
+		content() {
+			const target = _status.currentPhase;
+			target.addTempSkill(event.name + "_add");
+			target.addMark(event.name + "_add", 3, false);
+		},
+		subSkill: {
+			add: {
+				charlotte: true,
+				onremove: true,
+				markimage: "image/card/handcard.png",
+				intro: {
+					content: "手牌上限+#",
+				},
+				mod: {
+					maxHandcard(player, num) {
+						return num + player.countMark("clandandao_add");
+					},
+				},
+			},
+		},
+	},
+	clanqingli: {
+		trigger: {
+			global: "phaseEnd",
+		},
+		forced: true,
+		filter(event, player) {
+			return player.countCards("h") < player.getHandcardLimit();
+		},
+		async content(event, trigger, player) {
+			const num = Math.min(player.getHandcardLimit() - player.countCards("h"), 5);
+			if (num > 0) await player.draw(num);
+		},
+	},
 	//族杨修 —— by 刘巴
 	clanjiewu: {
 		audio: 2,
@@ -35,7 +106,7 @@ const skills = {
 				trigger: {
 					player: "useCardToPlayered",
 				},
-				filter: (event, player) => event.isFirstTarget,
+				filter: (event, player) => event.isFirstTarget && event.targets.some(target => target != player),
 				async cost(event, trigger, player) {
 					event.result = await player
 						.chooseTarget(get.prompt("clanjiewu"), "选择一名「捷悟」角色展示其一张手牌")
@@ -102,27 +173,76 @@ const skills = {
 			const num = player.getHistory("useSkill", evt => {
 				return ["clanjiewu", "clanjiewu_effect"].includes(evt.skill);
 			}).length;
-			const names = player.getHistory("useCard", evt => evt.isPhaseUsing()).map(evt => evt.card.name);
-			let cards = get.cards(num);
-			await game.cardsGotoOrdering(cards);
-			await player.showCards(cards, `${get.translation(player)}发动了〖高视〗`);
-			//game.log(player, "亮出了牌堆顶的", cards);
+			const names = player.getHistory("useCard").map(evt => evt.card.name),
+				cards = [];
+			event.forceDie = true;
+			event.includeOut = true;
+			while (cards.length < num) {
+				//周群亮出的写法
+				const judgestr = get.translation(player) + "展示的第" + get.cnNumber(cards.length + 1, true) + "张【高视】牌";
+				event.videoId = lib.status.videoId++;
+				const card = get.cards()[0];
+				cards.add(card);
+				await game.cardsGotoOrdering(card);
+				game.addVideo("judge1", player, [get.cardInfo(card), judgestr, event.videoId]);
+				game.broadcastAll(
+					function (player, card, str, id, cardid) {
+						let event;
+						if (game.online) {
+							event = {};
+						} else {
+							event = _status.event;
+						}
+						if (game.chess) {
+							event.node = card.copy("thrown", "center", ui.arena).addTempClass("start");
+						} else {
+							event.node = player.$throwordered(card.copy(), true);
+						}
+						if (lib.cardOL) lib.cardOL[cardid] = event.node;
+						event.node.cardid = cardid;
+						event.node.classList.add("thrownhighlight");
+						ui.arena.classList.add("thrownhighlight");
+						event.dialog = ui.create.dialog(str);
+						event.dialog.classList.add("center");
+						event.dialog.videoId = id;
+					},
+					player,
+					card,
+					judgestr,
+					event.videoId,
+					get.id()
+				);
+				game.log(player, "展示了牌堆顶的", card);
+				game.delay(2);
+				game.broadcastAll(function (id) {
+					var dialog = get.idDialog(id);
+					if (dialog) {
+						dialog.close();
+					}
+					ui.arena.classList.remove("thrownhighlight");
+				}, event.videoId);
+				game.addVideo("judge2", null, event.videoId);
+				if (names.includes(card.name)) break;
+			}
+			game.broadcastAll(function () {
+				ui.clear();
+			});
+			if (!cards.length) return;
 			while (cards.some(card => player.hasUseTarget(card))) {
 				const links = await player
 					.chooseButton([`高视：是否使用其中一张牌？`, cards])
 					.set("filterButton", button => {
 						const player = get.player(),
 							card = button.link;
-						return player.hasUseTarget(card) && !get.event().names.includes(card.name);
+						return player.hasUseTarget(card);
 					})
-					.set("names", names)
 					.set("ai", button => {
 						return get.player().getUseValue(button.link);
 					})
 					.forResultLinks();
 				if (!links?.length) break;
 				cards.remove(links[0]);
-				player.$gain(links[0], false);
+				player.$gain2(links[0], false);
 				await player.chooseUseTarget(links[0], true, false);
 			}
 			if (!cards.length) await player.draw(2);
@@ -162,10 +282,10 @@ const skills = {
 			} else {
 				const card = get.cards(1, true)[0];
 				await player.showCards([card]);
-				if (get.suit(card) == get.suit(trigger.card) || get.type2(card) == get.type2(trigger.card)) {
+				if (get.color(card) == get.color(trigger.card) || get.type2(card) == get.type2(trigger.card)) {
 					await player.gain(card, "gain2");
 				} else {
-					if (!player.countCards("h")) return;
+					if (!player.countCards("he")) return;
 					const result = await player.chooseCard(`切议：将一张牌置于牌堆顶`, "he", true).forResult();
 					const card = result.cards[0];
 					player.$throw(get.position(card) == "h" ? 1 : card, 1000);

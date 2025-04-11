@@ -105,6 +105,7 @@ window.noname_character_rank = {
 		"diy_zhangfei",
 	],
 	a: [
+		"dc_xiahouxuan",
 		"yangbiao",
 		"hm_shen_zhangjiao",
 		"hm_shen_zhangbao",
@@ -362,6 +363,8 @@ window.noname_character_rank = {
 		"shen_jiaxu",
 	],
 	am: [
+		"ol_sb_luzhi",
+		"clan_xunshuang",
 		"shen_ganning",
 		"chunyuqiong",
 		"caojinyu",
@@ -638,6 +641,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
+		"ol_madai",
 		"shen_zhaoyun",
 		"wanglang",
 		"sunlingluan",
@@ -1213,6 +1217,8 @@ window.noname_character_rank = {
 		"ol_maliang",
 	],
 	b: [
+		"ol_yangfu",
+		"ol_lifeng",
 		"sp_sunce",
 		"re_liuzan",
 		"sb_machao",
@@ -1724,6 +1730,11 @@ window.noname_character_rank = {
 		"old_majun",
 	],
 	bm: [
+		"guoyuan",
+		"mb_huangzu",
+		"mb_luyusheng",
+		"mb_guanyinping",
+		"mb_tianfeng",
 		"dc_zhaoxiang",
 		"xia_guanyu",
 		"caoxian",
@@ -2004,6 +2015,7 @@ window.noname_character_rank = {
 		"jsrg_hejin",
 	],
 	c: [
+		"yj_chezhou",
 		"zhugejing",
 		"luyi",
 		"jsrg_pangtong",
@@ -2588,6 +2600,8 @@ window.noname_character_rank = {
 			"diy_zhangfei",
 		],
 		epic: [
+			"ol_sb_luzhi",
+			"dc_xiahouxuan",
 			"pot_taishici",
 			"dc_caocao",
 			"dc_liubei",
@@ -3068,6 +3082,15 @@ window.noname_character_rank = {
 			"junk_liuyan",
 		],
 		rare: [
+			"ol_madai",
+			"guoyuan",
+			"mb_huangzu",
+			"mb_luyusheng",
+			"mb_guanyinping",
+			"mb_tianfeng",
+			"clan_xunshuang",
+			"ol_yangfu",
+			"ol_lifeng",
 			"tw_sb_sp_zhugeliang",
 			"sp_sunce",
 			"dc_zhaoyun",
