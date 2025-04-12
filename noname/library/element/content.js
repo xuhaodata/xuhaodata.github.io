@@ -6530,20 +6530,23 @@ export const Content = {
 	choosePlayerCard: function () {
 		"step 0";
 		if (!event.dialog) event.dialog = ui.create.dialog("hidden");
-		else if (!event.isMine()) {
-			event.dialog.style.display = "none";
+		else if (!event.isMine()) event.dialog.style.display = "none";
+		const select = get.select(event.selectButton);
+		if (event.prompt == undefined) {
+			let str = "请选择" + get.translation(target) + "的";
+			if (select[0] == select[1]) str += get.cnNumber(select[0]);
+			else if (select[1] == Infinity) str += "至少" + get.cnNumber(select[0]);
+			else str += get.cnNumber(select[0]) + "至" + get.cnNumber(select[1]);
+			str += "张";
+			if (event.position == "h" || event.position == undefined) str += "手";
+			if (event.position == "e") str += "装备";
+			str += "牌";
+			event.prompt = str;
 		}
-		if (event.prompt) {
-			event.dialog.add(event.prompt);
-		} else {
-			event.dialog.add("选择" + get.translation(target) + "的一张牌");
-		}
-		if (event.prompt2) {
-			event.dialog.addText(event.prompt2);
-		}
+		event.dialog.add(event.prompt);
+		if (event.prompt2) event.dialog.addText(event.prompt2);
 		let expand_length = 0;
 		const cs = target.getCards(event.position);
-		const select = get.select(event.selectButton);
 		const directFilter = event.forced && typeof event.filterOk != "function" && typeof event.selectButton != "function" && event.filterButton == lib.filter.all;
 		let directh = !lib.config.unauto_choose && !event.isOnline() && select[0] == select[1] && (!event.complexSelect || select[1] === 1);
 
