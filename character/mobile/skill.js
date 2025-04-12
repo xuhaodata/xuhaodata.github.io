@@ -889,8 +889,8 @@ const skills = {
 							}
 						}
 						if (choice != "damage") player.addTempSkill("mbhuxiao_effect");
-						if (choice == "both" && player.countDiscardableCards(player, "h", card => get.color(card, player) == "red")) {
-							await player.chooseToDiscard(`虎啸：请弃置一张红色牌`, true, card => get.color(card, player) == "red");
+						if (choice == "both" && player.countDiscardableCards(player, "h", (card, player) => get.color(card, player) == "red")) {
+							await player.chooseToDiscard(`虎啸：请弃置一张红色牌`, true, (card, player) => get.color(card, player) == "red");
 						}
 					},
 				};

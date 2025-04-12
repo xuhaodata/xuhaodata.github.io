@@ -195,20 +195,23 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.drawTo(player.maxHp);
 			player.addTempSkill(event.name + "_damage");
+			player.addMark(event.name + "_damage", 1, false);
 		},
 		subSkill: {
 			damage: {
 				audio: "olliance",
 				charlotte: true,
 				forced: true,
+				forceDie: true,
+				onremove: true,
 				trigger: { global: "damageBegin1" },
 				content() {
-					trigger.num++;
+					trigger.num += player.countMark(event.name);
 					player.removeSkill(event.name);
 				},
 				mark: true,
 				intro: {
-					content: "本回合下一次有角色造成的伤害+1",
+					content: "本回合下一次有角色造成的伤害+#",
 				},
 			},
 		},
@@ -220,6 +223,9 @@ const skills = {
 		global: ["olfuhun_block"],
 		group: ["olfuhun_effect", "olfuhun_mark"],
 		prompt: "将两张牌当杀使用或打出",
+		viewAsFilter(player) {
+			return player.countCards("hes") > 1;
+		},
 		subSkill: {
 			effect: {
 				audio: 2,
