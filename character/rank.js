@@ -4145,6 +4145,7 @@ window.noname_character_rank = {
 			"ns_caimao",
 		],
 		junk: [
+			"yj_chezhou",
 			"tw_sb_caopi",
 			"zhugejing",
 			"xia_guanyu",

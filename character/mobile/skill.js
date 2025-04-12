@@ -548,7 +548,7 @@ const skills = {
 						const cards = get.cards(num, true);
 						player.logSkill(skill);
 						await player.showCards(cards, `${get.translation(player)}发动了〖${get.translation(skill)}〗`);
-						const used = player.hasHistory("useSkill", evt => evt.skill == skill && evt.event.getParent("phaseUse") == event.getParent("phaseUse") && evt.event != event);
+						const used = player.getHistory("useSkill", evt => evt.skill == skill && evt.event.getParent("phaseUse") == event.getParent("phaseUse")).length > 1;
 						if (
 							used &&
 							!game.hasPlayer(target => {
@@ -580,10 +580,9 @@ const skills = {
 							dialog.videoId = id;
 							return dialog;
 						};
-						if (player == game.me) func(event.videoId, red, black);
-						else if (player.isOnline2()) {
+						if (player.isOnline2()) {
 							player.send(func, event.videoId, red, black);
-						}
+						} else func(event.videoId, red, black);
 						const result = await player
 							.chooseButtonTarget({
 								dialog: event.videoId,
@@ -635,7 +634,7 @@ const skills = {
 			},
 		},
 		ai: {
-			order: 7,
+			order: 10,
 			result: {
 				player(player) {
 					const used = player.hasHistory("useSkill", evt => evt.skill == "mbrunwei" && evt.event.getParent("phaseUse") == get.event().getParent("phaseUse")); //
@@ -766,7 +765,7 @@ const skills = {
 			player: "damageEnd",
 		},
 		filter(event, player, name) {
-			if (!player.isDamaged()) return false;
+			if (!player.isDamaged() || !player.countCards("h")) return false;
 			if (name == "damageSource") return player.getHistory("sourceDamage", evt => evt.num > 0).indexOf(event) == 0;
 			if (name == "damageEnd") return player.getHistory("damage", evt => evt.num > 0).indexOf(event) == 0;
 			return false;
@@ -775,15 +774,15 @@ const skills = {
 			const str = `###${get.prompt(event.skill)}###${lib.dynamicTranslate[event.skill](player)}`;
 			event.result = await player
 				.chooseCard(str, [1, player.getDamagedHp()])
-				.set("ai", card => 7 - get.value(card))
+				.set("ai", card => (card.hasGaintag("mbxuehen_sha") ? 0 : 7 - get.value(card)))
 				.forResult();
 		},
 		async content(event, trigger, player) {
 			const cards = event.cards;
 			await player.showCards(cards, `${get.translation(player)}发动了〖雪恨〗`);
 			player.addGaintag(cards, "mbxuehen_sha");
-			player.addSkill("mbxuehen_sha");
 		},
+		group: ["mbxuehen_sha"],
 		subSkill: {
 			rewrite: {
 				charlotte: true,
@@ -838,7 +837,7 @@ const skills = {
 						if (name == "useCardAfter") {
 							player.draw();
 						}
-					} else player.removeSkill(event.name);
+					} else player.removeGaintag(event.name);
 				},
 			},
 		},

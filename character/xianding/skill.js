@@ -8758,16 +8758,6 @@ const skills = {
 			);
 			var blackOnes = cards.filter(i => get.color(i, false) == "black");
 			if (!blackOnes.length) return event.finish();
-			event.videoId = lib.status.videoId++;
-			var func = (cards, id) => {
-				var dialog = ui.create.dialog("硝引：剩余的黑色牌", `<div class="text center">请选择至多${get.cnNumber(cards.length)}名座次连续的其他角色，然后将以下这些牌置于这些角色的武将牌上。</div>`, cards);
-				dialog.videoId = id;
-				return dialog;
-			};
-			if (player == game.me) func(blackOnes, event.videoId);
-			else if (player.isOnline2()) {
-				player.send(func, blackOnes, event.videoId);
-			}
 			var targets = game.filterPlayer(current => current != player);
 			if (targets.length == 1) var result = { bool: true, targets: targets };
 			else
@@ -8816,26 +8806,15 @@ const skills = {
 							return aiTargets;
 						})()
 					)
-					.set("prompt", false);
+					.set("createDialog", [`###硝引：剩余的黑色牌###<div class="text center">请选择至多${get.cnNumber(blackOnes.length)}名座次连续的其他角色，然后将以下这些牌置于这些角色的武将牌上。</div>`, blackOnes]);
 			if (!result.bool) {
 				event.finish();
 				return;
 			}
-			var func = (num, id) => {
-				var dialog = get.idDialog(id);
-				if (dialog) dialog.content.childNodes[1].innerHTML = `<div class="text center">将${get.cnNumber(num)}张黑色牌按照选择的角色的座次顺序置于这些角色武将牌上</div>`;
-			};
 			var targets = result.targets.slice().sortBySeat(player);
 			var num = targets.length;
-			if (player == game.me) func(num, event.videoId);
-			else if (player.isOnline2()) player.send(func, num, event.videoId);
 			if (blackOnes.length == 1) var result = { bool: true, links: blackOnes };
-			else
-				var result = yield player
-					.chooseButton(true, num)
-					.set("dialog", event.videoId)
-					.set("ai", () => 1);
-			game.broadcastAll("closeDialog", event.videoId);
+			else var result = yield player.chooseCardButton(`###硝引：剩余的黑色牌###<div class="text center">将${get.cnNumber(num)}张黑色牌按照选择的角色的座次顺序置于这些角色武将牌上</div>`, blackOnes, true, num).set("ai", () => 1);
 			if (result.bool) {
 				var cards = result.links;
 				player.line(targets);

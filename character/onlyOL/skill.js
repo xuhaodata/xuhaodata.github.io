@@ -103,6 +103,7 @@ const skills = {
 					},
 				},
 				intro: {
+					markcount: () => 0,
 					content(storage) {
 						return "不能使用或打出" + get.translation(storage) + "的手牌";
 					},
