@@ -143,7 +143,6 @@ const skills = {
 	mbxiugeng: {
 		audio: 4,
 		logAudio: index => (typeof index === "number" ? "mbxiugeng" + index + ".mp3" : 2),
-		popup: false,
 		trigger: { player: "phaseBegin" },
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -152,7 +151,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			player.logSkill("mbxiugeng", event.targets, null, null, [get.rand(1, 2)]);
+			player.line(event.targets);
 			for (const target of event.targets) {
 				target.removeSkill("mbxiugeng_effect");
 				target.storage["mbxiugeng_effect"] = target.countCards("h");
