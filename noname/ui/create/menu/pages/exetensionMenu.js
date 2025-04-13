@@ -996,7 +996,7 @@ export const extensionMenu = function (connectMenu) {
 					}
 				}
 				for (var i = 0; i < skills.length; i++) {
-					if (lib.skill[skills[i]] && lib.translate[skills[i]]) list2.push([skills[i], lib.translate[skills[i]]]);
+					if (lib.skill[skills[i]] && !lib.skill[skills[i]].sub && lib.translate[skills[i]]) list2.push([skills[i], lib.translate[skills[i]]]);
 				}
 				list.unshift(["current_extension", "此扩展"]);
 
@@ -1020,7 +1020,7 @@ export const extensionMenu = function (connectMenu) {
 							}
 						}
 						for (var i = 0; i < skills.length; i++) {
-							if (lib.skill[skills[i]] && lib.translate[skills[i]]) {
+							if (lib.skill[skills[i]] && !lib.skill[skills[i]].sub && lib.translate[skills[i]]) {
 								var option = document.createElement("option");
 								option.value = skills[i];
 								option.innerHTML = lib.translate[skills[i]];

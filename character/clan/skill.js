@@ -1617,11 +1617,19 @@ const skills = {
 				charlotte: true,
 				init(player) {
 					const storage = player.storage.clanbaichu || {};
+					//移除已经记录的新组合标记
+					const cards_old = player.getCards("h", card => {
+						const suit = get.suit(card, false);
+						return (suit === "none" || `${suit}+${get.type2(card, false)}` in storage) && card.hasGaintag("clanbaichu_new");
+					});
+					if (cards_old.length) player.removeGaintag("clanbaichu_new", cards_old);
+					//添加未曾记录的新组合标记
 					const cards_new = player.getCards("h", card => {
 						const suit = get.suit(card, false);
 						return suit !== "none" && !(`${suit}+${get.type2(card, false)}` in storage) && !card.hasGaintag("clanbaichu_new");
 					});
 					if (cards_new.length) player.addGaintag(cards_new, "clanbaichu_new");
+					//添加记录锦囊的已记录标记
 					const cards_trick = player.getCards("h", card => Object.values(storage).includes(get.name(card, false)) && !card.hasGaintag("clanbaichu_trick"));
 					if (cards_trick.length) player.addGaintag(cards_trick, "clanbaichu_trick");
 				},
@@ -1638,9 +1646,10 @@ const skills = {
 					const storage = player.storage.clanbaichu || {};
 					return player.hasCard(card => {
 						const suit = get.suit(card, false);
+						const old = (suit === "none" || `${suit}+${get.type2(card, false)}` in storage) && card.hasGaintag("clanbaichu_new");
 						const newx = suit !== "none" && !(`${suit}+${get.type2(card, false)}` in storage) && !card.hasGaintag("clanbaichu_new");
 						const load = Object.values(storage).includes(get.name(card, false)) && !card.hasGaintag("clanbaichu_trick");
-						return newx || load;
+						return old || newx || load;
 					}, "h");
 				},
 				silent: true,
