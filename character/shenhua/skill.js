@@ -750,20 +750,20 @@ const skills = {
 			},
 		},
 	},
-	drlt_zhenggu: {
+	drlt_zhengu: {
 		audio: 2,
 		trigger: {
 			player: "phaseJieshuBegin",
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseTarget(get.prompt2("drlt_zhenggu"), function (card, player, target) {
-					//if(target.storage.drlt_zhenggu_mark&&target.storage.drlt_zhenggu_mark.includes(player)) return false;
+				.chooseTarget(get.prompt2("drlt_zhengu"), function (card, player, target) {
+					//if(target.storage.drlt_zhengu_mark&&target.storage.drlt_zhengu_mark.includes(player)) return false;
 					return target != player;
 				})
 				.set("ai", function (target) {
 					const player = _status.event.player;
-					//if(target.storage.drlt_zhenggu_mark&&target.storage.drlt_zhenggu_mark.includes(player)) return 0;
+					//if(target.storage.drlt_zhengu_mark&&target.storage.drlt_zhengu_mark.includes(player)) return 0;
 					const num = Math.min(5, player.countCards("h")) - target.countCards("h");
 					const att = get.attitude(player, target);
 					return num * att;
@@ -772,11 +772,11 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.addSkill("drlt_zhenggu2");
-			target.addSkill("drlt_zhenggu_mark");
-			target.storage.drlt_zhenggu_mark.push(player);
-			target.markSkill("drlt_zhenggu_mark");
-			lib.skill.drlt_zhenggu.sync(player, target);
+			player.addSkill("drlt_zhengu2");
+			target.addSkill("drlt_zhengu_mark");
+			target.storage.drlt_zhengu_mark.push(player);
+			target.markSkill("drlt_zhengu_mark");
+			lib.skill.drlt_zhengu.sync(player, target);
 		},
 		sync(player, target) {
 			const num = player.countCards("h");
@@ -786,27 +786,27 @@ const skills = {
 			} else target.drawTo(Math.min(5, num));
 		},
 	},
-	drlt_zhenggu2: {
-		audio: "drlt_zhenggu",
+	drlt_zhengu2: {
+		audio: "drlt_zhengu",
 		trigger: {
 			global: "phaseEnd",
 		},
 		forced: true,
 		charlotte: true,
 		logTarget: "player",
-		sourceSkill: "drlt_zhenggu",
+		sourceSkill: "drlt_zhengu",
 		filter(event, player) {
-			return event.player.storage.drlt_zhenggu_mark && event.player.storage.drlt_zhenggu_mark.includes(player);
+			return event.player.storage.drlt_zhengu_mark && event.player.storage.drlt_zhengu_mark.includes(player);
 		},
 		async content(event, trigger, player) {
-			while (trigger.player.storage.drlt_zhenggu_mark.includes(player)) {
-				trigger.player.storage.drlt_zhenggu_mark.remove(player);
+			while (trigger.player.storage.drlt_zhengu_mark.includes(player)) {
+				trigger.player.storage.drlt_zhengu_mark.remove(player);
 			}
-			if (trigger.player.storage.drlt_zhenggu_mark.length == 0) trigger.player.unmarkSkill("drlt_zhenggu_mark");
-			lib.skill.drlt_zhenggu.sync(player, trigger.player);
+			if (trigger.player.storage.drlt_zhengu_mark.length == 0) trigger.player.unmarkSkill("drlt_zhengu_mark");
+			lib.skill.drlt_zhengu.sync(player, trigger.player);
 		},
 	},
-	drlt_zhenggu_mark: {
+	drlt_zhengu_mark: {
 		charlotte: true,
 		init(player, skill) {
 			if (!player.storage[skill]) player.storage[skill] = [];
