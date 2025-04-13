@@ -8356,39 +8356,26 @@ const skills = {
 		filter(event, player) {
 			return player.countDiscardableCards(player, "he");
 		},
-		direct: true,
-		*content(event, map) {
-			var player = map.player;
-			var result = yield player.chooseTarget(get.prompt2("dc_zj_b"), lib.filter.notMe).set("ai", target => {
+		*cost(event, map) {
+			event.result = yield map.player.chooseTarget(get.prompt2("dc_zj_b"), lib.filter.notMe).set("ai", target => {
 				var player = _status.event.player;
 				if (!player.hasFriend()) return 0;
 				return -game.countPlayer(current => current.inRange(target) && get.attitude(current, target) < 0 && get.damageEffect(target, current, current) > 0);
 			});
-			if (result.bool) {
-				var target = result.targets[0];
-				player.logSkill("dc_zj_b", target);
-				player.discard(player.getCards("he")).discarder = player;
-				target.addSkill("dc_zj_a");
-				target.addSkill("dc_zj_b_threaten");
-				player
-					.when("phaseBegin")
-					.then(() => {
-						if (target.isIn()) {
-							target.removeSkill("dc_zj_a");
-							target.removeSkill("dc_zj_b_threaten");
-						}
-					})
-					.vars({ target: target });
-			}
+		},
+		*content(event, map) {
+			const player = map.player;
+			const target = event.targets[0];
+			yield player.discard(player.getDiscardableCards(player, "he"));
+			player.addTempSkill("dc_zj_b_effect", { player: "phaseBegin" });
+			yield target.addAdditionalSkills("dc_zj_b_" + player.playerid, "dc_zj_a", true);
 		},
 		subSkill: {
-			//定要将你赶尽杀绝
-			threaten: {
+			effect: {
 				charlotte: true,
-				mark: true,
-				marktext: "噩",
-				intro: { content: "已经开始汗流浃背了" },
-				ai: { threaten: 114514 * 1919810 },
+				onremove(player) {
+					game.countPlayer(current => current.removeAdditionalSkills("dc_zj_b_" + player.playerid));
+				},
 			},
 		},
 	},
