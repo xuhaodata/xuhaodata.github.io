@@ -363,7 +363,7 @@ window.noname_character_rank = {
 		"shen_jiaxu",
 	],
 	am: [
-		"ol_sb_luzhi",
+		"ol_sb_yl_luzhi",
 		"clan_xunshuang",
 		"shen_ganning",
 		"chunyuqiong",
@@ -2600,7 +2600,7 @@ window.noname_character_rank = {
 			"diy_zhangfei",
 		],
 		epic: [
-			"ol_sb_luzhi",
+			"ol_sb_yl_luzhi",
 			"dc_xiahouxuan",
 			"pot_taishici",
 			"dc_caocao",

@@ -844,7 +844,6 @@ const characters = {
 		group: "qun",
 		hp: 3,
 		skills: ["ollongdan", "chongzhen"],
-		dieAudios: ["zhaoyun"],
 	},
 	liuxie: {
 		sex: "male",

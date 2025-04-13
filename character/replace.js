@@ -386,7 +386,7 @@ window.noname_character_replace = {
 	xf_huangquan: ["xf_huangquan", "dc_huangquan"],
 	yj_jushou: ["yj_jushou", "ol_sb_jushou", "re_jushou", "dc_sb_jushou", "xin_jushou"],
 	yj_sufei: ["xf_sufei", "yj_sufei", "sp_sufei"],
-	yl_luzhi: ["yl_luzhi", "ol_sb_luzhi", "sb_yl_luzhi", "tw_yl_luzhi", "jsrg_yl_luzhi"],
+	yl_luzhi: ["yl_luzhi", "ol_sb_yl_luzhi", "sb_yl_luzhi", "tw_yl_luzhi", "jsrg_yl_luzhi"],
 	jin_yanghu: ["jin_yanghu", "dc_yanghu", "sp_yanghu", "std_dc_yanghu", "ns_yanghu"],
 	jin_xiahouhui: ["jin_xiahouhui", "jd_jin_xiahouhui"],
 	jsrg_limi: ["jsrg_limi", "ns_limi"],
