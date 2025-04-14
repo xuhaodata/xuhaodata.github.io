@@ -9061,7 +9061,7 @@ const skills = {
 		},
 		locked: false,
 		audio: "longdan_sha",
-		audioname: ["re_zhaoyun", "huan_zhaoyun"],
+		audioname: ["re_zhaoyun", "huan_zhaoyun", "sp_zhaoyun"],
 		audioname2: { tongyuan: "longdan_tongyuan" },
 		hiddenCard(player, name) {
 			if (name == "tao") return player.countCards("hs", "jiu") > 0;

@@ -5,7 +5,7 @@ const characters = {
 		hp: 4,
 		skills: ["mashu", "olqianxi"],
 	},
-	ol_sb_luzhi: {
+	ol_sb_yl_luzhi: {
 		sex: "male",
 		group: "qun",
 		hp: 4,
