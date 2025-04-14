@@ -327,7 +327,7 @@ game.import("character", function () {
 				group: "qun",
 				hp: 3,
 				skills: ["zhanxing", "kbolan"],
-				names: "肯迪|null",
+				names: "null|肯迪",
 			},
 			swd_lilian: {
 				sex: "female",
