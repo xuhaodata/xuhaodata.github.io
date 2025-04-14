@@ -4465,23 +4465,6 @@ const skills = {
 	},
 	scls_kuangcai: {
 		audio: "kuangcai",
-		init(player, skill) {
-			player.storage[skill] = 0;
-			let evt = _status.event.getParent("phaseUse");
-			if (evt && evt.player === player) {
-				player.getHistory("useCard", evtx => {
-					if (evtx.getParent("phaseUse") === evt) {
-						player.storage[skill]++;
-					}
-				});
-			}
-		},
-		onremove: true,
-		intro: {
-			content(storage, player) {
-				return "本回合还可使用" + get.cnNumber(5 - storage) + "张牌";
-			},
-		},
 		mod: {
 			targetInRange(card, player) {
 				if (player.isPhaseUsing()) return true;
@@ -4492,16 +4475,10 @@ const skills = {
 				if (name === "sha") return num + 6;
 				if (get.subtype(card) === "equip2") return num + get.value(card) / 3;
 			},
-			cardEnabled(card, player) {
-				if (player.countMark("scls_kuangcai") >= 5) return false;
-			},
 			cardUsable(card, player) {
-				if (!player.isPhaseUsing() || player.countMark("scls_kuangcai") >= 5) return false;
+				if (!player.isPhaseUsing()) return false;
 				if (get.info(card) && get.info(card).forceUsable) return;
 				return Infinity;
-			},
-			cardSavable(card, player) {
-				if (player.countMark("scls_kuangcai") >= 5) return false;
 			},
 		},
 		trigger: {
@@ -4512,40 +4489,40 @@ const skills = {
 		},
 		locked: false,
 		prompt2(event, player) {
-			return "摸一张牌" + (player.hasMark("scls_kuangcai") ? "" : "，本回合至多使用五张牌");
+			return "摸一张牌" + (player.hasMark("scls_kuangcai_mark") ? "" : "，本回合至多使用五张牌");
 		},
 		frequent: true,
 		async content(event, trigger, player) {
-			player.markSkill("scls_kuangcai");
-			await player.draw();
+			player.addTempSkill("scls_kuangcai_mark");
+			await player.draw("nodelay");
 		},
 		ai: {
 			threaten: 4.5,
 		},
-		group: ["scls_kuangcai_add", "scls_kuangcai_clear"],
 		subSkill: {
-			add: {
-				trigger: {
-					player: "useCard1",
+			mark: {
+				mod: {
+					cardEnabled(card, player) {
+						if (player.countMark("scls_kuangcai_mark") >= 5) return false;
+					},
+					cardSavable(card, player) {
+						if (player.countMark("scls_kuangcai_mark") >= 5) return false;
+					},
 				},
-				filter(event, player) {
-					return player === _status.currentPhase;
+				init(player, skill) {
+					const num = player.getHistory("useCard").length - 1;
+					player.setMark(skill, num, false);
 				},
+				onremove: true,
+				intro: {
+					content(storage, player) {
+						return "本回合还可使用" + get.cnNumber(5 - storage) + "张牌";
+					},
+				},
+				trigger: { player: "useCard1" },
 				silent: true,
-				priority: 5,
-				async content(event, trigger, player) {
-					if (player.storage.scls_kuangcai) player.storage.scls_kuangcai++;
-					else player.storage.scls_kuangcai = 1;
-				},
-			},
-			clear: {
-				trigger: {
-					player: "phaseAfter",
-				},
-				silent: true,
-				async content(event, trigger, player) {
-					delete player.storage.scls_kuangcai;
-					player.unmarkSkill("scls_kuangcai");
+				content() {
+					player.addMark(event.name, 1, false);
 				},
 			},
 		},

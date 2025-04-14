@@ -82,7 +82,7 @@ const skills = {
 						],
 					])
 					.set("filterButton", button => {
-						if (button.link == "use") return player.hasCard(card => get.player().hasUseTarget(card, false, false), "hs");
+						if (button.link == "use") return get.player().hasCard(card => get.player().hasUseTarget(card, false, false), "hs");
 						return true;
 					})
 					.set("ai", button => {
