@@ -64,6 +64,9 @@ const skills = {
 			await player.draw(3);
 			await player.removeSkills(event.name);
 		},
+		ai: {
+			combo: "psanmou",
+		},
 	},
 	// 雍闿
 	// 你也有xiaofan？
@@ -4519,6 +4522,7 @@ const skills = {
 						return "本回合还可使用" + get.cnNumber(5 - storage) + "张牌";
 					},
 				},
+				charlotte: true,
 				trigger: { player: "useCard1" },
 				silent: true,
 				content() {

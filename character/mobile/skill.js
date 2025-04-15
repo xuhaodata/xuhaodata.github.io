@@ -3380,7 +3380,7 @@ const skills = {
 				},
 			},
 			sha: {
-				audio: ["potfuji4.mp3","potfuji5.mp3"],
+				audio: ["potfuji4.mp3", "potfuji5.mp3"],
 				charlotte: true,
 				mark: true,
 				marktext: "杀",
@@ -3399,7 +3399,7 @@ const skills = {
 				},
 			},
 			shan: {
-				audio: ["potfuji4.mp3","potfuji5.mp3"],
+				audio: ["potfuji4.mp3", "potfuji5.mp3"],
 				charlotte: true,
 				mark: true,
 				marktext: "闪",
@@ -4154,7 +4154,33 @@ const skills = {
 			player: "phaseJieshuBegin",
 		},
 		async cost(event, trigger, player) {
-			const { result } = await player.chooseControl(lib.suit.slice(), "cancel2");
+			const suits = {};
+			game.countPlayer(current => {
+				for (const card of current.getCards("ej")) {
+					if (typeof suits[get.suit(card)] != "number") suits[get.suit(card)] = 0;
+					suits[get.suit(card)]++;
+				}
+			});
+			const choices = lib.suit.slice();
+			const str = lib.suit
+				.map(suit => {
+					return get.translation(suit) + "：" + get.cnNumber(suits[suit] || 0) + "张";
+				})
+				.join("；");
+			const { result } = await player
+				.chooseControl(choices, "cancel2")
+				.set("prompt", `${get.prompt("mbjiexun")}（本次弃置${get.cnNumber(player.countMark("mbjiexun_used") + 1)}张）`)
+				.set("prompt2", `${get.skillInfoTranslation("mbjiexun", player)}<br>${str}`)
+				.set("ai", () => {
+					const player = get.player(),
+						map = get.event().map;
+					for (const suit in map) map[suit] = Math.abs(map[suit]);
+					const bool = game.hasPlayer(current => get.attitude(player, current) > 0 && player != current);
+					const list = lib.suit.slice().sort((a, b) => (bool ? 1 : -1) * ((map[b] || 0) - (map[a] || 0)));
+					if ((bool && map[list[0]] > 0) || !bool) return list[0];
+					return "cancel2";
+				})
+				.set("map", suits);
 			if (result.control != "cancel2") {
 				event.result = {
 					bool: true,
@@ -4164,23 +4190,30 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const { cost_data } = event;
-			let num = 0;
+			let num1 = 0;
 			player.addSkill("mbjiexun_used");
 			player.addMark("mbjiexun_used", 1, false);
 			game.filterPlayer().forEach(p => {
-				num += p.countCards("ej", function (card) {
+				num1 += p.countCards("ej", function (card) {
 					return get.suit(card) == cost_data;
 				});
 			});
+			const num2 = player.countMark("mbjiexun_used");
 			const {
 				result: {
 					targets: [target],
 				},
-			} = await player.chooseTarget(lib.filter.notMe, true).set("ai", function (target) {
-				return get.attitude(get.player(), target) > 0;
-			});
-			await target.draw(num);
-			await target.chooseToDiscard("he", true, player.countMark("mbjiexun_used"));
+			} = await player
+				.chooseTarget(`诫训：令一名其他角色摸${num1}张牌然后弃置${num2}张牌`, lib.filter.notMe, true)
+				.set("ai", function (target) {
+					const player = get.player(),
+						att = get.attitude(player, target);
+					return get.event().eff * get.sgn(att) + att / 114514;
+				})
+				.set("eff", num1 >= num2 && num1 > 0 ? 1 : -1);
+			player.line(target);
+			await target.draw(num1);
+			await target.chooseToDiscard("he", true, num2);
 			if (target.countCards("h") === 0) {
 				player.addSkill("mbfunan_rewrite");
 			}

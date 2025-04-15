@@ -187,7 +187,7 @@ const skills = {
 		filter(event, player) {
 			const bool1 = event.getg && event.getg(player)?.length,
 				bool2 = event.getl && event.getl(player)?.hs?.length;
-			return (bool1 || bool2) && player.isMinHandcard();
+			return (bool1 || bool2) && player.isMinHandcard() && player.countCards("h") < player.maxHp;
 		},
 		check(event, player) {
 			return player.countCards("h") < player.maxHp;
