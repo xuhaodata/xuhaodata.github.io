@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 import html from "../../game/dedent.js";
 
-game.import("play", function() {
+game.import("play", function () {
 	return {
 		name: "coin",
 		init() {
@@ -24,18 +24,18 @@ game.import("play", function() {
 				ui.coin = ui.create.system(str, null, true);
 				if (lib.config.snowFall) {
 					game.haveFun.list.snow.bought = true;
-					setTimeout(function() {
+					setTimeout(function () {
 						game.haveFun.snow();
 					}, 500);
 				}
-				lib.setPopped(ui.coin, function() {
+				lib.setPopped(ui.coin, function () {
 					var uiintro = ui.create.dialog("hidden");
 					uiintro.classList.add("coin_menu");
 					uiintro.add("商店");
-					uiintro.listen(function(e) {
+					uiintro.listen(function (e) {
 						e.stopPropagation();
 					});
-					var clickBuy = function() {
+					var clickBuy = function () {
 						if (this.innerHTML == "停止") {
 							game.haveFun[this.name + "Stop"]();
 						} else if (this.innerHTML == "开始") {
@@ -83,7 +83,7 @@ game.import("play", function() {
 						uiintro.add("下注");
 						uiintro.add('<div class="coin_buy">本局获胜<div class="menubutton">20金</span></div></div>');
 						var bet = uiintro.content.lastChild.lastChild.lastChild;
-						bet.listen(function() {
+						bet.listen(function () {
 							if (_status.betWin) return;
 							_status.betWin = true;
 							game.changeCoin(-20);
@@ -186,13 +186,13 @@ game.import("play", function() {
 						var particle_count = 25;
 
 						//finally some mouse tracking
-						ui.window.addEventListener("mousemove", function(e) {
+						ui.window.addEventListener("mousemove", function (e) {
 							//since the canvas = full page the position of the mouse
 							//relative to the document will suffice
 							mouse.x = e.pageX / game.documentZoom;
 							mouse.y = e.pageY / game.documentZoom;
 						});
-						ui.window.addEventListener("touchmove", function(e) {
+						ui.window.addEventListener("touchmove", function (e) {
 							mouse.x = e.touches[0].clientX / game.documentZoom;
 							mouse.y = e.touches[0].clientY / game.documentZoom;
 						});
@@ -241,7 +241,7 @@ game.import("play", function() {
 							particles.push(new particle());
 						}
 
-						var draw = function() {
+						var draw = function () {
 							if (!game.haveFun.list.blink.running) {
 								canvas.width = W;
 								canvas.height = H;
@@ -287,7 +287,7 @@ game.import("play", function() {
 
 						draw();
 						game.haveFun.blinkLoop = draw;
-						game.haveFun.blinkStop = function() {
+						game.haveFun.blinkStop = function () {
 							game.haveFun.list.blink.running = false;
 						};
 					}
@@ -308,7 +308,7 @@ game.import("play", function() {
 							log = Math.log,
 							random = Math.random,
 							PI = Math.PI,
-							sqr = function(v) {
+							sqr = function (v) {
 								return v * v;
 							},
 							particles = [],
@@ -527,7 +527,7 @@ game.import("play", function() {
 							}
 						}
 
-						var G = function(data) {
+						var G = function (data) {
 							return 0.00674 * data;
 						};
 
@@ -540,14 +540,14 @@ game.import("play", function() {
 						canvas.height = ui.window.offsetHeight;
 						var canvasWidth = canvas.width;
 						var canvasHeight = canvas.height;
-						lib.onresize.push(function() {
+						lib.onresize.push(function () {
 							canvas.width = ui.window.offsetWidth;
 							canvas.height = ui.window.offsetHeight;
 							canvasWidth = canvas.width;
 							canvasHeight = canvas.height;
 						});
 
-						var renderToCanvas = function(width, height, renderFunction) {
+						var renderToCanvas = function (width, height, renderFunction) {
 							var buffer = document.createElement("canvas");
 							buffer.width = width;
 							buffer.height = height;
@@ -562,7 +562,7 @@ game.import("play", function() {
 						emitters = [new ParticleEmitter(new Vector((canvasWidth / 2) * drawScale + 400, (canvasHeight / 2) * drawScale), Vector.fromAngle(2, 5), 1), new ParticleEmitter(new Vector((canvasWidth / 2) * drawScale - 400, (canvasHeight / 2) * drawScale), Vector.fromAngle(5, 5), 1)];
 						forces = [new Force(new Vector((canvasWidth / 2) * drawScale, (canvasHeight / 2) * drawScale), 1800)];
 
-						var loop = function() {
+						var loop = function () {
 							if (!game.haveFun.list.star.running) {
 								canvas.width = ui.window.offsetWidth;
 								canvas.height = ui.window.offsetHeight;
@@ -574,22 +574,22 @@ game.import("play", function() {
 							queue();
 						};
 						game.haveFun.starLoop = loop;
-						game.haveFun.starStop = function() {
+						game.haveFun.starStop = function () {
 							game.haveFun.list.star.running = false;
 						};
 
-						var clear = function() {
+						var clear = function () {
 							ctx.clearRect(0, 0, canvas.width, canvas.height);
 						};
 
 						var ctr = 0;
 						var c = ["rgba(255,255,255,", "rgba(0,150,255,", "rgba(255,255,128,", "rgba(255,255,255,", ];
-						var rndc = function() {
+						var rndc = function () {
 							return c[~~ (Math.random() * c.length - 1)];
 						};
 						var c2 = "rgba(255,64,32,";
-						var addNewParticles = function() {
-							var _emit = function() {
+						var addNewParticles = function () {
+							var _emit = function () {
 								var ret = 0;
 								for (var i = 0; i < emitters.length; i++) {
 									for (var j = 0; j < emissionRate; j++) {
@@ -617,11 +617,11 @@ game.import("play", function() {
 							BUFFEROFFSCREEN = 2,
 							LOOPSCREEN = 3;
 
-						var isPositionAliveAndAdjust = function(particle, check) {
+						var isPositionAliveAndAdjust = function (particle, check) {
 							return true;
 						};
 
-						var plotParticles = function(boundsX, boundsY) {
+						var plotParticles = function (boundsX, boundsY) {
 							var currentParticles = [];
 							for (var i = 0; i < particles.length; i++) {
 								var particle = particles[i];
@@ -633,7 +633,7 @@ game.import("play", function() {
 						};
 
 						var offscreenCache = {};
-						var renderParticle = function(p) {
+						var renderParticle = function (p) {
 							var position = p.pos;
 							if (!p.size) p.size = Math.floor(p.mass / 100);
 
@@ -657,11 +657,7 @@ game.import("play", function() {
 							var cacheKey = actualSize + "_" + p.opacity + "_" + p.color;
 							var cacheValue = offscreenCache[cacheKey];
 							if (!cacheValue) {
-								cacheValue = renderToCanvas(
-								actualSize * 32,
-								actualSize * 32,
-
-								function(ofsContext) {
+								cacheValue = renderToCanvas(actualSize * 32, actualSize * 32, function (ofsContext) {
 									var opacity = p.opacity;
 									var fills = [{
 										size: actualSize / 2,
@@ -698,18 +694,12 @@ game.import("play", function() {
 							ctx.drawImage(cacheValue, posX, posY);
 						};
 
-						var fills = [{
-							size: 15,
-							opacity: 1
-						}, {
-							size: 25,
-							opacity: 0.3
-						}, {
-							size: 50,
-							opacity: 0.1
-						}];
-
-						var renderScene = function(ofsContext) {
+						var fills = [
+							{ size: 15, opacity: 1 },
+							{ size: 25, opacity: 0.3 },
+							{ size: 50, opacity: 0.1 },
+						];
+						var renderScene = function (ofsContext) {
 							for (var i = 0; i < forces.length; i++) {
 								var p = forces[i];
 								var position = p.pos;
@@ -730,16 +720,16 @@ game.import("play", function() {
 							}
 						};
 
-						var draw = function() {
+						var draw = function () {
 							renderScene(ctx);
 						};
 
-						var update = function() {
+						var update = function () {
 							addNewParticles();
 							plotParticles(canvas.width, canvas.height);
 						};
 
-						var queue = function() {
+						var queue = function () {
 							window.requestAnimationFrame(loop);
 						};
 
@@ -752,7 +742,7 @@ game.import("play", function() {
 						game.haveFun.snowStart();
 					} else {
 						// 兼容写法
-						var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function(callback) {
+						var requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame || window.oRequestAnimationFrame || function (callback) {
 								setTimeout(callback, 1000 / 60);
 							};
 						var cancelAnimationFrame = window.cancelAnimationFrame || window.mozCancelAnimationFrame || window.webkitCancelAnimationFrame || window.msCancelAnimationFrame || window.oCancelAnimationFrame;
@@ -817,14 +807,14 @@ game.import("play", function() {
 									this.status = 4;
 									// 动画的计时控制
 									const that = this;
-									this.loop = requestAnimationFrame(function() {
+									this.loop = requestAnimationFrame(function () {
 										drawSnow.apply(that);
 									});
 								}
 							}
 						}
 						// 创建画布
-						var snowCanvas = function() {
+						var snowCanvas = function () {
 							// 添加Dom结点
 							var snowcanvas = document.createElement("canvas");
 							snowcanvas.classList.add("fun");
@@ -834,7 +824,7 @@ game.import("play", function() {
 							this.canvas = snowcanvas;
 							this.ctx = snowcanvas.getContext("2d");
 							// 窗口大小改变的处理
-							lib.onresize.push(function() {
+							lib.onresize.push(function () {
 								snowcanvas.width = ui.window.offsetWidth;
 								snowcanvas.height = ui.window.offsetHeight;
 							});
@@ -901,7 +891,7 @@ game.import("play", function() {
 							}
 						}
 						// 创建雪花-定义形状
-						var createFlakes = function() {
+						var createFlakes = function () {
 							var maxFlake = this.maxFlake,
 								flakes = (this.flakes = []),
 								canvas = this.canvas;
@@ -911,7 +901,7 @@ game.import("play", function() {
 						};
 
 						// 画雪
-						var drawSnow = function() {
+						var drawSnow = function () {
 							var maxFlake = this.maxFlake,
 								flakes = this.flakes;
 							var ctx = this.ctx,
@@ -924,21 +914,21 @@ game.import("play", function() {
 								flakes[e].render(ctx);
 							}
 							// 一帧一帧的画
-							this.loop = requestAnimationFrame(function() {
+							this.loop = requestAnimationFrame(function () {
 								drawSnow.apply(that);
 							});
 						};
 
 						// 调用及控制方法
 						var snow = new snowFall();
-						game.haveFun.snowStart = function() {
+						game.haveFun.snowStart = function () {
 							snow.start();
 						};
-						game.haveFun.snowStop = function() {
+						game.haveFun.snowStop = function () {
 							game.haveFun.list.snow.running = false;
 							snow.stop();
 						};
-						game.haveFun.snowSize = function() {
+						game.haveFun.snowSize = function () {
 							if (game.haveFun.list.snow.size == "large") {
 								game.haveFun.list.snow.size = "small";
 								snow.maxFlake = 80;
@@ -973,8 +963,8 @@ game.import("play", function() {
 					} else {
 						// when animating on canvas, it is best to use requestAnimationFrame instead of setTimeout or setInterval
 						// not supported in all browsers though and sometimes needs a prefix, so we need a shim
-						var requestAnimFrame = (function() {
-							return (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function(callback) {
+						var requestAnimFrame = (function () {
+							return (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (callback) {
 								window.setTimeout(callback, 1000 / 60);
 							});
 						})();
@@ -1008,7 +998,7 @@ game.import("play", function() {
 						canvas.height = ch;
 						ui.window.appendChild(canvas);
 						canvas.classList.add("fun");
-						lib.onresize.push(function() {
+						lib.onresize.push(function () {
 							cw = ui.window.offsetWidth;
 							ch = ui.window.offsetHeight;
 							canvas.width = cw;
@@ -1018,12 +1008,12 @@ game.import("play", function() {
 						// now we are going to setup our function placeholders for the entire demo
 
 						// get a random number within a range
-						var random = function(min, max) {
+						var random = function (min, max) {
 							return Math.random() * (max - min) + min;
 						};
 
 						// calculate the distance between two points
-						var calculateDistance = function(p1x, p1y, p2x, p2y) {
+						var calculateDistance = function (p1x, p1y, p2x, p2y) {
 							var xDistance = p1x - p2x,
 								yDistance = p1y - p2y;
 							return Math.sqrt(Math.pow(xDistance, 2) + Math.pow(yDistance, 2));
@@ -1031,7 +1021,7 @@ game.import("play", function() {
 
 
 						// create particle group/explosion
-						var createParticles = function(x, y) {
+						var createParticles = function (x, y) {
 							// increase the particle count for a bigger explosion, beware of the canvas performance hit with the increased particles though
 							var particleCount = 30;
 							while (particleCount--) {
@@ -1176,7 +1166,7 @@ game.import("play", function() {
 							}
 						}
 						// main demo loop
-						var loop = function() {
+						var loop = function () {
 							if (!game.haveFun.list.firework.running) {
 								canvas.width = cw;
 								canvas.height = ch;
@@ -1237,31 +1227,31 @@ game.import("play", function() {
 						};
 
 						if (lib.config.touchscreen) {
-							ui.window.addEventListener("touchmove", function(e) {
+							ui.window.addEventListener("touchmove", function (e) {
 								mx = e.touches[0].clientX / game.documentZoom - canvas.offsetLeft;
 								my = e.touches[0].clientY / game.documentZoom - canvas.offsetTop;
 							});
-							ui.window.addEventListener("touchstart", function(e) {
+							ui.window.addEventListener("touchstart", function (e) {
 								mousedown = true;
 							});
-							ui.window.addEventListener("touchend", function(e) {
+							ui.window.addEventListener("touchend", function (e) {
 								mousedown = false;
 							});
 						} else {
 							// mouse event bindings
 							// update the mouse coordinates on mousemove
-							ui.window.addEventListener("mousemove", function(e) {
+							ui.window.addEventListener("mousemove", function (e) {
 								mx = e.pageX / game.documentZoom - canvas.offsetLeft;
 								my = e.pageY / game.documentZoom - canvas.offsetTop;
 							});
 
 							// toggle mousedown state and prevent canvas from being selected
-							ui.window.addEventListener("mousedown", function(e) {
+							ui.window.addEventListener("mousedown", function (e) {
 								e.preventDefault();
 								mousedown = true;
 							});
 
-							ui.window.addEventListener("mouseup", function(e) {
+							ui.window.addEventListener("mouseup", function (e) {
 								e.preventDefault();
 								mousedown = false;
 							});
@@ -1269,7 +1259,7 @@ game.import("play", function() {
 
 						// once the window loads, we are ready for some fireworks!
 						game.haveFun.fireworkLoop = loop;
-						(game.haveFun.fireworkStop = function() {
+						(game.haveFun.fireworkStop = function () {
 							game.haveFun.list.firework.running = false;
 						}),
 						loop();
