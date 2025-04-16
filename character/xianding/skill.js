@@ -2798,7 +2798,7 @@ const skills = {
 	dcyitong: {
 		audio: 2,
 		trigger: {
-			global: ["phaseBefore", "loseAfter", "loseAsyncAfter", "cardsDiscardAfter"],
+			global: ["phaseBefore", "cardsDiscardAfter"],
 			player: "enterGame",
 		},
 		filter(event, player, name) {
@@ -2810,7 +2810,12 @@ const skills = {
 				if (!event.getd?.().some(card => get.suit(card, false) === suit)) return false;
 				return (
 					game
-						.getGlobalHistory("everything", evt => {
+						.getGlobalHistory("cardMove", evt => {
+							if (evt.name !== "cardsDiscard") return false;
+							const evtx = evt.getParent();
+							if (evtx.name !== "orderingDiscard") return false;
+							const evt2 = evtx.relatedEvent || evtx.getParent();
+							if (evt2.name != "useCard") return false;
 							return evt.getd?.()?.some(card => get.suit(card, false) === suit);
 						})
 						.indexOf(event) === 0
@@ -2828,6 +2833,11 @@ const skills = {
 						return (
 							game
 								.getGlobalHistory("everything", evt => {
+									if (evt.name !== "cardsDiscard") return false;
+									const evtx = evt.getParent();
+									if (evtx.name !== "orderingDiscard") return false;
+									const evt2 = evtx.relatedEvent || evtx.getParent();
+									if (evt2.name != "useCard") return false;
 									return evt.getd?.()?.some(card => get.suit(card, false) === suit);
 								})
 								.indexOf(trigger) === 0

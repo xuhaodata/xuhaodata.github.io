@@ -1546,7 +1546,7 @@ const skills = {
 					.forResult();
 				if (result?.bool) {
 					player.logSkill("mbyuanmo", [drawer], null, null, [1]);
-					await drawer.draw(num);
+					await drawer.draw(Math.min(5, num));
 				}
 			}
 		},
