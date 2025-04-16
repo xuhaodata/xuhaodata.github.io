@@ -1,7 +1,7 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
 import html from "../../game/dedent.js";
 
-game.import("play", function() {
+game.import("play", function () {
 	return {
 		name: "wuxing",
 		arenaReady() {
@@ -32,8 +32,8 @@ game.import("play", function() {
 						player.node.wuxing.remove();
 					}
 					if (_status.video || _status.connectMode) return;
-					var node = ui.create.div(".wunature", player);
-					var nature = ["metal", "wood", "water", "fire", "soil"].randomGet();
+					let node = ui.create.div(".wunature", player);
+					let nature = ["metal", "wood", "water", "fire", "soil"].randomGet();
 					player.wunature = nature;
 					node.dataset.nature = nature;
 					node.innerHTML = get.translation(nature);
@@ -46,8 +46,8 @@ game.import("play", function() {
 					if (card.name == "wuxingpan") return;
 					if (card.wunature) return;
 					if (Math.random() > (parseFloat(lib.config.wuxing_num_playpackconfig) || 0)) return;
-					var node = ui.create.div(".wunature", card);
-					var nature = ["metal", "wood", "water", "fire", "soil"].randomGet();
+					let node = ui.create.div(".wunature", card);
+					let nature = ["metal", "wood", "water", "fire", "soil"].randomGet();
 					card.wunature = nature;
 					node.dataset.nature = nature;
 					node.innerHTML = get.translation(nature);
@@ -222,7 +222,7 @@ game.import("play", function() {
 					"step 0";
 					player.chooseControl("metal", "wood", "water", "fire", "soil");
 					"step 1";
-					var card = cards[0];
+					let card = cards[0];
 					if (!card.node.wuxing) {
 						card.node.wuxing = ui.create.div(".wunature", card);
 					}
