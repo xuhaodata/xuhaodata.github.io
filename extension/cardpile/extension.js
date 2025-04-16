@@ -1,5 +1,6 @@
 import { lib, game, ui, get, ai, _status } from "../../noname.js";
-game.import("play", function() {
+
+game.import("play", function () {
 	return {
 		name: "cardpile",
 		arenaReady() {
@@ -59,10 +60,10 @@ game.import("play", function() {
 					club: 4,
 				},
 			};
-			const rand = function() {
+			const rand = function () {
 				return Math.ceil(Math.random() * 13);
 			};
-			const getn = function(i, j) {
+			const getn = function (i, j) {
 				return Math.round(data[i][j] * parseFloat(lib.config[`cardpile_${i}_playpackconfig`]));
 			};
 			let num = 0;
