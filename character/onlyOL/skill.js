@@ -1068,7 +1068,12 @@ const skills = {
 			const { target } = trigger;
 			target.chooseToDiscard("he", true, player.getHistory("useCard", evt => evt.targets?.includes(target)).length);
 		},
-		group: "olsbjuejue_mark",
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
 		subSkill: {
 			mark: {
 				charlotte: true,
@@ -1080,7 +1085,7 @@ const skills = {
 					if (_status.currentPhase !== player) return false;
 					if (player.countCards("h") || event.getParent().name !== "useCard") return false;
 					const evt = event.getl(player);
-					return evt?.player == player && evt.hs?.length > 0;
+					return evt?.player == player && evt.hs?.length > 0 && evt.hs.length === evt.cards.length;
 				},
 				forced: true,
 				popup: false,
