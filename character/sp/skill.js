@@ -8356,7 +8356,7 @@ const skills = {
 					.set("choiceList", ["本回合使用点数大于" + num + "的普通锦囊牌额外结算一次", "本回合使用点数小于" + num + "的普通锦囊牌额外结算一次"])
 					.set("ai", () => {
 						var player = _status.event.player;
-						var num = _status.event.player;
+						var num = _status.event.num;
 						if (
 							player.getCards("h").reduce(function (num, card) {
 								return num + (get.number(card, player) || 0);

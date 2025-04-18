@@ -363,6 +363,28 @@ export class Player extends HTMLDivElement {
 	tips;
 
 	/**
+	 * 玩家（或某张牌）能否响应某个useCard事件的牌，目前仅支持本体部分常用的卡牌
+	 * @param {GameEvent} event 需要判断能否响应的事件，目前只能为useCard或者它的下一级衍生事件，其他全部返回undefined
+	 * @param { Card | VCard | object | string } card 需要检测的牌
+	 * @returns { boolean | undefined }
+	 */
+	canRespond(event, card) {
+		if (event.name?.indexOf("useCard") !== 0) return;
+		if (card && typeof card == "string") {
+			card = { name: card, isCard: true };
+		}
+		const evt = event.name == "useCard" ? event : event.getParent();
+		const key = [],
+			cardName = evt?.card?.name;
+		if (!cardName) return;
+		if (["sha", "wanjian", "qizhengxiangsheng"].includes(cardName)) key.add("shan");
+		if (["juedou", "nanman", "jiedao", "qizhengxiangsheng"].includes(cardName)) key.add("sha");
+		if (get.type(evt?.card) == "trick") key.add("wuxie");
+		key.add("caochuan");
+		if (card) return key.includes(card.name);
+		return key.some(name => this.hasUsableCard(name)) && !evt.directHit.includes(this);
+	}
+	/**
 	 * 设置提示文字，有则更改，无则加之。
 	 * @param {string} index 给标记起一个名字，名字任意
 	 * @param {string} message 设置提示标记的内容,标记中的\n代表换行符

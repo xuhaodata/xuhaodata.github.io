@@ -8,7 +8,7 @@ const skills = {
 		inherit: "wushuang",
 		init(player) {
 			player.storage.sbwushuangCount = 0;
-		},	
+		},
 		trigger: { source: "damageBegin1" },
 		filter(event, player) {
 			const target = event.player;
@@ -42,11 +42,11 @@ const skills = {
 		preHidden: ["sbwushuang_1", "sbwushuang_2"],
 		subSkill: {
 			1: {
-				audio: ["sbwushuang3.mp3","sbwushuang4.mp3"],
+				audio: ["sbwushuang3.mp3", "sbwushuang4.mp3"],
 				inherit: "wushuang1",
 			},
 			2: {
-				audio: ["sbwushuang3.mp3","sbwushuang4.mp3"],
+				audio: ["sbwushuang3.mp3", "sbwushuang4.mp3"],
 				inherit: "wushuang2",
 			},
 		},
@@ -71,7 +71,7 @@ const skills = {
 				.map(list => list.map(card => get.type2(card)))
 				.flat()
 				.unique();
-			player.logSkill("sbliyu", [target], null, null, [types.length >= 3 ? 3 : [get.rand(1,2)]]);
+			player.logSkill("sbliyu", [target], null, null, [types.length >= 3 ? 3 : [get.rand(1, 2)]]);
 			if (types.length >= 3) {
 				let list = [`${get.translation(player)}视为对你指定的另一名其他角色使用一张【决斗】`, `你获得技能〖无双〗直至你下个回合结束`];
 				let result;
@@ -7442,7 +7442,9 @@ const skills = {
 								return list.randomGet();
 							});
 						"step 1";
-						player.markAuto("sbfanjian_guessed", [event.cardSuit]);
+						const skill = "sbfanjian_guessed";
+						player.markAuto(skill, [event.cardSuit]);
+						player.addTip(skill, get.translation(skill) + player.getStorage(skill).reduce((str, i) => str + get.translation(i), " "));
 						if (result.index == 2) {
 							game.log(target, "选择", "#y不猜测");
 							target.chat("不猜！");
@@ -7483,7 +7485,13 @@ const skills = {
 			},
 		},
 		subSkill: {
-			guessed: { onremove: true, charlotte: true },
+			guessed: {
+				onremove(player, skill) {
+					delete player.storage[skill];
+					player.removeTip(skill);
+				},
+				charlotte: true,
+			},
 			backup: {},
 		},
 		ai: {
@@ -7588,14 +7596,15 @@ const skills = {
 	},
 	sbzhaxiang: {
 		audio: 2,
-		trigger: { player: "useCard" },
+		trigger: { player: "useCard1" },
 		forced: true,
-		group: "sbzhaxiang_draw",
+		group: ["sbzhaxiang_draw", "sbzhaxiang_mark"],
 		filter(event, player) {
 			return player.getHistory("useCard").length <= player.getDamagedHp();
 		},
 		content() {
 			trigger.directHit.addArray(game.filterPlayer());
+			game.log(trigger.card, "不可被响应");
 		},
 		ai: {
 			threaten: 1.5,
@@ -7619,6 +7628,28 @@ const skills = {
 			},
 		},
 		subSkill: {
+			mark: {
+				charlotte: true,
+				silent: true,
+				trigger: {
+					player: ["changeHp", "useCard"],
+					global: ["phaseBegin", "phaseAfter"],
+				},
+				content() {
+					const skill = event.name;
+					if (event.triggername != "phaseAfter") {
+						const num = Math.max(0, player.getDamagedHp() - player.getHistory("useCard").length);
+						if (player.countMark(skill) != num) player.setMark(skill, num, false);
+						player.addTip(skill, `${get.translation(skill)}剩余${num}`);
+					} else {
+						player.clearMark(skill, false);
+						player.removeTip(skill);
+					}
+				},
+				intro: {
+					content: "还剩 # 张牌无距离次数限制且不可被响应",
+				},
+			},
 			draw: {
 				audio: "sbzhaxiang",
 				mod: {
