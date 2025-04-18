@@ -363,6 +363,7 @@ window.noname_character_rank = {
 		"shen_jiaxu",
 	],
 	am: [
+		"dc_sb_liuxie",
 		"ol_sb_yl_luzhi",
 		"clan_xunshuang",
 		"shen_ganning",
@@ -1217,6 +1218,7 @@ window.noname_character_rank = {
 		"ol_maliang",
 	],
 	b: [
+		"star_zhangrang",
 		"ol_yangfu",
 		"ol_lifeng",
 		"sp_sunce",
@@ -2600,6 +2602,7 @@ window.noname_character_rank = {
 			"diy_zhangfei",
 		],
 		epic: [
+			"dc_sb_liuxie",
 			"ol_sb_yl_luzhi",
 			"dc_xiahouxuan",
 			"pot_taishici",
@@ -3082,6 +3085,7 @@ window.noname_character_rank = {
 			"junk_liuyan",
 		],
 		rare: [
+			"star_zhangrang",
 			"ol_madai",
 			"guoyuan",
 			"mb_huangzu",

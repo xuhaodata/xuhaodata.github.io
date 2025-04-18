@@ -161,12 +161,15 @@ const skills = {
 						return get.color(card, get.player()) == "red";
 					})
 					.set("ai", card => {
-						if (cards.length > 2) return 0;
-						return 6.5 - get.value(card);
+						const trigger = get.event().getTrigger(),
+							player = get.player();
+						if (get.event().num > 2 || !player.canRespond(trigger) || trigger.card.name == "huogong") return 0;
+						if (player.canRespond(trigger, card)) return 6 - get.value(card);
+						return 7 - get.value(card);
 					})
 					.set("num", cards.length)
 					.forResult();
-				if (!result.bool) {
+				if (result?.bool === false) {
 					trigger.getParent().directHit.add(target);
 					target.popup("不可响应");
 					game.log(target, "不可响应", trigger.card);

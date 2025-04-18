@@ -2,6 +2,109 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//星张让
+	starduhai: {
+		audio: 2,
+		trigger: { target: "useCardToTargeted" },
+		filter(event, player) {
+			return event.player != player && event.player.getStorage("starduhai_debuff").length < 4;
+		},
+		logTarget: "player",
+		async cost(event, trigger, player) {
+			const suits = lib.suit.slice().filter(suit => !trigger.player.getStorage("starduhai_debuff").includes(suit));
+			if (!suits.length) return;
+			const result = await player
+				.chooseControl(suits, "cancel2")
+				.set("prompt", get.prompt2(event.skill, trigger.player))
+				.set("ai", () => {
+					const player = get.player(),
+						target = get.event().targetx;
+					if (get.attitude(player, target) > 0) return "cancel2";
+					return get.event().choices.randomGet();
+				})
+				.set("targetx", trigger.player)
+				.set("choices", suits)
+				.forResult();
+			if (result?.control != "cancel2") {
+				event.result = {
+					bool: true,
+					cost_data: result.control,
+				};
+			}
+		},
+		async content(event, trigger, player) {
+			const suit = event.cost_data,
+				skill = event.name + "_debuff",
+				target = trigger.player;
+			target.addSkill(skill);
+			target.markAuto(skill, [suit]);
+			game.log(target, "获得了一个", `#g【蠹】(${get.translation(suit)})`);
+		},
+		subSkill: {
+			debuff: {
+				onremove: true,
+				charlotte: true,
+				forced: true,
+				intro: {
+					content: storage => `已获得标记：<span class=thundertext>${storage.reduce((str, suit) => str + get.translation(suit), "")}</span>`,
+				},
+				trigger: { player: "phaseEnd" },
+				filter(event, player) {
+					return player.hasCard(card => player.getStorage("starduhai_debuff").includes(get.suit(card, player)), "h");
+				},
+				async content(event, trigger, player) {
+					const skill = event.name,
+						suits = player.getStorage(skill).filter(suit => player.hasCard(card => get.suit(card, player) == suit, "h"));
+					await player.loseHp(suits.length);
+					if (!player?.isIn()) return;
+					player.unmarkAuto(skill, suits);
+					game.log(player, "移去了", get.cnNumber(suits.length), "个", `#g【蠹】(${suits.reduce((str, suit) => str + get.translation(suit), "")})`);
+					if (!player.getStorage(skill).length) player.removeSkill(skill);
+				},
+			},
+		},
+	},
+	starlingse: {
+		audio: 2,
+		enable: "phaseUse",
+		usable: 1,
+		filter(event, player) {
+			return player.countCards("he") && game.hasPlayer(target => target != player);
+		},
+		filterCard: true,
+		filterTarget: lib.filter.notMe,
+		lose: false,
+		discard: false,
+		delay: false,
+		check(card) {
+			return 6 - get.value(card);
+		},
+		async content(event, trigger, player) {
+			const card = event.cards[0],
+				type = get.type2(card, false),
+				target = event.targets[0];
+			await player.give(card, target);
+			const cards = target.getCards("he", cardx => get.type2(cardx) == type),
+				sha = get.autoViewAs({ name: "sha", isCard: true });
+			let gain = [];
+			if (cards.length > 0 && cards.length <= 2) gain = cards.slice();
+			else if (cards.length > 2) gain = cards.randomGets(2);
+			await player.gain(gain, target, "giveAuto", "bySelf");
+			if (cards.length < 2 && target.canUse(sha, player, false, false)) {
+				await target.useCard(sha, player, false);
+				if (player.hasHistory("damage", evt => evt.getParent(3) == event)) {
+					delete player.getStat("skill")[event.name];
+					game.log(player, "重置了", "#g【令色】");
+				}
+			}
+		},
+		ai: {
+			order: 5,
+			result: {
+				target: -1,
+			},
+		},
+	},
 	//文丑
 	starlianzhan: {
 		audio: 2,
@@ -5632,7 +5735,7 @@ const skills = {
 					ai2(target) {
 						return (get.attitude(get.player(), target) - 0.1) * (ui.selected.cards.length ? 1 : -1);
 					},
-					nogive: !game.hasPlayer(current=> current != player && get.attitude(player, current) <= 0 && current.countCards("h")),
+					nogive: !game.hasPlayer(current => current != player && get.attitude(player, current) <= 0 && current.countCards("h")),
 				})
 				.forResult();
 		},

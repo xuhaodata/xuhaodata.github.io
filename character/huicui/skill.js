@@ -1052,15 +1052,15 @@ const skills = {
 				trigger: { source: "damageSource" },
 				filter(event, player) {
 					if (typeof player.getStat("skill")["dcremanhou"] !== "number") return false;
-					return event.card?.dcretanluan === true && event.player != player && !player.getStorage("dcremanhou_record").includes(event.player);
+					return event.card?.dcretanluan === true && event.player != player;// && !player.getStorage("dcremanhou_record").includes(event.player)
 				},
 				forced: true,
 				content() {
 					delete player.getStat("skill")["dcremanhou"];
 					player.popup("dcremanhou");
 					game.log(player, "重置了技能", "【" + get.translation("dcremanhou") + "】");
-					player.addTempSkill("dcremanhou_record");
-					player.markAuto("dcremanhou_record", [trigger.player]);
+					/*player.addTempSkill("dcremanhou_record");
+					player.markAuto("dcremanhou_record", [trigger.player]);*/
 				},
 			},
 			record: {
