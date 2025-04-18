@@ -21,9 +21,12 @@ const skills = {
 						const num = get.player().countCards("h"),
 							numx = num - target.countCards("h"),
 							att = get.attitude(get.player(), target);
-						if (numx > 0) return (numx - 3) * att;
-						if (numx < 0) return (numx + 3) * att;
-						return -2 * att;
+						let val;
+						if (numx > 0) val = numx - 3;
+						else if (numx < 0) val = numx + 3;
+						else val = -2;
+						val = val == 0 ? 0.5 : val;
+						return val * att < 0;
 					})
 					.forResult();
 				if (result?.targets?.length) targets.removeArray(result.targets);
@@ -56,7 +59,8 @@ const skills = {
 							if (numx > 0) val = numx - 3;
 							else if (numx < 0) val = numx + 3;
 							else val = -2;
-							if (player.hasZhuSkill("dcsbtiancheng", targetx) && val < 0 && att > 0) return sum;
+							val = val == 0 ? 0.5 : val;
+							if (player.hasZhuSkill("dcsbtiancheng", targetx) && val * att < 0) return sum;
 							return sum + val * att;
 						}, 0);
 				},
