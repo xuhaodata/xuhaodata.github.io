@@ -13,9 +13,9 @@ const skills = {
 			return player.countCards("h");
 		},
 		async content(event, trigger, player) {
-			let cards = player.getCards("h"),
-				goon = () => !player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && cards.some(c => player.hasCard(a => a === c, "h") && player.hasUseTarget(c, null, false) && get.color(c, player) === "black");
-			await player.showCards(cards, `${get.translation(player)}发动了〖佯疾〗`);
+			let cards = player.getCards("h", card => get.color(card, player) == "black"),
+				goon = () => !player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && player.hasCard(card => cards.includes(card) && player.hasUseTarget(card, null, false), "h");
+			await player.showHandcards(`${get.translation(player)}发动了〖佯疾〗`);
 			while (goon()) {
 				const result = await player
 					.chooseToUse(function (card, player, event) {
@@ -24,10 +24,11 @@ const skills = {
 					.set("forced", true)
 					.set("addCount", false)
 					.forResult();
+				const card = result.cards[0];
+				cards.remove(card);
 				if (!goon()) {
-					const card = result.cards[0],
-						target = _status.currentPhase;
-					if (card && get.suit(card, player) == "spade" && !get.owner(card) && target.canAddJudge(get.autoViewAs({ name: "lebu" }, card))) {
+					const target = _status.currentPhase;
+					if (card && get.suit(card, player) == "spade" && (!get.owner(card) || get.owner(card) === player) && target.canAddJudge(get.autoViewAs({ name: "lebu" }, card))) {
 						await target.addJudge({ name: "lebu" }, card);
 					}
 				}
@@ -42,19 +43,21 @@ const skills = {
 		content() {
 			const target = _status.currentPhase;
 			target.addTempSkill(event.name + "_add");
-			target.addMark(event.name + "_add", 3, false);
+			//target.addMark(event.name + "_add", 3, false);
 		},
 		subSkill: {
 			add: {
 				charlotte: true,
 				onremove: true,
+				mark: true,
 				markimage: "image/card/handcard.png",
 				intro: {
-					content: "手牌上限+#",
+					markcount: () => 3,
+					content: "手牌上限+3",
 				},
 				mod: {
 					maxHandcard(player, num) {
-						return num + player.countMark("clandandao_add");
+						return num + 3;
 					},
 				},
 			},
