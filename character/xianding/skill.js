@@ -56,7 +56,7 @@ const skills = {
 							if (numx > 0) val = numx - 3;
 							else if (numx < 0) val = numx + 3;
 							else val = -2;
-							if (player.hasZhuSkill("dcsbtiancheng", targetx) && val < 0) return sum;
+							if (player.hasZhuSkill("dcsbtiancheng", targetx) && val < 0 && att > 0) return sum;
 							return sum + val * att;
 						}, 0);
 				},
