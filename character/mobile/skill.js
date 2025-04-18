@@ -1114,12 +1114,11 @@ const skills = {
 				.when({ player: "phaseJieshuBegin" })
 				.filter(evt => evt.getParent("phase") == trigger.getParent("phase"))
 				.then(() => {
-					if (control === 0) player.draw(num);
+					if (control === 0) player.draw(player.countMark("pothongyi"));
 					else if (control === 1) player.clearMark("pothongyi");
 				})
 				.vars({
 					control: control == 0 ? 1 : 0,
-					num: num,
 				});
 		},
 		marktext: "毅",
