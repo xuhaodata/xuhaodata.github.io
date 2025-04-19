@@ -1505,13 +1505,13 @@ const skills = {
 			if (first) {
 				history = player
 					.getAllHistory("useCard")
-					.filter(c => c.targets && c.targets.length)
+					//.filter(c => c.targets && c.targets.length)
 					.at(-1);
 			} else
 				history = player
 					.getAllHistory("useCard")
 					.slice(0, -1)
-					.filter(c => c.targets && c.targets.length)
+					//.filter(c => c.targets && c.targets.length)
 					.at(-1);
 			if (!history) return false;
 			return history.targets.length == 1;
@@ -1577,14 +1577,6 @@ const skills = {
 			}
 			if (cards.length) player.gain(cards, "gain2").gaintag.add("dcxiaowu");
 			else player.chat("孩子们怎么没有牌");
-			player
-				.when({ source: "damageSource" })
-				.filter(evt => player.getStat().skill.dcxiaowu)
-				.then(() => {
-					delete player.getStat().skill.dcxiaowu;
-					game.log(player, "重置了", "#g【骁武】");
-					player.getHistory("custom").push({ dcxiaowu: true });
-				});
 		},
 		locked: false,
 		mod: {
@@ -1596,7 +1588,21 @@ const skills = {
 			order: 10,
 			result: { player: 1 },
 		},
+		group: ["dcxiaowu_restore"],
 		subSkill: {
+			restore: {
+				trigger: { source: "damageSource" },
+				forced: true,
+				popup: false,
+				locked: false,
+				content() {
+					if (player.getStat().skill.dcxiaowu) {
+						delete player.getStat().skill.dcxiaowu;
+						game.log(player, "重置了", "#g【骁武】");
+					}
+					player.getHistory("custom").push({ dcxiaowu: true });
+				},
+			},
 			effect: {
 				charlotte: true,
 				mod: {
