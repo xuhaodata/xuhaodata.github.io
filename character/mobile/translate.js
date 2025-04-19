@@ -997,6 +997,7 @@ const translates = {
 	friendgongli_shitao_info: "锁定技，游戏开始时，你为〖钦英〗减少X个可弃置类别（X为场上的友系列武将数）。",
 	simazhao: "SP司马昭",
 	simazhao_prefix: "SP",
+	gz_simazhao: "司马昭",
 	mb_simazhao: "玄司马昭",
 	mb_simazhao_ab: "司马昭",
 	mbqiantun: "谦吞",
