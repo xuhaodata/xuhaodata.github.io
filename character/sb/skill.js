@@ -8478,14 +8478,15 @@ const skills = {
 			if (target.hasShan()) return storage.includes("heart") && storage.includes("diamond");
 			return true;
 		},
-		content() {
+		async content(event, trigger, player) {
 			const storage = player.getStorage("sbliegong").slice(0);
 			const num = storage.length - 1;
 			const evt = trigger.getParent();
 			if (num > 0) {
 				if (typeof evt.baseDamage != "number") evt.baseDamage = 1;
 				const cards = get.cards(num);
-				player.showCards(cards.slice(0), get.translation(player) + "发动了【烈弓】");
+				await game.cardsGotoOrdering(cards);
+				await player.showCards(cards.slice(0), get.translation(player) + "发动了【烈弓】");
 				while (cards.length > 0) {
 					const card = cards.pop();
 					if (storage.includes(get.suit(card, false))) evt.baseDamage++;

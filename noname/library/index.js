@@ -171,7 +171,7 @@ export class Library {
 	emotionList = {
 		huangdou_emotion: 50,
 		shibing_emotion: 15,
-		wanglang_emotion: 18,
+		wanglang_emotion: 20,
 		guojia_emotion: 20,
 		zhenji_emotion: 20,
 		xiaowu_emotion: 14,
