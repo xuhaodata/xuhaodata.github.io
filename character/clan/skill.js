@@ -502,8 +502,69 @@ const skills = {
 		},
 	},
 	//族吴懿
-	//距离变化后神将
 	clangaojin: {
+		audio: 2,
+		trigger: { player: "useCard" },
+		filter(event, player) {
+			return player.getHistory("useCard", evt => evt.card).indexOf(event) == player.getHandcardLimit() - 1;
+		},
+		async content(event, trigger, player) {
+			player.addTempSkill(event.name + "_effect");
+			const result = await player
+				.chooseButton([
+					`高劲：你可以选择至多两项`,
+					[
+						[
+							[0, "手牌上限-1"],
+							[1, `摸${player.getHp()}张牌`],
+							[2, `手牌上限+1`],
+						],
+						"tdnodes",
+					],
+				])
+				.set("selectButton", [1, 2])
+				.set("ai", button => {
+					if (button.link == 1) return get.player().getHp();
+					return 0;
+				})
+				.forResult();
+			if (result?.links) {
+				const links = result.links;
+				if (links.includes(0)) lib.skill.chenliuwushi.change(player, -1);
+				if (links.includes(1)) await player.draw(player.getHp());
+				if (links.includes(2)) lib.skill.chenliuwushi.change(player, 1);
+				if (links.length > 1 && Math.abs(links[0] - links[1]) == 1) await player.chooseToDiscard("he", player.getHandcardLimit(), true);
+			}
+		},
+		subSkill: {
+			effect: {
+				mod: {
+					cardUsable: () => Infinity,
+					targetInRange: () => true,
+				},
+				trigger: {
+					player: "useCard1",
+				},
+				forced: true,
+				charlotte: true,
+				popup: false,
+				firstDo: true,
+				content() {
+					if (trigger.addCount !== false) {
+						trigger.addCount = false;
+						player.getStat().card[trigger.card.name]--;
+					}
+					player.removeSkill(event.name);
+				},
+				mark: true,
+				intro: {
+					content: "使用下一张牌无距离和次数限制",
+				},
+			},
+		},
+	},
+	//距离变化后神将
+	old_clangaojin: {
 		audio: 2,
 		updateDistanceMap() {
 			const obj = {};
@@ -521,7 +582,7 @@ const skills = {
 		hasDistanceChanged(player) {
 			const map = _status.playerDistanceMap;
 			if (!map) {
-				lib.skill.clangaojin.updateDistanceMap();
+				lib.skill.old_clangaojin.updateDistanceMap();
 			}
 			let bool = false;
 			for (const i of game.players) {
@@ -529,24 +590,24 @@ const skills = {
 					bool = true;
 				}
 			}
-			lib.skill.clangaojin.updateDistanceMap();
+			lib.skill.old_clangaojin.updateDistanceMap();
 			return bool;
 		},
-		init: () => lib.skill.clangaojin.updateDistanceMap(),
+		init: () => lib.skill.old_clangaojin.updateDistanceMap(),
 		trigger: {
 			global: ["logSkill", "useSkillAfter", "dieAfter", "changeHp", "equipAfter", "changeSkillsAfter"],
 		},
 		forced: true,
 		filter(event, player) {
-			return lib.skill.clangaojin.hasDistanceChanged(player);
+			return lib.skill.old_clangaojin.hasDistanceChanged(player);
 		},
 		async content(event, trigger, player) {
 			await player.draw();
 		},
-		group: "clangaojin_buff",
+		group: "old_clangaojin_buff",
 		subSkill: {
 			buff: {
-				audio: "clangaojin",
+				audio: "old_clangaojin",
 				trigger: {
 					global: ["phaseBefore", "roundStart"],
 					player: ["enterGame"],
@@ -560,7 +621,7 @@ const skills = {
 				},
 				mod: {
 					globalFrom(from, to, current) {
-						return current - from.countMark("clangaojin_buff");
+						return current - from.countMark("old_clangaojin_buff");
 					},
 				},
 				intro: {
