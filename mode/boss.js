@@ -830,7 +830,8 @@ export default () => {
 				boss_qiongqi: {
 					sex: "male",
 					group: "qun",
-					hp: "20/25",
+					hp: 20,
+					maxHp: 25,
 					skills: ["boss_xiongshou", "boss_zhue", "boss_futai", "boss_yandu", "boss_yandu_switch"],
 					groupInGuozhan: "qun",
 					isBoss: true,
@@ -881,7 +882,8 @@ export default () => {
 				boss_zhuyan: {
 					sex: "male",
 					group: "qun",
-					hp: "25/30",
+					hp: 25,
+					maxHp: 30,
 					skills: ["boss_yaoshou", "boss_bingxian", "boss_juyuan", "boss_xushi", "boss_xushi_switch"],
 					groupInGuozhan: "qun",
 					isBoss: true,
@@ -1576,7 +1578,8 @@ export default () => {
 				boss_sunce: {
 					sex: "male",
 					group: "shen",
-					hp: "1/8",
+					hp: 1,
+					maxHp: 8,
 					skills: ["boss_jiang", "boss_hunzi", "boss_hunyou", "boss_taoni"],
 					names: "孙|策",
 					groupInGuozhan: "qun",

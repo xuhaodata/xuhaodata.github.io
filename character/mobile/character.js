@@ -155,6 +155,7 @@ const characters = {
 		group: "wu",
 		hp: 4,
 		skills: ["pothanzhan", "potzhanlie", "potzhenfeng"],
+		names: "太史|慈",
 	},
 	mb_ganfuren: {
 		sex: "female",
