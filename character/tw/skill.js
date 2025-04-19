@@ -18,6 +18,7 @@ const skills = {
 		lose: false,
 		discard: false,
 		delay: false,
+		log: false,
 		check(card) {
 			if (typeof card == "string" && lib.skill[card]) {
 				var ais =
@@ -38,7 +39,6 @@ const skills = {
 		},
 		prompt: "选择一张手牌与牌堆顶的一张牌拼点：若你赢，你视为使用一张【桃】；若你没赢，你下次受到的伤害值+1",
 		async precontent(event, trigger, player) {
-			delete event.result.skill;
 			player.logSkill("twfushu");
 			player.tempBanSkill("twfushu", null, false);
 			//跟牌堆拼点神技，感觉写的一坨，而且跟十周年ui不太适配的，没法显示出来ui的拼点对比界面

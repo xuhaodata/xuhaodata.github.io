@@ -1459,7 +1459,7 @@ const skills = {
 				trigger: { player: "damageBegin1" },
 				forced: true,
 				async content(event, trigger, player) {
-					trigger.num++;
+					trigger.num += player.countMark(event.name);
 				},
 				intro: {
 					content: "本回合受到的伤害+#",

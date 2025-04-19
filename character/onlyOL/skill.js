@@ -103,6 +103,7 @@ const skills = {
 					},
 				},
 				intro: {
+					markcount: () => 0,
 					content(storage) {
 						return "不能使用或打出" + get.translation(storage) + "的手牌";
 					},
@@ -160,12 +161,15 @@ const skills = {
 						return get.color(card, get.player()) == "red";
 					})
 					.set("ai", card => {
-						if (cards.length > 2) return 0;
-						return 6.5 - get.value(card);
+						const trigger = get.event().getTrigger(),
+							player = get.player();
+						if (get.event().num > 2 || !player.canRespond(trigger) || trigger.card.name == "huogong") return 0;
+						if (player.canRespond(trigger, card)) return 6 - get.value(card);
+						return 7 - get.value(card);
 					})
 					.set("num", cards.length)
 					.forResult();
-				if (!result.bool) {
+				if (result?.bool === false) {
 					trigger.getParent().directHit.add(target);
 					target.popup("不可响应");
 					game.log(target, "不可响应", trigger.card);
@@ -186,7 +190,7 @@ const skills = {
 		filter(event, player) {
 			const bool1 = event.getg && event.getg(player)?.length,
 				bool2 = event.getl && event.getl(player)?.hs?.length;
-			return (bool1 || bool2) && player.isMinHandcard();
+			return (bool1 || bool2) && player.isMinHandcard() && player.countCards("h") < player.maxHp;
 		},
 		check(event, player) {
 			return player.countCards("h") < player.maxHp;
@@ -194,20 +198,23 @@ const skills = {
 		async content(event, trigger, player) {
 			await player.drawTo(player.maxHp);
 			player.addTempSkill(event.name + "_damage");
+			player.addMark(event.name + "_damage", 1, false);
 		},
 		subSkill: {
 			damage: {
 				audio: "olliance",
 				charlotte: true,
 				forced: true,
+				forceDie: true,
+				onremove: true,
 				trigger: { global: "damageBegin1" },
 				content() {
-					trigger.num++;
+					trigger.num += player.countMark(event.name);
 					player.removeSkill(event.name);
 				},
 				mark: true,
 				intro: {
-					content: "本回合下一次有角色造成的伤害+1",
+					content: "本回合下一次有角色造成的伤害+#",
 				},
 			},
 		},
@@ -219,6 +226,9 @@ const skills = {
 		global: ["olfuhun_block"],
 		group: ["olfuhun_effect", "olfuhun_mark"],
 		prompt: "将两张牌当杀使用或打出",
+		viewAsFilter(player) {
+			return player.countCards("hes") > 1;
+		},
 		subSkill: {
 			effect: {
 				audio: 2,

@@ -1089,7 +1089,7 @@ const translates = {
 	psanmou: "暗谋",
 	psanmou_info: "锁定技，游戏开始时，你暗中指定一名其他角色，你与其互相对对方使用牌无次数限制。",
 	pstousuan: "偷算",
-	pstousuan_info: "锁定技，若你/“暗谋”角色于本轮游戏中首次对其/对你造成伤害时，令此伤害+1并摸三张牌，然后失去“偷算”。",
+	pstousuan_info: "锁定技，若你/“暗谋”角色于本轮游戏中首次对其/对你造成伤害时，你令此伤害+1并摸三张牌，然后失去〖偷算〗。",
 };
 
 export default translates;
