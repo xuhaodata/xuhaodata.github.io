@@ -626,16 +626,18 @@ const skills = {
 			if (event.name.indexOf("lose") === 0) {
 				if (event.getlx === false || event.position !== ui.discardPile) return false;
 			} else if (event.getParent()?.relatedEvent?.name == "useCard") return false;
-			return event.cards.some(card => !player.getStorage("zhenbian").includes(get.suit(card, false)));
+			return event.cards.length;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			player.markAuto(
-				"zhenbian",
-				trigger.cards.reduce((list, card) => list.add(get.suit(card, false)), [])
-			);
-			player.storage.zhenbian.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
-			player.addTip("zhenbian", get.translation("zhenbian") + player.getStorage("zhenbian").reduce((str, suit) => str + get.translation(suit), ""));
+			if (trigger.cards.some(card => !player.getStorage("zhenbian").includes(get.suit(card, false)))) {
+				player.markAuto(
+					"zhenbian",
+					trigger.cards.reduce((list, card) => list.add(get.suit(card, false)), [])
+				);
+				player.storage.zhenbian.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+				player.addTip("zhenbian", get.translation("zhenbian") + player.getStorage("zhenbian").reduce((str, suit) => str + get.translation(suit), ""));
+			}
 			if (player.getStorage("zhenbian").length >= 4 && player.maxHp < 8) {
 				player.unmarkSkill("zhenbian");
 				await player.gainMaxHp();
