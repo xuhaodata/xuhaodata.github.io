@@ -4552,6 +4552,7 @@ const skills = {
 				inherit: "olmiji",
 			},
 		},
+		derivation: "olmiji",
 	},
 	olmiji: {
 		audio: 2,
