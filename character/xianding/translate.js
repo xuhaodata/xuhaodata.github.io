@@ -845,7 +845,7 @@ const translates = {
 	dcsbyingjia: "迎驾",
 	dcsbyingjia_info: "锁定技，你对距离不为1的其他角色使用牌后，本回合你计算与其距离为1，然后若你与所有其他角色距离均为1，可获得一名其他角色所有手牌，然后交给其等量的牌。",
 	dcsbxianju: "险拒",
-	dcsbxianju_info: "出牌阶段限一次，你可获得攻击范围内所有角色各1张牌，若如此做，出牌阶段结束时，你弃置等同于攻击范围外角色数的牌。",
+	dcsbxianju_info: "出牌阶段限一次，你可获得攻击范围内所有角色各一张牌，若如此做，出牌阶段结束时，你弃置等同于攻击范围外角色数的牌。",
 	dc_sb_liuxie: "新杀谋刘协",
 	dc_sb_liuxie_prefix: "新杀谋",
 	dcsbzhanban: "斩绊",
