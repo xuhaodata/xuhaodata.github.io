@@ -1820,9 +1820,11 @@ const skills = {
 		},
 		subSkill: {
 			backup: {
-				filterCard: true,
+				filterCard(card) {
+					return get.itemtype(card) === "card";
+				},
 				selectCard: -1,
-				position: "hs",
+				position: "h",
 				filterTarget: lib.filter.targetEnabledx,
 				viewAs: {
 					name: "sha",

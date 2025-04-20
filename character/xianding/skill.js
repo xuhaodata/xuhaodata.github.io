@@ -1523,6 +1523,12 @@ const skills = {
 					if (get.itemtype(card) === "card" && get.subtype(card) === "equip1") return num + 100;
 				}
 			},
+			cardUsable(card, player, num) {
+				if (card.storage?.dcbaguan) return Infinity;
+			},
+			cardEnabled(card, player) {
+				if (card.storage?.dcbaguan) return true;
+			},
 		},
 		group: "dcbaguan_mark",
 		subSkill: {
@@ -1543,7 +1549,10 @@ const skills = {
 					return get.itemtype(card) === "card";
 				},
 				filterTarget: lib.filter.filterTarget,
-				viewAs: { name: "sha" },
+				viewAs: {
+					name: "sha",
+					storage: { dcbaguan: true },
+				},
 				position: "hs",
 				ai1(card) {
 					return 8 - get.value(card);
@@ -17432,7 +17441,7 @@ const skills = {
 				var hs = player.getCards("h");
 				ts = ts.randomGets(Math.floor(ts.length / 2));
 				if (!hs.length) {
-					player.viewCards(get.translation(target) + "的部分手牌");
+					player.viewCards(get.translation(target) + "的部分手牌", ts);
 					event.finish();
 					return;
 				}
