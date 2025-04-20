@@ -2218,42 +2218,43 @@ const skills = {
 	//孙霸
 	dcjiedang: {
 		audio: 2,
-		intro: {
-			markcount: "expansion",
-			content: "expansion",
-		},
-		onremove(player, skill) {
-			var cards = player.getExpansions(skill);
-			if (cards.length) player.loseToDiscardpile(cards);
-		},
 		trigger: { player: "phaseBegin" },
 		frequent: true,
+		logTarget: () => game.filterPlayer().sortBySeat(),
 		async content(event, trigger, player) {
-			const targets = get.players();
-			player.line(targets);
-			for (const i of targets) {
-				const {
-					result: { bool, cards },
-				} = await i
+			for (const target of event.targets) {
+				if (!target.isIn() || !target.countCards("he")) continue;
+				const { result } = await target
 					.chooseCard([1, Infinity], "he")
-					.set("ai", function (card) {
+					.set("ai", card => {
 						const { targetx, player } = get.event();
-						if (!ui.selected.cards.length || player == targetx) {
-							return 6 - get.value(card);
-						}
+						const att = get.attitude(player, targetx);
+						if (att <= 0) return 0;
+						if (player == targetx) return 7.5 - get.value(card);
+						if (!ui.selected.cards.length) return 6 - get.value(card);
 						return 0;
 					})
 					.set("targetx", player)
 					.set("prompt", `是否响应${get.translation(player)}的【结党】？`)
 					.set("prompt2", `将任意张牌置于${get.translation(player)}的武将牌上`);
-				if (bool) {
-					i.chat("响应");
-					const next = player.addToExpansion(cards, i, "give");
-					next.gaintag.add("dcjiedang");
+				if (result?.bool && result?.cards?.length) {
+					target.chat("我没意见");
+					target.line(player);
+					const next = player.addToExpansion(result.cards, target, "give");
+					next.gaintag.add(event.name);
 					await next;
-					await i.draw();
-				} else i.chat("不响应");
+					await target.draw();
+				} else target.chat("但是我拒绝");
 			}
+		},
+		marktext: "党",
+		intro: {
+			markcount: "expansion",
+			content: "expansion",
+		},
+		onremove(player, skill) {
+			const cards = player.getExpansions(skill);
+			if (cards.length) player.loseToDiscardpile(cards);
 		},
 		group: "dcjiedang_lose",
 		subSkill: {
@@ -2264,19 +2265,37 @@ const skills = {
 					return player.getExpansions("dcjiedang").length > 0;
 				},
 				forced: true,
+				locked: false,
 				async content(event, trigger, player) {
-					const cards = player.getExpansions("dcjiedang");
-					const list = cards.map(c => get.type2(c)).unique();
-					const dialog = ui.create.dialog();
-					dialog.addText("结党：移去一种类别的所有“结党”牌并摸等量张牌");
-					dialog.addAuto(cards);
-					const {
-						result: { control },
-					} = await player.chooseControl(list).set("dialog", dialog);
-					const lose = cards.filter(c => get.type2(c) == control);
-					if (!lose.length) return;
-					await player.loseToDiscardpile(lose);
-					await player.draw(lose.length);
+					const expansions = player.getExpansions("dcjiedang");
+					const list = expansions.map(card => get.type2(card)).unique();
+					const dialog = ["结党：移去一种类别的所有“结党”牌并摸等量张牌"];
+					for (let i = 0; i < list.length; i++) {
+						const type = list[i];
+						const cards = expansions.filter(card => get.type2(card) == type);
+						if (cards.length) dialog.addArray([`<span class="text center">${get.translation(type)}</span>`, cards]);
+					}
+					const result =
+						list.length > 1
+							? await player
+									.chooseControl(list)
+									.set("ai", () => {
+										let { player, controls, expansions } = get.event();
+										return controls.sort((a, b) => {
+											return expansions.filter(card => get.type2(card) === b).length - expansions.filter(card => get.type2(card) === a).length;
+										})[0];
+									})
+									.set("dialog", dialog)
+									.set("expansions", expansions)
+									.forResult()
+							: { control: list[0] };
+					const control = result?.control;
+					if (control) {
+						const lose = expansions.filter(card => get.type2(card) == control);
+						if (!lose.length) return;
+						await player.loseToDiscardpile(lose);
+						await player.draw(lose.length);
+					}
 				},
 			},
 		},
