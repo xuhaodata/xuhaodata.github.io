@@ -21,14 +21,14 @@ const skills = {
 			if (typeof number !== "number") return false;
 			const storage = player.getStorage("xjzhitu"),
 				bool = !storage.includes(number);
-			if (event.name == "useCard") return bool || storage.length == 13;
+			if (event.name == "useCard") return bool || storage.filter(num => num > 0).length >= 13;
 			return bool;
 		},
 		async content(event, trigger, player) {
 			const storage = player.getStorage(event.name),
 				{ card } = trigger,
 				number = get.number(card);
-			if (trigger.name == "useCard" && storage.length == 13) {
+			if (trigger.name == "useCard" && storage.filter(num => num > 0).length >= 13) {
 				trigger.directHit.addArray(game.players);
 				game.log(card, "不能被响应");
 			}
@@ -38,9 +38,7 @@ const skills = {
 			}
 		},
 		onremove: true,
-		intro: {
-			content: "已记录点数：$",
-		},
+		intro: { content: "已记录点数：$" },
 	},
 	dcxiujue: {
 		audio: 2,
