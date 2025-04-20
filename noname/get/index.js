@@ -3781,6 +3781,10 @@ export class Get extends GetCompatible {
 				uiintro.addText(get.colorspan(lib.characterTitle[node.name]));
 			}
 
+			if (lib.characterAppend[node.name]) {
+				uiintro.addText(get.colorspan(lib.characterAppend[node.name]));
+			}
+
 			if (get.characterInitFilter(node.name)) {
 				const initFilters = get.characterInitFilter(node.name).filter(tag => {
 					if (!lib.characterInitFilter[node.name]) return true;
@@ -4503,6 +4507,10 @@ export class Get extends GetCompatible {
 
 			if (lib.characterTitle[node.link]) {
 				uiintro.addText(get.colorspan(lib.characterTitle[node.link]));
+			}
+
+			if (lib.characterAppend[node.link]) {
+				uiintro.addText(get.colorspan(lib.characterAppend[node.link]));
 			}
 
 			if (get.characterInitFilter(node.link)) {
