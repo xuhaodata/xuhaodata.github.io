@@ -1826,17 +1826,11 @@ const skills = {
 	},
 	twchunhui: {
 		audio: 2,
-		trigger: {
-			global: "useCardToTargeted",
-		},
+		trigger: { global: "useCardToTargeted" },
 		usable: 1,
 		filter(event, player) {
-			if (!get.tag(event.card, "damage") || get.type2(event.card) != "trick") {
-				return false;
-			}
-			if (player.hp < event.target.hp) return false;
-			if (event.target == player) return false;
-			return get.distance(player, event.target) <= 1 && event.target.isIn();
+			if (player.hp < event.target.hp || get.distance(player, event.target) > 1 || !player.countCards("h")) return false;
+			return get.tag(event.card, "damage") > 0.5 && get.type(event.card) == "trick";
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;
@@ -1844,21 +1838,12 @@ const skills = {
 		logTarget: "target",
 		async content(event, trigger, player) {
 			const { target } = trigger;
-			trigger.getParent().set("twchunhui_actived", true);
-			await target.gainPlayerCard("h", player).set("forced", true).set("visible", true);
+			if (player.countCards("h") && player != target) await target.gainPlayerCard(player, "h", true, "visible");
 			player
 				.when({ global: "useCardAfter" })
-				.filter(function (evt) {
-					return evt.twchunhui_actived;
-				})
-				.step(async function () {
-					if (
-						target.getHistory("damage", function (evt) {
-							return evt.getParent(2) === trigger;
-						}).length === 0
-					) {
-						await player.draw();
-					}
+				.filter(evt => evt == trigger.getParent())
+				.step(async () => {
+					if (!target.hasHistory("damage", evt => evt.card == trigger.card)) await player.draw();
 				});
 		},
 	},
