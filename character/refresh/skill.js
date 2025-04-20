@@ -13289,7 +13289,7 @@ const skills = {
 			if (!ui.selected.cards.length && card.name == "du") return 20;
 			var player = get.owner(card);
 			if (ui.selected.cards.length >= Math.max(2, player.countCards("h") - player.hp)) return 0;
-			if (player.hp == player.maxHp || player.storage.rerende < 0 || player.countCards("h") <= 1) {
+			if (player.hp == player.maxHp || player.countMark("rerende") < 0 || player.countCards("h") <= 1) {
 				var players = game.filterPlayer();
 				for (var i = 0; i < players.length; i++) {
 					if (players[i].hasSkill("haoshi") && !players[i].isTurnedOver() && !players[i].hasJudge("lebu") && get.attitude(player, players[i]) >= 3 && get.attitude(players[i], player) >= 3) {
@@ -13308,27 +13308,30 @@ const skills = {
 			player.markAuto(name + "_targeted", [target]);
 			let num = 0;
 			player.getHistory("lose", evt => {
-				if (evt.getParent(2).name == name) num += evt.cards.length;
+				if (evt.getParent(2).name == name && evt.getParent("phaseUse") == event.getParent(3)) num += evt.cards.length;
 			});
+			if (!player.storage[event.name]) {
+				player.when({ player: "phaseUseEnd" }).step(async () => {
+					player.clearMark(event.name, false);
+				});
+			}
+			player.addMark(event.name, num + cards.length, false);
 			await player.give(cards, target);
 			const list = get.inpileVCardList(info => {
-				return get.type(info[2]) == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), null, true);
+				return info[0] == "basic" && player.hasUseTarget(new lib.element.VCard({ name: info[2], nature: info[3] }), null, true);
 			});
 			if (num < 2 && num + cards.length > 1 && list.length) {
-				const links = await player
-					.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]])
-					.set("ai", button => {
-						return get.player().getUseValue({ name: button.link[2], nature: button.link[3], isCard: true });
-					})
-					.forResultLinks();
-				if (!links?.length) return;
-				await player.chooseUseTarget(get.autoViewAs({ name: links[0][2], nature: links[0][3], isCard: true }), true);
+				const { result } = await player.chooseButton(["是否视为使用一张基本牌？", [list, "vcard"]]).set("ai", button => {
+					return get.player().getUseValue({ name: button.link[2], nature: button.link[3], isCard: true });
+				});
+				if (!result?.links?.length) return;
+				await player.chooseUseTarget(get.autoViewAs({ name: result.links[0][2], nature: result.links[0][3], isCard: true }), true);
 			}
 		},
 		ai: {
 			fireAttack: true,
 			order(skill, player) {
-				if (player.hp < player.maxHp && player.storage.rerende < 2 && player.countCards("h") > 1) {
+				if (player.hp < player.maxHp && player.countMark("rerende") < 2 && player.countCards("h") > 1) {
 					return 10;
 				}
 				return 4;
@@ -13343,7 +13346,7 @@ const skills = {
 					if (target.hasJudge("lebu")) return 0;
 					var nh = target.countCards("h");
 					var np = player.countCards("h");
-					if (player.hp == player.maxHp || player.storage.rerende < 0 || player.countCards("h") <= 1) {
+					if (player.hp == player.maxHp || player.countMark("rerende") < 0 || player.countCards("h") <= 1) {
 						if (nh >= np - 1 && np <= player.hp && !target.hasSkill("haoshi")) return 0;
 					}
 					return Math.max(1, 5 - nh);
@@ -13353,11 +13356,7 @@ const skills = {
 				target_use(card, player, target) {
 					if (player == target && get.type(card) == "equip") {
 						if (player.countCards("e", { subtype: get.subtype(card) })) {
-							if (
-								game.hasPlayer(function (current) {
-									return current != player && get.attitude(player, current) > 0;
-								})
-							) {
+							if (game.hasPlayer(current => current != player && get.attitude(player, current) > 0)) {
 								return 0;
 							}
 						}
@@ -13365,6 +13364,12 @@ const skills = {
 				},
 			},
 			threaten: 0.8,
+		},
+		marktext: "仁",
+		onremove: true,
+		intro: {
+			content: "本阶段已仁德牌数：#",
+			onunmark: true,
 		},
 		subSkill: {
 			targeted: {
