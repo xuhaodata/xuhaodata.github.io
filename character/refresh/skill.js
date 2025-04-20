@@ -12500,66 +12500,79 @@ const skills = {
 		},
 	},
 	new_yijue: {
+		initSkill(skill) {
+			if (!lib.skill[skill]) {
+				lib.skill[skill] = {
+					charlotte: true,
+					onremove: true,
+					mark: true,
+					marktext: "绝",
+					intro: {
+						markcount: () => 0,
+						content: storage => `本回合不能使用或打出手牌、非锁定技失效且受到${get.translation(storage[1])}红桃【杀】的伤害+1`,
+					},
+					group: "new_yijue_ban",
+				};
+				lib.translate[skill] = "义绝";
+				lib.translate[skill + "_bg"] = "绝";
+			}
+		},
 		audio: "yijue",
 		enable: "phaseUse",
 		usable: 1,
-		position: "he",
 		filterTarget(card, player, target) {
 			return player != target && target.countCards("h");
 		},
-		filterCard: true,
+		filterCard: lib.filter.cardDiscardable,
+		position: "he",
 		check(card) {
 			return 8 - get.value(card);
 		},
-		content() {
-			"step 0";
-			if (!target.countCards("h")) {
-				event.finish();
-				return;
-			} else
-				target
-					.chooseCard(true, "h")
-					.set("ai", function (card) {
-						var player = _status.event.player;
-						if (get.color(card) == "black") return 18 - get.event("black") - get.value(card);
-						return 18 - get.value(card);
-					})
-					.set(
-						"black",
-						(function () {
-							if (get.attitude(target, player) > 0) return 18;
-							if (
-								target.hasCard(card => {
-									const name = get.name(card, target);
-									return name === "shan" || name === "tao" || (name === "jiu" && target.hp < 3);
-								})
-							)
-								return 18 / target.hp;
-							if (target.hp < 3) return 12 / target.hp;
-							return 0;
-						})()
-					);
-			"step 1";
-			target.showCards(result.cards);
-			event.card2 = result.cards[0];
-			if (get.color(event.card2) == "black") {
-				if (!target.hasSkill("fengyin")) {
-					target.addTempSkill("fengyin");
+		async content(event, trigger, player) {
+			const { target } = event;
+			if (!target.countCards("h")) return;
+			const { result } = await target
+				.chooseCard(true, "h")
+				.set("ai", card => {
+					const player = get.player();
+					if (get.color(card) == "black") return 18 - get.event("black") - get.value(card);
+					return 18 - get.value(card);
+				})
+				.set(
+					"black",
+					(() => {
+						if (get.attitude(target, player) > 0) return 18;
+						if (
+							target.hasCard(card => {
+								const name = get.name(card, target);
+								return name === "shan" || name === "tao" || (name === "jiu" && target.hp < 3);
+							})
+						)
+							return 18 / target.hp;
+						if (target.hp < 3) return 12 / target.hp;
+						return 0;
+					})()
+				);
+			if (result?.bool && result?.cards?.length) {
+				const { cards } = result;
+				await target.showCards(cards);
+				const [card] = cards;
+				if (get.color(card) == "black") {
+					if (!target.hasSkill("fengyin")) target.addTempSkill("fengyin");
+					const skill = "new_yijue_" + player.playerid;
+					game.broadcastAll(lib.skill.new_yijue.initSkill, skill);
+					target.addTempSkill(skill);
+					target.storage[skill] ??= [0, player];
+					target.storage[skill][0]++;
+					target.markSkill(skill);
+					player.addTempSkill("new_yijue_effect");
+				} else if (get.color(card) == "red") {
+					await player.gain(card, target, "give", "bySelf");
+					if (target.isDamaged()) {
+						const { result } = await player.chooseBool(`是否让${get.translation(target)}回复1点体力？`).set("choice", get.recoverEffect(target, player, player) > 0);
+						if (result?.bool) await target.recover();
+					}
 				}
-				target.addTempSkill("new_yijue2");
-				target.addMark("new_yijue2", 1, false);
-				event.finish();
-			} else if (get.color(event.card2) == "red") {
-				player.gain(event.card2, target, "give", "bySelf");
-				if (target.hp < target.maxHp) {
-					player.chooseBool("是否让目标回复1点体力？").ai = function (event, player) {
-						return get.recoverEffect(target, player, player) > 0;
-					};
-				}
-			}
-			"step 2";
-			if (result.bool) {
-				target.recover();
 			}
 		},
 		ai: {
@@ -12579,33 +12592,30 @@ const skills = {
 			order: 9,
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (!arg.target.hasSkillTag("new_yijue2")) return false;
+				if (!arg.target.hasSkill("new_yijue_" + player.playerid)) return false;
 			},
 		},
-	},
-	new_yijue2: {
-		trigger: {
-			player: "damageBegin1",
-		},
-		filter(event) {
-			return event.source && event.source == _status.currentPhase && event.card && event.card.name == "sha" && get.suit(event.card) == "heart" && event.notLink();
-		},
-		popup: false,
-		forced: true,
-		charlotte: true,
-		sourceSkill: "new_yijue",
-		content() {
-			trigger.num += player.countMark(event.name);
-		},
-		mark: true,
-		mod: {
-			cardEnabled2(card) {
-				if (get.position(card) == "h") return false;
+		subSkill: {
+			effect: {
+				charlotte: true,
+				trigger: { source: "damageBegin1" },
+				filter(event, player) {
+					return event.card?.name == "sha" && get.suit(event.card) == "heart" && event.notLink() && event.player.storage["new_yijue_" + player.playerid]?.[1] == player;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					trigger.num += trigger.player.storage["new_yijue_" + player.playerid][0];
+				},
 			},
-		},
-		intro: {
-			markcount: () => 0,
-			content: "不能使用或打出手牌",
+			ban: {
+				charlotte: true,
+				mod: {
+					cardEnabled2(card) {
+						if (get.position(card) == "h") return false;
+					},
+				},
+			},
 		},
 	},
 	paoxiao_re_zhangfei: { audio: 2 },
