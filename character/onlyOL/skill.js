@@ -2172,7 +2172,7 @@ const skills = {
 								cards2.remove(link);
 								const suits = cards1.filter(card => get.suit(card) == get.suit(link));
 								const numbers = cards1.filter(card => get.number(card) == get.number(link));
-								if (suits.length > 2 || numbers.length > 2) return 20 + get.value(card);
+								if (suits.length > 2 || numbers.length > 2) return 20 + get.value(link);
 								return get.value(link);
 							}
 							cards1.push(ui.selected.buttons[0].link);

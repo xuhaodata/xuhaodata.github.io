@@ -2817,9 +2817,7 @@ const skills = {
 				}
 			},
 		},
-		trigger: {
-			player: "useCard",
-		},
+		trigger: { player: "useCard" },
 		filter(event, player) {
 			if (event.card.name != "sha") return false;
 			const evt = lib.skill.dcjianying.getLastUsed(player, event);
@@ -2864,16 +2862,18 @@ const skills = {
 		subSkill: {
 			mark: {
 				charlotte: true,
-				trigger: {
-					player: "useCardAfter",
-				},
+				trigger: { player: ["useCard1", "useCardAfter"] },
 				forced: true,
 				popup: false,
 				firstDo: true,
 				async content(event, trigger, player) {
-					if (!trigger.dcporong && get.tag(trigger.card, "damage") > 0.5) {
-						player.addTip("dcporong", "破戎 可连击");
-					} else player.removeTip("dcporong");
+					if (event.triggername == "useCard1") {
+						if (get.tag(trigger.card, "damage") > 0.5) {
+							player.addTip("dcporong", "破戎 可连击");
+						} else player.removeTip("dcporong");
+					} else if (trigger.dcporong) {
+						player.removeTip("dcporong");
+					}
 				},
 			},
 		},

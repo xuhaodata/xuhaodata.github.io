@@ -6997,7 +6997,7 @@ const skills = {
 			event.cards = cards;
 			event.target = target;
 			player
-				.chooseToMove("力荐：请分配" + get.translation(target) + "和你获得的牌", true)
+				.chooseToMove("力谏：请分配" + get.translation(target) + "和你获得的牌", true)
 				.set("list", [[get.translation(target) + "获得的牌", cards], ["你获得的牌"]])
 				.set("processAI", function (list) {
 					var player = _status.event.player;
@@ -7088,8 +7088,8 @@ const skills = {
 					"step 1";
 					if (player.countMark("twlijian_sunben") >= 8) {
 						player.removeSkill("twlijian_sunben");
-						player.popup("力荐");
-						game.log(player, "恢复了技能", "#g【力荐】");
+						player.popup("力谏");
+						game.log(player, "恢复了技能", "#g【力谏】");
 					}
 				},
 			},

@@ -8319,18 +8319,18 @@ const skills = {
 			const num = hs.length;
 			if (!num) return;
 			await player.discard(hs);
-			const bool =
+			const result =
 				target.countCards("he") < num
-					? true
+					? { bool: true }
 					: await target
-							.chooseToDiscard(`${get.translation(player)}对你发动了【诛宦】`, `弃置${get.cnNumber(num)}张牌并失去1点体力；或点击“取消”令其回复1点体力且其摸${get.cnNumber(num)}张牌`, "he")
+							.chooseToDiscard(`${get.translation(player)}对你发动了【诛宦】`, `弃置${get.cnNumber(num)}张牌并受到1点伤害；或点击“取消”令其回复1点体力且其摸${get.cnNumber(num)}张牌`, "he")
 							.set("ai", card => {
 								if (get.event().goon) return 0;
 								return 5.5 - get.value(card);
 							})
 							.set("goon", target.hp <= 2 || get.attitude(target, player) >= 0 || player.isHealthy())
-							.forResultBool();
-			if (bool) await target.loseHp();
+							.forResult();
+			if (result?.bool) await target.damage();
 			else {
 				await player.draw(num);
 				await player.recover();
@@ -9395,7 +9395,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const { target } = trigger;
 			event.result = await player
-				.choosePlayerCard(target, "h", true, [1, Infinity], `分敌：展示${get.translation(target)}的任意张手牌`)
+				.choosePlayerCard(target, "h", [1, Infinity], `分敌：展示${get.translation(target)}的任意张手牌`)
 				.set("ai", button => {
 					if (_status.event.all) return 1;
 					if (ui.selected.buttons.length) return 0;
