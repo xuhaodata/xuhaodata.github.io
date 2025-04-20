@@ -12320,7 +12320,7 @@ const skills = {
 				})
 				.forResult();
 			if (!result?.bool || !result?.cards?.length) await trigger.source.loseHp();
-			else if (get.suit(result.cards[0]) == "heart") await player.draw();
+			else if (result?.cards?.length && get.suit(result.cards[0]) !== "heart") await player.draw();
 		},
 	},
 	//马岱

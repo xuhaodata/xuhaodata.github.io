@@ -629,7 +629,7 @@ const translates = {
 	dcsbkuangzhan: "狂战",
 	dcsbkuangzhan_info: "出牌阶段限一次，你可以将手牌摸至体力上限并进行X次拼点。若你赢，你视为对所有本回合拼点未赢的其他角色使用一张【杀】；若你未赢，视为其对你使用一张【杀】。（X为你以此法获得的牌数）",
 	dcsbkangyong: "亢勇",
-	dcsbkangyong_info: "锁定技，你将体力值回复至体力上限，然后于此回合结束时失去等量点体力（至多失去至1点）。",
+	dcsbkangyong_info: "锁定技，回合开始时，你将体力值回复至体力上限，然后于此回合结束时失去等量点体力（至多失去至1点）。",
 	dc_sb_guanping: "新杀谋关平",
 	dc_sb_guanping_prefix: "新杀谋",
 	dcsbwuwei: "武威",
