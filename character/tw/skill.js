@@ -1911,8 +1911,10 @@ const skills = {
 					result: { links: cards },
 				} = await target.chooseButton(dialog, true).set("filterButton", button => {
 					const { link: card } = button;
+					const player = get.player();
+					const target = get.event().getParent().player;
 					const juedou = get.autoViewAs({ name: "juedou" }, [card]);
-					return game.hasPlayer(current => current != player && target.canUse(juedou, current));
+					return game.hasPlayer(current => current != target && player.canUse(juedou, current));
 				});
 				await target
 					.chooseUseTarget({ name: "juedou", isCard: true }, cards)
