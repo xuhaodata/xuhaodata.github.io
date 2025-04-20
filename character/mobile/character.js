@@ -29,6 +29,7 @@ const characters = {
 		hp: 3,
 		maxHp: 4,
 		skills: ["mbxuehen", "mbhuxiao", "mbwuji"],
+		dieAudios: ["guanyinping"],
 	},
 	pot_chendao: {
 		sex: "male",

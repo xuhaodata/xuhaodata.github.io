@@ -388,6 +388,7 @@ const characters = {
 		group: "shu",
 		hp: 3,
 		skills: ["xueji", "huxiao", "tywuji"],
+		dieAudios: ["guanyinping"],
 	},
 	ty_shamoke: {
 		sex: "male",
