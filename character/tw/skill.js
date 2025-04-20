@@ -12303,7 +12303,7 @@ const skills = {
 		audio: ["enyuan3.mp3", "enyuan4.mp3"],
 		inherit: "xinenyuan2",
 		sourceSkill: "twenyuan",
-		prompt2: event => `令${get.translation(event.source)}令其选择一项：1.失去1点体力；2.交给你一张手牌，若此牌的花色不为♥，你摸一张牌。`,
+		prompt2: event => `令${get.translation(event.source)}选择一项：1.失去1点体力；2.交给你一张手牌，若此牌的花色不为♥，你摸一张牌。`,
 		async content(event, trigger, player) {
 			const result = await trigger.source
 				.chooseToGive(`恩怨：交给${get.translation(player)}一张手牌，或失去1点体力`, "h", player)
