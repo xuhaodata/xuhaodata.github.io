@@ -1,4 +1,9 @@
 export default {
+	"#rezhuikong_ol_fuhuanghou1": "曹贼一日不除，旦夕如不终日。",
+	"#rezhuikong_ol_fuhuanghou2": "见许田曹瞒骖乘，叫人如芒在背。",
+	"#olqiuyuan1": "我父伏完常有杀操之心，今当修书一封，秘密图之。",
+	"#olqiuyuan2": "中朝能称忠义者，莫当黄门穆顺。",
+	"#ol_fuhuanghou:die": "只恨邪风不静，不能杀了老贼……",
 	"#olsblunzhan1": "杀!尽歼贼败军之众!",
 	"#olsblunzhan2": "白马公孙?哼，不过吾一合之敌!",
 	"#olsbjuejue1": "冠绝河北，威震冀幽，一勇可当万夫!",

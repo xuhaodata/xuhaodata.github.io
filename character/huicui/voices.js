@@ -1,4 +1,9 @@
 export default {
+	"#dcmanhou1": "既为蛮王之妻，当彰九黎之仪。",
+	"#dcmanhou2": "君行役四海，妾怎敢居后。",
+	"#dctanluan1": "暗索缚雄兵，尔等不过如此！",
+	"#dctanluan2": "飞刀伤汉将，何人再来一战？",
+	"#dc_sp_zhurong:die": "丞相已数释，夫君忘恩乎？",
 	"#dcxianniang1": "将军！嘿嘿~酒来了~",
 	"#dcxianniang2": "酒里没毒，真是的，自己吓自己！",
 	"#houcheng:die": "将军，你不喝酒呀？",
