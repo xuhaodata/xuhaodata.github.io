@@ -250,6 +250,9 @@ const skills = {
 			}
 			if (!cards.length) await player.draw(2);
 		},
+		ai: {
+			combo: "clanjiewu",
+		},
 	},
 	//族杨赐
 	clanqieyi: {
@@ -434,6 +437,9 @@ const skills = {
 					.setContent("gaincardMultiple");
 			}
 			if (judge.some(card => !suits.includes(get.suit(card, false)))) await player.damage("nosource", "thunder");
+		},
+		ai: {
+			combo: "clanqieyi",
 		},
 	},
 	clanquhuo: {

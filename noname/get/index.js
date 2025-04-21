@@ -2601,6 +2601,21 @@ export class Get extends GetCompatible {
 		return natures.split(lib.natureSeparator);
 	}
 	/**
+	 * 返回能响应此牌的牌名数组（也支持一些标签，如trick，damage和all）具体用法可见player.canRespond
+	 * @param {string | Card | VCard} card
+	 * @param {false | Player} [player]
+	 * @returns {string[]}
+	 */
+	canRespond(card, player) {
+		let name;
+		if (typeof card == "object") name = get.name(card, player);
+		else name = card;
+		if (typeof name != "string") return [];
+		const names = lib.respondMap[name];
+		if (!names?.length) return [];
+		return names;
+	}
+	/**
 	 * 返回牌堆顶的牌
 	 * @param { number } [num = 1] 默认为1
 	 * @param { boolean } [putBack] 是否放回牌堆顶
