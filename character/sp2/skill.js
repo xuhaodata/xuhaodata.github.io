@@ -167,7 +167,7 @@ const skills = {
 					.chooseTarget(
 						"请选择" + get.translation(trigger.card) + "的额外目标",
 						(card, player, target) => {
-							const event = get.event().getTrigger().getParent();
+							const event = get.event().getTrigger();
 							if (event.targets.includes(target)) return false;
 							return lib.filter.targetEnabled2(event.card, player, target) && lib.filter.targetInRange(event.card, player, target);
 						},
@@ -175,7 +175,7 @@ const skills = {
 					)
 					.set("ai", target => {
 						const player = get.player(),
-							event = get.event().getTrigger().getParent();
+							event = get.event().getTrigger();
 						return get.effect(target, event.card, player, player);
 					});
 				if (result?.bool && result.targets?.length) {

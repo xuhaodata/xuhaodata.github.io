@@ -2491,6 +2491,7 @@ const skills = {
 		},
 	},
 	twfuman2: {
+		charlotte: true,
 		mod: {
 			aiOrder(player, card, num) {
 				if (get.itemtype(card) == "card" && card.hasGaintag("twfuman")) return num + 1;

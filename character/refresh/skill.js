@@ -1503,6 +1503,7 @@ const skills = {
 		},
 	},
 	refuman2: {
+		charlotte: true,
 		onremove(player) {
 			player.removeGaintag("refuman");
 		},

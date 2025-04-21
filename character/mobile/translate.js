@@ -214,7 +214,6 @@ const translates = {
 	rangjie: "让节",
 	rangjie_info: "当你受到1点伤害后，你可以选择一项并摸一张牌：获得牌堆或弃牌堆里你选择的类型的一张牌，或移动场上的一张牌。",
 	yizheng: "义争",
-	yizheng2: "义争",
 	yizheng_info: "出牌阶段限一次，你可以和一名体力值不大于你的其他角色拼点。若你赢，其跳过下个摸牌阶段。若你没赢，你减1点体力上限。",
 	re_heqi: "手杀贺齐",
 	re_heqi_prefix: "手杀",

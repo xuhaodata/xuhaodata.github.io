@@ -19594,21 +19594,18 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.hp <= player.hp && player.canCompare(current);
-			});
+			return game.hasPlayer(current => get.info("yizheng").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, current) {
 			return current.hp <= player.hp && player.canCompare(current);
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(target);
-			"step 1";
-			if (result.bool) {
+		async content(event, trigger, player) {
+			const { target } = event;
+			const { result } = await player.chooseToCompare(target);
+			if (result?.bool) {
 				target.skip("phaseDraw");
-				target.addTempSkill("yizheng2", { player: "phaseDrawSkipped" });
-			} else player.loseMaxHp();
+				target.addTempSkill(event.name + "_mark", { player: "phaseDrawSkipped" });
+			} else await player.loseMaxHp();
 		},
 		ai: {
 			order: 1,
@@ -19633,10 +19630,13 @@ const skills = {
 				},
 			},
 		},
-	},
-	yizheng2: {
-		mark: true,
-		intro: { content: "跳过下回合的摸牌阶段" },
+		subSkill: {
+			mark: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "跳过下回合的摸牌阶段" },
+			},
+		},
 	},
 	rw_zhuge_skill: {
 		equipSkill: true,
