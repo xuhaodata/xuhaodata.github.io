@@ -1071,29 +1071,11 @@ export class Get extends GetCompatible {
 		for (let i = 0; i < level; i++) indent += "    ";
 		try {
 			if (get.objtype(obj) === "object" /*  || obj instanceof lib.element.GameEvent */) {
-				const isMethod = (/** @type {string} */ key) => {
-					const value = obj[key];
-					if (!(typeof value === "function")) return false;
-					key = key.replaceAll("$", "\\$");
-					let reg;
-					if (value instanceof GeneratorFunction) {
-						// content*(){}
-						reg = new RegExp(`\\*\\s*${key}[\\s\\S]*?\\(`);
-					} else if (value instanceof AsyncFunction) {
-						// async content(){}
-						reg = new RegExp(`async\\s*${key}[\\s\\S]*?\\(`);
-					} else {
-						// content(){}
-						reg = new RegExp(`${key}[\\s\\S]*?\\(`);
-					}
-					return reg.exec(value)?.index === 0;
-				};
-
 				let str = "{\n";
 				for (const key in obj) {
 					let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
 					const valueString = get.stringify(obj[key], level + 1);
-					if (isMethod(key)) keyString = "";
+					if (get.is.functionMethod(obj, key)) keyString = "";
 					str += indent + "    " + keyString + valueString + ",\n";
 				}
 				str += indent + "}";
