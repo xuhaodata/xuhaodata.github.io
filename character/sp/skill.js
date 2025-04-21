@@ -3179,10 +3179,7 @@ const skills = {
 				if (result?.bool && result.links?.length) player.removeSkill(result.links);
 			}
 		},
-		ai: {
-			threaten: 4,
-			combo: "olhedao",
-		},
+		ai: { threaten: 4 },
 		derivation: "olhedao_faq",
 	},
 	olshoushu: {
@@ -3224,7 +3221,7 @@ const skills = {
 		ai: {
 			order: 1,
 			result: { target: 1 },
-			combo: "olhedao",
+			combo: "olqingshu",
 		},
 	},
 	//SP曹操
@@ -24963,6 +24960,7 @@ const skills = {
 		},
 	},
 	fuman2: {
+		charlotte: true,
 		mod: {
 			aiOrder(player, card, num) {
 				if (get.itemtype(card) == "card" && card.hasGaintag("fuman")) return num + 1;
