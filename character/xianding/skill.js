@@ -176,6 +176,7 @@ const skills = {
 		//frequent:true,
 		async content(event, trigger, player) {
 			const cards = await player.draw(2).forResult();
+			if (get.itemtype(card) != "cards") return;
 			const result = await player
 				.chooseTarget(`笃君：将${get.translation(cards)}交给一名角色`, true)
 				.set("ai", target => {

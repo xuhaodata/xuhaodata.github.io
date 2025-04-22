@@ -1626,7 +1626,7 @@ export const Content = {
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
 
-				_status.imchoosing = true;
+				//_status.imchoosing = true;
 				event.settleed = false;
 
 				event.dialog = ui.create.dialog(event.prompt || "请选择要操作的牌", "hidden", "forcebutton");
