@@ -1918,8 +1918,10 @@ const skills = {
 					.chooseUseTarget({ name: "juedou", isCard: true }, cards)
 					.set("targetx", player)
 					.set("filterTarget", function (card, player, target) {
-						const evt = get.event();
-						return evt.targetx != target && lib.filter.filterTarget(card, player, target);
+						var evt = _status.event;
+						if (_status.event.name == "chooseTarget") evt = evt.getParent();
+						if (target === evt.targetx) return false;
+						return lib.filter.filterTarget(card, player, target);
 					});
 			}
 		},
