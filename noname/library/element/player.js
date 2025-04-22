@@ -7014,6 +7014,10 @@ export class Player extends HTMLDivElement {
 				ui.continue_game.close();
 				delete ui.continue_game;
 			}
+			if (this.node.dieidentity) {
+				this.node.dieidentity.delete();
+				delete this.node.dieidentity;
+			}
 		}
 	}
 	isMad() {
@@ -8560,7 +8564,13 @@ export class Player extends HTMLDivElement {
 			this.addSkill(skillsToAdd[i], null, true, true);
 			this.additionalSkills[skill].push(skillsToAdd[i]);
 		}
-
+		game.broadcast(
+			(player, map) => {
+				player.additionalSkills = map;
+			},
+			this,
+			this.additionalSkills
+		);
 		this.checkConflict();
 		_status.event.clearStepCache();
 		return this;
@@ -8579,6 +8589,13 @@ export class Player extends HTMLDivElement {
 				delete this.additionalSkills[skill];
 			}
 		}
+		game.broadcast(
+			(player, map) => {
+				player.additionalSkills = map;
+			},
+			this,
+			this.additionalSkills
+		);
 	}
 	getRemovableAdditionalSkills(skill, target) {
 		const player = this,
@@ -8979,6 +8996,13 @@ export class Player extends HTMLDivElement {
 					triggers.forEach(trigger => (lib.hookmap[trigger] = true));
 				}
 			}
+			game.broadcast(
+				(player, map) => {
+					player.tempSkills = map;
+				},
+				this,
+				this.tempSkills
+			);
 		}
 		return skill;
 	}

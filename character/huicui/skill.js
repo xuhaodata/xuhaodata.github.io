@@ -381,6 +381,9 @@ const skills = {
 			player.addMark("dcaoren_used", 1, false);
 			player.addTempSkill("dcaoren_used", "roundStart");
 		},
+		ai: {
+			combo: "dcmurui",
+		},
 		subSkill: {
 			used: {
 				charlotte: true,
@@ -672,6 +675,9 @@ const skills = {
 				trigger.card.name === cardx.name
 			)
 				await player.draw(2);
+		},
+		ai: {
+			combo: "dctanban",
 		},
 	},
 	//黄舞蝶

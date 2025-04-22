@@ -10213,7 +10213,7 @@ export class Library {
 					const skillName = item.slice(9);
 					if (lib.skill[skillName]) {
 						const skills = game.expandSkills([skillName]);
-						if (skills.includes(skill)) return false;
+						if (skills.includes(skill) && !get.info(skill).charlotte) return false;
 					}
 				}
 			}
@@ -10265,7 +10265,7 @@ export class Library {
 				const skillName = item.slice(9);
 				if (!lib.skill[skillName]) continue;
 				const skills = game.expandSkills([skillName]);
-				if (skills.includes(skill)) return false;
+				if (skills.includes(skill) && !get.info(skill).charlotte) return false;
 			}
 			return true;
 		},

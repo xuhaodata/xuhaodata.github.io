@@ -15165,6 +15165,7 @@ const skills = {
 		},
 		init: () => {
 			game.addGlobalSkill("yjdumou_du");
+			game.addGlobalSkill("g_du");
 		},
 		onremove: () => {
 			if (!game.hasPlayer(i => i.hasSkill("yjdumou", null, null, false), true)) game.removeGlobalSkill("yjdumou_du");

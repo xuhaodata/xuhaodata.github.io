@@ -1218,6 +1218,8 @@ window.noname_character_rank = {
 		"ol_maliang",
 	],
 	b: [
+		"dc_zhongyu",
+		"dc_xiahouhui",
 		"star_zhangrang",
 		"ol_yangfu",
 		"ol_lifeng",
@@ -3085,6 +3087,8 @@ window.noname_character_rank = {
 			"junk_liuyan",
 		],
 		rare: [
+			"dc_zhongyu",
+			"dc_xiahouhui",
 			"star_zhangrang",
 			"ol_madai",
 			"guoyuan",
