@@ -694,7 +694,7 @@ const skills = {
 						player.logSkill("mbrunwei", null, null, null, [3]);
 						player.removeSkill(event.name);
 						delete player.getStat().skill.mbrunwei;
-						game.log(player, "的", `#g〖${get.translation(event.name)}〗`, `视为未发动过`);
+						game.log(player, "重置了", `#g〖${get.translation(event.name)}〗`);
 					} else {
 						player.removeMark(event.name, num, false);
 						player.addTip(event.name, `润微  ${player.countMark(event.name)}`);
@@ -741,12 +741,18 @@ const skills = {
 					],
 				])
 				.set("filterButton", button => {
-					if (button.link == "tao") {
-						const card = get.discardPile(cardx => cardx.name == "tao");
-						if (!card) return false;
-					}
-					return true;
+					return get.event().links.includes(button.link);
 				})
+				.set(
+					"links",
+					["cancel", "tao"].filter(link => {
+						if (link == "tao") {
+							const card = get.discardPile(cardx => cardx.name == "tao");
+							if (!card) return false;
+						}
+						return true;
+					})
+				)
 				.set("ai", button => {
 					const trigger = get.event().getTrigger(),
 						eff = get.damageEffect(trigger.player, trigger.source, get.player());

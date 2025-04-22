@@ -1840,9 +1840,11 @@ const skills = {
 		},
 		subSkill: {
 			backup: {
-				filterCard: true,
+				filterCard(card) {
+					return get.itemtype(card) === "card";
+				},
 				selectCard: -1,
-				position: "hs",
+				position: "h",
 				filterTarget: lib.filter.targetEnabledx,
 				viewAs: {
 					name: "sha",
@@ -15183,6 +15185,7 @@ const skills = {
 		},
 		init: () => {
 			game.addGlobalSkill("yjdumou_du");
+			game.addGlobalSkill("g_du");
 		},
 		onremove: () => {
 			if (!game.hasPlayer(i => i.hasSkill("yjdumou", null, null, false), true)) game.removeGlobalSkill("yjdumou_du");

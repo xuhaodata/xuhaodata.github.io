@@ -4081,7 +4081,7 @@ const skills = {
 						.event()
 						.getTrigger()
 						.player.countCards("e", card => {
-							return player.canEquip(card);
+							return get.player().canEquip(card);
 						})
 				)
 					return false;
@@ -4089,7 +4089,8 @@ const skills = {
 			});
 			next.set("ai", button => {
 				const target = get.event().getTrigger().player,
-					val = target.hasSkillTag("noe") ? 6 : 0;
+					val = target.hasSkillTag("noe") ? 6 : 0,
+					player = get.player();
 				if (
 					button.link == "move" &&
 					(get.attitude(player, target) > 0 ||

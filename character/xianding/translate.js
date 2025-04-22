@@ -854,6 +854,18 @@ const translates = {
 	dcsbchensheng_info: "其他角色的回合结束时，若你和当前回合角色都不是手牌数唯一最多的角色，则你摸一张牌。",
 	dcsbtiancheng: "天承",
 	dcsbtiancheng_info: "主公技，你发动〖斩绊〗时，可以选择任意群雄角色不成为〖斩绊〗的目标。",
+	dc_zhongyu: "新杀钟毓",
+	dc_zhongyu_prefix: "新杀",
+	dczhidui: "智对",
+	dczhidui_info: "你使用牌时，若与上一张被使用的牌牌名字数与类型皆相同，你可选择一项执行：1.摸两张牌；2.令此牌不计入次数限制。若皆不同此技能本回合失效。",
+	dcjiesi: "捷思",
+	dcjiesi_info: "出牌阶段，你可弃置任意张牌，获得一张牌名字数与弃置牌数相等的牌，若获得牌牌名与本阶段以此法获得的牌牌名相同，此技能本阶段失效。",
+	dc_xiahouhui: "新杀夏侯徽",
+	dc_xiahouhui_prefix: "新杀",
+	dcdujun: "笃君",
+	dcdujun_info: "游戏开始时，你选择一名其他角色，你不能响应其使用的牌。你与其每回合首次造成或受到伤害后，你可摸2张牌，然后将这些牌交给一名角色。",
+	dcjikun: "济困",
+	dcjikun_info: "每当你累计失去5张牌后，你可令一名其他角色随机获得一名手牌数最多的角色的1张牌。",
 };
 
 export default translates;

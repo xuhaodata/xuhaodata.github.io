@@ -191,18 +191,13 @@ const skills = {
 			backup(links, player) {
 				return {
 					audio: "olshuliang",
-					filterCard() {
-						return false;
+					filterCard(card) {
+						return card === lib.skill.olshuliang_backup.card;
 					},
 					selectCard: -1,
 					viewAs: links[0],
 					card: links[0],
-					async precontent(event, trigger, player) {
-						player.logSkill("olshuliang");
-						const card = lib.skill.olshuliang_backup.card;
-						event.result.cards = [card];
-						event.result.card = get.autoViewAs(card, [card]);
-					},
+					position: "x",
 				};
 			},
 			prompt(links, player) {
@@ -229,6 +224,7 @@ const skills = {
 		},
 		group: ["olshuliang_allocate"],
 		subSkill: {
+			backup: { audio: "olshuliang" },
 			allocate: {
 				audio: 2,
 				trigger: { player: "phaseJieshuBegin" },
@@ -239,7 +235,7 @@ const skills = {
 					const cards = player.getExpansions("oljiyun");
 					event.result = await player
 						.chooseBool()
-						.set("createDialog", [`###${get.prompt(event.skill)}###将任意张「集运」牌分配给至多等量角色`, cards])
+						.set("createDialog", [`###${get.prompt(event.skill)}###将任意张「集运」牌分配给至多等量其他角色`, cards])
 						.set("ai", () => {
 							return true;
 						})
@@ -256,7 +252,7 @@ const skills = {
 								forced: Object.keys(map).length == 0,
 								selectButton: [1, cards.length],
 								cardsx: cards,
-								filterTarget: true,
+								filterTarget: lib.filter.notMe,
 								ai1(button) {
 									if (get.event().cardsx.length < 2) return false;
 									return !ui.selected.buttons.length && button.link.name == "du" ? 1 : 0;

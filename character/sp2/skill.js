@@ -384,7 +384,7 @@ const skills = {
 		subSkill: {
 			fuqi: {
 				charlotte: true,
-				audio: "staranji",
+				audio: "starzhiji",
 				trigger: { player: "useCard" },
 				forced: true,
 				content() {

@@ -1770,6 +1770,9 @@ const skills = {
 			order: 5,
 			result: {
 				target(player, target) {
+					if (!_status.characterlist) {
+						lib.skill.pingjian.initList();
+					}
 					if (game.roundNumber * game.countPlayer() <= (1.5 * game.countPlayer2()) / Math.sqrt(player.getDamagedHp() + 1)) return 0;
 					const ownedSkills = target.getSkills(null, false, false).filter(skill => {
 						const info = get.info(skill);
