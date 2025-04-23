@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//烈袁绍袁术
-	dclieti:{
+	dclieti: {
 		trigger: {
 			global: "gameDrawBegin",
 		},
@@ -29,15 +29,19 @@ const skills = {
 			const effect = "dclieti_allocate";
 			player.addTempSkill(effect, { player: `${effect}After` });
 		},
-		mod:{
+		mod: {
 			cardEnabled2(card, player) {
 				if (get.itemtype(card) != "card" || !player.getCards("h").includes(card)) return;
-				if (player.hasSkill("dcshigong")&&!player.hasHistory("useCard",evt=>{
-					return player.hasHistory("lose",evtx=>{
-						if(evtx.getParent()!=evt ) return false;
-						return evtx.getl?.(player)?.hs?.length;
-					});
-				})) return;
+				if (
+					player.hasSkill("dcshigong") &&
+					!player.hasHistory("useCard", evt => {
+						return player.hasHistory("lose", evtx => {
+							if (evtx.getParent() != evt) return false;
+							return evtx.getl?.(player)?.hs?.length;
+						});
+					})
+				)
+					return;
 				if (!card.hasGaintag(lib.skill.dclieti.getName(player))) return false;
 			},
 			ignoredHandcard(card, player) {
@@ -47,30 +51,30 @@ const skills = {
 				if (name == "phaseDiscard" && !card.hasGaintag(lib.skill.dclieti.getName(player))) return false;
 			},
 		},
-		getName(player){
-			const names=[];
-			if(player.name1.indexOf("yuanshaoyuanshu")==0) return player.name1;
-			else if(player.name2.indexOf("yuanshaoyuanshu")==0) return player.name2;
+		getName(player) {
+			const names = [];
+			if (player.name1.indexOf("yuanshaoyuanshu") == 0) return player.name1;
+			else if (player.name2.indexOf("yuanshaoyuanshu") == 0) return player.name2;
 			else return player.name1;
 		},
-		group:"dclieti_mark",
-		subSkill:{
-			mark:{
-				trigger:{
-					player:"gainBegin",
+		group: "dclieti_mark",
+		subSkill: {
+			mark: {
+				trigger: {
+					player: "gainBegin",
 				},
-				filter(event,player){
+				filter(event, player) {
 					return event.cards?.length;
 				},
-				forced:true,
-				popup:false,
-				content(){
-					if(!trigger.gaintag) trigger.gaintag=[];
-					const name=lib.skill.dclieti.getName(player);
-					if(name!="yuanshaoyuanshu") trigger.gaintag.add(name);
+				forced: true,
+				popup: false,
+				content() {
+					if (!trigger.gaintag) trigger.gaintag = [];
+					const name = lib.skill.dclieti.getName(player);
+					if (name != "yuanshaoyuanshu") trigger.gaintag.add(name);
 				},
 			},
-			allocate:{
+			allocate: {
 				trigger: {
 					global: "phaseBefore",
 					player: "enterGame",
@@ -87,114 +91,115 @@ const skills = {
 					if (!hs.length) return;
 					const num = Math.ceil(hs.length / 2);
 					const cards = [hs.slice(0, num), hs.slice(num, 2 * num)];
-					if(player.name1=="yuanshaoyuanshu"||player.name2=="yuanshaoyuanshu"){
-						player.addGaintag(cards[0],"yuanshaoyuanshu_shao");
-						player.addGaintag(cards[1],"yuanshaoyuanshu_shu");
-					}
-					else player.addGaintag(hs,player.name1);
+					if (player.name1 == "yuanshaoyuanshu" || player.name2 == "yuanshaoyuanshu") {
+						player.addGaintag(cards[0], "yuanshaoyuanshu_shao");
+						player.addGaintag(cards[1], "yuanshaoyuanshu_shu");
+					} else player.addGaintag(hs, player.name1);
 				},
-			}
-		}
-	},
-	dcshigong:{
-		forced:true,
-		trigger:{player:"useCardAfter"},
-		filter(event,player){
-			return player.getHistory("useCard",evt=>{
-				return player.hasHistory("lose",evtx=>{
-					if(evtx.getParent()!=evt) return false;
-					return evtx.getl?.(player)?.hs?.length;
-				});
-			}).indexOf(event)==0&&lib.skill.dclieti.getName(player).indexOf("yuanshaoyuanshu")==0;
-		},
-		async content(event,trigger,player){
-			const gaintag=[];
-			player.checkHistory("lose",evt=>{
-				if(evt.getParent()!=trigger) return false;
-				gaintag.addArray(Object.values(evt.gaintag_map).flat().filter(tag=>tag.indexOf("yuanshaoyuanshu")==0));
-			});
-			if(gaintag.length==1&&gaintag[0]!=lib.skill.dclieti.getName(player)){
-				const name=gaintag[0],prename=lib.skill.dclieti.getName(player);
-				await player.reinitCharacter(prename, name);
-        		await game.delay();
-				if(name=="yuanshaoyuanshu_shao") await player.chooseUseTarget({name:"wanjian",isCard:true},true);
-				if(name=="yuanshaoyuanshu_shu") await player.draw(2);
-			}
-		},
-		ai:{
-			combo:"dclieti",
+			},
 		},
 	},
-	dcluankui:{
-		trigger:{
-			source:["damageSource"],
-			player:["gainAfter"],
-			global:["loseAsyncAfter"],
+	dcshigong: {
+		forced: true,
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			return (
+				player
+					.getHistory("useCard", evt => {
+						return player.hasHistory("lose", evtx => {
+							if (evtx.getParent() != evt) return false;
+							return evtx.getl?.(player)?.hs?.length;
+						});
+					})
+					.indexOf(event) == 0 && lib.skill.dclieti.getName(player).indexOf("yuanshaoyuanshu") == 0
+			);
 		},
-		filter(event,player){
-			if(event.name=="damage"){
-				return (
-					player.getHistory("sourceDamage",evt=>evt.num).indexOf(event)==1&&
-					player.countDiscardableCards(player,"h",card=>card.hasGaintag("yuanshaoyuanshu_shao"))
+		async content(event, trigger, player) {
+			const gaintag = [];
+			player.checkHistory("lose", evt => {
+				if (evt.getParent() != trigger) return false;
+				gaintag.addArray(
+					Object.values(evt.gaintag_map)
+						.flat()
+						.filter(tag => tag.indexOf("yuanshaoyuanshu") == 0)
 				);
-			}
-			else{
-				return (
-					event.getg?.(player)?.length&&
-					player.getHistory("gain",evt=>evt.cards.length).indexOf(event)==1&&
-					player.countDiscardableCards(player,"h",card=>card.hasGaintag("yuanshaoyuanshu_shu"))
-				)
+			});
+			if (gaintag.length == 1 && gaintag[0] != lib.skill.dclieti.getName(player)) {
+				const name = gaintag[0],
+					prename = lib.skill.dclieti.getName(player);
+				await player.reinitCharacter(prename, name);
+				await game.delay();
+				if (name == "yuanshaoyuanshu_shao") await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
+				if (name == "yuanshaoyuanshu_shu") await player.draw(2);
 			}
 		},
-		async cost(event,trigger,player){
-			const name=trigger.name,
-				tag=(name=="damage")?"yuanshaoyuanshu_shao":"yuanshaoyuanshu_shu";
-			let str=`###${get.prompt(event.skill)}###`;
-			if(name=="damage") str+="弃置一张「袁绍」牌令自己本回合下次造成的伤害翻倍";
-			else str+="弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
-			event.result=await player
-				.chooseToDiscard(str,"h","chooseonly",card=>{
+		ai: {
+			combo: "dclieti",
+		},
+	},
+	dcluankui: {
+		trigger: {
+			source: ["damageSource"],
+			player: ["gainAfter"],
+			global: ["loseAsyncAfter"],
+		},
+		filter(event, player) {
+			if (event.name == "damage") {
+				return player.getHistory("sourceDamage", evt => evt.num).indexOf(event) == 1 && player.countDiscardableCards(player, "h", card => card.hasGaintag("yuanshaoyuanshu_shao"));
+			} else {
+				return event.getg?.(player)?.length && player.getHistory("gain", evt => evt.cards.length).indexOf(event) == 1 && player.countDiscardableCards(player, "h", card => card.hasGaintag("yuanshaoyuanshu_shu"));
+			}
+		},
+		async cost(event, trigger, player) {
+			const name = trigger.name,
+				tag = name == "damage" ? "yuanshaoyuanshu_shao" : "yuanshaoyuanshu_shu";
+			let str = `###${get.prompt(event.skill)}###`;
+			if (name == "damage") str += "弃置一张「袁绍」牌令自己本回合下次造成的伤害翻倍";
+			else str += "弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
+			event.result = await player
+				.chooseToDiscard(str, "h", "chooseonly", card => {
 					return card.hasGaintag(tag);
 				})
-				.set("ai",card=>6-get.value(card))
+				.set("ai", card => 6 - get.value(card))
 				.forResult();
 		},
-		async content(event,trigger,player){
-			const cards=event.cards,name=trigger.name;
+		async content(event, trigger, player) {
+			const cards = event.cards,
+				name = trigger.name;
 			await player.discard(cards);
-			if(name=="damage") player.addTempSkill(event.name+"_damage");
-			else player.addTempSkill(event.name+"_draw");
+			if (name == "damage") player.addTempSkill(event.name + "_damage");
+			else player.addTempSkill(event.name + "_draw");
 		},
-		subSkill:{
-			damage:{
-				mark:true,
-				intro:{
-					content:"下次造成伤害翻倍",
+		subSkill: {
+			damage: {
+				mark: true,
+				intro: {
+					content: "下次造成伤害翻倍",
 				},
-				charlotte:true,
-				forced:true,
-				trigger:{source:"damageBegin1"},
-				content(){
-					trigger.num*=2;
+				charlotte: true,
+				forced: true,
+				trigger: { source: "damageBegin1" },
+				content() {
+					trigger.num *= 2;
 					player.removeSkill(event.name);
-				}
+				},
 			},
-			draw:{
-				mark:true,
-				intro:{
-					content:"下次摸牌翻倍",
+			draw: {
+				mark: true,
+				intro: {
+					content: "下次摸牌翻倍",
 				},
-				charlotte:true,
-				forced:true,
-				trigger:{player:"drawBegin"},
-				content(){
-					trigger.num*=2;
+				charlotte: true,
+				forced: true,
+				trigger: { player: "drawBegin" },
+				content() {
+					trigger.num *= 2;
 					player.removeSkill(event.name);
-				}
+				},
 			},
 		},
-		ai:{
-			combo:"dclieti",
+		ai: {
+			combo: "dclieti",
 		},
 	},
 	//田忌
@@ -536,7 +541,7 @@ const skills = {
 				if (numx > 10) return;
 				const result = await player
 					.chooseControlList(get.translation(event.name) + "：请选择一项（已亮出牌名字数之和为" + numx + "）", ["获得" + get.translation(cards), "再亮出一张牌"], true)
-					.set("ai", () => (get.event().numx < 7 ? 1 : 0))
+					.set("ai", () => (get.event().numx > 7 ? 1 : 0))
 					.set("numx", numx)
 					.forResult();
 				if (result.index == 0) {
@@ -704,7 +709,7 @@ const skills = {
 			const result =
 				skills.length > 1
 					? await winner
-							.chooseButton(["岁崇：请选择一个生肖兽技能令" + get.translation(player) + "获得", [skills.map(skill => [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]), "textbutton"]], true)
+							.chooseButton(["岁崇：请选择一个生效兽技能令" + get.translation(player) + "获得", [skills.map(skill => [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]), "textbutton"]], true)
 							.set("ai", () => 1 + Math.random())
 							.forResult()
 					: { bool: true, links: skills };
