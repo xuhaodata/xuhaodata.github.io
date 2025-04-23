@@ -71,7 +71,7 @@ const skills = {
 				content() {
 					if (!trigger.gaintag) trigger.gaintag = [];
 					const name = lib.skill.dclieti.getName(player);
-					if (name != "yuanshaoyuanshu") trigger.gaintag.add(name);
+					trigger.gaintag.add(name);//if (name != "yuanshaoyuanshu") 
 				},
 			},
 			allocate: {
