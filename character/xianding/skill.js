@@ -5,6 +5,12 @@ import cards from "../sp2/card.js";
 const skills = {
 	//钟毓
 	dczhidui: {
+		init(player) {
+			player.addSkill("dczhidui_mark");
+		},
+		onremove(player) {
+			player.removeSkill("dczhidui_mark");
+		},
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			const history = game.getAllGlobalHistory("useCard"),
@@ -77,7 +83,6 @@ const skills = {
 				}
 			},
 		},
-		group: ["dczhidui_mark"],
 		subSkill: {
 			mark: {
 				charlotte: true,
@@ -171,14 +176,14 @@ const skills = {
 				target = name == "damageSource" ? event.source : event.player;
 			if (targets.includes(target)) return target.getHistory(key, evt => evt.num > 0).indexOf(event) == 0;
 		},
-		prompt2: "摸2张牌，然后将这些牌交给一名角色",
+		prompt2: "摸2张牌，然后可以将这些牌交给一名角色",
 		check: () => true,
 		//frequent:true,
 		async content(event, trigger, player) {
 			const cards = await player.draw(2).forResult();
-			if (get.itemtype(card) != "cards") return;
+			if (get.itemtype(cards) != "cards") return;
 			const result = await player
-				.chooseTarget(`笃君：将${get.translation(cards)}交给一名角色`, true)
+				.chooseTarget(`笃君：可以将${get.translation(cards)}交给一名角色`)
 				.set("ai", target => {
 					const att = get.sgnAttitude(get.player(), target),
 						cards = get.event().cardsx;
@@ -256,35 +261,23 @@ const skills = {
 			return event.dcjikun_count;
 		},
 		async cost(event, trigger, player) {
-			const result = await player
-				.chooseTarget(get.prompt2(event.skill), 2, (card, player, target) => {
-					const selected = ui.selected?.targets;
-					if (!selected?.length) return player != target;
-					return target.isMaxHandcard() && target.countGainableCards(selected[0], "he");
-				})
-				.set("complexTarget", true)
-				.set("complexSelect", true)
-				.set("targetprompt", ["获得", "被获得"])
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
 				.set("ai", target => {
 					const selected = ui.selected?.targets;
 					if (!selected?.length) return get.attitude(get.player(), target);
 					return get.effect(target, { name: "shunshou_copy2" }, selected[0], get.player());
 				})
 				.forResult();
-			if (result?.targets) {
-				event.result = {
-					bool: true,
-					targets: [result.targets[0]],
-					cost_data: result.targets[1],
-				};
-			}
 		},
 		async content(event, trigger, player) {
 			const gainer = event.targets[0],
-				gainee = event.cost_data;
-			gainer.line(gainee);
-			const card = gainee.getGainableCards(gainer, "he").randomGet();
-			await gainer.gain(card, gainee, "giveAuto", "bySelf");
+				targets = game.filterPlayer(target => target.isMaxHandcard()).sortBySeat();
+			gainer.line(targets);
+			for (const gainee of targets) {
+				const card = gainee.getGainableCards(gainer, "he").randomGet();
+				await gainer.gain(card, gainee, "giveAuto", "bySelf");
+			}
 		},
 		group: ["dcjikun_mark"],
 		subSkill: {
@@ -306,7 +299,8 @@ const skills = {
 					trigger.set("dcjikun_count", num);
 				},
 				intro: {
-					content: "已失去#张牌",
+					markcount: storage => storage % 5,
+					content: (storage, player) => `<li>已失去${storage}张牌<br><li>当前充能：${storage % 5}/5`,
 				},
 			},
 		},

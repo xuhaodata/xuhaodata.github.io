@@ -863,9 +863,9 @@ const translates = {
 	dc_xiahouhui: "新杀夏侯徽",
 	dc_xiahouhui_prefix: "新杀",
 	dcdujun: "笃君",
-	dcdujun_info: "游戏开始时，你选择一名其他角色，你不能响应其使用的牌。你与其每回合首次造成或受到伤害后，你可摸2张牌，然后将这些牌交给一名角色。",
+	dcdujun_info: "游戏开始时，你选择一名其他角色，你不能响应其使用的牌。你与其每回合首次造成或受到伤害后，你可摸2张牌，然后可以将这些牌交给一名角色。",
 	dcjikun: "济困",
-	dcjikun_info: "每当你累计失去5张牌后，你可令一名其他角色随机获得一名手牌数最多的角色的1张牌。",
+	dcjikun_info: "每当你累计失去5张牌后，你可令一名其他角色随机获得手牌数最多的角色各1张牌。",
 };
 
 export default translates;
