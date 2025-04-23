@@ -2,6 +2,201 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//烈袁绍袁术
+	dclieti:{
+		trigger: {
+			global: "gameDrawBegin",
+		},
+		forced: true,
+		content() {
+			const me = player;
+			const numx = trigger.num;
+			trigger.num =
+				typeof numx == "function"
+					? function (player) {
+							if (player == me) {
+								return 2 * numx(player);
+							}
+							return numx(player);
+					  }
+					: function (player) {
+							if (player == me) {
+								return 2 * numx;
+							}
+							return numx;
+					  };
+			player._dclieti = true;
+			const effect = "dclieti_allocate";
+			player.addTempSkill(effect, { player: `${effect}After` });
+		},
+		mod:{
+			cardEnabled2(card, player) {
+				if (get.itemtype(card) != "card" || !player.getCards("h").includes(card)) return;
+				if (player.hasSkill("dcshigong")&&!player.hasHistory("useCard",evt=>{
+					return player.hasHistory("lose",evtx=>{
+						if(evtx.getParent()!=evt ) return false;
+						return evtx.getl?.(player)?.hs?.length;
+					});
+				})) return;
+				if (!card.hasGaintag(lib.skill.dclieti.getName(player))) return false;
+			},
+			ignoredHandcard(card, player) {
+				if (!card.hasGaintag(lib.skill.dclieti.getName(player))) return true;
+			},
+			cardDiscardable(card, player, name) {
+				if (name == "phaseDiscard" && !card.hasGaintag(lib.skill.dclieti.getName(player))) return false;
+			},
+		},
+		getName(player){
+			const names=[];
+			if(player.name1.indexOf("yuanshaoyuanshu")==0) return player.name1;
+			else if(player.name2.indexOf("yuanshaoyuanshu")==0) return player.name2;
+			else return player.name1;
+		},
+		group:"dclieti_mark",
+		subSkill:{
+			mark:{
+				trigger:{
+					player:"gainBegin",
+				},
+				filter(event,player){
+					return event.cards?.length;
+				},
+				forced:true,
+				popup:false,
+				content(){
+					if(!trigger.gaintag) trigger.gaintag=[];
+					const name=lib.skill.dclieti.getName(player);
+					if(name!="yuanshaoyuanshu") trigger.gaintag.add(name);
+				},
+			},
+			allocate:{
+				trigger: {
+					global: "phaseBefore",
+					player: "enterGame",
+				},
+				filter(event, player) {
+					return (event.name != "phase" || game.phaseNumber == 0) && player._dclieti;
+				},
+				firstDo: true,
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					delete player._dclieti;
+					const hs = player.getCards("h");
+					if (!hs.length) return;
+					const num = Math.ceil(hs.length / 2);
+					const cards = [hs.slice(0, num), hs.slice(num, 2 * num)];
+					if(player.name1=="yuanshaoyuanshu"||player.name2=="yuanshaoyuanshu"){
+						player.addGaintag(cards[0],"yuanshaoyuanshu_shao");
+						player.addGaintag(cards[1],"yuanshaoyuanshu_shu");
+					}
+					else player.addGaintag(hs,player.name1);
+				},
+			}
+		}
+	},
+	dcshigong:{
+		forced:true,
+		trigger:{player:"useCardAfter"},
+		filter(event,player){
+			return player.getHistory("useCard",evt=>{
+				return player.hasHistory("lose",evtx=>{
+					if(evtx.getParent()!=evt) return false;
+					return evtx.getl?.(player)?.hs?.length;
+				});
+			}).indexOf(event)==0&&lib.skill.dclieti.getName(player).indexOf("yuanshaoyuanshu")==0;
+		},
+		async content(event,trigger,player){
+			const gaintag=[];
+			player.checkHistory("lose",evt=>{
+				if(evt.getParent()!=trigger) return false;
+				gaintag.addArray(Object.values(evt.gaintag_map).flat().filter(tag=>tag.indexOf("yuanshaoyuanshu")==0));
+			});
+			if(gaintag.length==1&&gaintag[0]!=lib.skill.dclieti.getName(player)){
+				const name=gaintag[0],prename=lib.skill.dclieti.getName(player);
+				await player.reinitCharacter(prename, name);
+        		await game.delay();
+				if(name=="yuanshaoyuanshu_shao") await player.chooseUseTarget({name:"wanjian",isCard:true},true);
+				if(name=="yuanshaoyuanshu_shu") await player.draw(2);
+			}
+		},
+		ai:{
+			combo:"dclieti",
+		},
+	},
+	dcluankui:{
+		trigger:{
+			source:["damageSource"],
+			player:["gainAfter"],
+			global:["loseAsyncAfter"],
+		},
+		filter(event,player){
+			if(event.name=="damage"){
+				return (
+					player.getHistory("sourceDamage",evt=>evt.num).indexOf(event)==1&&
+					player.countDiscardableCards(player,"h",card=>card.hasGaintag("yuanshaoyuanshu_shao"))
+				);
+			}
+			else{
+				return (
+					event.getg?.(player)?.length&&
+					player.getHistory("gain",evt=>evt.cards.length).indexOf(event)==1&&
+					player.countDiscardableCards(player,"h",card=>card.hasGaintag("yuanshaoyuanshu_shu"))
+				)
+			}
+		},
+		async cost(event,trigger,player){
+			const name=trigger.name,
+				tag=(name=="damage")?"yuanshaoyuanshu_shao":"yuanshaoyuanshu_shu";
+			let str=`###${get.prompt(event.skill)}###`;
+			if(name=="damage") str+="弃置一张「袁绍」牌令自己本回合下次造成的伤害翻倍";
+			else str+="弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
+			event.result=await player
+				.chooseToDiscard(str,"h","chooseonly",card=>{
+					return card.hasGaintag(tag);
+				})
+				.set("ai",card=>6-get.value(card))
+				.forResult();
+		},
+		async content(event,trigger,player){
+			const cards=event.cards,name=trigger.name;
+			await player.discard(cards);
+			if(name=="damage") player.addTempSkill(event.name+"_damage");
+			else player.addTempSkill(event.name+"_draw");
+		},
+		subSkill:{
+			damage:{
+				mark:true,
+				intro:{
+					content:"下次造成伤害翻倍",
+				},
+				charlotte:true,
+				forced:true,
+				trigger:{source:"damageBegin1"},
+				content(){
+					trigger.num*=2;
+					player.removeSkill(event.name);
+				}
+			},
+			draw:{
+				mark:true,
+				intro:{
+					content:"下次摸牌翻倍",
+				},
+				charlotte:true,
+				forced:true,
+				trigger:{player:"drawBegin"},
+				content(){
+					trigger.num*=2;
+					player.removeSkill(event.name);
+				}
+			},
+		},
+		ai:{
+			combo:"dclieti",
+		},
+	},
 	//田忌
 	dcweiji: {
 		audio: 2,

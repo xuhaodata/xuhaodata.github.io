@@ -14196,6 +14196,13 @@ export class Library {
 			},
 		],
 		[
+			"烈",
+			{
+				color: "#8B0000",
+				nature: "firemm",
+			},
+		],
+		[
 			"燕幽",
 			{
 				showName: "幽",

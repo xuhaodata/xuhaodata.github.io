@@ -235,6 +235,18 @@ const translates = {
 	dcweiji_info: "当你使用牌指定其他角色为目标后，你可以从1-3中选择一个数字，然后令一名其他目标角色从1-3中选择一个数字，若你与其选择的数字不同，则你摸你选择数字张牌。",
 	dcsaima: "赛马",
 	dcsaima_info: "当你使用坐骑牌后，你可以选择一名其他角色，与其进行三次拼点，若你至少赢两次，则你对其造成1点伤害。",
+	yuanshaoyuanshu: "烈袁绍袁术",
+	yuanshaoyuanshu_prefix: "烈",
+	yuanshaoyuanshu_shao: "烈袁绍",
+	yuanshaoyuanshu_shao_prefix: "烈",
+	yuanshaoyuanshu_shu: "烈袁术",
+	yuanshaoyuanshu_shu_prefix: "烈",
+	dclieti: "烈悌",
+	dclieti_info: "锁定技，游戏开始时，你获得两组初始手牌并增加武将名称标记；当你获得手牌时，根据当前武将为手牌增加武将名标记。你只能使用或打出当前武将标记的手牌。非当前武将标记的手牌不计手牌上限。",
+	dcshigong: "世公",
+	dcshigong_info: "锁定技，你每回合使用的第一张手牌不受 〖烈悌〗限制，然后你切换为对应标记的武将。若你因此切换为袁绍，你视为使用一张【万箭齐发】；若你因此切换为袁术，你摸两张牌。",
+	dcluankui: "乱魁",
+	dcluankui_info: "你每回合第二次造成伤害后，可以弃置一张「袁绍」牌令自己本回合下次造成的伤害翻倍；你每回合第二次获得牌后，可以弃置一张「袁术」牌令自己本回合下次摸牌翻倍。",
 };
 
 export default translates;
