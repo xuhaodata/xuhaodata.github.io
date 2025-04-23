@@ -1826,17 +1826,11 @@ const skills = {
 	},
 	twchunhui: {
 		audio: 2,
-		trigger: {
-			global: "useCardToTargeted",
-		},
+		trigger: { global: "useCardToTargeted" },
 		usable: 1,
 		filter(event, player) {
-			if (!get.tag(event.card, "damage") || get.type2(event.card) != "trick") {
-				return false;
-			}
-			if (player.hp < event.target.hp) return false;
-			if (event.target == player) return false;
-			return get.distance(player, event.target) <= 1 && event.target.isIn();
+			if (player.hp < event.target.hp || get.distance(player, event.target) > 1 || !player.countCards("h")) return false;
+			return get.tag(event.card, "damage") > 0.5 && get.type(event.card) == "trick";
 		},
 		check(event, player) {
 			return get.attitude(player, event.target) >= 0;
@@ -1844,21 +1838,12 @@ const skills = {
 		logTarget: "target",
 		async content(event, trigger, player) {
 			const { target } = trigger;
-			trigger.getParent().set("twchunhui_actived", true);
-			await target.gainPlayerCard("h", player).set("forced", true).set("visible", true);
+			if (player.countCards("h") && player != target) await target.gainPlayerCard(player, "h", true, "visible");
 			player
 				.when({ global: "useCardAfter" })
-				.filter(function (evt) {
-					return evt.twchunhui_actived;
-				})
-				.step(async function () {
-					if (
-						target.getHistory("damage", function (evt) {
-							return evt.getParent(2) === trigger;
-						}).length === 0
-					) {
-						await player.draw();
-					}
+				.filter(evt => evt == trigger.getParent())
+				.step(async () => {
+					if (!target.hasHistory("damage", evt => evt.card == trigger.card)) await player.draw();
 				});
 		},
 	},
@@ -1911,8 +1896,10 @@ const skills = {
 					result: { links: cards },
 				} = await target.chooseButton(dialog, true).set("filterButton", button => {
 					const { link: card } = button;
+					const player = get.player();
+					const target = get.event().getParent().player;
 					const juedou = get.autoViewAs({ name: "juedou" }, [card]);
-					return game.hasPlayer(current => current != player && target.canUse(juedou, current));
+					return game.hasPlayer(current => current != target && player.canUse(juedou, current));
 				});
 				await target
 					.chooseUseTarget({ name: "juedou", isCard: true }, cards)
@@ -2506,6 +2493,7 @@ const skills = {
 		},
 	},
 	twfuman2: {
+		charlotte: true,
 		mod: {
 			aiOrder(player, card, num) {
 				if (get.itemtype(card) == "card" && card.hasGaintag("twfuman")) return num + 1;
@@ -6999,7 +6987,7 @@ const skills = {
 			event.cards = cards;
 			event.target = target;
 			player
-				.chooseToMove("力荐：请分配" + get.translation(target) + "和你获得的牌", true)
+				.chooseToMove("力谏：请分配" + get.translation(target) + "和你获得的牌", true)
 				.set("list", [[get.translation(target) + "获得的牌", cards], ["你获得的牌"]])
 				.set("processAI", function (list) {
 					var player = _status.event.player;
@@ -7090,8 +7078,8 @@ const skills = {
 					"step 1";
 					if (player.countMark("twlijian_sunben") >= 8) {
 						player.removeSkill("twlijian_sunben");
-						player.popup("力荐");
-						game.log(player, "恢复了技能", "#g【力荐】");
+						player.popup("力谏");
+						game.log(player, "恢复了技能", "#g【力谏】");
 					}
 				},
 			},
@@ -12318,7 +12306,7 @@ const skills = {
 		audio: ["enyuan3.mp3", "enyuan4.mp3"],
 		inherit: "xinenyuan2",
 		sourceSkill: "twenyuan",
-		prompt2: event => `令${get.translation(event.source)}令其选择一项：1.失去1点体力；2.交给你一张手牌，若此牌的花色不为♥，你摸一张牌。`,
+		prompt2: event => `令${get.translation(event.source)}选择一项：1.失去1点体力；2.交给你一张手牌，若此牌的花色不为♥，你摸一张牌。`,
 		async content(event, trigger, player) {
 			const result = await trigger.source
 				.chooseToGive(`恩怨：交给${get.translation(player)}一张手牌，或失去1点体力`, "h", player)
@@ -12335,7 +12323,7 @@ const skills = {
 				})
 				.forResult();
 			if (!result?.bool || !result?.cards?.length) await trigger.source.loseHp();
-			else if (get.suit(result.cards[0]) == "heart") await player.draw();
+			else if (result?.cards?.length && get.suit(result.cards[0]) !== "heart") await player.draw();
 		},
 	},
 	//马岱

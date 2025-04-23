@@ -1907,6 +1907,7 @@ export const extensionMenu = function (connectMenu) {
 									if (descriptor.set) str += indent + get.stringify(descriptor.set, 1) + ",\n";
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
+									if (get.is.functionMethod(obj, key)) keyString = "";
 									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
 								}
 							}
@@ -2155,6 +2156,7 @@ export const extensionMenu = function (connectMenu) {
 									if (descriptor.set) str += indent + get.stringify(descriptor.set, 1) + ",\n";
 								} else {
 									let keyString = (/[^a-zA-Z]/.test(key) ? `"${key}"` : key) + ": ";
+									if (get.is.functionMethod(obj, key)) keyString = "";
 									str += indent + keyString + get.stringify(obj[key], 1) + ",\n";
 								}
 							}

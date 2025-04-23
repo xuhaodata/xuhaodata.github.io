@@ -21,14 +21,14 @@ const skills = {
 			if (typeof number !== "number") return false;
 			const storage = player.getStorage("xjzhitu"),
 				bool = !storage.includes(number);
-			if (event.name == "useCard") return bool || storage.length == 13;
+			if (event.name == "useCard") return bool || storage.filter(num => num > 0).length >= 13;
 			return bool;
 		},
 		async content(event, trigger, player) {
 			const storage = player.getStorage(event.name),
 				{ card } = trigger,
 				number = get.number(card);
-			if (trigger.name == "useCard" && storage.length == 13) {
+			if (trigger.name == "useCard" && storage.filter(num => num > 0).length >= 13) {
 				trigger.directHit.addArray(game.players);
 				game.log(card, "不能被响应");
 			}
@@ -38,9 +38,7 @@ const skills = {
 			}
 		},
 		onremove: true,
-		intro: {
-			content: "已记录点数：$",
-		},
+		intro: { content: "已记录点数：$" },
 	},
 	dcxiujue: {
 		audio: 2,
@@ -626,16 +624,18 @@ const skills = {
 			if (event.name.indexOf("lose") === 0) {
 				if (event.getlx === false || event.position !== ui.discardPile) return false;
 			} else if (event.getParent()?.relatedEvent?.name == "useCard") return false;
-			return event.cards.some(card => !player.getStorage("zhenbian").includes(get.suit(card, false)));
+			return event.cards.length;
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			player.markAuto(
-				"zhenbian",
-				trigger.cards.reduce((list, card) => list.add(get.suit(card, false)), [])
-			);
-			player.storage.zhenbian.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
-			player.addTip("zhenbian", get.translation("zhenbian") + player.getStorage("zhenbian").reduce((str, suit) => str + get.translation(suit), ""));
+			if (trigger.cards.some(card => !player.getStorage("zhenbian").includes(get.suit(card, false)))) {
+				player.markAuto(
+					"zhenbian",
+					trigger.cards.reduce((list, card) => list.add(get.suit(card, false)), [])
+				);
+				player.storage.zhenbian.sort((a, b) => lib.suit.indexOf(b) - lib.suit.indexOf(a));
+				player.addTip("zhenbian", get.translation("zhenbian") + player.getStorage("zhenbian").reduce((str, suit) => str + get.translation(suit), ""));
+			}
 			if (player.getStorage("zhenbian").length >= 4 && player.maxHp < 8) {
 				player.unmarkSkill("zhenbian");
 				await player.gainMaxHp();

@@ -686,7 +686,7 @@ const skills = {
 				case "spade":
 					{
 						if (!game.hasPlayer(current => player != current)) return;
-						const { targets, bool } = await player
+						const result = await player
 							.chooseTarget("【御风】：令一名其他角色跳过其下个回合的出牌阶段和弃牌阶段", lib.filter.notMe, true)
 							.set("ai", target => {
 								const player = get.player();
@@ -694,17 +694,21 @@ const skills = {
 								return att * lib.skill.yijin.getValue(player, "yijin_jinmi", target);
 							})
 							.forResult();
-						if (bool) {
-							targets[0].skip("phaseUse");
-							targets[0].skip("phaseDiscard");
-							game.log(targets[0], "跳过其下个回合的出牌阶段和弃牌阶段");
+						if (result?.bool && result?.targets?.length) {
+							const {
+								targets: [target],
+							} = result;
+							target.skip("phaseUse");
+							target.skip("phaseDiscard");
+							target.addTempSkill(event.name + "_skipUse", { player: ["phaseUseSkipped", "phaseDiscardSkipped"] });
+							game.log(target, "跳过其下个回合的出牌阶段和弃牌阶段");
 						}
 					}
 					break;
 				case "heart":
 					{
 						if (!game.hasPlayer(current => player != current)) return;
-						const { targets, bool } = await player
+						const result = await player
 							.chooseTarget("【御风】：令一名其他角色跳过其下个回合的摸牌阶段", lib.filter.notMe, true)
 							.set("ai", target => {
 								const player = get.player();
@@ -712,9 +716,13 @@ const skills = {
 								return att * lib.skill.yijin.getValue(player, "yijin_yongbi", target);
 							})
 							.forResult();
-						if (bool) {
-							targets[0].skip("phaseDraw");
-							game.log(targets[0], "跳过其下个回合的摸牌阶段");
+						if (result?.bool && result?.targets?.length) {
+							const {
+								targets: [target],
+							} = result;
+							target.skip("phaseDraw");
+							target.addTempSkill(event.name + "_skipDraw", { player: "phaseDrawSkipped" });
+							game.log(target, "跳过其下个回合的摸牌阶段");
 						}
 					}
 					break;
@@ -731,6 +739,18 @@ const skills = {
 			order: 13,
 			result: { player: 1 },
 			threaten: 1.5,
+		},
+		subSkill: {
+			skipDraw: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "跳过下回合的摸牌阶段" },
+			},
+			skipUse: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "跳过下回合的出牌和弃牌阶段" },
+			},
 		},
 	},
 	//卜巳

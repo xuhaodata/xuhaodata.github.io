@@ -341,7 +341,7 @@ const skills = {
 				if (numx > 10) return;
 				const result = await player
 					.chooseControlList(get.translation(event.name) + "：请选择一项（已亮出牌名字数之和为" + numx + "）", ["获得" + get.translation(cards), "再亮出一张牌"], true)
-					.set("ai", () => (get.event().numx > 7 ? 1 : 0))
+					.set("ai", () => (get.event().numx < 7 ? 1 : 0))
 					.set("numx", numx)
 					.forResult();
 				if (result.index == 0) {
@@ -509,7 +509,7 @@ const skills = {
 			const result =
 				skills.length > 1
 					? await winner
-							.chooseButton(["岁崇：请选择一个生效兽技能令" + get.translation(player) + "获得", [skills.map(skill => [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]), "textbutton"]], true)
+							.chooseButton(["岁崇：请选择一个生肖兽技能令" + get.translation(player) + "获得", [skills.map(skill => [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]), "textbutton"]], true)
 							.set("ai", () => 1 + Math.random())
 							.forResult()
 					: { bool: true, links: skills };

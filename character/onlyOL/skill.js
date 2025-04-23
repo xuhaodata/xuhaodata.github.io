@@ -1078,7 +1078,12 @@ const skills = {
 			const { target } = trigger;
 			target.chooseToDiscard("he", true, player.getHistory("useCard", evt => evt.targets?.includes(target)).length);
 		},
-		group: "olsbjuejue_mark",
+		init(player, skill) {
+			player.addSkill(skill + "_mark");
+		},
+		onremove(player, skill) {
+			player.removeSkill(skill + "_mark");
+		},
 		subSkill: {
 			mark: {
 				charlotte: true,
@@ -1090,7 +1095,7 @@ const skills = {
 					if (_status.currentPhase !== player) return false;
 					if (player.countCards("h") || event.getParent().name !== "useCard") return false;
 					const evt = event.getl(player);
-					return evt?.player == player && evt.hs?.length > 0;
+					return evt?.player == player && evt.hs?.length > 0 && evt.hs.length === evt.cards.length;
 				},
 				forced: true,
 				popup: false,
@@ -2167,7 +2172,7 @@ const skills = {
 								cards2.remove(link);
 								const suits = cards1.filter(card => get.suit(card) == get.suit(link));
 								const numbers = cards1.filter(card => get.number(card) == get.number(link));
-								if (suits.length > 2 || numbers.length > 2) return 20 + get.value(card);
+								if (suits.length > 2 || numbers.length > 2) return 20 + get.value(link);
 								return get.value(link);
 							}
 							cards1.push(ui.selected.buttons[0].link);
@@ -4548,6 +4553,7 @@ const skills = {
 				inherit: "olmiji",
 			},
 		},
+		derivation: "olmiji",
 	},
 	olmiji: {
 		audio: 2,
