@@ -1,4 +1,9 @@
 export default {
+	"#dclaoyan1": "东飞伯劳西飞燕，此生难复见。",
+	"#dclaoyan2": "琳深失鹿，枝不得连理。",
+	"#dcjueyan1": "此日分钗，一别两宽，各生欢喜。",
+	"#dcjueyan2": "感君相离之后，再遇今生良缘。",
+	"#zhanghuai:die": "爱之深，痛之切。",
 	"#dcguangyong1": "孤烟直上，黄沙漫卷祁连天！",
 	"#dcguangyong2": "掷酒湟水，我来宴无定河边骨。",
 	"#dcjuchui1": "我不击金柝，胡月何敢升！",

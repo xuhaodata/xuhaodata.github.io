@@ -118,6 +118,7 @@ export class Library {
 	);
 	characterReplace = {};
 	characterSubstitute = {};
+	characterAppend = {};
 	characterInitFilter = {};
 	characterGuozhanFilter = ["mode_guozhan"];
 	dynamicTranslate = {};
@@ -171,7 +172,7 @@ export class Library {
 	emotionList = {
 		huangdou_emotion: 50,
 		shibing_emotion: 15,
-		wanglang_emotion: 18,
+		wanglang_emotion: 20,
 		guojia_emotion: 20,
 		zhenji_emotion: 20,
 		xiaowu_emotion: 14,
@@ -671,6 +672,26 @@ export class Library {
 		["霹雳投石车", "霹雳车"],
 		["金箍棒", "如意金箍棒"],
 	]);
+	/**
+	 * the cards which can respond card
+	 *
+	 * 卡牌的可被响应牌（主要是用于player.canRespond函数）
+	 * 例如可响应杀的主要就是闪，或者本体的草船借箭，以此类推；
+	 */
+	respondMap = {
+		sha: ["shan"],
+		wanjian: ["shan"],
+		qizhengxiangsheng: ["sha", "shan"],
+		juedou: ["sha"],
+		nanman: ["sha"],
+		jiedao: ["jiedao"],
+		//所有锦囊都可以用无懈可击响应
+		trick: ["wuxie"],
+		//所有伤害牌都可以用草船借箭响应
+		damage: ["caochuan"],
+		//所有基本牌或普通锦囊牌都可以响应
+		all: [],
+	};
 	characterDialogGroup = {
 		收藏: function (name, capt) {
 			return lib.config.favouriteCharacter.includes(name) ? capt : null;
@@ -10193,7 +10214,7 @@ export class Library {
 					const skillName = item.slice(9);
 					if (lib.skill[skillName]) {
 						const skills = game.expandSkills([skillName]);
-						if (skills.includes(skill)) return false;
+						if (skills.includes(skill) && !get.info(skill).charlotte) return false;
 					}
 				}
 			}
@@ -10245,7 +10266,7 @@ export class Library {
 				const skillName = item.slice(9);
 				if (!lib.skill[skillName]) continue;
 				const skills = game.expandSkills([skillName]);
-				if (skills.includes(skill)) return false;
+				if (skills.includes(skill) && !get.info(skill).charlotte) return false;
 			}
 			return true;
 		},

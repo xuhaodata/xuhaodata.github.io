@@ -363,26 +363,27 @@ export class Player extends HTMLDivElement {
 	tips;
 
 	/**
-	 * 玩家（或某张牌）能否响应某个useCard事件的牌，目前仅支持本体部分常用的卡牌
+	 * 玩家（或某张牌）能否响应某个useCard事件的牌，目前仅支持本体部分常用的卡牌，需要添加新卡牌的可响应牌请到lib.respondMap添加
 	 * @param {GameEvent} event 需要判断能否响应的事件，目前只能为useCard或者它的下一级衍生事件，其他全部返回undefined
 	 * @param { Card | VCard | object | string } card 需要检测的牌
 	 * @returns { boolean | undefined }
 	 */
 	canRespond(event, card) {
+		const player = this;
 		if (event.name?.indexOf("useCard") !== 0) return;
+		const evt = event.name == "useCard" ? event : event.getParent();
+		if (!evt) return;
 		if (card && typeof card == "string") {
 			card = { name: card, isCard: true };
 		}
-		const evt = event.name == "useCard" ? event : event.getParent();
 		const key = [],
-			cardName = evt?.card?.name;
-		if (!cardName) return;
-		if (["sha", "wanjian", "qizhengxiangsheng"].includes(cardName)) key.add("shan");
-		if (["juedou", "nanman", "jiedao", "qizhengxiangsheng"].includes(cardName)) key.add("sha");
-		if (get.type(evt?.card) == "trick") key.add("wuxie");
-		key.add("caochuan");
-		if (card) return key.includes(card.name);
-		return key.some(name => this.hasUsableCard(name)) && !evt.directHit.includes(this);
+			list = get.canRespond(card, player);
+		if (list?.length) key.addArray(list);
+		if (get.type(evt?.card) == "trick") key.addArray(get.canRespond("trcik"));
+		if (get.tag(evt?.card, "damage") > 0.5) key.addArray(get.canRespond("damage"));
+		key.addArray(get.canRespond("all"));
+		if (card) return key.includes(get.name(card, player));
+		return key.some(name => player.hasUsableCard(name)) && !evt.directHit.includes(player);
 	}
 	/**
 	 * 设置提示文字，有则更改，无则加之。
@@ -7013,6 +7014,10 @@ export class Player extends HTMLDivElement {
 				ui.continue_game.close();
 				delete ui.continue_game;
 			}
+			if (this.node.dieidentity) {
+				this.node.dieidentity.delete();
+				delete this.node.dieidentity;
+			}
 		}
 	}
 	isMad() {
@@ -8559,7 +8564,13 @@ export class Player extends HTMLDivElement {
 			this.addSkill(skillsToAdd[i], null, true, true);
 			this.additionalSkills[skill].push(skillsToAdd[i]);
 		}
-
+		game.broadcast(
+			(player, map) => {
+				player.additionalSkills = map;
+			},
+			this,
+			this.additionalSkills
+		);
 		this.checkConflict();
 		_status.event.clearStepCache();
 		return this;
@@ -8578,6 +8589,13 @@ export class Player extends HTMLDivElement {
 				delete this.additionalSkills[skill];
 			}
 		}
+		game.broadcast(
+			(player, map) => {
+				player.additionalSkills = map;
+			},
+			this,
+			this.additionalSkills
+		);
 	}
 	getRemovableAdditionalSkills(skill, target) {
 		const player = this,
@@ -8978,6 +8996,13 @@ export class Player extends HTMLDivElement {
 					triggers.forEach(trigger => (lib.hookmap[trigger] = true));
 				}
 			}
+			game.broadcast(
+				(player, map) => {
+					player.tempSkills = map;
+				},
+				this,
+				this.tempSkills
+			);
 		}
 		return skill;
 	}

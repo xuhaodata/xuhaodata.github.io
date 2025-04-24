@@ -8290,26 +8290,21 @@ const skills = {
 			);
 		},
 		logTarget: "target",
-		content() {
-			"step 0";
-			player.changeHujia(-1);
-			if (!trigger.card.storage) trigger.card.storage = {};
+		async content(event, trigger, player) {
+			await player.changeHujia(-1);
+			trigger.card.storage ??= {};
 			trigger.card.storage.sbduojing = true;
-			"step 1";
-			var target = trigger.target;
-			if (target.countGainableCards(player, "h") > 0) player.gainPlayerCard(target, "h", true);
+			const { target } = trigger;
+			if (target.countGainableCards(player, "h") > 0) await player.gainPlayerCard(target, "h", true);
 			player.addTempSkill("sbduojing_add", "phaseUseAfter");
 			player.addMark("sbduojing_add", 1, false);
-			player.markSkill("sbduojing_add");
 		},
 		subSkill: {
 			add: {
 				charlotte: true,
 				marktext: "夺",
 				onremove: true,
-				intro: {
-					content: "本阶段使用杀次数上限+$",
-				},
+				intro: { content: "本阶段使用杀次数上限+$" },
 				mod: {
 					cardUsable(card, player, num) {
 						if (card.name == "sha") return num + player.countMark("sbduojing_add");
@@ -8321,9 +8316,8 @@ const skills = {
 			unequip: true,
 			unequip_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (player.hujia <= 0) return;
-				if (tag == "unequip" && (!arg || !arg.card || !arg.card.storage || !arg.card.storage.sbduojing)) return false;
-				if (tag == "unequip_ai" && (!arg || arg.name != "sha")) return false;
+				if (tag == "unequip" && !arg?.card?.storage?.sbduojing) return false;
+				if (tag == "unequip_ai" && (!arg || arg.name != "sha" || player.hujia <= 0)) return false;
 			},
 		},
 	},
@@ -8478,14 +8472,15 @@ const skills = {
 			if (target.hasShan()) return storage.includes("heart") && storage.includes("diamond");
 			return true;
 		},
-		content() {
+		async content(event, trigger, player) {
 			const storage = player.getStorage("sbliegong").slice(0);
 			const num = storage.length - 1;
 			const evt = trigger.getParent();
 			if (num > 0) {
 				if (typeof evt.baseDamage != "number") evt.baseDamage = 1;
 				const cards = get.cards(num);
-				player.showCards(cards.slice(0), get.translation(player) + "发动了【烈弓】");
+				await game.cardsGotoOrdering(cards);
+				await player.showCards(cards.slice(0), get.translation(player) + "发动了【烈弓】");
 				while (cards.length > 0) {
 					const card = cards.pop();
 					if (storage.includes(get.suit(card, false))) evt.baseDamage++;

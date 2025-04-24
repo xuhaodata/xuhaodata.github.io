@@ -167,7 +167,7 @@ const skills = {
 					.chooseTarget(
 						"请选择" + get.translation(trigger.card) + "的额外目标",
 						(card, player, target) => {
-							const event = get.event().getTrigger().getParent();
+							const event = get.event().getTrigger();
 							if (event.targets.includes(target)) return false;
 							return lib.filter.targetEnabled2(event.card, player, target) && lib.filter.targetInRange(event.card, player, target);
 						},
@@ -175,7 +175,7 @@ const skills = {
 					)
 					.set("ai", target => {
 						const player = get.player(),
-							event = get.event().getTrigger().getParent();
+							event = get.event().getTrigger();
 						return get.effect(target, event.card, player, player);
 					});
 				if (result?.bool && result.targets?.length) {
@@ -384,7 +384,7 @@ const skills = {
 		subSkill: {
 			fuqi: {
 				charlotte: true,
-				audio: "staranji",
+				audio: "starzhiji",
 				trigger: { player: "useCard" },
 				forced: true,
 				content() {
@@ -404,9 +404,7 @@ const skills = {
 		},
 	},
 	staranji: {
-		audio: 2,
-		trigger: { global: "useCard" },
-		filter(event, player) {
+		getUsed(player) {
 			let history = [],
 				suits = lib.suit.slice();
 			for (let i = player.actionHistory.length - 1; i >= 0; i--) {
@@ -414,13 +412,19 @@ const skills = {
 				if (_status.globalHistory[i].isRound) break;
 			}
 			const map = history.reduce((map, evt) => {
-					const suit = get.suit(evt.card);
-					if (!map[suit]) {
-						map[suit] = 1;
-						suits.add(suit);
-					} else map[suit]++;
-					return map;
-				}, {}),
+				const suit = get.suit(evt.card);
+				if (!map[suit]) {
+					map[suit] = 1;
+					suits.add(suit);
+				} else map[suit]++;
+				return map;
+			}, {});
+			return [map, suits];
+		},
+		audio: 2,
+		trigger: { global: "useCard" },
+		filter(event, player) {
+			const [map, suits] = get.info("staranji").getUsed(player),
 				min = Math.min(...suits.slice().map(suit => map[suit] || 0));
 			return map[get.suit(event.card)] === min;
 		},
@@ -429,7 +433,52 @@ const skills = {
 		content() {
 			player.draw();
 		},
+		init(player, skill) {
+			const [map] = get.info(skill).getUsed(player);
+			if (Object.keys(map).length) {
+				player.storage[skill] = map;
+				player.markSkill(skill);
+			}
+		},
+		onremove: true,
+		intro: {
+			content(storage = {}, player) {
+				if (!storage) return "当前暂无记录";
+				let str = "本轮游戏所有角色使用牌的花色情况：<br>";
+				const list = lib.suit.slice();
+				const entries = Object.entries(storage).sort((a, b) => list.indexOf(a[0]) - list.indexOf(b[0]));
+				for (const entry of entries) {
+					str += "<li>" + get.translation(entry[0]) + "：" + entry[1];
+				}
+				return str;
+			},
+		},
 		ai: { threaten: 2 },
+		group: "staranji_count",
+		subSkill: {
+			count: {
+				charlotte: true,
+				trigger: { global: ["useCard1", "roundStart"] },
+				filter(event, player, name) {
+					return name == "useCard1" || Object.keys(player.storage.staranji || {}).length;
+				},
+				firstDo: true,
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					if (event.triggername == "roundStart") {
+						delete player.storage.staranji;
+						player.unmarkSkill("staranji");
+					} else {
+						const key = get.suit(trigger.card);
+						player.storage.staranji ??= {};
+						player.storage.staranji[key] ??= 0;
+						player.storage.staranji[key]++;
+						player.markSkill("staranji");
+					}
+				},
+			},
+		},
 	},
 	//荀彧
 	staranshu: {

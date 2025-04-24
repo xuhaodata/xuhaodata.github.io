@@ -694,7 +694,7 @@ const skills = {
 						player.logSkill("mbrunwei", null, null, null, [3]);
 						player.removeSkill(event.name);
 						delete player.getStat().skill.mbrunwei;
-						game.log(player, "的", `#g〖${get.translation(event.name)}〗`, `视为未发动过`);
+						game.log(player, "重置了", `#g〖${get.translation(event.name)}〗`);
 					} else {
 						player.removeMark(event.name, num, false);
 						player.addTip(event.name, `润微  ${player.countMark(event.name)}`);
@@ -741,12 +741,18 @@ const skills = {
 					],
 				])
 				.set("filterButton", button => {
-					if (button.link == "tao") {
-						const card = get.discardPile(cardx => cardx.name == "tao");
-						if (!card) return false;
-					}
-					return true;
+					return get.event().links.includes(button.link);
 				})
+				.set(
+					"links",
+					["cancel", "tao"].filter(link => {
+						if (link == "tao") {
+							const card = get.discardPile(cardx => cardx.name == "tao");
+							if (!card) return false;
+						}
+						return true;
+					})
+				)
 				.set("ai", button => {
 					const trigger = get.event().getTrigger(),
 						eff = get.damageEffect(trigger.player, trigger.source, get.player());
@@ -879,11 +885,16 @@ const skills = {
 					[
 						["damage", "对一名体力值大于等于你的角色造成1点火焰伤害"],
 						["nodistance", "本回合使用牌无距离限制"],
-						["both", "背水！依次执行以上所有选项，然后弃置一张红色牌"],
+						["both", "背水！弃置一张红色牌，然后依次执行以上所有选项"],
 					],
 					"textbutton",
 				]);
 				return dialog;
+			},
+			filter(button) {
+				const player = get.player();
+				const { link } = button;
+				return link !== "both" || player.countDiscardableCards(player, "h", (card, player) => get.color(card, player) == "red");
 			},
 			check(button) {
 				switch (button.link) {
@@ -901,6 +912,9 @@ const skills = {
 					choice: links[0],
 					async content(event, trigger, player) {
 						const choice = lib.skill.mbhuxiao_backup.choice;
+						if (choice == "both" && player.countDiscardableCards(player, "h", (card, player) => get.color(card, player) == "red")) {
+							await player.chooseToDiscard(`虎啸：请弃置一张红色牌`, true, (card, player) => get.color(card, player) == "red");
+						}
 						if (choice != "nodistance" && game.hasPlayer(target => target.hp >= player.hp)) {
 							const result = await player
 								.chooseTarget(`虎啸：对一名体力值大于等于你的角色造成1点火焰伤害`, true, (card, player, target) => {
@@ -915,9 +929,6 @@ const skills = {
 							}
 						}
 						if (choice != "damage") player.addTempSkill("mbhuxiao_effect");
-						if (choice == "both" && player.countDiscardableCards(player, "h", (card, player) => get.color(card, player) == "red")) {
-							await player.chooseToDiscard(`虎啸：请弃置一张红色牌`, true, (card, player) => get.color(card, player) == "red");
-						}
 					},
 				};
 			},
@@ -934,22 +945,14 @@ const skills = {
 		},
 		ai: {
 			order: 9,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
 		subSkill: {
 			backup: {},
 			effect: {
 				charlotte: true,
-				mod: {
-					targetInRange(card, player, target) {
-						return true;
-					},
-				},
-				intro: {
-					content: "本回合使用牌无距离限制",
-				},
+				mod: { targetInRange: () => true },
+				intro: { content: "本回合使用牌无距离限制" },
 				mark: true,
 			},
 		},
@@ -957,9 +960,11 @@ const skills = {
 	mbwuji: {
 		audio: "wuji",
 		enable: "phaseUse",
+		filter(event, player, name) {
+			return player.hasSkill("mbhuxiao");
+		},
 		skillAnimation: true,
 		animationColor: "orange",
-		unique: true,
 		limited: true,
 		content() {
 			player.awakenSkill(event.name);
@@ -979,11 +984,11 @@ const skills = {
 			}
 		},
 		ai: {
+			combo: "mbhuxiao",
 			order: 10,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
+		derivation: "mbxuehen_rewrite",
 	},
 	//势陈到
 	potwanglie: {
@@ -19595,21 +19600,18 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		filter(event, player) {
-			return game.hasPlayer(function (current) {
-				return current.hp <= player.hp && player.canCompare(current);
-			});
+			return game.hasPlayer(current => get.info("yizheng").filterTarget(null, player, current));
 		},
 		filterTarget(card, player, current) {
 			return current.hp <= player.hp && player.canCompare(current);
 		},
-		content() {
-			"step 0";
-			player.chooseToCompare(target);
-			"step 1";
-			if (result.bool) {
+		async content(event, trigger, player) {
+			const { target } = event;
+			const { result } = await player.chooseToCompare(target);
+			if (result?.bool) {
 				target.skip("phaseDraw");
-				target.addTempSkill("yizheng2", { player: "phaseDrawSkipped" });
-			} else player.loseMaxHp();
+				target.addTempSkill(event.name + "_mark", { player: "phaseDrawSkipped" });
+			} else await player.loseMaxHp();
 		},
 		ai: {
 			order: 1,
@@ -19634,10 +19636,13 @@ const skills = {
 				},
 			},
 		},
-	},
-	yizheng2: {
-		mark: true,
-		intro: { content: "跳过下回合的摸牌阶段" },
+		subSkill: {
+			mark: {
+				charlotte: true,
+				mark: true,
+				intro: { content: "跳过下回合的摸牌阶段" },
+			},
+		},
 	},
 	rw_zhuge_skill: {
 		equipSkill: true,

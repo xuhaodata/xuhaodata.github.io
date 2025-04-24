@@ -381,6 +381,9 @@ const skills = {
 			player.addMark("dcaoren_used", 1, false);
 			player.addTempSkill("dcaoren_used", "roundStart");
 		},
+		ai: {
+			combo: "dcmurui",
+		},
 		subSkill: {
 			used: {
 				charlotte: true,
@@ -672,6 +675,9 @@ const skills = {
 				trigger.card.name === cardx.name
 			)
 				await player.draw(2);
+		},
+		ai: {
+			combo: "dctanban",
 		},
 	},
 	//黄舞蝶
@@ -1052,7 +1058,7 @@ const skills = {
 				trigger: { source: "damageSource" },
 				filter(event, player) {
 					if (typeof player.getStat("skill")["dcremanhou"] !== "number") return false;
-					return event.card?.dcretanluan === true && event.player != player;// && !player.getStorage("dcremanhou_record").includes(event.player)
+					return event.card?.dcretanluan === true && event.player != player; // && !player.getStorage("dcremanhou_record").includes(event.player)
 				},
 				forced: true,
 				content() {
@@ -1227,15 +1233,12 @@ const skills = {
 			guanxing: {
 				audio: "dcxidi",
 				trigger: { player: "phaseZhunbeiBegin" },
-				filter(event, player) {
-					return player.hasCard(card => card.hasGaintag("dcxidi_tag"), "h");
-				},
 				forced: true,
 				locked: false,
 				preHidden: true,
 				async content(event, trigger, player) {
-					const num = Math.min(
-						5,
+					const num = Math.max(
+						1,
 						player.countCards("h", card => card.hasGaintag("dcxidi_tag"))
 					);
 					const result = player.chooseToGuanxing(num).set("prompt", "羲笛：点击或拖动将牌移动到牌堆顶或牌堆底").forResult();
@@ -1261,8 +1264,7 @@ const skills = {
 		logTarget: "target",
 		async content(event, trigger, player) {
 			const target = trigger.target;
-			const cards = get.cards();
-			await game.cardsGotoOrdering(cards);
+			const cards = await player.draw().forResult();
 			await player.showCards(cards, get.translation(player) + "发动了【乘烟】");
 			const card = cards[0];
 			if (card.name == "sha" || (get.type(card) == "trick" && get.info(card).filterTarget)) {
@@ -1270,8 +1272,8 @@ const skills = {
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
 			}
 			if (card.name != "sha" && get.type(card) != "trick") {
-				await player.gain(card, "gain2").set("gaintag", ["dcxidi_tag"]);
-			} else await game.cardsDiscard(cards);
+				player.addGaintag(card, "dcxidi_tag");
+			}
 		},
 		subSkill: {
 			effect: {

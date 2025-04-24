@@ -3,7 +3,7 @@ const characters = {
 		sex: "male",
 		group: "shu",
 		hp: 4,
-		skills: ["clangaojin", "clanpoxi", "clanmuyin"],
+		skills: ["clangaojin", "clanmuyin"],
 		clans: ["陈留吴氏"],
 	},
 	clan_wuxian: {

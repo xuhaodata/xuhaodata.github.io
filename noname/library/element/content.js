@@ -1626,7 +1626,7 @@ export const Content = {
 				const filterMove = event.filterMove;
 				const filterOk = event.filterOk;
 
-				_status.imchoosing = true;
+				//_status.imchoosing = true;
 				event.settleed = false;
 
 				event.dialog = ui.create.dialog(event.prompt || "请选择要操作的牌", "hidden", "forcebutton");
@@ -4417,7 +4417,7 @@ export const Content = {
 		} else if (event._sendskill) {
 			event.result._sendskill = event._sendskill;
 		}
-		if ((!event.result || !event.result.bool || event.result._noHidingTimer) && (event.result.skill || event.logSkill)) {
+		if ((!event.result?.bool || event.result?._noHidingTimer) && (event.result?.skill || event.logSkill)) {
 			var info = get.info(event.result.skill || (Array.isArray(event.logSkill) ? event.logSkill[0] : event.logSkill));
 			if (info.direct && !info.clearTime) {
 				_status.noclearcountdown = "direct";
@@ -4618,7 +4618,7 @@ export const Content = {
 			if (event.onresult) {
 				event.onresult(event.result);
 			}
-			if ((!event.result || !event.result.bool || event.result._noHidingTimer) && (event.result.skill || event.logSkill)) {
+			if ((!event.result?.bool || event.result?._noHidingTimer) && (event.result?.skill || event.logSkill)) {
 				var info = get.info(event.result.skill || (Array.isArray(event.logSkill) ? event.logSkill[0] : event.logSkill));
 				if (info.direct && !info.clearTime) {
 					_status.noclearcountdown = "direct";
@@ -8080,6 +8080,7 @@ export const Content = {
 			next.targets = targets;
 			next.cards = cards;
 			next.player = player;
+			next.skill = event.skill;
 			if (event.forceDie) next.forceDie = true;
 			if (event.includeOut) next.includeOut = true;
 		}
@@ -8153,6 +8154,7 @@ export const Content = {
 			next.targets = targets;
 			next.cards = cards;
 			next.player = player;
+			next.skill = event.skill;
 			if (event.forceDie) next.forceDie = true;
 			if (event.includeOut) next.includeOut = true;
 		}
