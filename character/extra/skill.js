@@ -2600,31 +2600,30 @@ const skills = {
 			let curs = game.players.slice(0);
 			if (get.itemtype(dead) === "player" && !curs.includes(dead)) curs.push(dead);
 			const map = {
-				zhu: curs.filter(current => {
-					const identity = current.identity;
+				zhu: curs.reduce((count, current) => {
 					let num = 0;
-					if (identity == "zhu" || identity == "zhong" || identity == "mingzhong") num++;
+					if (["zhu", "zhong", "mingzhong"].includes(current.identity)) num++;
 					num += current.countMark("jxlianpo_mark_zhong");
-					return num;
-				}).length,
-				fan: curs.filter(current => {
+					return num + count;
+				}, 0),
+				fan: curs.reduce((count, current) => {
 					let num = 0;
 					if (current.identity == "fan") num++;
 					num += current.countMark("jxlianpo_mark_fan");
-					return num;
-				}).length,
-				nei: curs.filter(current => {
+					return num + count;
+				}, 0),
+				nei: curs.reduce((count, current) => {
 					let num = 0;
 					if (current.identity == "nei") num++;
 					num += current.countMark("jxlianpo_mark_nei");
-					return num;
-				}).length,
-				commoner: curs.filter(current => {
+					return num + count;
+				}, 0),
+				commoner: curs.reduce((count, current) => {
 					let num = 0;
 					if (current.identity == "commoner") num++;
 					num += current.countMark("jxlianpo_mark_commoner");
-					return num;
-				}).length,
+					return num + count;
+				}, 0),
 			};
 			let population = 0,
 				identities = [];
