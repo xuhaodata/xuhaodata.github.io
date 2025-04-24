@@ -5912,6 +5912,7 @@ export class Player extends HTMLDivElement {
 	draw() {
 		var next = game.createEvent("draw");
 		next.player = this;
+		const event = _status.event;
 		for (var i = 0; i < arguments.length; i++) {
 			if (get.itemtype(arguments[i]) == "player") {
 				next.source = arguments[i];
@@ -5936,9 +5937,8 @@ export class Player extends HTMLDivElement {
 			next.resolve();
 		}
 		if (get.itemtype(next.source) != "player") {
-			const event = _status.event;
-			const source = event.customSource || event.player;
-			if (get.itemtype(source) == "player") next.source = source;
+			const source = event.player;
+			if (source) next.source = source;
 		}
 		next.setContent("draw");
 		if (lib.config.mode == "stone" && _status.mode == "deck" && next.drawDeck == undefined && !next.player.isMin() && next.num > 1) {
