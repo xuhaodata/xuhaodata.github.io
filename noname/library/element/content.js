@@ -6478,37 +6478,41 @@ export const Content = {
 			controls.push("recover_hp");
 		}
 		if (!forced) controls.push("cancel2");
-		const prompt =
-			event.prompt ||
-			(() => {
-				let str = ``;
-				if (!forced) str += `是否`;
-				if (player !== target) str += `令${get.translation(target)}`;
-				str += `摸${get.cnNumber(event.num1)}张牌`;
-				if (target.isDamaged()) str += `或回复${event.num2}点体力`;
-				if (!forced) str += `？`;
-				return str;
-			})();
-		const next = player.chooseControl(controls);
-		next.set("prompt", prompt);
-		if (event.hsskill) next.setHiddenSkill(event.hsskill);
-		next.set(
-			"ai",
-			event.ai ||
-				function () {
-					const player = get.player();
-					const { target, num1, num2 } = get.event().getParent();
-					const att = get.attitude(player, target);
-					const choices = get.event().controls.slice();
-					const eff1 = get.recoverEffect(target, player, player);
-					const eff2 = get.effect(target, { name: "draw" }, player, player) * 2;
-					if (choices.includes("recover_hp") && eff1 > 0 && (target.hp == 1 || target.needsToDiscard() || target.hasSkillTag("maixie_hp") || num2 > num1 || (num2 == num1 && target.needsToDiscard(1)))) return "recover_hp";
-					if (eff2 > 0) return "draw_card";
-					if (choices.includes("cancel2") && att <= 0) return "cancel2";
-					return choices.randomGet();
-				}
-		);
-		const result = target.isHealthy() && forced ? { control: "draw_card" } : await next.forResult();
+		let result;
+		if (controls.length == 1) result = { control: controls[0] };
+		else {
+			const prompt =
+				event.prompt ||
+				(() => {
+					let str = ``;
+					if (!forced) str += `是否`;
+					if (player !== target) str += `令${get.translation(target)}`;
+					str += `摸${get.cnNumber(event.num1)}张牌`;
+					if (target.isDamaged()) str += `或回复${event.num2}点体力`;
+					if (!forced) str += `？`;
+					return str;
+				})();
+			const next = player.chooseControl(controls);
+			next.set("prompt", prompt);
+			if (event.hsskill) next.setHiddenSkill(event.hsskill);
+			next.set(
+				"ai",
+				event.ai ||
+					function () {
+						const player = get.player();
+						const { target, num1, num2 } = get.event().getParent();
+						const att = get.attitude(player, target);
+						const choices = get.event().controls.slice();
+						const eff1 = get.recoverEffect(target, player, player);
+						const eff2 = get.effect(target, { name: "draw" }, player, player) * 2;
+						if (choices.includes("recover_hp") && eff1 > 0 && (target.hp == 1 || target.needsToDiscard() || target.hasSkillTag("maixie_hp") || num2 > num1 || (num2 == num1 && target.needsToDiscard(1)))) return "recover_hp";
+						if (eff2 > 0) return "draw_card";
+						if (choices.includes("cancel2") && att <= 0) return "cancel2";
+						return choices.randomGet();
+					}
+			);
+			result = await next.forResult();
+		}
 		if (result?.control != "cancel2") {
 			if (event.logSkill) {
 				if (typeof event.logSkill == "string") {
