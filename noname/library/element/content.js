@@ -6500,8 +6500,8 @@ export const Content = {
 					const { target, num1, num2 } = get.event().getParent();
 					const att = get.attitude(player, target);
 					const choices = get.event().controls.slice();
-					const eff1 = get.effect(target, { name: "draw" }, player, player);
-					const eff2 = get.recoverEffect(target, player, player) * 2;
+					const eff1 = get.recoverEffect(target, player, player);
+					const eff2 = get.effect(target, { name: "draw" }, player, player) * 2;
 					if (choices.includes("recover_hp") && eff1 > 0 && (target.hp == 1 || target.needsToDiscard() || target.hasSkillTag("maixie_hp") || num2 > num1 || (num2 == num1 && target.needsToDiscard(1)))) return "recover_hp";
 					if (eff2 > 0) return "draw_card";
 					if (choices.includes("cancel2") && att <= 0) return "cancel2";
