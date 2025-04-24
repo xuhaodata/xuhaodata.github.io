@@ -5347,6 +5347,8 @@ export class Player extends HTMLDivElement {
 				next.prompt = arguments[i];
 			} else if (typeof arguments[i] == "function") {
 				next.ai = arguments[i];
+			} else if (get.itemtype(arguments[i]) == "player") {
+				next.target = arguments[i];
 			}
 		}
 		if (typeof next.num1 != "number") {
@@ -5355,6 +5357,7 @@ export class Player extends HTMLDivElement {
 		if (typeof next.num2 != "number") {
 			next.num2 = 1;
 		}
+		if (next.target == undefined) next.target = this;
 		next.setContent("chooseDrawRecover");
 		return next;
 	}
