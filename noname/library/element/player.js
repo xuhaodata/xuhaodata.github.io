@@ -5930,10 +5930,15 @@ export class Player extends HTMLDivElement {
 				next.drawDeck = arguments[i].drawDeck;
 			}
 		}
-		if (next.num == undefined) next.num = 1;
+		if (typeof next.num != "number") next.num = 1;
 		if (next.num <= 0) {
 			_status.event.next.remove(next);
 			next.resolve();
+		}
+		if (get.itemtype(next.source) != "player") {
+			const event = _status.event;
+			const source = event.customSource || event.player;
+			if (get.itemtype(source) == "player") next.source = source;
 		}
 		next.setContent("draw");
 		if (lib.config.mode == "stone" && _status.mode == "deck" && next.drawDeck == undefined && !next.player.isMin() && next.num > 1) {
