@@ -19,7 +19,7 @@ const skills = {
 			if (!cards?.length || cards?.length < 3) return true;
 			let nums = cards
 				.map(card => get.number(card, player))
-				.unique()
+				//.unique()
 				.sort((a, b) => b - a);
 			nums = nums
 				.map((num, index) => {
