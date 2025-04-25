@@ -1,4 +1,10 @@
 const characters = {
+	v_caopi: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["dcdianlun", "dcjiwei", "dcsugang"],
+	},
 	dc_zhongyu: {
 		sex: "male",
 		group: "wei",

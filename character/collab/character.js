@@ -6,20 +6,6 @@ const characters = {
 		skills: ["dclieti", "dcshigong", "dcluankui"],
 		names: "袁|绍-袁|术",
 	},
-	yuanshaoyuanshu_shao: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["dclieti", "dcshigong", "dcluankui"],
-		isUnseen: true,
-	},
-	yuanshaoyuanshu_shu: {
-		sex: "male",
-		group: "qun",
-		hp: 4,
-		skills: ["dclieti", "dcshigong", "dcluankui"],
-		isUnseen: true,
-	},
 	tianji: {
 		sex: "male",
 		group: "qun",

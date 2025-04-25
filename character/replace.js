@@ -32,7 +32,7 @@ window.noname_character_replace = {
 	caofang: ["caofang", "jsrg_caofang"],
 	caohong: ["caohong", "dc_sb_caohong", "tw_re_caohong", "tw_caohong", "yj_caohong"],
 	caomao: ["caomao", "mb_caomao", "ddd_caomao"],
-	caopi: ["caopi", "re_caopi", "sb_caopi", "tw_sb_caopi", "huan_caopi", "ps_caopi"],
+	caopi: ["caopi", "v_caopi", "re_caopi", "sb_caopi", "tw_sb_caopi", "huan_caopi", "ps_caopi"],
 	caoren: ["caoren", "old_caoren", "sp_caoren", "star_caoren", "sb_caoren", "jsp_caoren", "drag_caoren", "new_caoren"],
 	caorui: ["caorui", "re_caorui", "std_caorui", "yy_caorui", "old_caorui"],
 	caoshuang: ["caoshuang", "dc_caoshuang", "ns_caoshuang", "ddd_caoshuang"],

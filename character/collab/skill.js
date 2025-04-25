@@ -4,11 +4,12 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//烈袁绍袁术
 	dclieti: {
+		audio: 2,
 		trigger: {
 			global: "gameDrawBegin",
 		},
 		forced: true,
-		content() {
+		async content(event, trigger, player) {
 			const me = player;
 			const numx = trigger.num;
 			trigger.num =
@@ -25,23 +26,20 @@ const skills = {
 							}
 							return numx;
 					  };
-			player._dclieti = true;
-			const effect = "dclieti_allocate";
-			player.addTempSkill(effect, { player: `${effect}After` });
+			await player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
+			if (!trigger.gaintag) trigger.gaintag = {};
+			trigger.gaintag[me.playerid] = (num, cards) => {
+				const numy = Math.ceil(num / 2);
+				return [
+					[cards.slice(0, numy), "yuanshaoyuanshu_shu"],
+					[cards.slice(numy, num), "yuanshaoyuanshu_shao"],
+				];
+			};
 		},
 		mod: {
 			cardEnabled2(card, player) {
 				if (get.itemtype(card) != "card" || !player.getCards("h").includes(card)) return;
-				if (
-					player.hasSkill("dcshigong") &&
-					!player.hasHistory("useCard", evt => {
-						return player.hasHistory("lose", evtx => {
-							if (evtx.getParent() != evt) return false;
-							return evtx.getl?.(player)?.hs?.length;
-						});
-					})
-				)
-					return;
+				if (player.hasSkill("dcshigong") && player.storage.dcshigong_first !== false) return;
 				if (!card.hasGaintag(lib.skill.dclieti.getName(player))) return false;
 			},
 			ignoredHandcard(card, player) {
@@ -52,10 +50,9 @@ const skills = {
 			},
 		},
 		getName(player) {
-			const names = [];
-			if (player.name1.indexOf("yuanshaoyuanshu") == 0) return player.name1;
-			else if (player.name2.indexOf("yuanshaoyuanshu") == 0) return player.name2;
-			else return player.name1;
+			const name = player.tempname.find(i => i.indexOf("yuanshaoyuanshu") == 0);
+			if (name) return name;
+			return player.name1;
 		},
 		group: "dclieti_mark",
 		subSkill: {
@@ -71,37 +68,16 @@ const skills = {
 				content() {
 					if (!trigger.gaintag) trigger.gaintag = [];
 					const name = lib.skill.dclieti.getName(player);
-					trigger.gaintag.add(name);//if (name != "yuanshaoyuanshu") 
-				},
-			},
-			allocate: {
-				trigger: {
-					global: "phaseBefore",
-					player: "enterGame",
-				},
-				filter(event, player) {
-					return (event.name != "phase" || game.phaseNumber == 0) && player._dclieti;
-				},
-				firstDo: true,
-				forced: true,
-				popup: false,
-				async content(event, trigger, player) {
-					delete player._dclieti;
-					const hs = player.getCards("h");
-					if (!hs.length) return;
-					const num = Math.ceil(hs.length / 2);
-					const cards = [hs.slice(0, num), hs.slice(num, 2 * num)];
-					if (player.name1 == "yuanshaoyuanshu" || player.name2 == "yuanshaoyuanshu") {
-						player.addGaintag(cards[0], "yuanshaoyuanshu_shao");
-						player.addGaintag(cards[1], "yuanshaoyuanshu_shu");
-					} else player.addGaintag(hs, player.name1);
+					trigger.gaintag.add(name);
 				},
 			},
 		},
 	},
 	dcshigong: {
-		forced: true,
-		trigger: { player: "useCardAfter" },
+		audio: 2,
+		locked: true,
+		direct: true,
+		trigger: { player: "useCard" },
 		filter(event, player) {
 			return (
 				player
@@ -111,10 +87,16 @@ const skills = {
 							return evtx.getl?.(player)?.hs?.length;
 						});
 					})
-					.indexOf(event) == 0 && lib.skill.dclieti.getName(player).indexOf("yuanshaoyuanshu") == 0
+					.indexOf(event) == 0
 			);
 		},
 		async content(event, trigger, player) {
+			//为false则表示不是第一次使用手牌，因为考虑到技能可能被失效导致第一张手牌受到限制所以用的false来赋值
+			player.storage.dcshigong_first = false;
+			player.when({ global: "phaseAfter" }).then(() => {
+				delete player.storage.dcshigong_first;
+			});
+			if (lib.skill.dclieti.getName(player).indexOf("yuanshaoyuanshu") != 0) return false;
 			const gaintag = [];
 			player.checkHistory("lose", evt => {
 				if (evt.getParent() != trigger) return false;
@@ -125,10 +107,9 @@ const skills = {
 				);
 			});
 			if (gaintag.length == 1 && gaintag[0] != lib.skill.dclieti.getName(player)) {
-				const name = gaintag[0],
-					prename = lib.skill.dclieti.getName(player);
-				await player.reinitCharacter(prename, name);
-				await game.delay();
+				const name = gaintag[0];
+				player.logSkill(event.name);
+				await player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
 				if (name == "yuanshaoyuanshu_shao") await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
 				if (name == "yuanshaoyuanshu_shu") await player.draw(2);
 			}
@@ -138,6 +119,7 @@ const skills = {
 		},
 	},
 	dcluankui: {
+		audio: 2,
 		trigger: {
 			source: ["damageSource"],
 			player: ["gainAfter"],
@@ -172,6 +154,7 @@ const skills = {
 		},
 		subSkill: {
 			damage: {
+				audio: "dcluankui",
 				mark: true,
 				intro: {
 					content: "下次造成伤害翻倍",
@@ -185,6 +168,7 @@ const skills = {
 				},
 			},
 			draw: {
+				audio: "dcluankui",
 				mark: true,
 				intro: {
 					content: "下次摸牌翻倍",
@@ -541,7 +525,7 @@ const skills = {
 				if (numx > 10) return;
 				const result = await player
 					.chooseControlList(get.translation(event.name) + "：请选择一项（已亮出牌名字数之和为" + numx + "）", ["获得" + get.translation(cards), "再亮出一张牌"], true)
-					.set("ai", () => (get.event().numx > 7 ? 1 : 0))
+					.set("ai", () => (get.event().numx < 7 ? 1 : 0))
 					.set("numx", numx)
 					.forResult();
 				if (result.index == 0) {
@@ -709,7 +693,7 @@ const skills = {
 			const result =
 				skills.length > 1
 					? await winner
-							.chooseButton(["岁崇：请选择一个生效兽技能令" + get.translation(player) + "获得", [skills.map(skill => [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]), "textbutton"]], true)
+							.chooseButton(["岁崇：请选择一个生肖兽技能令" + get.translation(player) + "获得", [skills.map(skill => [skill, '<div class="popup text" style="width:calc(100% - 10px);display:inline-block"><div class="skill">【' + get.translation(skill) + "】</div><div>" + lib.translate[skill + "_info"] + "</div></div>"]), "textbutton"]], true)
 							.set("ai", () => 1 + Math.random())
 							.forResult()
 					: { bool: true, links: skills };
