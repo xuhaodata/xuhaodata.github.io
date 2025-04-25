@@ -10214,7 +10214,7 @@ export class Library {
 					const skillName = item.slice(9);
 					if (lib.skill[skillName]) {
 						const skills = game.expandSkills([skillName]);
-						if (skills.includes(skill) && !get.info(skill).charlotte) return false;
+						if (skills.includes(skill)) return false;
 					}
 				}
 			}
@@ -10266,7 +10266,7 @@ export class Library {
 				const skillName = item.slice(9);
 				if (!lib.skill[skillName]) continue;
 				const skills = game.expandSkills([skillName]);
-				if (skills.includes(skill) && !get.info(skill).charlotte) return false;
+				if (skills.includes(skill)) return false;
 			}
 			return true;
 		},
@@ -14193,6 +14193,13 @@ export class Library {
 			{
 				color: "#ffd700",
 				nature: "metal",
+			},
+		],
+		[
+			"烈",
+			{
+				color: "#8B0000",
+				nature: "firemm",
 			},
 		],
 		[

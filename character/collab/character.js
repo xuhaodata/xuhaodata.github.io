@@ -1,4 +1,11 @@
 const characters = {
+	yuanshaoyuanshu: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["dclieti", "dcshigong", "dcluankui"],
+		names: "袁|绍-袁|术",
+	},
 	tianji: {
 		sex: "male",
 		group: "qun",

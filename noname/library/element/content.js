@@ -3073,8 +3073,18 @@ export const Content = {
 			if (typeof num == "function") {
 				numx = num(player);
 			}
-			if (player.getTopCards) player.directgain(player.getTopCards(numx));
-			else player.directgain(get.cards(numx));
+
+			//别问，问就是初始手牌要有标记 by 星の语	
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
+			const cards = player.getTopCards ? player.getTopCards(numx) : get.cards(numx);
+			if (event.gaintag?.[player.playerid]) {
+				const gaintag = event.gaintag[player.playerid];
+				const list = typeof gaintag == "function" ? gaintag(numx, cards) : [[cards, gaintag]];
+				for (let i = list.length - 1; i >= 0; i--) {
+					player.directgain(list[i][0], null, list[i][1]);
+				}
+			} else player.directgain(cards);
+
 			if (player.singleHp === true && get.mode() != "guozhan" && (lib.config.mode != "doudizhu" || _status.mode != "online")) {
 				player.doubleDraw();
 			}
@@ -3122,7 +3132,18 @@ export const Content = {
 			for (var i = 0; i < hs.length; i++) {
 				hs[i].discard(false);
 			}
-			game.me.directgain(get.cards(hs.length));
+
+			//别问，问就是初始手牌要有标记 by 星の语
+			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
+			const cards = get.cards(hs.length);
+			if (event.gaintag?.[game.me.playerid]) {
+				const gaintag = event.gaintag[game.me.playerid];
+				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+				for (let i = list.length - 1; i >= 0; i--) {
+					game.me.directgain(list[i][0], null, list[i][1]);
+				}
+			} else game.me.directgain(cards);
+
 			event.goto(2);
 		} else {
 			if (event.dialog) event.dialog.close();

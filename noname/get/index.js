@@ -1356,9 +1356,9 @@ export class Get extends GetCompatible {
 				}
 		}
 		if (server) {
-			return get.translation(config.mode) + "模式";
+			return get.translation(get.plainText(config.mode)) + "模式";
 		} else {
-			return get.cnNumber(parseInt(config.number)) + "人" + get.translation(config.mode);
+			return get.cnNumber(parseInt(config.number)) + "人" + get.translation(get.plainText(config.mode));
 		}
 	}
 	charactersOL(func) {

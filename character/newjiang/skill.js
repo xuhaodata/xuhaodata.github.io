@@ -583,7 +583,9 @@ const skills = {
 			const goon = target === player;
 			player.addTempSkill("xiongjin_used", "roundStart");
 			player.markAuto("xiongjin_used", [goon.toString()]);
-			target.addTempSkill("xiongjin_effect");
+			player.addTempSkill("xiongjin_effect");
+			if (!player.storage.xiongjin_effect_target) player.storage.xiongjin_effect_target = [];
+			player.storage.xiongjin_effect_target.add(target);
 			target.markAuto("xiongjin_effect", [goon ? "nobasic" : "basic"]);
 			target.draw(Math.min(3, Math.max(1, player.getDamagedHp())));
 		},
@@ -594,7 +596,12 @@ const skills = {
 			},
 			effect: {
 				charlotte: true,
-				mark: true,
+				onremove(player, skill) {
+					player.storage.xiongjin_effect_target.forEach(target => {
+						target.unmarkAuto(skill, target.storage[skill]);
+					});
+					delete player.storage.xiongjin_effect_target;
+				},
 				intro: {
 					markcount: () => 0,
 					content(storage) {
@@ -602,17 +609,22 @@ const skills = {
 						return "弃牌阶段开始时，弃置所有" + (storage[0] === "basic" ? "基本" : "非基本") + "牌";
 					},
 				},
-				trigger: { player: "phaseDiscardBegin" },
+				trigger: { global: "phaseDiscardBegin" },
 				forced: true,
 				popup: false,
 				content() {
-					const storage = player.getStorage("xiongjin_effect");
-					const cards = player.getCards("he", card => {
-						if (!lib.filter.cardDiscardable(card, player)) return false;
-						const type = get.type(card);
-						return (type === "basic" && storage.includes("basic")) || (type !== "basic" && storage.includes("nobasic"));
-					});
-					if (cards.length) player.discard(cards);
+					const targets = player.storage.xiongjin_effect_target;
+					if (targets?.length) {
+						for (const target of targets.sortBySeat()) {
+							const storage = target.getStorage("xiongjin_effect");
+							const cards = target.getCards("he", card => {
+								if (!lib.filter.cardDiscardable(card, target)) return false;
+								const type = get.type(card);
+								return (type === "basic" && storage.includes("basic")) || (type !== "basic" && storage.includes("nobasic"));
+							});
+							if (cards.length) target.discard(cards);
+						}
+					}
 				},
 			},
 		},
