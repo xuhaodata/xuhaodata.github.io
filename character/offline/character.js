@@ -1,4 +1,55 @@
 const characters = {
+	jy_caocao: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["jylijun", "jytongbei"],
+	},
+	jy_caoren: {
+		sex: "male",
+		group: "wei",
+		hp: 4,
+		skills: ["jybeirong", "jyyujun"],
+	},
+	jy_zhugeliang: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		maxHp: 4,
+		skills: ["jyqibian", "jycailve"],
+		names: "诸葛|亮",
+	},
+	jy_pangtong: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["jylianhuan", "jysuozhou", "jyyuhuo"],
+	},
+	jy_lusu: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["jydimeng", "jyzhouji"],
+	},
+	jy_zhangzhao: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["jyboyan", "jymushi"],
+	},
+	jy_zhouyu: {
+		sex: "male",
+		group: "wu",
+		hp: 3,
+		skills: ["jysashuang", "jyhuoce"],
+	},
+	jy_huanggai: {
+		sex: "male",
+		group: "wu",
+		hp: 4,
+		maxHp: 5,
+		skills: ["jyliezhou", "jyzhaxiang"],
+	},
 	yj_chezhou: {
 		sex: "male",
 		group: "wei",
