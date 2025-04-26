@@ -1107,7 +1107,7 @@ const translates = {
 	jyqibian: "七辩",
 	jyqibian_info: "每轮开始时，你将牌堆顶的七张牌置于武将牌上，称为“才”；每轮结束时，你将所有“才”置入弃牌堆。",
 	jycailve: "才略",
-	jycailve_info: "当你需要使用或打出牌时，若“才”中有此牌。你可以使用或打出之，然后成为此牌目标的角色可以弃置你一张牌。",
+	jycailve_info: "当你需要使用或打出牌时，若“才”中有此牌，你可以使用或打出之，然后成为此牌目标的角色可以弃置你一张牌。",
 	jy_pangtong: "荆扬庞统",
 	jy_pangtong_prefix: "荆扬",
 	jylianhuan: "连环",
