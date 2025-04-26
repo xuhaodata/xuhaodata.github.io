@@ -2185,22 +2185,15 @@ export class Player extends HTMLDivElement {
 			const skill = skills[i],
 				ifo = get.info(skill),
 				hiddenCard = ifo.hiddenCard;
-			if (ifo.usable !== undefined) {
-				let num = ifo.usable;
-				if (typeof num === "function") num = ifo.usable(skill, player);
-				if (typeof num === "number" && get.skillCount(skill, player) >= num) continue;
-			}
-			if (ifo.viewAs && typeof ifo.viewAs !== "function" && typeof ifo.viewAs !== "string" && ifo.viewAs.name === name) {
-				const goon = !ifo.viewAsFilter || ifo.viewAsFilter(player) !== false;
-				const bool =
-					!ifo.filter ||
-					evtNames.some(evtName => {
-						let evt = event.getParent(evtName);
-						if (get.itemtype(evt) !== "event") evt = get.event();
-						if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
-						return ifo.filter(evt, player, evt.triggername);
-					});
-				if (goon && bool) return true;
+			if (
+				evtNames.some(evtName => {
+					let evt = event.getParent(evtName);
+					if (get.itemtype(evt) !== "event") evt = get.event();
+					if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+					return lib.filter.filterEnable(evt, player, skill);
+				})
+			) {
+				return true;
 			} else if (typeof hiddenCard == "function") {
 				if (hiddenCard(player, name)) return true;
 			}
@@ -5354,6 +5347,8 @@ export class Player extends HTMLDivElement {
 				next.prompt = arguments[i];
 			} else if (typeof arguments[i] == "function") {
 				next.ai = arguments[i];
+			} else if (get.itemtype(arguments[i]) == "player") {
+				next.target = arguments[i];
 			}
 		}
 		if (typeof next.num1 != "number") {
@@ -5362,6 +5357,7 @@ export class Player extends HTMLDivElement {
 		if (typeof next.num2 != "number") {
 			next.num2 = 1;
 		}
+		if (next.target == undefined) next.target = this;
 		next.setContent("chooseDrawRecover");
 		return next;
 	}
@@ -5916,6 +5912,7 @@ export class Player extends HTMLDivElement {
 	draw() {
 		var next = game.createEvent("draw");
 		next.player = this;
+		const event = _status.event;
 		for (var i = 0; i < arguments.length; i++) {
 			if (get.itemtype(arguments[i]) == "player") {
 				next.source = arguments[i];
@@ -5934,10 +5931,14 @@ export class Player extends HTMLDivElement {
 				next.drawDeck = arguments[i].drawDeck;
 			}
 		}
-		if (next.num == undefined) next.num = 1;
+		if (typeof next.num != "number") next.num = 1;
 		if (next.num <= 0) {
 			_status.event.next.remove(next);
 			next.resolve();
+		}
+		if (get.itemtype(next.source) != "player") {
+			const source = event.player;
+			if (source) next.source = source;
 		}
 		next.setContent("draw");
 		if (lib.config.mode == "stone" && _status.mode == "deck" && next.drawDeck == undefined && !next.player.isMin() && next.num > 1) {

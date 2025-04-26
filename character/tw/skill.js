@@ -3361,6 +3361,7 @@ const skills = {
 		derivation: "twjielvx",
 		group: ["twjielv_lose", "twjielv_buff", "twjielv_huan"],
 		locked: true,
+		ai: { halfneg: true },
 		subSkill: {
 			lose: {
 				audio: "twjielv",
@@ -3371,7 +3372,7 @@ const skills = {
 				},
 				forced: true,
 				async content(event, trigger, player) {
-					player.loseHp();
+					await player.loseHp();
 				},
 			},
 			buff: {

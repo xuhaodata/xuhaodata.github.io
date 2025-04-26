@@ -4862,7 +4862,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const num = get.info("mbjiwei").getNum(trigger, player);
+			const num = get.info(event.name).getNum(trigger, player);
 			if (trigger.name == "phase") await player.draw(num);
 			else {
 				const cards = player.getCards("h"),

@@ -5260,7 +5260,7 @@ const skills = {
 						if (!lib.filter.cardEnabled(card, evt.player, evt)) return false;
 						let cards = [card];
 						if (Array.isArray(card.cards)) cards.addArray(card.cards);
-						return cards.containsSome(...evt.cards) && get.name(card, false) == "sha";
+						return get.itemtype(evt.cards) == "cards" && cards.containsSome(...evt.cards) && get.name(card, false) == "sha";
 					}, "迟行：是否使用一张【杀】？")
 					.set("cards", result);
 			}
