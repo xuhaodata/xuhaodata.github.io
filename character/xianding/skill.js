@@ -765,7 +765,7 @@ const skills = {
 				},
 				filter(event, player) {
 					const target = player.storage.dcsbbaojia_effect;
-					if (!target || target !== event.player) return false;
+					if (![player, target].includes(event.player)) return false;
 					return (
 						event.card &&
 						player.hasEnabledSlot() &&
@@ -782,14 +782,14 @@ const skills = {
 				},
 				async cost(event, trigger, player) {
 					const list = [1, 2, 3, 4, 5].filter(num => player.hasEnabledSlot(num)).map(num => "equip" + num),
-						target = player.storage.dcsbbaojia_effect;
+						target = trigger.player;
 					const result = await player
 						.chooseControl(list, "cancel2")
 						.set("prompt", `###${get.prompt("dcsbbaojia_effect", target)}###废除1个装备栏并防止其受到的伤害，且${get.translation(trigger.card)}结算完毕后你获得之。`)
 						.set("ai", () => {
 							if (get.attitude(get.player(), get.event().target) < 0) return "cancel2";
 							for (var i = 5; i > 0; i--) {
-								if (player.hasEmptySlot(i)) return "equip" + i;
+								if (get.player().hasEmptySlot(i)) return "equip" + i;
 							}
 							return "cancel2";
 						})
@@ -857,8 +857,32 @@ const skills = {
 				filter(event, player) {
 					return event.reason?.card?.storage?.dcsbdouwei;
 				},
-				content() {
-					if (player.isDamaged()) player.recover();
+				async content(event, trigger, player) {
+					if (player.isDamaged()) await player.recover();
+					if (player.hasDisabledSlot()) {
+						const list = [1, 2, 3, 4, 5].filter(num => player.hasDisabledSlot(num)).map(num => "equip" + num);
+						const result = await player
+							.chooseControl(list)
+							.set("prompt", `斗围：恢复一个装备栏`)
+							.set("ai", () => {
+								const player = get.player();
+								const val = slot => {
+									if (
+										player.hasCard(function (card) {
+											return get.subtype(card) == slot;
+										}, "hs")
+									)
+										return 15;
+									return 10;
+								};
+								return get.event().list.sort((a, b) => val(b) - val(a))[0];
+							})
+							.set("list", list)
+							.forResult();
+						if (result?.control) {
+							await player.enableEquip(result.control);
+						}
+					}
 					player.tempBanSkill("dcsbdouwei");
 				},
 			},
@@ -5197,7 +5221,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0];
 			target.addSkill("dcjingyin_tag");
-			target.gain(trigger.cards.filterInD(), "gain2").set("gaintag", "dcjingyin_tag");
+			target.gain(trigger.cards.filterInD(), "gain2").set("gaintag", ["dcjingyin_tag"]);
 		},
 		subSkill: {
 			tag: {

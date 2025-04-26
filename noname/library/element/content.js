@@ -3074,7 +3074,7 @@ export const Content = {
 				numx = num(player);
 			}
 
-			//别问，问就是初始手牌要有标记 by 星の语	
+			//别问，问就是初始手牌要有标记 by 星の语
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			const cards = player.getTopCards ? player.getTopCards(numx) : get.cards(numx);
 			if (event.gaintag?.[player.playerid]) {
@@ -8551,7 +8551,7 @@ export const Content = {
 			}
 			cards[num].fix();
 			cards[num].style.transform = "";
-			cards[num].addGaintag(event.gaintag);
+			event.gaintag.forEach(tag => cards[num].addGaintag(tag));
 			if (event.knowers) {
 				cards[num].addKnower(event.knowers); //添加事件设定的知情者。
 			}
@@ -8925,7 +8925,9 @@ export const Content = {
 			for (var j = 0; j < cardx.length; j++) {
 				if (cardx[j].gaintag && cardx[j].gaintag.length) {
 					event.gaintag_map[cardx[j].cardid] = cardx[j].gaintag.slice(0);
-					cardx[j].removeGaintag(true);
+					//仅移除非永久标记
+					const tags = cardx[j].gaintag.filter(tag => tag.indexOf("etern_") !== 0);
+					tags.forEach(tag => cardx[j].removeGaintag(tag));
 				}
 
 				cardx[j].style.transform += " scale(0.2)";

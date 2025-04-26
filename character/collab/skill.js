@@ -26,7 +26,7 @@ const skills = {
 							}
 							return numx;
 					  };
-			await player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
+			player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
 			if (!trigger.gaintag) trigger.gaintag = {};
 			trigger.gaintag[me.playerid] = (num, cards) => {
 				const numy = Math.ceil(num / 2);
@@ -109,7 +109,7 @@ const skills = {
 			if (gaintag.length == 1 && gaintag[0] != lib.skill.dclieti.getName(player)) {
 				const name = gaintag[0];
 				player.logSkill(event.name);
-				await player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
+				player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
 				if (name == "yuanshaoyuanshu_shao") await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
 				if (name == "yuanshaoyuanshu_shu") await player.draw(2);
 			}

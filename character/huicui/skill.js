@@ -593,7 +593,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		content() {
-			const cards = player.getCards("h");
+			const cards = player.getCards("h", card => player._start_cards.includes(card));
 			player.addGaintag(cards, "dctanban");
 		},
 		mod: {
@@ -1217,7 +1217,7 @@ const skills = {
 		},
 		forced: true,
 		content() {
-			const cards = player.getCards("h");
+			const cards = player.getCards("h", card => player._start_cards.includes(card));
 			player.addGaintag(cards, "dcxidi_tag");
 		},
 		mod: {
@@ -1232,7 +1232,7 @@ const skills = {
 		subSkill: {
 			guanxing: {
 				audio: "dcxidi",
-				trigger: { player: "phaseZhunbeiBegin" },
+				trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 				forced: true,
 				locked: false,
 				preHidden: true,
@@ -1247,7 +1247,7 @@ const skills = {
 				ai: {
 					guanxing: true,
 					skillTagFilter(player, tag, arg) {
-						if (tag === "guanxing") return player.hasCard(card => card.hasGaintag("dcxidi_tag"), "h");
+						if (tag === "guanxing") return true;
 					},
 				},
 			},
@@ -1272,7 +1272,7 @@ const skills = {
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
 			}
 			if (card.name != "sha" && get.type(card) != "trick") {
-				player.addGaintag(card, "dcxidi_tag");
+				await player.draw().set("gaintag", ["dcxidi_tag"]);
 			}
 		},
 		subSkill: {
@@ -1312,7 +1312,7 @@ const skills = {
 		},
 		forced: true,
 		content() {
-			const cards = player.getCards("h");
+			const cards = player.getCards("h", card => player._start_cards.includes(card));
 			player.addGaintag(cards, "dcyunzheng_tag");
 		},
 		mod: {
@@ -1474,7 +1474,7 @@ const skills = {
 		},
 		forced: true,
 		async content(event, trigger, player) {
-			const cards = player.getCards("h");
+			const cards = player.getCards("h", card => player._start_cards.includes(card));
 			player.addGaintag(cards, "dcjigu");
 		},
 		mod: {
@@ -3159,7 +3159,7 @@ const skills = {
 			return (
 				player.countCards("h", card => {
 					return (
-						card.hasGaintag("dcqiqin_tag") &&
+						card.hasGaintag("etern_dcqiqin_tag") &&
 						lib.skill.dczixi.zixiList.some(name => {
 							return game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
 						})
@@ -3173,7 +3173,7 @@ const skills = {
 			for (let name of names) {
 				let res = [null, null, 0];
 				player.getCards("h", i => {
-					if (!i.hasGaintag("dcqiqin_tag") || get.value(i) >= 7) return false;
+					if (!i.hasGaintag("etern_dcqiqin_tag") || get.value(i) >= 7) return false;
 					game.countPlayer(target => {
 						if (!target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [i]))) return;
 						let eff = get.effect(target, get.autoViewAs({ name }, [i]), player, player);
@@ -3193,7 +3193,7 @@ const skills = {
 			game.addVideo("skill", player, ["dczixi", []]);
 			const names = lib.skill.dczixi.zixiList.filter(name => {
 				return player.countCards("h", card => {
-					return card.hasGaintag("dcqiqin_tag") && game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
+					return card.hasGaintag("etern_dcqiqin_tag") && game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
 				});
 			});
 			let map = {};
@@ -3211,7 +3211,7 @@ const skills = {
 					if (ui.selected.buttons.length && type == typeof ui.selected.buttons[0].link) return false;
 					if (type == "string") return true;
 					return (
-						card.hasGaintag("dcqiqin_tag") &&
+						card.hasGaintag("etern_dcqiqin_tag") &&
 						lib.skill.dczixi.zixiList.some(name => {
 							return game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
 						})
@@ -3469,9 +3469,9 @@ const skills = {
 		},
 		forced: true,
 		content() {
-			let cards = player.getCards("h");
-			player.addGaintag(cards, "dcqiqin_tag");
-			player.markAuto("dcqiqin", cards);
+			let cards = player.getCards("h", card => player._start_cards.includes(card));//
+			player.addGaintag(cards, "etern_dcqiqin_tag");
+			//player.markAuto("dcqiqin", cards);
 		},
 		group: "dcqiqin_restore",
 		subSkill: {
@@ -3481,23 +3481,25 @@ const skills = {
 				audioname: ["yue_daqiao"],
 				trigger: { player: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					const targets = game.players.slice().concat(game.dead);
-					return targets.some(target => target.getStorage("dcqiqin").filterInD("d").length);
+					return Array.from(ui.discardPile.childNodes).some(card => card.hasGaintag("etern_dcqiqin_tag"));
+					/*const targets = game.players.slice().concat(game.dead);
+					return targets.some(target => target.getStorage("dcqiqin").filterInD("d").length);*/
 				},
 				forced: true,
 				content() {
-					const targets = game.players.slice().concat(game.dead);
-					const cards = targets.reduce((list, target) => list.addArray(target.getStorage("dcqiqin").filterInD("d")), []);
-					player.gain(cards, "gain2").gaintag.add("dcqiqin_tag");
+					//const targets = game.players.slice().concat(game.dead);
+					const cards = Array.from(ui.discardPile.childNodes).filter(card => card.hasGaintag("etern_dcqiqin_tag"));
+					//const cards = targets.reduce((list, target) => list.addArray(target.getStorage("dcqiqin").filterInD("d")), []);
+					player.gain(cards, "gain2"); //.gaintag.add("dcqiqin_tag");
 				},
 			},
 		},
 		mod: {
 			ignoredHandcard(card, player) {
-				if (card.hasGaintag("dcqiqin_tag")) return true;
+				if (card.hasGaintag("etern_dcqiqin_tag")) return true;
 			},
 			cardDiscardable(card, player, name) {
-				if (name == "phaseDiscard" && card.hasGaintag("dcqiqin_tag")) return false;
+				if (name == "phaseDiscard" && card.hasGaintag("etern_dcqiqin_tag")) return false;
 			},
 		},
 	},
@@ -3515,7 +3517,7 @@ const skills = {
 			);
 		},
 		filterCard: (card, player) => {
-			return card.hasGaintag("dcqiqin_tag") && lib.filter.cardDiscardable(card, player);
+			return card.hasGaintag("etern_dcqiqin_tag") && lib.filter.cardDiscardable(card, player);
 		},
 		filterTarget: (card, player, target) => {
 			return target != player && target.countCards("he");
@@ -3966,7 +3968,7 @@ const skills = {
 		group: "dcjiaowei_prevent",
 		*content(event, map) {
 			const player = map.player;
-			var cards = player.getCards("h");
+			var cards = player.getCards("h", card => player._start_cards.includes(card));
 			player.addGaintag(cards, "dcjiaowei_tag");
 		},
 		mod: {
@@ -4557,7 +4559,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var cards = player.getCards("h");
+			var cards = player.getCards("h", card => player._start_cards.includes(card));
 			player.addGaintag(cards, "dclingkong_tag");
 		},
 		mod: {
@@ -4807,7 +4809,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			var cards = player.getCards("h");
+			var cards = player.getCards("h", card => player._start_cards.includes(card));
 			player.addGaintag(cards, "dcshuangjia_tag");
 		},
 		mod: {
