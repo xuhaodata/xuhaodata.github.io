@@ -10870,7 +10870,7 @@ export class Library {
 				);
 			},
 			onChooseToUse: event => {
-				const player = _status.event.player,
+				const { player } = event,
 					fury = player.storage.stratagem_fury;
 				if (!fury) return;
 				if (!event.stratagemSettings && !game.online)
@@ -14246,6 +14246,13 @@ export class Library {
 				showName: "3D",
 				color: "#edb5b5",
 				nature: "watermm",
+			},
+		],
+		[
+			"荆扬",
+			{
+				color: "#ffcc99",
+				nature: "thundermm",
 			},
 		],
 	]);
