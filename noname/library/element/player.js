@@ -2189,8 +2189,15 @@ export class Player extends HTMLDivElement {
 				evtNames.some(evtName => {
 					let evt = event.getParent(evtName);
 					if (get.itemtype(evt) !== "event") evt = get.event();
-					if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
-					return lib.filter.filterEnable(evt, player, skill);
+					if (!evt) return false;
+					if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)] && evt?.name === evtName) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+					if (!lib.filter.filterEnable(evt, player, skill)) return false;
+					if (ifo.viewAs && get.is.object(ifo.viewAs) && ifo.viewAs?.name === name) {
+						if (ifo.viewAsFilter && ifo.viewAsFilter(player) === false) return false;
+						if (evt.filterCard && !evt.filterCard(get.autoViewAs(ifo.viewAs, "unsure"), player, evt)) return false;
+						return true;
+					}
+					return false;
 				})
 			) {
 				return true;
