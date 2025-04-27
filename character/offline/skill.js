@@ -65,6 +65,7 @@ const skills = {
 					global: "phaseDiscardBegin",
 				},
 				filter(event, player) {
+					if (get.info("pschangsghi").changshi.every(name => !player.hasMark(`${name}_${player.playerid}`))) return false;
 					if (event.name == "phaseDiscard") return get.info("jsrgzhenglve").isFirst(event.player);
 					if (event.player.hp + event.player.hujia > event.num) return false;
 					return game.hasPlayer(current => {
