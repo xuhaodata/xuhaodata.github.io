@@ -1799,7 +1799,6 @@ const skills = {
 					"step 2";
 					target.line(player);
 					player.addTempSkills(result.control, "phaseUseEnd");
-					player.popup(result.control);
 				},
 				ai: {
 					order(item, player) {

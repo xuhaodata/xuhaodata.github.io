@@ -4760,7 +4760,6 @@ const skills = {
 								player.addTempSkill("olyongzu_skill", { player: "phaseBegin" });
 								const group = player[get.mode() == "guozhan" ? "identity" : "group"];
 								const skill = group == "wei" ? "rejianxiong" : "tianming";
-								player.popup(skill);
 								await player.addAdditionalSkills("olyongzu_skill", skill, true);
 							},
 							filter: player => ["wei", "qun"].includes(player[get.mode() == "guozhan" ? "identity" : "group"]),
