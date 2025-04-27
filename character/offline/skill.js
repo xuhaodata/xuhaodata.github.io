@@ -849,6 +849,7 @@ const skills = {
 			const cards = player.getExpansions(skill);
 			if (cards.length) player.loseToDiscardpile(cards);
 		},
+		ai: { combo: "jycailve" },
 	},
 	jycailve: {
 		hiddenCard(player, name) {
