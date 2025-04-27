@@ -3159,7 +3159,7 @@ const skills = {
 			return (
 				player.countCards("h", card => {
 					return (
-						card.hasGaintag("etern_dcqiqin_tag") &&
+						card.hasGaintag("eternal_dcqiqin_tag") &&
 						lib.skill.dczixi.zixiList.some(name => {
 							return game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
 						})
@@ -3173,7 +3173,7 @@ const skills = {
 			for (let name of names) {
 				let res = [null, null, 0];
 				player.getCards("h", i => {
-					if (!i.hasGaintag("etern_dcqiqin_tag") || get.value(i) >= 7) return false;
+					if (!i.hasGaintag("eternal_dcqiqin_tag") || get.value(i) >= 7) return false;
 					game.countPlayer(target => {
 						if (!target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [i]))) return;
 						let eff = get.effect(target, get.autoViewAs({ name }, [i]), player, player);
@@ -3193,7 +3193,7 @@ const skills = {
 			game.addVideo("skill", player, ["dczixi", []]);
 			const names = lib.skill.dczixi.zixiList.filter(name => {
 				return player.countCards("h", card => {
-					return card.hasGaintag("etern_dcqiqin_tag") && game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
+					return card.hasGaintag("eternal_dcqiqin_tag") && game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
 				});
 			});
 			let map = {};
@@ -3211,7 +3211,7 @@ const skills = {
 					if (ui.selected.buttons.length && type == typeof ui.selected.buttons[0].link) return false;
 					if (type == "string") return true;
 					return (
-						card.hasGaintag("etern_dcqiqin_tag") &&
+						card.hasGaintag("eternal_dcqiqin_tag") &&
 						lib.skill.dczixi.zixiList.some(name => {
 							return game.hasPlayer(target => target.canAddJudge(get.autoViewAs({ name: "dczixi_" + name }, [card])));
 						})
@@ -3470,7 +3470,7 @@ const skills = {
 		forced: true,
 		content() {
 			let cards = player.getCards("h", card => player._start_cards.includes(card));//
-			player.addGaintag(cards, "etern_dcqiqin_tag");
+			player.addGaintag(cards, "eternal_dcqiqin_tag");
 			//player.markAuto("dcqiqin", cards);
 		},
 		group: "dcqiqin_restore",
@@ -3481,14 +3481,14 @@ const skills = {
 				audioname: ["yue_daqiao"],
 				trigger: { player: "phaseZhunbeiBegin" },
 				filter(event, player) {
-					return Array.from(ui.discardPile.childNodes).some(card => card.hasGaintag("etern_dcqiqin_tag"));
+					return Array.from(ui.discardPile.childNodes).some(card => card.hasGaintag("eternal_dcqiqin_tag"));
 					/*const targets = game.players.slice().concat(game.dead);
 					return targets.some(target => target.getStorage("dcqiqin").filterInD("d").length);*/
 				},
 				forced: true,
 				content() {
 					//const targets = game.players.slice().concat(game.dead);
-					const cards = Array.from(ui.discardPile.childNodes).filter(card => card.hasGaintag("etern_dcqiqin_tag"));
+					const cards = Array.from(ui.discardPile.childNodes).filter(card => card.hasGaintag("eternal_dcqiqin_tag"));
 					//const cards = targets.reduce((list, target) => list.addArray(target.getStorage("dcqiqin").filterInD("d")), []);
 					player.gain(cards, "gain2"); //.gaintag.add("dcqiqin_tag");
 				},
@@ -3496,10 +3496,10 @@ const skills = {
 		},
 		mod: {
 			ignoredHandcard(card, player) {
-				if (card.hasGaintag("etern_dcqiqin_tag")) return true;
+				if (card.hasGaintag("eternal_dcqiqin_tag")) return true;
 			},
 			cardDiscardable(card, player, name) {
-				if (name == "phaseDiscard" && card.hasGaintag("etern_dcqiqin_tag")) return false;
+				if (name == "phaseDiscard" && card.hasGaintag("eternal_dcqiqin_tag")) return false;
 			},
 		},
 	},
@@ -3517,7 +3517,7 @@ const skills = {
 			);
 		},
 		filterCard: (card, player) => {
-			return card.hasGaintag("etern_dcqiqin_tag") && lib.filter.cardDiscardable(card, player);
+			return card.hasGaintag("eternal_dcqiqin_tag") && lib.filter.cardDiscardable(card, player);
 		},
 		filterTarget: (card, player, target) => {
 			return target != player && target.countCards("he");

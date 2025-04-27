@@ -8952,7 +8952,7 @@ export const Content = {
 				if (cardx[j].gaintag && cardx[j].gaintag.length) {
 					event.gaintag_map[cardx[j].cardid] = cardx[j].gaintag.slice(0);
 					//仅移除非永久标记
-					const tags = cardx[j].gaintag.filter(tag => tag.indexOf("etern_") !== 0);
+					const tags = cardx[j].gaintag.filter(tag => tag.indexOf("eternal_") !== 0);
 					tags.forEach(tag => cardx[j].removeGaintag(tag));
 				}
 
