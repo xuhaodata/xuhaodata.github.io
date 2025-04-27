@@ -7077,7 +7077,7 @@ const skills = {
 				const card = game.createCard("tiejili", "spade", 5);
 				if (card) {
 					player.$gain2(card);
-					await player.equip(card);
+					await player.chooseUseTarget(card, true);
 				}
 			} else {
 				const cards = player.getEquips("tiejili");

@@ -4470,7 +4470,6 @@ const skills = {
 								.set("sourcex", player)
 								.forResult();
 							if (result.bool) {
-								//cards = target.getCards("h", "sha");
 								cards = target.getCards("h", card => {
 									return get.name(card) === "sha" && target.canUse(card, player, false);
 								});

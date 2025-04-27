@@ -1101,7 +1101,7 @@ const translates = {
 	jybeirong: "备戎",
 	jybeirong_info: "出牌阶段限一次。你可以重铸任意张手牌，若你以此法重铸的花色数不小于你的体力值，你横置。",
 	jyyujun: "御军",
-	jyyujun_info: "一名横置角色受到属性伤害后，你可以翻面并失去1点体力，然后摸三张牌，若如此做，你防止此伤害。",
+	jyyujun_info: "一名横置角色受到属性伤害时，你可以翻面并失去1点体力，然后摸三张牌，若如此做，你防止此伤害。",
 	jy_zhugeliang: "荆扬诸葛亮",
 	jy_zhugeliang_prefix: "荆扬",
 	jyqibian: "七辩",
