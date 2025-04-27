@@ -3645,6 +3645,13 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this[this.storage[i] || (lib.skill[i] && lib.skill[i].mark) ? "markSkill" : "unmarkSkill"](i);
+		const next = game.createEvent("removeMark", false);
+		next.player = this;
+		next.num = num;
+		next.markName = i;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * 增加玩家的标记
@@ -3665,6 +3672,13 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this.markSkill(i);
+		const next = game.createEvent("addMark", false);
+		next.player = this;
+		next.num = num;
+		next.markName = i;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * 设置玩家的标记数
