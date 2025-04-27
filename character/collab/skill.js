@@ -6,27 +6,32 @@ const skills = {
 	dclieti: {
 		audio: 2,
 		trigger: {
-			global: "gameDrawBegin",
+			//因为需要兼容联机，所以加上replaceHandcards的时机，该事件是联机时的手气卡事件
+			global: ["gameDrawBegin", "replaceHandcardsBegin"],
 		},
 		forced: true,
+		popup: false,
 		async content(event, trigger, player) {
 			const me = player;
-			const numx = trigger.num;
-			trigger.num =
-				typeof numx == "function"
-					? function (player) {
-							if (player == me) {
-								return 2 * numx(player);
-							}
-							return numx(player);
-					  }
-					: function (player) {
-							if (player == me) {
-								return 2 * numx;
-							}
-							return numx;
-					  };
-			player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
+			if (trigger.name == "gameDraw") {
+				player.logSkill(event.name);
+				const numx = trigger.num;
+				trigger.num =
+					typeof numx == "function"
+						? function (player) {
+								if (player == me) {
+									return 2 * numx(player);
+								}
+								return numx(player);
+						  }
+						: function (player) {
+								if (player == me) {
+									return 2 * numx;
+								}
+								return numx;
+						  };
+				player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
+			}
 			if (!trigger.gaintag) trigger.gaintag = {};
 			trigger.gaintag[me.playerid] = (num, cards) => {
 				const numy = Math.ceil(num / 2);
@@ -139,9 +144,7 @@ const skills = {
 			if (name == "damage") str += "弃置一张「袁绍」牌令自己本回合下次造成的伤害翻倍";
 			else str += "弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
 			event.result = await player
-				.chooseToDiscard(str, "h", "chooseonly", card => {
-					return card.hasGaintag(tag);
-				})
+				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(tag))
 				.set("ai", card => 6 - get.value(card))
 				.forResult();
 		},

@@ -3080,9 +3080,15 @@ export const Content = {
 			if (event.gaintag?.[player.playerid]) {
 				const gaintag = event.gaintag[player.playerid];
 				const list = typeof gaintag == "function" ? gaintag(numx, cards) : [[cards, gaintag]];
-				for (let i = list.length - 1; i >= 0; i--) {
-					player.directgain(list[i][0], null, list[i][1]);
-				}
+				game.broadcastAll(
+					(player, list) => {
+						for (let i = list.length - 1; i >= 0; i--) {
+							player.directgain(list[i][0], null, list[i][1]);
+						}
+					},
+					player,
+					list
+				);
 			} else player.directgain(cards);
 
 			if (player.singleHp === true && get.mode() != "guozhan" && (lib.config.mode != "doudizhu" || _status.mode != "online")) {
@@ -3715,9 +3721,15 @@ export const Content = {
 			for (var i = 0; i < hs.length; i++) {
 				hs[i].discard(false);
 			}
-			var cards = get.cards(hs.length);
+			const cards = get.cards(hs.length);
+			if (event.gaintag?.[game.me.playerid]) {
+				const gaintag = event.gaintag[game.me.playerid];
+				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+				for (let i = list.length - 1; i >= 0; i--) {
+					game.me.directgain(list[i][0], null, list[i][1]);
+				}
+			} else game.me.directgain(cards);
 			game.me._start_cards = cards;
-			game.me.directgain(cards);
 		}
 	},
 	replaceHandcardsOL: function () {
@@ -3739,8 +3751,20 @@ export const Content = {
 					player,
 					hs
 				);
-				var cards = get.cards(hs.length);
-				player.directgain(cards);
+				const cards = get.cards(hs.length);
+				if (event.gaintag?.[player.playerid]) {
+					const gaintag = event.gaintag[player.playerid];
+					const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+					game.broadcastAll(
+						(player, list) => {
+							for (let i = list.length - 1; i >= 0; i--) {
+								player.directgain(list[i][0], null, list[i][1]);
+							}
+						},
+						player,
+						list
+					);
+				} else player.directgain(cards);
 				player._start_cards = cards;
 			}
 		};
