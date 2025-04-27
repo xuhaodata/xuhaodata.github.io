@@ -899,6 +899,7 @@ const skills = {
 			},
 		},
 		ai: {
+			combo: "jyqibian",
 			order: 8,
 			effect: {
 				target(card, player, target, effect) {
