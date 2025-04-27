@@ -144,7 +144,8 @@ const skills = {
 			if (name == "damage") str += "弃置一张「袁绍」牌令自己本回合下次造成的伤害翻倍";
 			else str += "弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
 			event.result = await player
-				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(tag))
+				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(get.event("tag")))
+				.set("tag", tag)
 				.set("ai", card => 6 - get.value(card))
 				.forResult();
 		},
