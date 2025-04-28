@@ -11802,52 +11802,48 @@ const skills = {
 	//散装版甘夫人
 	dcshushen: {
 		audio: "shushen",
-		trigger: {
-			player: "recoverEnd",
+		trigger: { player: "recoverEnd" },
+		filter(event, player) {
+			return game.hasPlayer(current => current != player) && event.num > 0;
 		},
-		direct: true,
-		content() {
-			"step 0";
-			event.num = trigger.num;
-			"step 1";
-			player.chooseTarget(get.prompt("dcshushen"), "选择一名其他角色，然后令其回复1点体力或令你与其各摸一张牌", lib.filter.notMe).set("ai", target => {
-				var player = _status.event.player;
-				return get.recoverEffect(target, player, player) / 2 + get.attitude(player, target);
-			});
-			"step 2";
-			if (result.bool) {
-				var target = result.targets[0];
-				event.target = target;
-				player.logSkill("dcshushen", target);
-				event.num--;
-				var choices = ["选项二"];
-				var choiceList = ["令" + get.translation(target) + "回复1点体力", "你与" + get.translation(target) + "各摸一张牌"];
-				if (target.isDamaged()) choices.unshift("选项一");
-				else choiceList[0] = '<span style="opacity:0.5">' + choiceList[0] + "</span>";
-				player
-					.chooseControl(choices)
-					.set("choiceList", choiceList)
+		getIndex: event => event.num,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player();
+					return get.recoverEffect(target, player, player) / 2 + get.attitude(player, target);
+				})
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			let result;
+			if (target.isDamaged())
+				result = await player
+					.chooseControl("选项一", "选项二")
+					.set("choiceList", [`令${get.translation(target)}回复1点体力`, `你与${get.translation(target)}各摸一张牌`])
 					.set("prompt", "淑慎：请选择一项")
 					.set("ai", () => {
-						return _status.event.choice;
+						return get.event("choice");
 					})
 					.set(
 						"choice",
-						(function () {
-							if (target.hp <= 2 || get.recoverEffect(target, player, player) > 20) return 0;
+						(() => {
+							if (target.hp <= 2 || get.recoverEffect(target, player, player) > 20) return "选项一";
 							return "选项二";
 						})()
-					);
-			} else event.finish();
-			"step 3";
-			if (result.control == "选项一") {
-				target.recover();
-			} else {
-				var drawers = [player, target].sortBySeat(_status.currentPhase);
-				game.asyncDraw(drawers);
+					)
+					.forResult();
+			else result = { control: "选项二" };
+			if (result?.control == "选项一") {
+				await target.recover();
+			} else if (result?.control == "选项二") {
+				const drawers = [player, target].sortBySeat(_status.currentPhase);
+				await game.asyncDraw(drawers);
 			}
-			"step 4";
-			if (event.num > 0) event.goto(1);
 		},
 	},
 	dcshenzhi: {
@@ -11860,8 +11856,8 @@ const skills = {
 		},
 		async cost(event, trigger, player) {
 			event.result = await player
-				.chooseToDiscard(get.prompt("dcshenzhi"), "弃置一张手牌，然后回复1点体力")
-				.set("logSkill", "dcshenzhi")
+				.chooseToDiscard(get.prompt(event.skill), "弃置一张手牌，然后回复1点体力")
+				.set("logSkill", event.skill)
 				.set("ai", card => {
 					return get.event("recover") - get.value(card);
 				})

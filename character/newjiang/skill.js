@@ -1154,7 +1154,6 @@ const skills = {
 						}
 					}
 				} else player.flashAvatar("zhinang", map[type][skill]);
-				player.popup(skill);
 				await player.addAdditionalSkills(`zhinang_${get.type2(trigger.card)}`, skill);
 			}
 		},

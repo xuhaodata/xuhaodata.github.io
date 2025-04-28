@@ -2642,23 +2642,25 @@ export default () => {
 			},
 			niaobaidaowenha_skill: {
 				trigger: { player: "loseMaxHpAfter" },
-				direct: true,
-				content: function () {
-					"step 0";
-					event.count = trigger.num;
-					"step 1";
-					event.count--;
-					player.chooseTarget(get.prompt2("niaobaidaowenha_skill"), lib.filter.notMe).set("ai", function (target) {
-						return get.attitude(_status.event.player, target) / (target.maxHp || 1);
-					});
-					"step 2";
-					if (result.bool) {
-						var target = result.targets[0];
-						player.logSkill("niaobaidaowenha_skill", target);
-						target.gainMaxHp();
-						target.recover();
-						if (event.count) event.goto(1);
-					}
+				filter(event, player) {
+					return game.hasPlayer(current => current != player) && event.num > 0;
+				},
+				getIndex: event => event.num,
+				async cost(event, trigger, player) {
+					event.result = await player
+						.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+						.set("ai", target => {
+							const player = get.player();
+							return get.attitude(player, target) / (target.maxHp || 1);
+						})
+						.forResult();
+				},
+				async content(event, trigger, player) {
+					const {
+						targets: [target],
+					} = event;
+					await target.gainMaxHp();
+					await target.recover();
 				},
 			},
 			goujiangdesidai_skill: {
@@ -4604,24 +4606,21 @@ export default () => {
 			boss_yanyu: {
 				forced: true,
 				trigger: { global: "phaseBegin" },
-				filter: function (event, player) {
+				filter(event, player) {
 					return player != event.player;
 				},
-				content: function () {
-					"step 0";
-					event.count = 3;
-					player.line(trigger.player, "fire");
-					"step 1";
-					event.count--;
-					trigger.player.judge(function (card) {
+				getIndex: 3,
+				logTarget: "player",
+				async content(event, trigger, player) {
+					const { player: target } = trigger;
+					player.line(target, "fire");
+					const netx = target.judge(card => {
 						if (get.color(card) == "red") return -5;
 						return 5;
 					});
-					"step 2";
-					if (!result.bool) {
-						trigger.player.damage("fire");
-						if (event.count) event.goto(1);
-					}
+					netx.judge2 = result => result.bool;
+					const { result } = await netx;
+					if (!result?.bool) target.damage("fire");
 				},
 			},
 			boss_fengdong: {
