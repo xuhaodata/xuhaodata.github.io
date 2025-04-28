@@ -31397,25 +31397,21 @@ const skills = {
 	shushen: {
 		audio: 2,
 		trigger: { player: "recoverAfter" },
-		direct: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			player
-				.chooseTarget(get.prompt("shushen"), "令一名其他角色选择摸两张牌或回复1点体力", function (card, player, target) {
-					return target != player;
+		filter(event, player) {
+			return game.hasPlayer(current => current != player) && event.num > 0;
+		},
+		getIndex: event => event.num,
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill), lib.filter.notMe)
+				.set("ai", target => {
+					const player = get.player();
+					return get.attitude(player, target);
 				})
-				.set("ai", function (target) {
-					return get.attitude(_status.event.player, target);
-				});
-			"step 2";
-			if (result.bool) {
-				event.count--;
-				player.logSkill("shushen", result.targets);
-				result.targets[0].chooseDrawRecover(2, true);
-				if (event.count) event.goto(1);
-			}
+				.forResult();
+		},
+		async content(event, trigger, player) {
+			await event.targets[0].chooseDrawRecover(2, true);
 		},
 		ai: {
 			threaten: 0.8,
@@ -31955,52 +31951,25 @@ const skills = {
 	},
 	mingzhe: {
 		audio: 2,
-		audioname2: {
-			wangyuanji: "qc_mingzhe",
-		},
+		audioname2: { wangyuanji: "qc_mingzhe" },
 		trigger: {
 			player: ["useCard", "respond", "loseAfter"],
 			global: "loseAsyncAfter",
 		},
 		frequent: true,
+		getIndex(event, player) {
+			if (event.name.indexOf("lose") != 0) return 1;
+			return event.getl?.(player)?.cards2?.filter(card => get.color(card, player) == "red").length;
+		},
 		filter(event, player) {
 			if (player == _status.currentPhase) return false;
 			if (event.name.indexOf("lose") != 0) return get.color(event.card) == "red";
-			if (event.type != "discard") return false;
-			var evt = event.getl(player);
-			if (evt && evt.cards2) {
-				for (var i = 0; i < evt.cards2.length; i++) {
-					if (get.color(evt.cards2[i], player) == "red") return true;
-				}
-			}
-			return false;
+			return event.type == "discard";
 		},
-		content() {
-			"step 0";
-			event.count = 1;
-			if (trigger.name.indexOf("lose") == 0) {
-				event.count = 0;
-				var evt = trigger.getl(player);
-				for (var i = 0; i < evt.cards2.length; i++) {
-					if (get.color(evt.cards2[i], player) == "red") event.count++;
-				}
-			}
-			"step 1";
-			player.draw();
-			event.count--;
-			"step 2";
-			if (event.count && player.hasSkill(event.name) && !get.is.blocked(event.name, player)) {
-				player.chooseBool(get.prompt2("mingzhe")).set("frequentSkill", event.name);
-			} else event.finish();
-			"step 3";
-			if (result.bool) {
-				player.logSkill("mingzhe");
-				event.goto(1);
-			}
+		async content(event, trigger, player) {
+			await player.draw();
 		},
-		ai: {
-			threaten: 0.7,
-		},
+		ai: { threaten: 0.7 },
 	},
 
 	duwu: {
