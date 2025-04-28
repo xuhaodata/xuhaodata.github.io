@@ -8117,62 +8117,29 @@ const skills = {
 		},
 	},
 	sbxiaoji: {
-		audio: 2,
 		audioname: ["sp_sunshangxiang", "re_sunshangxiang", "db_sunshangxiang"],
-		trigger: {
-			player: "loseAfter",
-			global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
-		},
+		inherit: "xiaoji",
 		forced: true,
 		locked: false,
 		groupSkill: "wu",
 		filter(event, player) {
-			if (player.group != "wu") return false;
-			var evt = event.getl(player);
-			return evt && evt.player == player && evt.es && evt.es.length > 0;
+			return player.group == "wu";
 		},
-		content() {
-			"step 0";
-			event.count = trigger.getl(player).es.length;
-			"step 1";
-			event.count--;
-			player.draw(2);
-			player
+		async content(event, trigger, player) {
+			await player.draw(2);
+			if (!game.hasPlayer(current => current.countDiscardableCards(player, "ej"))) return;
+			const { result } = await player
 				.chooseTarget("是否弃置场上的一张牌？", (card, player, target) => {
 					return target.countDiscardableCards(player, "ej");
 				})
 				.set("ai", target => {
-					var player = _status.event.player;
-					var att = get.attitude(player, target);
-					if (
-						att > 0 &&
-						(target.countCards("j") > 0 ||
-							target.countCards("e", function (card) {
-								return get.value(card, target) < 0;
-							}))
-					)
-						return 2;
+					const player = get.player();
+					const att = get.attitude(player, target);
+					if (att > 0 && (target.countCards("j") > 0 || target.countCards("e", card => get.value(card, target) < 0))) return 2;
 					if (att < 0 && target.countCards("e") > 0 && !target.hasSkillTag("noe")) return -1;
 					return 0;
 				});
-			"step 2";
-			if (result.bool) {
-				player.discardPlayerCard(result.targets[0], "ej", true);
-			}
-			"step 3";
-			if (event.count > 0) {
-				player.logSkill("sbxiaoji");
-				event.goto(1);
-			}
-		},
-		ai: {
-			noe: true,
-			reverseEquip: true,
-			effect: {
-				target(card, player, target, current) {
-					if (get.type(card) == "equip" && !get.cardtag(card, "gifts")) return [1, 3];
-				},
-			},
+			if (result?.bool && result?.targets?.length) await player.discardPlayerCard(result.targets[0], "ej", true);
 		},
 	},
 	//吕蒙

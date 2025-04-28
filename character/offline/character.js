@@ -1,4 +1,64 @@
 const characters = {
+	ps_zhangrang: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["pstaoluan", "pschangsghi"],
+	},
+	ps_zhaozhong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["pschiyan", "pschangsghi"],
+	},
+	ps_sunzhang: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["pszimou", "pschangsghi"],
+	},
+	ps_bilan: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["psbicai", "pschangsghi"],
+	},
+	ps_xiayun: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["psyaozhuo", "pschangsghi"],
+	},
+	ps_hankui: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["psxiaolu", "pschangsghi"],
+	},
+	ps_lisong: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["pskuiji", "pschangsghi"],
+	},
+	ps_duangui: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["pschihe", "pschangsghi"],
+	},
+	ps_guosheng: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["psniqu", "pschangsghi"],
+	},
+	ps_gaowang: {
+		sex: "male",
+		group: "qun",
+		hp: 4,
+		skills: ["psmiaoyu", "pschangsghi"],
+	},
 	jy_caocao: {
 		sex: "male",
 		group: "wei",

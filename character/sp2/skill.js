@@ -3172,7 +3172,6 @@ const skills = {
 					}
 					game.log(target, "的技能", "#g" + str, "失效了");
 					// game.log(player,'获得了技能','#g'+str);
-					player.popup(skills, "thunder");
 					for (var skill of skills) {
 						player.addTempSkills(skill, ["phaseUseAfter", "phaseAfter"]);
 					}
@@ -3261,7 +3260,6 @@ const skills = {
 					}
 					game.log(target, "的技能", "#g" + str, "失效了");
 					// game.log(player,'获得了技能','#g'+str);
-					player.popup(skills, "thunder");
 					for (var skill of skills) {
 						player.addTempSkills(skill, ["phaseUseAfter", "phaseAfter"]);
 					}
@@ -3443,7 +3441,6 @@ const skills = {
 						})[0];
 					})
 					.forResultControl();
-			player.popup(skill, "thunder");
 			player.addTempSkill("dclongsong_remove", ["phaseUseAfter", "phaseAfter"]);
 			player.markAuto("dclongsong_remove", [skill]);
 			await player.addTempSkills(skill, ["phaseUseAfter", "phaseAfter"]);
@@ -6357,7 +6354,6 @@ const skills = {
 			if (skill != "cancel2") {
 				event.skills.remove(skill);
 				target.addAdditionalSkills("jinghe_" + player.playerid, skill, true);
-				target.popup(skill);
 			}
 			if (event.num < event.targets.length) event.goto(1);
 			if (target != game.me && !target.isOnline2()) game.delayx();

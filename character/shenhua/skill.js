@@ -1670,7 +1670,7 @@ const skills = {
 		},
 	},
 	nzry_juzhan: {
-		audio: ["nzry_juzhan_1", 2],
+		audio: ["skill/nzry_juzhan_11.mp3", "skill/nzry_juzhan_12.mp3"],
 		mark: true,
 		zhuanhuanji: true,
 		marktext: "☯",
@@ -2563,9 +2563,7 @@ const skills = {
 	},
 	nzry_jianxiang: {
 		audio: 2,
-		trigger: {
-			target: "useCardToTargeted",
-		},
+		trigger: { target: "useCardToTargeted" },
 		filter(event, player) {
 			return event.player != player;
 		},
@@ -2583,7 +2581,7 @@ const skills = {
 		},
 	},
 	nzry_shenshi: {
-		audio: ["nzry_shenshi_1", 2],
+		audio: ["skill/nzry_shenshi_11.mp3", "skill/nzry_shenshi_12.mp3"],
 		mark: true,
 		locked: false,
 		zhuanhuanji: true,

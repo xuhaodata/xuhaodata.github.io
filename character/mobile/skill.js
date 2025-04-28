@@ -21259,60 +21259,60 @@ const skills = {
 	},
 	xinfu_qianchong: {
 		audio: 1,
+		trigger: { player: "phaseUseBegin" },
+		filter(event, player) {
+			if (["basic", "trick", "equip"].every(type => player.getStorage("xinfu_qianchong_effect").includes(type))) return false;
+			const es = player.getCards("e");
+			if (!es.length) return true;
+			const col = get.color(es[0]);
+			for (let i = 0; i < es.length; i++) {
+				if (get.color(es[i]) != col) return true;
+			}
+			return false;
+		},
+		async cost(event, trigger, player) {
+			const list = ["basic", "trick", "equip", "cancel2"];
+			list.removeArray(player.getStorage("xinfu_qianchong_effect"));
+			const { result } = await player
+				.chooseControl(list)
+				.set("ai", () => {
+					const player = get.player();
+					const choices = get.event("controls").slice().remove("cancel2");
+					return choices.includes("basic") ? "basic" : choices.includes("trick") ? "trick" : choices.randomGet();
+				})
+				.set("prompt", get.prompt(event.skill))
+				.set("prompt2", "你可以选择一种类别的牌，然后你本回合内使用该类别的牌时没有次数和距离限制。");
+			event.result = {
+				bool: result?.control != "cancel2",
+				cost_data: result?.control,
+			};
+		},
+		async content(event, trigger, player) {
+			const { cost_data: type } = event;
+			player.addTempSkill(event.name + "_effect");
+			player.markAuto(event.name + "_effect", [type]);
+			const str = get.translation(type) + "牌";
+			game.log(player, "声明了", "#y" + str);
+			player.popup(str, "thunder");
+		},
+		derivation: ["weimu", "mingzhe"],
 		group: ["qc_weimu", "qc_mingzhe"],
 		subSkill: {
 			effect: {
 				charlotte: true,
 				onremove: true,
+				intro: { content: "本回合内使用$牌没有次数和距离限制" },
 				mod: {
 					cardUsable(card, player) {
-						var type = get.type2(card);
+						const type = get.type2(card);
 						if (player.getStorage("xinfu_qianchong_effect").includes(type)) return Infinity;
 					},
 					targetInRange(card, player) {
-						var type = get.type2(card);
+						const type = get.type2(card);
 						if (player.getStorage("xinfu_qianchong_effect").includes(type)) return true;
 					},
 				},
 			},
-		},
-		trigger: {
-			player: "phaseUseBegin",
-		},
-		direct: true,
-		derivation: ["weimu", "mingzhe"],
-		filter(event, player) {
-			var es = player.getCards("e");
-			if (!es.length) return true;
-			var col = get.color(es[0]);
-			for (var i = 0; i < es.length; i++) {
-				if (get.color(es[i]) != col) return true;
-			}
-			return false;
-		},
-		content() {
-			"step 0";
-			var list = ["basic", "trick", "equip", "cancel2"];
-			list.removeArray(player.getStorage("xinfu_qianchong_effect"));
-			if (list.length > 1) {
-				player
-					.chooseControl(list)
-					.set("ai", function () {
-						return list[0];
-					})
-					.set("prompt", get.prompt("xinfu_qianchong"))
-					.set("prompt2", "你可以选择一种类别的牌，然后你本回合内使用该类别的牌时没有次数和距离限制。");
-			} else event.finish();
-			"step 1";
-			if (result.control && result.control != "cancel2") {
-				player.logSkill("xinfu_qianchong");
-				var type = result.control;
-				player.addTempSkill("xinfu_qianchong_effect");
-				player.markAuto("xinfu_qianchong_effect", [type]);
-				var str = get.translation(type) + "牌";
-				game.log(player, "声明了", "#y" + str);
-				player.popup(str, "thunder");
-			}
 		},
 	},
 	qc_weimu: {
@@ -21347,82 +21347,36 @@ const skills = {
 	},
 	qc_mingzhe: {
 		audio: true,
-		trigger: {
-			player: ["useCard", "respond", "loseAfter"],
-			global: "loseAsyncAfter",
-		},
-		frequent: true,
+		inherit: "mingzhe",
 		filter(event, player) {
 			if (player.hasSkill("mingzhe")) return false;
+			const es = player.getCards("e");
+			if (!es.length || es.some(card => get.color(card) != "red")) return false;
 			if (player == _status.currentPhase) return false;
-			var es = player.getCards("e");
-			if (!es.length) return false;
-			for (var i = 0; i < es.length; i++) {
-				if (get.color(es[i]) != "red") return false;
-			}
 			if (event.name.indexOf("lose") != 0) return get.color(event.card) == "red";
-			if (event.type != "discard") return false;
-			var evt = event.getl(player);
-			if (evt.cards2) {
-				for (var i = 0; i < evt.cards2.length; i++) {
-					if (get.color(evt.cards2[i]) == "red") return true;
-				}
-			}
-			return false;
-		},
-		content() {
-			"step 0";
-			event.count = 1;
-			if (trigger.name.indexOf("lose") == 0) {
-				event.count = 0;
-				var evt = trigger.getl(player);
-				for (var i = 0; i < evt.cards2.length; i++) {
-					if (get.color(evt.cards2[i]) == "red") event.count++;
-				}
-			}
-			"step 1";
-			player.draw();
-			event.count--;
-			"step 2";
-			if (event.count && player.hasSkill(event.name) && !get.is.blocked(event.name, player)) {
-				player.chooseBool(get.prompt2("mingzhe")).set("frequentSkill", event.name);
-			} else event.finish();
-			"step 3";
-			if (result.bool) {
-				player.logSkill("qc_mingzhe");
-				event.goto(1);
-			}
-		},
-		ai: {
-			threaten: 0.7,
+			return event.type == "discard";
 		},
 	},
 	xinfu_shangjian: {
-		trigger: {
-			global: "phaseJieshuBegin",
-		},
 		audio: 2,
-		filter(event, player) {
-			var num = 0;
-			player.getHistory("lose", function (evt) {
-				var evt2 = evt.getParent();
+		getNum(player) {
+			let num = 0;
+			player.getHistory("lose", evt => {
+				const evt2 = evt.getParent();
 				if (evt2.name == "useCard" && evt2.player == player && get.type(evt2.card, null, false) == "equip") return;
-				if (evt.cards2) num += evt.cards2.length;
+				if (evt.cards2?.length) num += evt.cards2.length;
 			});
+			return num;
+		},
+		trigger: { global: "phaseJieshuBegin" },
+		filter(event, player) {
+			const num = get.info("xinfu_shangjian").getNum(player);
 			return num > 0 && num <= player.hp;
 		},
 		forced: true,
-		content() {
-			"step 0";
-			var num = 0;
-			player.getHistory("lose", function (evt) {
-				var evt2 = evt.getParent();
-				if (evt2.name == "useCard" && evt2.player == player && get.type(evt2.card, null, false) == "equip") return;
-				if (evt.cards2) num += evt.cards2.length;
-			});
-			if (num > 0) {
-				player.draw(num);
-			}
+		async content(event, trigger, player) {
+			const num = get.info(event.name).getNum(player);
+			if (num > 0) await player.draw(num);
 		},
 	},
 	rw_bagua_skill: {
