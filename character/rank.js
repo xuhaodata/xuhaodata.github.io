@@ -646,7 +646,7 @@ window.noname_character_rank = {
 		"yj_zhenji",
 	],
 	bp: [
-		"clan_yangzong",
+		"clan_yangzhong",
 		"ol_zhangmancheng",
 		"ol_guanhai",
 		"ol_madai",
@@ -3106,7 +3106,7 @@ window.noname_character_rank = {
 			"junk_liuyan",
 		],
 		rare: [
-			"clan_yangzong",
+			"clan_yangzhong",
 			"ol_zhangmancheng",
 			"ol_guanhai",
 			"jy_caocao",

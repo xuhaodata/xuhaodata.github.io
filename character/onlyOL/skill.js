@@ -41,7 +41,7 @@ const skills = {
 				},
 				filter(event, player) {
 					const names = player.storage.olguifu_record.card.slice(0).removeArray(player.getStorage("olguifu_used"));
-					return player.hasCard(card => card.hasGaintag("olguifu"), "h") && names.some(name => event.filterCard(get.autoViewAs({ name: name }, "unsure"), player, event));
+					return player.hasCard(card => card.hasGaintag("olguifu"), "h") && names.some(name => event.filterCard(get.autoViewAs({ name: name, storage: { olguifu_viewAs: true } }, "unsure"), player, event));
 				},
 				chooseButton: {
 					dialog(event, player) {
@@ -115,9 +115,9 @@ const skills = {
 				filter(event, player) {
 					const storage = player.storage.olguifu_record;
 					if (event.card?.name) return !storage.card.includes(event.card.name);
-					const skill = get.sourceSkillFor(event.getParent()?.name),
+					const skill = get.sourceSkillFor(event.getParent().name),
 						info = get.info(skill);
-					if (!info || info.charlotte || info.equipSkill) return false;
+					if (!info || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) return false;
 					return !storage.skill.includes(skill);
 				},
 				forced: true,
