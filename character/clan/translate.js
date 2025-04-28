@@ -174,6 +174,12 @@ const translates = {
 	clandandao_info: "锁定技，你判定后，当前回合角色本回合手牌上限+3。",
 	clanqingli: "清励",
 	clanqingli_info: "锁定技，每回合结束时，你将手牌摸至手牌上限（至多摸5张）。",
+	clan_yangzong: "族杨众",
+	clan_yangzong_prefix: "族",
+	clanjuetu: "绝途",
+	clanjuetu_info: "锁定技，弃牌阶段开始前，你将此阶段执行的效果改为：保留手牌中每个花色各一张，将其余手牌置入弃牌堆，然后你令一名角色展示一张手牌，若你手牌中没有此花色的牌，你对其造成1点伤害；若你手牌中有此花色的牌，你将其展示牌当【过河拆桥】使用。",
+	clankudu: "苦渡",
+	clankudu_info: "限定技，出牌阶段，你可以重铸两张牌，令一名角色下X个回合结束时摸一张牌，第X个回合后其执行一个额外回合（X为你重铸牌点数差且至多为5）。",
 };
 
 export default translates;

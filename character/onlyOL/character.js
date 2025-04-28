@@ -1,4 +1,11 @@
 const characters = {
+	dm_simayi: {
+		sex: "male",
+		group: "wei",
+		hp: 3,
+		skills: ["olguifu", "olmoubian"],
+		name: "司马|懿",
+	},
 	ol_madai: {
 		sex: "male",
 		group: "shu",

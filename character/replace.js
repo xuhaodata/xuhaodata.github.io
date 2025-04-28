@@ -214,7 +214,7 @@ window.noname_character_replace = {
 	simafu: ["yj_simafu", "mb_simafu", "simafu"],
 	simalang: ["simalang", "re_simalang"],
 	simashi: ["jin_simashi", "dc_simashi", "simashi", "tw_simashi", "std_simashi", "jd_jin_simashi"],
-	simayi: ["simayi", "re_simayi", "jin_simayi", "dc_sb_simayi", "huan_simayi", "jsrg_simayi", "yy_simayi", "ps_simayi", "ps_jin_simayi", "ps2068_simayi", "junk_simayi"],
+	simayi: ["simayi", "re_simayi", "jin_simayi", "dm_simayi", "dc_sb_simayi", "huan_simayi", "jsrg_simayi", "yy_simayi", "ps_simayi", "ps_jin_simayi", "ps2068_simayi", "junk_simayi"],
 	simazhao: ["jin_simazhao", "mb_simazhao", "simazhao", "sp_simazhao", "jsrg_simazhao", "jin_jsrg_simazhao", "jd_jin_simazhao", "ns_simazhao", "std_simazhao"],
 	simazhou: ["simazhou", "mb_simazhou"],
 	sunce: ["sunce", "re_sunce", "sp_sunce", "dc_sunce", "re_sunben", "sb_sunce", "jsrg_sunce"],
@@ -358,7 +358,7 @@ window.noname_character_replace = {
 	dc_huangwudie: ["dc_huangwudie", "ns_huangwudie"],
 	dc_jiben: ["dc_jiben", "sp_jiben"],
 	dc_wangchang: ["clan_wangchang", "dc_wangchang", "tw_wangchang"],
-	dc_zhangmancheng: ["dc_zhangmancheng", "tw_zhangmancheng"],
+	dc_zhangmancheng: ["ol_zhangmancheng", "dc_zhangmancheng", "tw_zhangmancheng"],
 	dc_zhangren: ["dc_zhangren", "jsrg_zhangren"],
 	ol_bianfuren: ["ol_bianfuren", "sp_bianfuren", "tw_bianfuren"],
 	ol_dongzhao: ["ol_dongzhao", "dc_dongzhao", "pot_dongzhao", "tw_dongzhao"],
@@ -405,4 +405,5 @@ window.noname_character_replace = {
 	xiahouxuan: ["xiahouxuan", "dc_xiahouxuan"],
 	chezhou: ["chezhou", "yj_chezhou"],
 	clan_zhongyu: ["clan_zhongyu", "dc_zhongyu"],
+	guanhai: ["ol_guanhai", "guanhai"],
 };
