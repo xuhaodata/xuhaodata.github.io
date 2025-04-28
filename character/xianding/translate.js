@@ -815,7 +815,7 @@ const translates = {
 	dczhanyu_info: "回合开始时，你展示一张手牌，然后所有其他角色依次随机弃置一张与此牌花色相同的手牌，然后你获得其中位于弃牌堆中的一张牌。",
 	liujinliupei: "刘衿刘佩",
 	dcllqixin: "契心",
-	dcllqixin_info: "当你不因本技能使用基本牌时/摸两张牌后，你可以摸两张牌/使用一张基本牌。",
+	dcllqixin_info: "每回合限两次，当你不因本技能使用基本牌时/摸两张牌后，你可以摸两张牌/使用一张基本牌。",
 	dcjiusi: "纠思",
 	dcjiusi_info: "每回合限一次，你可以将武将牌翻面，视为使用一张基本牌。",
 	v_dongzhuo: "威董卓",

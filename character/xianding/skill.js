@@ -1262,12 +1262,12 @@ const skills = {
 			toself: {
 				trigger: { player: "useCardToPlayered" },
 				filter(event, player) {
-					return event.isFirstTarget && event.targets.some(i => i !== player && i.countCards("h"));
+					return event.isFirstTarget && event.targets.some(i => i !== player && i.countGainableCards(player, "he"));
 				},
 				locked: true,
 				popup: false,
 				async cost(event, trigger, player) {
-					const targets = trigger.targets.filter(i => i !== player && i.countCards("h"));
+					const targets = trigger.targets.filter(i => i !== player && i.countGainableCards(player, "he"));
 					if (targets.length === 1) {
 						event.result = { bool: true, targets: targets };
 						return;
@@ -1280,7 +1280,7 @@ const skills = {
 							true,
 							(card, player, target) => {
 								const targets = get.event().getTrigger().targets;
-								return targets.includes(target) && target !== player && target.countCards("h");
+								return targets.includes(target) && target !== player && target.countGainableCards(player, "he");
 							},
 							"请选择【" + get.translation("dcguangyong") + "】的目标",
 							prompt
@@ -1577,25 +1577,29 @@ const skills = {
 			if (event.name !== "gain" && event.type !== "draw") return false;
 			return event.getg(player).length === 2;
 		},
+		usable: 2,
 		direct: true,
 		clearTime: true,
 		frequent: true,
 		async content(event, trigger, player) {
+			let result;
 			if (trigger.name === "useCard") {
-				const bool = await player.chooseBool(get.prompt(event.name), "摸两张牌").set("frequentSkill", event.name).forResult("bool");
-				if (bool) {
+				result = await player.chooseBool(get.prompt(event.name), "摸两张牌").set("frequentSkill", event.name).forResult();
+				if (result?.bool) {
 					player.logSkill(event.name);
 					await player.draw(2);
 				}
 			} else {
-				await player
+				result = await player
 					.chooseToUse(function (card, player, event) {
 						if (get.type(card) !== "basic") return false;
 						return lib.filter.cardEnabled.apply(this, arguments);
 					}, get.translation(event.name) + "：是否使用一张基本牌？")
 					.set("logSkill", event.name)
-					.set("addCount", false);
+					.set("addCount", false)
+					.forResult();
 			}
+			if (!result?.bool && player.storage.counttrigger?.[event.name] > 0) player.storage.counttrigger[event.name]--;
 		},
 	},
 	dcjiusi: {

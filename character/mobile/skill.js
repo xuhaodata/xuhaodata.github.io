@@ -3625,18 +3625,21 @@ const skills = {
 			if (player.getStorage(skillName).length >= 3) {
 				const {
 					result: { links },
-				} = await player.chooseButton(["选择你要移去的“启诲”标记", [player.getStorage(skillName).map(c => [c, get.translation(c)]), "tdnodes"]], [2, 2], true).set("ai", button => {
+				} = await player.chooseButton(["选择你要移去的“启诲”标记", [player.getStorage(skillName), "vcard"]], [2, 2], true).set("ai", button => {
 					const player = get.player();
 					return (
 						1 +
 						Math.random() +
 						player.countCards("he", card => {
-							return get.type2(card) === button.link && player.hasValueTarget(card);
+							return get.type2(card) === button.link[2] && player.hasValueTarget(card);
 						})
 					);
 				});
 				if (!links?.length) return;
-				player.unmarkAuto(skillName, links);
+				player.unmarkAuto(
+					skillName,
+					links.map(link => link[2])
+				);
 				const { result } = await player
 					.chooseButton(
 						[

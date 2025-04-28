@@ -197,7 +197,7 @@ export class Card extends HTMLDivElement {
 		for (var gi = 0; gi < this.gaintag.length; gi++) {
 			const tag = this.gaintag[gi];
 			var translate = get.translation(tag);
-			if (!translate && tag.indexOf("eternal_") == 0) translate = get.translation(tag.slice(6));
+			if (translate == tag && tag.startsWith("eternal_")) translate = get.translation(tag.slice(8));
 			if (translate != "invisible") {
 				str += translate;
 				if (gi < this.gaintag.length - 1) str += " ";
