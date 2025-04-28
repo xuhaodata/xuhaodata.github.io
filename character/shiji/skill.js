@@ -3316,16 +3316,12 @@ const skills = {
 		forced: true,
 		logTarget: "source",
 		filter(event, player) {
-			return event.source && player != event.source && event.source.countCards("he") > 0;
+			return event.source && player != event.source && event.source.countDiscardableCards(source, "he");
 		},
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			trigger.source.chooseToDiscard("he", true);
-			"step 2";
-			if (event.count > 0 && result.bool && lib.skill.spmingshi.filter(trigger, player) && player.hasSkill("spmingshi")) event.goto(1);
+		getIndex: event => event.num,
+		async content(event, trigger, player) {
+			const { source } = trigger;
+			if (source.countDiscardableCards(source, "he")) await source.chooseToDiscard("he", true);
 		},
 		ai: {
 			threaten: 0.8,

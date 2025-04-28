@@ -8489,34 +8489,21 @@ const skills = {
 			if (player == event.source || !event.source || event.source.group != "qun") return false;
 			return player.hasZhuSkill("olbaonue", event.source);
 		},
-		direct: true,
-		content() {
-			"step 0";
-			event.count = trigger.num;
-			"step 1";
-			event.count--;
-			player.chooseBool("是否发动【暴虐】？").set("choice", get.attitude(player, player) > 0);
-			"step 2";
-			if (result.bool) {
-				player.logSkill("olbaonue", trigger.source);
-				player
-					.judge(function (card) {
-						if (get.suit(card) == "spade") return 4;
-						return 0;
-					})
-					.set("callback", function () {
-						if (event.judgeResult.suit == "spade") {
-							player.recover();
-							if (get.position(event.judgeResult.card, true) == "o") player.gain(event.judgeResult.card, "gain2", "log");
-						}
-					}).judge2 = function (result) {
-					return result.bool ? true : false;
-				};
-			} else {
-				event.finish();
-			}
-			"step 3";
-			if (event.count && lib.skill.olbaonue.filter(trigger, player)) event.goto(1);
+		getIndex: event => event.num,
+		logTarget: "source",
+		async content(event, trigger, player) {
+			const next = player.judge(card => {
+				if (get.suit(card) == "spade") return 4;
+				return 0;
+			});
+			next.set("callback", async event => {
+				if (event.judgeResult.suit == "spade") {
+					await player.recover();
+					if (get.position(event.judgeResult.card, true) == "o") await player.gain(event.judgeResult.card, "gain2", "log");
+				}
+			});
+			next.judge2 = result => result.bool;
+			await next;
 		},
 	},
 	rezishou: {

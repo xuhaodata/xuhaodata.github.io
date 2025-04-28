@@ -2189,8 +2189,15 @@ export class Player extends HTMLDivElement {
 				evtNames.some(evtName => {
 					let evt = event.getParent(evtName);
 					if (get.itemtype(evt) !== "event") evt = get.event();
-					if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
-					return lib.filter.filterEnable(evt, player, skill);
+					if (!evt) return false;
+					if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)] && evt?.name === evtName) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+					if (!lib.filter.filterEnable(evt, player, skill)) return false;
+					if (ifo.viewAs && get.is.object(ifo.viewAs) && ifo.viewAs?.name === name) {
+						if (ifo.viewAsFilter && ifo.viewAsFilter(player) === false) return false;
+						if (evt.filterCard && !evt.filterCard(get.autoViewAs(ifo.viewAs, "unsure"), player, evt)) return false;
+						return true;
+					}
+					return false;
 				})
 			) {
 				return true;
@@ -3638,6 +3645,13 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this[this.storage[i] || (lib.skill[i] && lib.skill[i].mark) ? "markSkill" : "unmarkSkill"](i);
+		const next = game.createEvent("removeMark", false);
+		next.player = this;
+		next.num = num;
+		next.markName = i;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * 增加玩家的标记
@@ -3658,6 +3672,13 @@ export class Player extends HTMLDivElement {
 		}
 		this.syncStorage(i);
 		this.markSkill(i);
+		const next = game.createEvent("addMark", false);
+		next.player = this;
+		next.num = num;
+		next.markName = i;
+		next.forceDie = true;
+		next.includeOut = true;
+		next.setContent("emptyEvent");
 	}
 	/**
 	 * 设置玩家的标记数

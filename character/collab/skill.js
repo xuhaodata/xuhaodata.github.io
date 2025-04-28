@@ -3534,7 +3534,6 @@ const skills = {
 			for (var i in lib.skill.dcbianzhuang.characterMap) {
 				if (lib.skill.dcbianzhuang.characterMap[i] == skill) {
 					player.flashAvatar("dcbianzhuang", i);
-					player.popup(skill);
 					game.log(player, "“变装”为了", "#b" + get.translation(i));
 					break;
 				}
