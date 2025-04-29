@@ -222,35 +222,33 @@ const skills = {
 			_status.damageSkills = list;
 		},
 		trigger: { player: "phaseZhunbeiBegin" },
-		async cost(event, trigger, player) {
+		forced: true,
+		locked: false,
+		async content(event, trigger, player) {
 			if (!_status.damageSkills) lib.skill.olzhouxi.initList();
 			const skills = _status.damageSkills.filter(skill => !player.hasSkill(skill)).randomGets(3);
 			/*const skills = get
-				.info(event.skill)
+				.info(event.name)
 				.damageSkills.filter(skill => !player.hasSkill(skill))
 				.randomGets(3);*/
 			if (!skills.length) return;
 			const result = await player
-				.chooseButton([
-					`###${get.prompt(event.skill)}###准备阶段，你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`,
+				.chooseButton(
 					[
-						skills.map(skill => {
-							return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
-						}),
-						"textbutton",
+						`###${get.prompt(event.name)}###准备阶段，你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`,
+						[
+							skills.map(skill => {
+								return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
+							}),
+							"textbutton",
+						],
 					],
-				])
+					true
+				)
 				.set("ai", button => Math.random())
 				.forResult();
-			if (result?.links) {
-				event.result = {
-					bool: true,
-					cost_data: result.links[0],
-				};
-			}
-		},
-		async content(event, trigger, player) {
-			const skill = event.cost_data;
+			if (!result?.links) return;
+			const skill = result.links[0];
 			await player.addTempSkills(skill, { player: "phaseBegin" });
 		},
 		group: ["olzhouxi_tiaoxin"],
