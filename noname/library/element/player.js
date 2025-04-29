@@ -4854,7 +4854,7 @@ export class Player extends HTMLDivElement {
 			}
 		}
 		if (next.isMine() == false && next.dialog) next.dialog.style.display = "none";
-		if (next.filterCard == undefined) next.filterCard = lib.filter.all;
+		if (next.filterCard == undefined) next.filterCard = lib.filter.cardDiscardable;
 		if (next.selectCard == undefined) next.selectCard = [1, 1];
 		if (next.ai == undefined) next.ai = get.unuseful;
 		next.autochoose = function () {
