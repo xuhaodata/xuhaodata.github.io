@@ -45,14 +45,24 @@ const skills = {
 				},
 				chooseButton: {
 					dialog(event, player) {
-						const list = get.inpileVCardList(info => {
-							return player.storage.olguifu_record.card.includes(info[2]);
-						});
+						const list = [];
+						for (const name of player.storage.olguifu_record.card) {
+							list.push([get.type(name), "", name]);
+							if (name == "sha") {
+								for (const nature of lib.inpile_nature) list.push([get.type(name), "", name, nature]);
+							}
+						}
 						return ui.create.dialog("诡伏", [list, "vcard"], "hidden");
 					},
 					filter(button, player) {
 						if (player.getStorage("olguifu_used").includes(button.link[2])) return false;
-						return get.event().getParent().filterCard({ name: button.link[2], nature: button.link[3] }, player, get.event().getParent());
+						return get
+							.event()
+							.getParent()
+							.filterCard(get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { olguifu_viewAs: true } }, "unsure"), player, get.event().getParent());
+					},
+					check(button, player) {
+						return player.getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"));
 					},
 					backup(links, player) {
 						return {
@@ -95,6 +105,12 @@ const skills = {
 						const name = links[0][2],
 							nature = links[0][3];
 						return "将一张「诡伏」牌当作" + (get.translation(nature) || "") + get.translation(name) + "使用";
+					},
+				},
+				ai: {
+					order: 7,
+					result: {
+						player: 1,
 					},
 				},
 			},
@@ -159,15 +175,19 @@ const skills = {
 		},
 		skillAnimation: "epic",
 		animationColor: "thunder",
+		check: () => true,
 		async content(event, trigger, player) {
 			player.addSkill("olrumo");
 			const skills = player.storage.olguifu_record?.skill;
 			if (skills?.length) await player.addSkills(skills);
 			await player.addSkills(["olzhouxi"]);
 		},
+		ai: {
+			combo: "olguifu",
+		},
 	},
 	olzhouxi: {
-		damageSkills: ["oljuece", "reganglie", "nzry_kuizhu", "zhefu", "tianjie", "xinleiji", "zhendu", "olqiangxi", "duwu", "olsanyao", "oljianhe", "clanlieshi", "xueji", "quhu", "quhu", "olshuzi"],
+		damageSkills: ["oljuece", "reganglie", "nzry_kuizhu", "zhefu", "tianjie", "xinleiji", "zhendu", "olqiangxi", "duwu", "olsanyao", "oljianhe", "clanlieshi", "xueji", "quhu", "olshuzi"],
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
 			const skills = get
@@ -221,7 +241,11 @@ const skills = {
 					const card = get.autoViewAs({ name: "sha", isCard: true });
 					for (const target of targets) {
 						if (!target.canUse(card, player, false, false)) continue;
-						const result = await target.chooseBool(`骤袭：是否视为对${get.translation(player)}使用一张【杀】`).forResult();
+						const result = await target
+							.chooseBool(`骤袭：是否视为对${get.translation(player)}使用一张【杀】`)
+							.set("ai", () => get.effect(get.event().targetx, { name: "sha", isCard: true }, get.player(), get.player()) > 0)
+							.set("targetx", player)
+							.forResult();
 						if (result?.bool) {
 							await target.useCard(card, player, false);
 						}

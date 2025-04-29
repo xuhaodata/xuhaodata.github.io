@@ -396,7 +396,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			if (!trigger) player.addTempSkill(event.name + "_used", '"phaseUseAfte');
+			if (!trigger) player.addTempSkill(event.name + "_used", 'phaseUseAfter');
 			const {
 				targets: [target],
 			} = event;
@@ -3032,7 +3032,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const { cost_data } = event;
 					const { source } = trigger;
-					await source.discard(cost_data);
+					await game.loseToDiscardpile(cost_data);
 					trigger.num++;
 				},
 			},
