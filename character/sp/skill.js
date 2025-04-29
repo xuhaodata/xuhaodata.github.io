@@ -225,7 +225,7 @@ const skills = {
 			const cards = player.getExpansions("olxiewei");
 			const result = await player
 				.chooseButtonTarget({
-					createDialog: [`###诱阙###${lib.translate["olyouque_info"]}`, cards],
+					createDialog: [`###诱阙###${get.skillInfoTranslation("olyouque")}`, cards],
 					cards: cards,
 					filterButton(button) {
 						return !get.event().cards.some(card => get.number(card) < get.number(button.link));
@@ -245,7 +245,7 @@ const skills = {
 				player.logSkill(event.name, target);
 				player.addTempSkill(event.name + "_effect");
 				let next = player.chooseToCompare(target);
-				next.small = true;
+				//next.small = true;
 				if (!next.fixedResult) next.fixedResult = {};
 				next.fixedResult[player.playerid] = card;
 				const resultx = await next.forResult();
