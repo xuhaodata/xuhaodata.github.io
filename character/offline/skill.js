@@ -396,7 +396,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			if (!trigger) player.addTempSkill(event.name + "_used", 'phaseUseAfter');
+			if (!trigger) player.addTempSkill(event.name + "_used", "phaseUseAfter");
 			const {
 				targets: [target],
 			} = event;
@@ -2263,10 +2263,10 @@ const skills = {
 			const { cards, targets } = event;
 			await player.recast(cards);
 			const target = targets[0];
-			const next = target.chooseToDiscard(`选择重铸${cards.length}张牌`, "h", "chooseonly", cards.length, true);
+			const next = target.chooseCard(`选择重铸${cards.length}张牌`, "h", cards.length, true, (card, player) => player.canRecast(card));
 			const result = await next.forResult();
 			if (result.bool) {
-				target.recast(result.cards);
+				await target.recast(result.cards);
 				const cardname = result.cards.map(c => c.name).unique();
 				if (cardname.includes("sha")) {
 					await target.damage("fire", player);
@@ -2276,10 +2276,11 @@ const skills = {
 					next2.set("filterTarget", function (card, player, targetx) {
 						return lib.filter.filterTarget({ name: "sha", isCard: true }, target, targetx);
 					});
+					next2.set("ai", targetx => get.effect(targetx, { name: "sha", isCard: true }, get.event().target, get.player()));
 					next2.set("target", target);
 					const result2 = await next2.forResult();
 					if (result2.bool) {
-						await target.chooseUseTarget({ name: "sha" }, true, result2.targets);
+						await target.chooseUseTarget({ name: "sha", isCard: true }, true, result2.targets);
 					}
 				}
 				if (cardname.includes("tao")) {
@@ -2411,7 +2412,7 @@ const skills = {
 			if (trigger.name == "damage")
 				event.result = await player
 					.chooseBool(get.prompt(event.skill), "防止此伤害并视为使用一张【火攻】")
-					.set("chioce", get.damageEffect(player, source, player, nature) < 0)
+					.set("choice", get.damageEffect(player, source, player, nature) < 0)
 					.forResult();
 			else {
 				const bool = await player
