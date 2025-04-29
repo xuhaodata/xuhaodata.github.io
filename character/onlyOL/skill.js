@@ -3,14 +3,15 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	//魔司马懿 —— by 星の语
-	//乐，舍身入魔，佛奈我何！
+	//舍身入魔，佛奈我何！
 	olguifu: {
 		audio: 2,
 		trigger: {
 			global: "roundStart",
-			player: "changeHp",
+			player: ["recoverEnd", "damageEnd", "loseHpEnd"],
 		},
 		check: () => true,
+		frequent: true,
 		prompt2: "随机从牌堆或弃牌堆获得一张不计入手牌上限的【闪】",
 		content() {
 			const card = get.cardPile("shan", null, "random");
@@ -122,7 +123,6 @@ const skills = {
 				},
 			},
 			record: {
-				//game.me.addSkills(["xueji","olqiangxi","olzhouxi"]);
 				audio: "olguifu",
 				init(player, skill) {
 					player.storage[skill] = { card: [], skill: [] };
@@ -171,7 +171,7 @@ const skills = {
 		filter(event, player) {
 			const storage = player.storage.olguifu_record;
 			if (!storage) return false;
-			return Object.values(storage).flat().length >= 3;
+			return Object.values(storage).flat().length >= 3 && !player.hasSkill("olrumo");
 		},
 		skillAnimation: "epic",
 		animationColor: "thunder",
@@ -188,16 +188,51 @@ const skills = {
 	},
 	olzhouxi: {
 		damageSkills: ["oljuece", "reganglie", "nzry_kuizhu", "zhefu", "tianjie", "xinleiji", "zhendu", "olqiangxi", "duwu", "olsanyao", "oljianhe", "clanlieshi", "xueji", "quhu", "olshuzi"],
+		initList() {
+			//先用许劭评鉴那个函数初始化一下角色列表
+			if (!_status.characterlist) lib.skill.pingjian.initList();
+			//获取各个角色的技能并去重
+			const skills = _status.characterlist
+				.map(i => get.character(i, 3))
+				.flat()
+				.unique();
+			//展开技能
+			game.expandSkills(skills);
+			const list = [];
+			//筛选技能
+			for (let skill of skills) {
+				let info = get.info(skill);
+				//去除觉醒技、隐匿技、势力技、主公技
+				if (!info || info.silent || info.juexingji || info.hiddenSkill || info.groupSkill || info.zhuSkill) continue;
+				//去除有联动的技能和负面技能
+				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
+				//获取技能的内容，后者是一些主动技会用到的内容
+				info = info.content || info.chooseButton?.backup;
+				//将内容转为字符串
+				const str = info?.toString();
+				//检测是否包含“.damage(”子串，即造成伤害的函数
+				if (str?.includes(".damage(")) {
+					skill = get.sourceSkillFor(skill);
+					//双重检测，如果技能描述中不带伤害字样的去除
+					if (!skill || !get.plainText(get.skillInfoTranslation(skill)).includes("伤害")) continue;
+					list.add(skill);
+				}
+			}
+			//最后用全局变量存储，就不需要反复执行这个函数了
+			_status.damageSkills = list;
+		},
 		trigger: { player: "phaseZhunbeiBegin" },
 		async cost(event, trigger, player) {
-			const skills = get
+			if (!_status.damageSkills) lib.skill.olzhouxi.initList();
+			const skills = _status.damageSkills.filter(skill => !player.hasSkill(skill)).randomGets(3);
+			/*const skills = get
 				.info(event.skill)
 				.damageSkills.filter(skill => !player.hasSkill(skill))
-				.randomGets(3);
+				.randomGets(3);*/
 			if (!skills.length) return;
 			const result = await player
 				.chooseButton([
-					get.prompt2(event.skill),
+					`###${get.prompt(event.skill)}###准备阶段，你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`,
 					[
 						skills.map(skill => {
 							return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
@@ -259,21 +294,19 @@ const skills = {
 			global: "roundStart",
 		},
 		firstDo: true,
-		direct: true,
+		silent: true,
 		nopop: true,
 		content() {
-			if (player.storage.olrumo_isDemonized) delete player.storage.olrumo_isDemonized;
-			else if (!player.getRoundHistory("sourceDamage", evt => evt.num > 0, 1)?.length) {
-				player.logSkill(event.name);
+			if (!player.getRoundHistory("sourceDamage", evt => evt.num > 0, 1)?.length) {
 				player.loseHp();
 			}
 		},
-		init(player) {
+		/*init(player) {
 			player.storage.olrumo_isDemonized = true;
 		},
 		onremove(player) {
 			delete player.storage.olrumo_isDemonized;
-		},
+		},*/
 		mark: true,
 		marktext: "魔",
 		intro: {

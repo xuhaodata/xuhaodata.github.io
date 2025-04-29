@@ -14259,7 +14259,7 @@ export class Library {
 			"魔",
 			{
 				color: "#2e002e",
-				nature: "purplemm",
+				nature: "fire",
 			},
 		],
 	]);

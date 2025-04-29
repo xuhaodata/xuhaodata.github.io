@@ -3,7 +3,7 @@ const characters = {
 		sex: "male",
 		group: "wei",
 		hp: 3,
-		skills: ["olguifu", "olmoubian"],
+		skills: ["olguifu", "olmoubian"],//,"olzhouxi"
 		name: "司马|懿",
 	},
 	ol_madai: {
