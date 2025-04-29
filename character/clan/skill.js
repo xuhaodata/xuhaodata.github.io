@@ -177,6 +177,7 @@ const skills = {
 		forced: true,
 		content() {
 			const target = _status.currentPhase;
+			if (!target?.isIn()) return;
 			target.addTempSkill(event.name + "_add");
 			//target.addMark(event.name + "_add", 3, false);
 		},

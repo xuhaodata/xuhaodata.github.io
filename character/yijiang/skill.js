@@ -703,26 +703,28 @@ const skills = {
 							if (num > 2) return true;
 							var card = trigger.card;
 							if (get.tag(card, "damage") && player.hp <= trigger.getParent().baseDamage && (!get.tag(card, "respondShan") || !player.hasShan("all")) && (!get.tag(card, "respondSha") || !player.hasSha())) return true;
-							var source = _status.currentPhase,
-								todis = source.countCards("h") - source.needsToDiscard();
-							if (
-								todis <=
-									Math.max(
-										Math.min(
-											2 + (source.hp <= 1 ? 1 : 0),
+							var source = _status.currentPhase;
+							if (source?.isIn()) {
+								var todis = source.countCards("h") - source.needsToDiscard();
+								if (
+									todis <=
+										Math.max(
+											Math.min(
+												2 + (source.hp <= 1 ? 1 : 0),
+												player.countCards("he", function (card) {
+													return get.value(card, player) < Math.max(5.5, 8 - todis);
+												})
+											),
 											player.countCards("he", function (card) {
-												return get.value(card, player) < Math.max(5.5, 8 - todis);
+												return get.value(card, player) <= 0;
 											})
-										),
-										player.countCards("he", function (card) {
-											return get.value(card, player) <= 0;
-										})
-									) &&
-								get.damageEffect(source, player, player) > 0
-							)
-								return false;
-							if (!source.isPhaseUsing() || get.attitude(player, source) > 0) return true;
-							if (card.name == "sha" && !source.getCardUsable("sha")) return true;
+										) &&
+									get.damageEffect(source, player, player) > 0
+								)
+									return false;
+								if (!source.isPhaseUsing() || get.attitude(player, source) > 0) return true;
+								if (card.name == "sha" && !source.getCardUsable("sha")) return true;
+							}
 							return Math.random() < num / 3;
 						})()
 					)
