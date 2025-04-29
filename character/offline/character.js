@@ -91,7 +91,7 @@ const characters = {
 	},
 	jy_pangtong: {
 		sex: "male",
-		group: "shu",
+		group: "wei",
 		hp: 3,
 		skills: ["jylianhuan", "jysuozhou", "jyyuhuo"],
 	},
