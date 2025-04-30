@@ -3867,7 +3867,7 @@ const skills = {
 				},
 				ai: {
 					respondSha: true,
-					skillTagFilter(player, arg) {
+					skillTagFilter(player, tag, arg) {
 						if (arg === "respond" || !player.isPhaseUsing()) return false;
 						if (player.getStat("skill").olzhonglve_wusheng || !player.countCards("hes")) return false;
 					},

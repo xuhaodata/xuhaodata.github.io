@@ -11022,6 +11022,7 @@ export class Library {
 				},
 				directHit_ai: true,
 				skillTagFilter: (player, tag, arg) => {
+					if (!arg?.card) return false;
 					const card = get.autoViewAs(arg.card);
 					if (card.name != "sha" || !card.storage.stratagem_buffed) return false;
 					const target = arg.target;

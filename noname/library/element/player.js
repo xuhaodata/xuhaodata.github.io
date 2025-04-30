@@ -2179,11 +2179,11 @@ export class Player extends HTMLDivElement {
 			}, "hs")
 		)
 			return true;
-		const checkEnable = (enable, event) => {
+		const checkEnable = (enable, event, evtName) => {
 			if (typeof enable === "function") return enable(event);
-			if (Array.isArray(enable)) return enable.some(i => checkEnable(i, event));
-			if (enable === "phaseUse") return event.type === "phase";
-			if (typeof enable === "string") return enable === event.name;
+			if (Array.isArray(enable)) return enable.some(i => checkEnable(i, event, evtName));
+			if (enable === "phaseUse") return event.type === "phase" && evtName === "chooseToUse";
+			if (typeof enable === "string") return enable === evtName;
 			return false;
 		};
 		const skills = player.getSkills("invisible").concat(lib.skill.global);
@@ -2207,14 +2207,25 @@ export class Player extends HTMLDivElement {
 						evtNames.some(evtName => {
 							let evt = event.getParent(evtName);
 							if (get.itemtype(evt) !== "event") evt = get.event();
-							if (!evt || !checkEnable(info.enable, evt)) return false;
+							if (!evt || !checkEnable(info.enable, evt, evtName)) return false;
 							if (typeof evt.filterCard == "function" && !evt.filterCard(get.autoViewAs(info.viewAs, "unsure"), player, evt)) return false;
 							if (info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
 							return info.filter(evt, player, evt.triggername);
 						}));
 				if (goon && bool) return true;
 			} else if (typeof hiddenCard == "function") {
-				if (hiddenCard(player, name)) return true;
+				const goon = hiddenCard(player, name);
+				const bool =
+					!info.filter ||
+					(typeof info.filter === "function" &&
+						evtNames.some(evtName => {
+							let evt = event.getParent(evtName);
+							if (get.itemtype(evt) !== "event") evt = get.event();
+							if (!evt || !checkEnable(info.enable, evt, evtName)) return false;
+							if (info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+							return info.filter(evt, player, evt.triggername);
+						}));
+				if (goon && bool) return true;
 			}
 		}
 		return false;

@@ -12542,7 +12542,7 @@ const skills = {
 			order: 9,
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (!arg.target.hasSkill("new_yijue_" + player.playerid)) return false;
+				if (!arg?.target?.hasSkill("new_yijue_" + player.playerid)) return false;
 			},
 		},
 		subSkill: {
