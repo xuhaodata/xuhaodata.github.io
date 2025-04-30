@@ -28723,7 +28723,8 @@ const skills = {
 						replace: { window() {} },
 					});
 					next.backup(name);
-					await next;
+					const { result } = await next;
+					if (!result?.bool) break;
 				}
 			}
 		},
