@@ -52,6 +52,7 @@ window.noname_package = {
 		sp: "忠胆英杰",
 		zhulu: "逐鹿天下",
 		yunchou: "运筹帷幄",
+		kaiheiji: "开黑季",
 		zhenfa: "阵法",
 		swd: "轩辕剑",
 		gujian: "古剑奇谭",
@@ -60,7 +61,6 @@ window.noname_package = {
 		mtg: "万智牌",
 		xianxia: "线下卡牌",
 		huanlekapai: "欢乐卡牌",
-		kaiheiji: "开黑季",
 	},
 	play: {
 		boss: "诸神降临",
