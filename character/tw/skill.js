@@ -522,7 +522,7 @@ const skills = {
 		usable: 1,
 		chooseButton: {
 			dialog(event, player) {
-				const cards = get.cards(3, true);
+				const cards = get.cards(5, true);
 				return ui.create.dialog("潜凶", cards, "hidden");
 			},
 			filter(button, player) {
@@ -700,12 +700,14 @@ const skills = {
 						.chooseButton(
 							[
 								`争适：令${get.translation(target)}〖隽嗣〗的摸牌数或弃牌数+1或-1`,
-								[
+								/*[
 									list.map((item, index) => {
 										return [index, item];
 									}),
 									"textbutton",
-								],
+								],*/
+								[list.slice(0, 2).map((item, index) => [index, item]), "tdnodes"],
+								[list.slice(2, 4).map((item, index) => [index, item]), "tdnodes"],
 							],
 							true,
 							1
@@ -861,17 +863,20 @@ const skills = {
 		filterCard: (card, player) => get.name(card, player) == "sha" && !player.getStorage("twmiyong_effect").includes(card),
 		check: (card, player) => player.getUseValue(card),
 		position: "h",
+		selectCard: 2,
 		lose: false,
 		discard: false,
 		delay: false,
 		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
-			const card = event.cards[0];
+			const cards = event.cards;
 			const skill = "twmiyong_effect";
-			await player.showCards(card);
-			player.addGaintag(card, skill);
+			await player.showCards(cards);
+			player.addGaintag(cards, skill);
 			player.addSkill(skill);
-			player.markAuto(skill, [card]);
+			cards.forEach(card => {
+				card.storage[skill] = true;
+			});
 		},
 		subSkill: {
 			effect: {
@@ -890,7 +895,7 @@ const skills = {
 				},
 				getSha(event, player) {
 					let gain = []; //考虑到后续可能有重置限定技的技能，需要对每张记录的牌都判断一次是否为首次
-					const cards = event.cards.filter(card => player.getStorage("twmiyong_effect").includes(card));
+					const cards = event.cards.filter(card => card.storage.twmiyong_effect);
 					if (!cards.length) return gain;
 					let use = [],
 						respond = [],

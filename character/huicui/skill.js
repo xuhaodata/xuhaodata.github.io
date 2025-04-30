@@ -3469,7 +3469,7 @@ const skills = {
 		},
 		forced: true,
 		content() {
-			let cards = player.getCards("h", card => player._start_cards.includes(card));//
+			let cards = player.getCards("h", card => player._start_cards.includes(card)); //
 			player.addGaintag(cards, "eternal_dcqiqin_tag");
 			//player.markAuto("dcqiqin", cards);
 		},
@@ -13995,6 +13995,9 @@ const skills = {
 					game.log(trigger.card, "不可被响应");
 				},
 			},
+		},
+		ai: {
+			combo: "zhtongyuan",
 		},
 	},
 	//陆郁生

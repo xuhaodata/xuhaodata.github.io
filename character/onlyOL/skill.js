@@ -274,14 +274,15 @@ const skills = {
 					const card = get.autoViewAs({ name: "sha", isCard: true });
 					for (const target of targets) {
 						if (!target.canUse(card, player, false, false)) continue;
-						const result = await target
+						await target.useCard(card, player, false);
+						/*const result = await target
 							.chooseBool(`骤袭：是否视为对${get.translation(player)}使用一张【杀】`)
 							.set("ai", () => get.effect(get.event().targetx, { name: "sha", isCard: true }, get.player(), get.player()) > 0)
 							.set("targetx", player)
 							.forResult();
 						if (result?.bool) {
-							await target.useCard(card, player, false);
-						}
+							
+						}*/
 					}
 				},
 			},

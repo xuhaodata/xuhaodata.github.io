@@ -3081,7 +3081,7 @@ const skills = {
 			if (["baonue_maxHp", "背水！"].includes(control)) await player.loseMaxHp(true);
 			if (player.canUse(juedou, target, false)) {
 				const next = player.useCard(juedou, target, false);
-				if (control == "背水！") next.baseDamage = 2;
+				if (control == "背水！") next.baseDamage++;
 				await next;
 			}
 		},
