@@ -849,7 +849,7 @@ const translates = {
 	dc_sb_liuxie: "新杀谋刘协",
 	dc_sb_liuxie_prefix: "新杀谋",
 	dcsbzhanban: "斩绊",
-	dcsbzhanban_info: "出牌阶段限一次，你可令所有其他角色将手牌数调整至与你相同。若其因此弃牌，则摸三张牌；若其因此摸牌，则弃置三张牌；若其手牌数没变化，则对其造成1点伤害。",
+	dcsbzhanban_info: "出牌阶段限一次，你可以摸或弃至多三张牌，然后令所有其他角色将手牌数调整至与你相同。以此法弃牌的角色摸三张牌；以此法摸牌的角色弃置三张牌；手牌数没变化的角色受到你对其造成的1点伤害。",
 	dcsbchensheng: "沉声",
 	dcsbchensheng_info: "其他角色的回合结束时，若你和当前回合角色都不是手牌数唯一最多的角色，则你摸一张牌。",
 	dcsbtiancheng: "天承",

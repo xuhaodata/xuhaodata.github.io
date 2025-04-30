@@ -707,7 +707,7 @@ const skills = {
 									"textbutton",
 								],*/
 								[list.slice(0, 2).map((item, index) => [index, item]), "tdnodes"],
-								[list.slice(2, 4).map((item, index) => [index, item]), "tdnodes"],
+								[list.slice(2, 4).map((item, index) => [index + 2, item]), "tdnodes"],
 							],
 							true,
 							1

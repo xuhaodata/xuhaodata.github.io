@@ -575,52 +575,38 @@ const skills = {
 		audio: 2,
 		enable: "phaseUse",
 		usable: 1,
-		log: false,
-		delay: false,
-		async content(event, trigger, player) {
-			let targets = game.filterPlayer(target => target != player);
-			if (player.hasZhuSkill("dcsbtiancheng") && targets.some(target => target.group == "qun")) {
-				const result = await player
-					.chooseTarget(`斩绊：你可以选择任意名群雄角色不成为此技能目标或取消不选择`, [1, Infinity], (card, player, target) => {
-						return target != player && target.group == "qun";
-					})
-					.set("ai", target => {
-						const num = get.player().countCards("h"),
-							numx = num - target.countCards("h"),
-							att = get.attitude(get.player(), target);
-						let val;
-						if (numx > 0) val = numx - 3;
-						else if (numx < 0) val = numx + 3;
-						else val = -2;
-						val = val == 0 ? 0.5 : val;
-						return val * att < 0;
-					})
-					.forResult();
-				if (result?.targets?.length) targets.removeArray(result.targets);
-			}
-			targets = targets.sortBySeat();
-			player.logSkill(event.name, targets);
-			const num = player.countCards("h");
-			for (const target of targets) {
-				const numx = num - target.countCards("h");
-				if (numx > 0) await target.draw(numx, "nodelay");
-				else if (numx < 0) await target.chooseToDiscard(-numx, "h", true);
-			}
-			for (const target of targets) {
-				if (target.hasHistory("gain", evt => evt.getParent(2) == event)) await target.chooseToDiscard(3, "h", true);
-				else if (target.hasHistory("lose", evt => evt.type == "discard" && evt.getlx !== false && evt.getParent(3) == event)) await target.draw(3, "nodelay");
-				else target.damage();
-			}
-		},
-		ai: {
-			order: 5,
-			result: {
-				player(player, target) {
-					return game
+		chooseButton: {
+			dialog(event, player) {
+				const dialog = ui.create.dialog(
+					`斩绊：请选择是否摸牌或者弃牌`,
+					[[1, 2, 3].map((item, index) => [index + 1, `摸${item}张`]), "tdnodes"],
+					[
+						[
+							[0, "不摸不弃"],
+							[-1, "弃置至多3张"],
+						],
+						"tdnodes",
+					],
+					"hidden"
+				);
+				return dialog;
+			},
+			filter(button, player) {
+				if (button.link == -1) return player.countDiscardableCards(player, "he");
+				return true;
+			},
+			check(button) {
+				const player = get.player(),
+					link = button.link,
+					nums = [link],
+					values = [];
+				if (link < 0) nums.addArray([-2, -3]);
+				for (let num of nums) {
+					const value = game
 						.filterPlayer(targetx => targetx != player)
 						.reduce((sum, targetx) => {
-							const num = player.countCards("h"),
-								numx = num - targetx.countCards("h"),
+							num = player.countCards("h") + num;
+							const numx = num - targetx.countCards("h"),
 								att = get.sgnAttitude(player, targetx);
 							let val;
 							if (numx > 0) val = numx - 3;
@@ -630,7 +616,65 @@ const skills = {
 							if (player.hasZhuSkill("dcsbtiancheng", targetx) && val * att < 0) return sum;
 							return sum + val * att;
 						}, 0);
-				},
+					values.push(value);
+				}
+				return values.sort((a, b) => b - a)[0];
+			},
+			backup(links) {
+				return {
+					audio: "dcsbzhanban",
+					link: links[0],
+					filterTarget: lib.filter.notMe,
+					selectTarget: -1,
+					log: false,
+					multitarget: true,
+					multiline: true,
+					line: false,
+					async content(event, trigger, player) {
+						const link = lib.skill.dcsbzhanban_backup.link;
+						if (link > 0) await player.draw(link);
+						else if (link < 0) await player.chooseToDiscard(`斩绊：弃置至多三张牌`, "he", [1, 3], true);
+						let targets = event.targets;
+						if (player.hasZhuSkill("dcsbtiancheng") && targets.some(target => target.group == "qun")) {
+							const result = await player
+								.chooseTarget(`斩绊：你可以选择任意名群雄角色不成为目标或取消不选择`, [1, Infinity], (card, player, target) => {
+									return target != player && target.group == "qun";
+								})
+								.set("ai", target => {
+									const num = get.player().countCards("h"),
+										numx = num - target.countCards("h"),
+										att = get.attitude(get.player(), target);
+									let val;
+									if (numx > 0) val = numx - 3;
+									else if (numx < 0) val = numx + 3;
+									else val = -2;
+									val = val == 0 ? 0.5 : val;
+									return val * att < 0;
+								})
+								.forResult();
+							if (result?.targets?.length) targets.removeArray(result.targets);
+						}
+						targets = targets.sortBySeat();
+						player.logSkill("dcsbzhanban", targets);
+						const num = player.countCards("h");
+						for (const target of targets) {
+							const numx = num - target.countCards("h");
+							if (numx > 0) await target.draw(numx, "nodelay");
+							else if (numx < 0) await target.chooseToDiscard(-numx, "h", true);
+						}
+						for (const target of targets) {
+							if (target.hasHistory("gain", evt => evt.getParent(2) == event)) await target.chooseToDiscard(3, "h", true);
+							else if (target.hasHistory("lose", evt => evt.type == "discard" && evt.getlx !== false && evt.getParent(3) == event)) await target.draw(3, "nodelay");
+							else await target.damage();
+						}
+					},
+				};
+			},
+		},
+		ai: {
+			order: 5,
+			result: {
+				player: 1,
 			},
 		},
 	},
