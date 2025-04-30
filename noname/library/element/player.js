@@ -2179,9 +2179,9 @@ export class Player extends HTMLDivElement {
 			}, "hs")
 		)
 			return true;
-		const checkEnable = enable => {
+		const checkEnable = (enable, event) => {
 			if (typeof enable === "function") return enable(event);
-			if (Array.isArray(enable)) return enable.some(i => checkEnable(i));
+			if (Array.isArray(enable)) return enable.some(i => checkEnable(i, event));
 			if (enable === "phaseUse") return event.type === "phase";
 			if (typeof enable === "string") return enable === event.name;
 			return false;
@@ -2192,15 +2192,14 @@ export class Player extends HTMLDivElement {
 			const skill = skills[i],
 				info = get.info(skill),
 				hiddenCard = info.hiddenCard;
-			if (!checkEnable(info.enable)) continue;
+			if (info.usable !== undefined) {
+				let num = info.usable;
+				if (typeof num === "function") num = info.usable(skill, player);
+				if (typeof num === "number" && get.skillCount(skill, player) >= num) continue;
+			}
+			if (info.round && info.round - (game.roundNumber - player.storage[skill + "_roundcount"]) > 0) continue;
+			if (player.storage[`temp_ban_${skill}`]) continue;
 			if (info.viewAs && get.is.object(info.viewAs) && info.viewAs?.name === name) {
-				if (info.usable !== undefined) {
-					let num = info.usable;
-					if (typeof num === "function") num = info.usable(skill, player);
-					if (typeof num === "number" && get.skillCount(skill, player) >= num) continue;
-				}
-				if (info.round && info.round - (game.roundNumber - player.storage[skill + "_roundcount"]) > 0) continue;
-				if (player.storage[`temp_ban_${skill}`]) continue;
 				const goon = !info.viewAsFilter || info.viewAsFilter(player) !== false;
 				const bool =
 					!info.filter ||
@@ -2208,7 +2207,7 @@ export class Player extends HTMLDivElement {
 						evtNames.some(evtName => {
 							let evt = event.getParent(evtName);
 							if (get.itemtype(evt) !== "event") evt = get.event();
-							if (!evt || evt.name !== evtName) return false;
+							if (!evt || !checkEnable(info.enable, evt)) return false;
 							if (typeof evt.filterCard == "function" && !evt.filterCard(get.autoViewAs(info.viewAs, "unsure"), player, evt)) return false;
 							if (info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
 							return info.filter(evt, player, evt.triggername);
