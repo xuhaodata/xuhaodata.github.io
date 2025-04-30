@@ -20656,15 +20656,14 @@ const skills = {
 			if (trigger.name == "damage") {
 				const list = ["dz_mantianguohai"];
 				list.addArray(get.zhinangs());
-				const {
-					result: { bool, links },
-				} = await player.chooseButton([get.prompt(event.skill), [list, "vcard"]]).set("ai", button => {
+				const { result } = await player.chooseButton([get.prompt(event.skill), [list, "vcard"]]).set("ai", button => {
+					const player = get.player();
 					if (button.link[2] == "dz_mantianguohai" && player.countCards("hs", "dz_mantianguohai") < 2) return 10;
 					return get.value({ name: button.link[2] });
 				});
 				event.result = {
-					bool: bool,
-					cost_data: links,
+					bool: result?.bool,
+					cost_data: result?.links,
 				};
 			} else event.result = { bool: true };
 		},
@@ -20676,11 +20675,11 @@ const skills = {
 					if (!_status.dz_mantianguohai_suits) _status.dz_mantianguohai_suits = lib.suit.slice(0);
 					if (_status.dz_mantianguohai_suits.length) {
 						await player.gain(game.createCard2("dz_mantianguohai", _status.dz_mantianguohai_suits.randomRemove(), 5), "gain2");
-						await player.draw();
 					} else {
 						const card = get.cardPile(card => card.name == name);
 						if (card) await player.gain(card, "gain2");
 					}
+					await player.draw();
 				} else {
 					const card = get.cardPile(card => card.name == name);
 					if (card) await player.gain(card, "gain2");

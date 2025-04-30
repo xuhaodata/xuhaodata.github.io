@@ -4009,29 +4009,25 @@ const skills = {
 		getIndex: () => 1,
 		async cost(event, trigger, player) {
 			if (trigger.name == "damage") {
-				const dialog = ["妙略：请选择摸两张牌或获得指定牌名的牌"];
-				dialog.add([[["draw", "摸两张牌"]], "textbutton"]);
-				dialog.add([get.zhinangs(), "vcard"]);
-				const {
-					result: { bool, links },
-				} = await player
-					.chooseButton()
-					.set("createDialog", dialog)
-					.set("ai", button => {
-						const player = get.player();
-						const { link } = button;
-						if (typeof link == "string") return get.effect(player, { name: "draw" }, player, player) * 2;
-						return player.getUseValue({ name: link[2] });
-					});
+				const { result } = await player.chooseButton([`###${get.prompt(event.skill)}###获得一张智囊或摸两张牌`, [get.zhinangs(), "vcard"], [["摸两张牌", "取消"], "tdnodes"]], true).set("ai", button => {
+					const player = get.player();
+					const { link } = button;
+					if (Array.isArray(link)) {
+						if (!get.cardPile(cardx => cardx.name == link[2])) return 0;
+						return (Math.random() + 1.5) * player.getUseValue({ name: link[2] });
+					}
+					if (link == "摸两张牌") return get.effect(player, { name: "draw" }, player, player) * 2;
+					return 0;
+				});
 				event.result = {
-					bool: bool,
-					cost_data: links,
+					bool: result?.bool && result?.links?.[0] != "取消",
+					cost_data: result?.links,
 				};
 			} else event.result = { bool: true };
 		},
 		async content(event, trigger, player) {
 			if (trigger.name == "damage") {
-				if (event.cost_data[0] == "draw") await player.draw(2);
+				if (event.cost_data[0] == "摸两张牌") await player.draw(2);
 				else {
 					const card = get.cardPile(card => card.name == event.cost_data[0][2]);
 					if (card) await player.gain(card, "gain2");
