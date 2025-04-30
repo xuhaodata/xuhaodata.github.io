@@ -4935,7 +4935,7 @@ export const Content = {
 		async (event, trigger, player) => {
 			if (event.result == "ai") {
 				game.check();
-				if ((ai.basic.chooseCard(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
+				if ((ai.basic.chooseCard(event.ai) || event.forced) && (!event.filterOk || event.filterOk())) {
 					ui.click.ok();
 				} else if (event.skill) {
 					const skill = event.skill;
