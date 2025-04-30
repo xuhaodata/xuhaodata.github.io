@@ -2547,7 +2547,7 @@ export class Library {
 						Mohua: "水墨",
 						Xiangong: "先攻",
 						Zhuzhang: "竹杖",
-						Shuimo: "幻彩",
+						// Shuimo: "幻彩",
 						Anhei: "黑暗",
 						Mozhua: "魔爪",
 						Shenjian: "神剑",

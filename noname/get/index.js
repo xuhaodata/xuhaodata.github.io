@@ -2738,14 +2738,11 @@ export class Get extends GetCompatible {
 	 */
 	info(item, player) {
 		if (typeof item == "string") {
-			const info = (() => {
-				const info = lib.skill[item];
-				if (!info) {
-					console.warn(`孩子，你的技能${item}是不是忘写了什么？！`);
-					return {};
-				}
-				return info;
-			})();
+			const info = lib.skill[item];
+			if (!info) {
+				console.warn(`孩子，你的技能${item}是不是忘写了什么？！`);
+				return {};
+			}
 			return info;
 		}
 		if (typeof item == "object") {

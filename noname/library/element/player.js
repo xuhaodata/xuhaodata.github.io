@@ -11116,7 +11116,7 @@ export class Player extends HTMLDivElement {
 			if (eventInfo?.length) {
 				game.broadcastAll(
 					function (node, eventInfo, id) {
-						if (!node.node) {
+						if (!node?.node) {
 							node = [...ui.arena.childNodes].find(c => {
 								if (c.classList.contains("thrown") && c.classList.contains("card")) {
 									if (c._cardid == id && !c.selectedt) {
@@ -11126,7 +11126,7 @@ export class Player extends HTMLDivElement {
 								}
 							});
 						}
-						if (!node.node) return;
+						if (!node?.node) return;
 						node.classList.add("infoflip");
 						let next = ui.create.div(".cardsetion", eventInfo, node);
 						next.style.setProperty("display", "block", "important");
