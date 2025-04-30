@@ -60,6 +60,7 @@ window.noname_package = {
 		mtg: "万智牌",
 		xianxia: "线下卡牌",
 		huanlekapai: "欢乐卡牌",
+		kaiheiji: "开黑季",
 	},
 	play: {
 		boss: "诸神降临",

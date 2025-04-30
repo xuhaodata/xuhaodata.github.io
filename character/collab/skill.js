@@ -2,6 +2,108 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//张角三兄弟
+	oltiangong: {
+		forced: true,
+		trigger: {
+			player: ["phaseBegin", "phaseEnd"],
+			global: ["judgeAfter"],
+		},
+		filter(event, player) {
+			if (event.name == "judge") return event.result.suit == "spade";
+			return true;
+		},
+		async content(event, trigger, player) {
+			if (trigger.name == "phase") {
+				const name = event.triggername == "phaseBegin" ? "leigongzhuwo" : "younantongdang",
+					card = get.autoViewAs({ name: name, isCard: true });
+				if (player.hasUseTarget(card, false, false)) await player.chooseUseTarget(card, true, false);
+			} else {
+				const result = await player
+					.chooseTarget(`天公：对一名不为${get.translation(trigger.player)}的角色造成一点雷电伤害`, true, (card, player, target) => {
+						return get.event().sourcex != target;
+					})
+					.set("sourcex", trigger.player)
+					.set("ai", target => get.damageEffect(target, get.player(), get.player(), "thunder"))
+					.forResult();
+				if (result?.targets) {
+					const target = result.targets[0];
+					player.line(target, "thunder");
+					await target.damage("nocard", "thunder");
+				}
+			}
+		},
+	},
+	oldigong: {
+		trigger: { player: "useCard" },
+		forced: true,
+		filter(event, player) {
+			return player.hasHistory("lose", evt => {
+				if (evt.getParent() != event) return false;
+				return !Object.values(evt.gaintag_map).flat().includes("oldigong_tag");
+			});
+		},
+		async content(event, trigger, player) {
+			if (get.tag(trigger.card, "damage") > 0.5) trigger.baseDamage++;
+			else {
+				player
+					.when("useCardAfter")
+					.filter(evt => evt == trigger)
+					.step(async (event, trigger, player) => {
+						const target = _status.currentPhase;
+						if (!target?.isIn()) return;
+						const result = await target
+							.judge("oldigong", function (card) {
+								if (get.color(card) == "red") return 1;
+								return 0;
+							})
+							.forResult();
+						if (result.color == "red") await player.draw();
+					});
+			}
+		},
+		group: ["oldigong_tag"],
+		subSkill: {
+			tag: {
+				charlotte: true,
+				silent: true,
+				firstDo: true,
+				trigger: { player: "gainBegin" },
+				filter(event, player) {
+					return event.cards?.length;
+				},
+				content() {
+					if (!trigger.gaintag) trigger.gaintag = [];
+					trigger.gaintag.add("oldigong_tag");
+					player.addTempSkill("oldigong_remove", "roundStart");
+				},
+			},
+			remove: {
+				charlotte: true,
+				onremove(player) {
+					player.removeGaintag("oldigong_tag");
+				},
+			},
+		},
+	},
+	olrengong: {
+		trigger: { player: "useCardAfter" },
+		forced: true,
+		filter(event, player) {
+			const last = player.getLastUsed(1);
+			if (!last) return false;
+			return get.type2(event.card) != get.type2(last.card) && player.countDiscardableCards(player, "he");
+		},
+		async content(event, trigger, player) {
+			const last = player.getLastUsed(1),
+				type = get.type2(last.card);
+			if (!player.countDiscardableCards(player, "he")) return false;
+			await player.chooseToDiscard(`人公：请弃置一张牌，然后从牌堆获得一张${get.translation(type)}牌`, "he", true);
+			const card = get.cardPile2(card => get.type2(card) == type);
+			if (card) await player.gain(card, "gain2");
+			else player.chat(`黄天在上，赐我${get.translation(type)}`);
+		},
+	},
 	//烈袁绍袁术
 	dclieti: {
 		audio: 2,

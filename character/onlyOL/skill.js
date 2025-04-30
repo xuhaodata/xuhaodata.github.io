@@ -229,7 +229,8 @@ const skills = {
 			const skills = _status.damageSkills.filter(skill => !player.hasSkill(skill)).randomGets(3);
 			/*const skills = get
 				.info(event.name)
-				.damageSkills.filter(skill => !player.hasSkill(skill))
+				.damageSkills
+				.filter(skill => !player.hasSkill(skill))
 				.randomGets(3);*/
 			if (!skills.length) return;
 			const result = await player
