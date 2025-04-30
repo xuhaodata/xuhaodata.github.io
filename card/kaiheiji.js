@@ -304,6 +304,15 @@ game.import("card", function () {
 			younantongdang_bg: "难",
 			younantongdang_info: "出牌阶段，对所有未处于连环状态的角色使用，令目标进入连环状态。",
 		},
-		list: [],
+		list: [
+            ["diamond", 8, "leigongzhuwo"],
+            ["heart", 8, "leigongzhuwo"],
+            ["spade", 8, "leigongzhuwo"],
+
+            ["spade", 6, "younantongdang"],
+            ["diamond", 6, "younantongdang"],
+            ["heart", 6, "younantongdang"],
+            ["club", 6, "younantongdang"],
+        ],
 	};
 });
