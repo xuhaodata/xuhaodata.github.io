@@ -236,7 +236,7 @@ const skills = {
 			const result = await player
 				.chooseButton(
 					[
-						`###${get.prompt(event.name)}###准备阶段，你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`,
+						`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`,
 						[
 							skills.map(skill => {
 								return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
