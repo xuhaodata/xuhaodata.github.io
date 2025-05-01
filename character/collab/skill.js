@@ -107,6 +107,42 @@ const skills = {
 			if (card) await player.gain(card, "gain2");
 			else player.chat(`黄天在上，赐我${get.translation(type)}`);
 		},
+		init(player) {
+			player.addSkill("olrengong_mark");
+		},
+		onremove(player) {
+			player.removeSkill("olrengong_mark");
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				silent: true,
+				init(player, skill) {
+					const history = player.getLastUsed();
+					if (!history) return;
+					const card = history.card;
+					player.storage[skill] = get.type2(card);
+					player.markSkill(skill);
+					game.broadcastAll(
+						function (player, type) {
+							if (player.marks.olrengong_mark) player.marks.olrengong_mark.firstChild.innerHTML = get.translation(type).slice(0, 1);
+						},
+						player,
+						get.type2(card)
+					);
+				},
+				intro: {
+					content: "上次使用：$",
+				},
+				onremove: true,
+				trigger: {
+					global: "useCard1",
+				},
+				content() {
+					lib.skill[event.name].init(player, event.name);
+				},
+			},
+		},
 	},
 	//烈袁绍袁术
 	dclieti: {
