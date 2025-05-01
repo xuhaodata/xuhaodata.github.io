@@ -244,14 +244,14 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				wuxieable: true,
-				savable: true,
+				savable(card, player, dying) {
+					return dying != player;
+				},
 				filterTarget(card, player, target) {
 					return player != target && target.isDying();
 				},
 				selectTarget: 1,
-				/*modTarget(card, player, target) {
-					return target.isDying();
-				},*/
+				modTarget: true,
 				content() {
 					player.addSkill("shengsi_debuff");
 					player.markAuto("shengsi_debuff", target);
@@ -361,8 +361,9 @@ game.import("card", function () {
 				forceLoad: true,
 				forceDie: true,
 				async content(event, trigger, player) {
-					const targets = game.filterPlayer(target => target != player).sortBySeat(),
-						source = trigger.player;
+					const source = trigger.player,
+						targets = game.filterPlayer(target => target != source).sortBySeat();
+					if (!targets.some(target => target.hasUsableCard("luojing"))) return;
 					//处理问题
 					let luojing_ok = undefined;
 					const goon = Math.round(Math.random());
@@ -397,7 +398,7 @@ game.import("card", function () {
 					};
 					//让读条不消失并显示读条
 					event._global_waiting = true;
-					let time = 10000;
+					let time = 90000;
 					if (lib.configOL && lib.configOL.choose_timeout) time = parseInt(lib.configOL.choose_timeout) * 1000;
 					targets.forEach(current => current.showTimer(time));
 					//先处理人类玩家
@@ -519,7 +520,7 @@ game.import("card", function () {
 			luojing: "落井下石",
 			luojing_bg: "落",
 			luojing_skill: "落井下石",
-			luojing_info: "一名其他角色进入濒死时，对其使用，结束其濒死结算，你摸一张牌。",
+			luojing_info: "一名其他角色进入濒死状态时，对其使用，结束其濒死结算，你摸一张牌。",
 			hongyun: "红运当头",
 			hongyun_bg: "红",
 			hongyun_info: "出牌阶段，对你和一名有手牌的其他角色使用，令你与其各弃置至多两张牌，从牌堆或弃牌堆中获得等量红桃牌。",
@@ -527,7 +528,7 @@ game.import("card", function () {
 			shengsi_bg: "生",
 			shengsi_skill: "生死与共",
 			shengsi_debuff: "生死与共",
-			shengsi_info: "其他角色进入濒死状态时，对其使用，令其回复2点体力，其死亡后你立即死亡。",
+			shengsi_info: "其他角色濒死时，对其使用，令其回复2点体力，其死亡后你立即死亡。",
 			younan: "有难同当",
 			younan_bg: "难",
 			younan_info: "出牌阶段，对所有未处于连环状态的角色使用，令目标进入连环状态。",
