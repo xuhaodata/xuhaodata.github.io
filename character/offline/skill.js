@@ -645,7 +645,7 @@ const skills = {
 		logTarget(event, player) {
 			return player == event.player ? event.targets[0] : event.player;
 		},
-		check(event, trigger, player) {
+		check(event, player) {
 			const target = get.info("pschihe").logTarget(event, player);
 			return get.attitude(player, target) <= 0 || !player.canCompare(target);
 		},
