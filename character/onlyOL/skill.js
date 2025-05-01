@@ -166,6 +166,7 @@ const skills = {
 		},
 	},
 	olmoubian: {
+		audio: 5,
 		derivation: ["olzhouxi"],
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
@@ -187,6 +188,7 @@ const skills = {
 		},
 	},
 	olzhouxi: {
+		audio: 2,
 		damageSkills: ["oljuece", "reganglie", "nzry_kuizhu", "zhefu", "tianjie", "xinleiji", "zhendu", "olqiangxi", "duwu", "olsanyao", "oljianhe", "clanlieshi", "xueji", "quhu", "olshuzi"],
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
