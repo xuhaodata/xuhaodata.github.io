@@ -100,7 +100,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const last = player.getLastUsed(1),
-				type = get.type2(last.card);
+				type = ["basic", "trick", "equip"].removeArray([get.type2(trigger.card), get.type2(last.card)])[0];
 			if (!player.countDiscardableCards(player, "he")) return false;
 			await player.chooseToDiscard(`人公：请弃置一张牌，然后从牌堆获得一张${get.translation(type)}牌`, "he", true);
 			const card = get.cardPile2(card => get.type2(card) == type);
