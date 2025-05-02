@@ -2208,9 +2208,9 @@ export class Player extends HTMLDivElement {
 							let evt = event.getParent(evtName);
 							if (get.itemtype(evt) !== "event") evt = get.event();
 							if (!evt || !checkEnable(info.enable, evt, evtName)) return false;
-							if (typeof evt.filterCard == "function" && !evt.filterCard(get.autoViewAs(info.viewAs, "unsure"), player, evt)) return false;
-							if (info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
-							return info.filter(evt, player, evt.triggername);
+							if (evt.name === evtName && typeof evt.filterCard == "function" && !evt.filterCard(get.autoViewAs(info.viewAs, "unsure"), player, evt)) return false;
+							if (evt.name === evtName && info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+							return evt.name === evtName ? info.filter(evt, player, evt.triggername) : true;
 						}));
 				if (goon && bool) return true;
 			} else if (typeof hiddenCard == "function") {
@@ -2222,8 +2222,8 @@ export class Player extends HTMLDivElement {
 							let evt = event.getParent(evtName);
 							if (get.itemtype(evt) !== "event") evt = get.event();
 							if (!evt || !checkEnable(info.enable, evt, evtName)) return false;
-							if (info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
-							return info.filter(evt, player, evt.triggername);
+							if (evt.name === evtName && info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+							return evt.name === evtName ? info.filter(evt, player, evt.triggername) : true;
 						}));
 				if (goon && bool) return true;
 			}
