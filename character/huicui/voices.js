@@ -1,4 +1,9 @@
 export default {
+	"#dcxidi1": "霜清飞鸟静，月明晚笛声。",
+	"#dcxidi2": "玉声暗飞来，青城盈春风。",
+	"#dcchengyan1": "素女乘烟去，白玉凤凰声。",
+	"#dcchengyan2": "香魄成飞仙，凤萧月中闻。",
+	"#yue_zhugeguo:die": "七情盈丹海，不敢妄飞升。",
 	"#dcmanhou1": "既为蛮王之妻，当彰九黎之仪。",
 	"#dcmanhou2": "君行役四海，妾怎敢居后。",
 	"#dctanluan1": "暗索缚雄兵，尔等不过如此！",
