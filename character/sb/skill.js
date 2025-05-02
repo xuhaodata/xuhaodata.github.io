@@ -7600,7 +7600,7 @@ const skills = {
 		forced: true,
 		group: ["sbzhaxiang_draw", "sbzhaxiang_mark"],
 		filter(event, player) {
-			return player.getHistory("useCard").length <= player.getDamagedHp();
+			return player.getHistory("useCard").length <= player.getDamagedHp() && player == _status.currentPhase;
 		},
 		content() {
 			trigger.directHit.addArray(game.filterPlayer());
@@ -7631,9 +7631,13 @@ const skills = {
 			mark: {
 				charlotte: true,
 				silent: true,
+				firstDo: true,
 				trigger: {
 					player: ["changeHp", "useCard"],
 					global: ["phaseBegin", "phaseAfter"],
+				},
+				filter(event, player) {
+					return player == _status.currentPhase;
 				},
 				content() {
 					const skill = event.name;
