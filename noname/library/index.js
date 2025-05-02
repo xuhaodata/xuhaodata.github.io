@@ -14251,8 +14251,16 @@ export class Library {
 		[
 			"荆扬",
 			{
+				showName: "扬",
 				color: "#ffcc99",
 				nature: "thundermm",
+			},
+		],
+		[
+			"魔",
+			{
+				color: "#2e002e",
+				nature: "fire",
 			},
 		],
 	]);

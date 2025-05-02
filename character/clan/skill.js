@@ -2,6 +2,141 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//族杨众 —— by 星の语
+	clanjuetu: {
+		trigger: { player: "phaseDiscardBefore" },
+		forced: true,
+		content() {
+			trigger.setContent(lib.skill[event.name].phaseDiscard);
+		},
+		phaseDiscard: [
+			async (event, trigger, player) => {
+				game.log(player, "进入了弃牌阶段");
+				game.broadcastAll(function (player) {
+					if (lib.config.show_phase_prompt) {
+						player.popup("弃牌阶段", null, false);
+					}
+				}, player);
+				event.trigger("phaseDiscard");
+			},
+			async (event, trigger, player) => {
+				const cards = player.getCards("h"),
+					suits = cards.map(card => get.suit(card, player));
+				if (!cards.length) {
+					event.finish();
+					return;
+				}
+				if (lib.suits.some(suit => suits.filter(suitx => suitx == suit).length > 1)) {
+					const result = await player
+						.chooseCard("请保留每种花色的手牌各一张，将其余手牌置入弃牌堆", [1, Infinity], true, (card, player) => {
+							const selected = ui.selected.cards;
+							if (!selected?.length) return true;
+							return !selected.some(cardx => get.suit(cardx, player) == get.suit(card, player));
+						})
+						.set("complexCard", true)
+						.set("suits", suits)
+						.set("ai", card => get.value(card))
+						.forResult();
+					if (!result?.cards?.length) {
+						event.finish();
+						return;
+					}
+					const discard = cards.removeArray(result.cards);
+					await player.loseToDiscardpile(discard);
+				}
+				const result2 = await player
+					.chooseTarget(`绝途：令一名角色展示一张手牌`, true, (card, player, target) => {
+						return target.countCards("h");
+					})
+					.set("ai", target => {
+						return -get.attitude(get.player(), target);
+					})
+					.forResult();
+				if (!result2?.targets?.length) {
+					event.finish();
+					return;
+				}
+				const target = result2.targets[0];
+				if (!target.countCards("h")) return;
+				player.line(target);
+				const result3 = await target.chooseCard("绝途：请展示一张手牌", true, "h").forResult();
+				if (!result3?.cards?.length) {
+					event.finish();
+					return;
+				}
+				const card = result3.cards[0],
+					suit = get.suit(card, target);
+				await target.showCards([card]);
+				if (player.hasCard(cardx => get.suit(cardx, player) == suit, "h")) {
+					const guohe = get.autoViewAs({ name: "guohe" }, [card]);
+					if (player.hasUseTarget(guohe, null, false)) {
+						let next = player.chooseUseTarget(guohe, [card], true, false);
+						if (target != player) {
+							next.throw = false;
+							next.set("owner", get.owner(card));
+							next.set("oncard", card => {
+								const owner = get.event().getParent().owner;
+								if (owner) owner.$throw(card.cards);
+							});
+						}
+					}
+				} else target.damage();
+			},
+		],
+	},
+	clankudu: {
+		limited: true,
+		enable: "phaseUse",
+		filter(event, player) {
+			return player.countCards("h", card => player.canRecast(card)) > 1;
+		},
+		filterCard: (card, player) => player.canRecast(card),
+		selectCard: 2,
+		filterTarget: true,
+		position: "he",
+		lose: false,
+		discard: false,
+		delay: false,
+		check(card) {
+			return 6 - get.value(card);
+		},
+		async content(event, trigger, player) {
+			player.awakenSkill(event.name);
+			const cards = event.cards,
+				num = Math.min(5, Math.abs(get.number(cards[0]) - get.number(cards[1]))),
+				target = event.targets[0],
+				skill = event.name + "_effect";
+			await player.recast(cards);
+			target.addSkill(skill);
+			target.addMark(skill, num, false);
+		},
+		ai: {
+			order: 7,
+			result: {
+				target: 1,
+			},
+		},
+		subSkill: {
+			effect: {
+				intro: {
+					content: "<li>下#个回合结束时摸一张牌<br><li>第#个回合后执行一个额外回合",
+				},
+				onremove: true,
+				charlotte: true,
+				forced: true,
+				popup: false,
+				trigger: { global: "phaseEnd" },
+				content() {
+					player.removeMark(event.name, 1, false);
+					player.draw();
+					if (!player.hasMark(event.name)) {
+						player.insertPhase();
+						player.removeSkill(event.name);
+					}
+				},
+			},
+		},
+	},
 	//族荀爽 —— by 刘巴
 	clanyangji: {
 		trigger: {
@@ -42,6 +177,7 @@ const skills = {
 		forced: true,
 		content() {
 			const target = _status.currentPhase;
+			if (!target?.isIn()) return;
 			target.addTempSkill(event.name + "_add");
 			//target.addMark(event.name + "_add", 3, false);
 		},

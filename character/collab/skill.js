@@ -2,31 +2,178 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//张角三兄弟
+	oltiangong: {
+		forced: true,
+		trigger: {
+			player: ["phaseBegin", "phaseEnd"],
+			global: ["judgeAfter"],
+		},
+		filter(event, player) {
+			if (event.name == "judge") return event.result.suit == "spade";
+			return true;
+		},
+		async content(event, trigger, player) {
+			/*await player.gain(game.createCard2("luojing", "heart", 7), "gain2");
+			game.filterPlayer(target=>target!=player).forEach(async target=>{
+				await target.useCard({name:"qixin",isCard:true},player,false);
+			})*/
+			if (trigger.name == "phase") {
+				const name = event.triggername == "phaseBegin" ? "leigong" : "younan",
+					card = get.autoViewAs({ name: name, isCard: true });
+				if (player.hasUseTarget(card, false, false)) await player.chooseUseTarget(card, true, false);
+			} else {
+				const result = await player
+					.chooseTarget(`天公：对一名不为${get.translation(trigger.player)}的角色造成一点雷电伤害`, true, (card, player, target) => {
+						return get.event().sourcex != target;
+					})
+					.set("sourcex", trigger.player)
+					.set("ai", target => get.damageEffect(target, get.player(), get.player(), "thunder"))
+					.forResult();
+				if (result?.targets) {
+					const target = result.targets[0];
+					player.line(target, "thunder");
+					await target.damage("nocard", "thunder");
+				}
+			}
+		},
+	},
+	oldigong: {
+		trigger: { player: "useCard" },
+		forced: true,
+		filter(event, player) {
+			return player.hasHistory("lose", evt => {
+				if (evt.getParent() != event) return false;
+				return !Object.values(evt.gaintag_map).flat().includes("oldigong_tag");
+			});
+		},
+		async content(event, trigger, player) {
+			if (get.tag(trigger.card, "damage") > 0.5) trigger.baseDamage++;
+			else {
+				player
+					.when("useCardAfter")
+					.filter(evt => evt == trigger)
+					.step(async (event, trigger, player) => {
+						const target = _status.currentPhase;
+						if (!target?.isIn()) return;
+						const result = await target
+							.judge("oldigong", function (card) {
+								if (get.color(card) == "red") return 1;
+								return 0;
+							})
+							.forResult();
+						if (result.color == "red") await player.draw();
+					});
+			}
+		},
+		group: ["oldigong_tag"],
+		subSkill: {
+			tag: {
+				charlotte: true,
+				silent: true,
+				firstDo: true,
+				trigger: { player: "gainBegin" },
+				filter(event, player) {
+					return event.cards?.length;
+				},
+				content() {
+					if (!trigger.gaintag) trigger.gaintag = [];
+					trigger.gaintag.add("oldigong_tag");
+					player.addTempSkill("oldigong_remove", "roundStart");
+				},
+			},
+			remove: {
+				charlotte: true,
+				onremove(player) {
+					player.removeGaintag("oldigong_tag");
+				},
+			},
+		},
+	},
+	olrengong: {
+		trigger: { player: "useCardAfter" },
+		forced: true,
+		filter(event, player) {
+			const last = player.getLastUsed(1);
+			if (!last) return false;
+			return get.type2(event.card) != get.type2(last.card) && player.countDiscardableCards(player, "he");
+		},
+		async content(event, trigger, player) {
+			const last = player.getLastUsed(1),
+				type = ["basic", "trick", "equip"].removeArray([get.type2(trigger.card), get.type2(last.card)])[0];
+			if (!player.countDiscardableCards(player, "he")) return false;
+			await player.chooseToDiscard(`人公：请弃置一张牌，然后从牌堆获得一张${get.translation(type)}牌`, "he", true);
+			const card = get.cardPile2(card => get.type2(card) == type);
+			if (card) await player.gain(card, "gain2");
+			else player.chat(`黄天在上，赐我${get.translation(type)}`);
+		},
+		init(player) {
+			player.addSkill("olrengong_mark");
+		},
+		onremove(player) {
+			player.removeSkill("olrengong_mark");
+		},
+		subSkill: {
+			mark: {
+				charlotte: true,
+				silent: true,
+				init(player, skill) {
+					const history = player.getLastUsed();
+					if (!history) return;
+					const card = history.card;
+					player.storage[skill] = get.type2(card);
+					player.markSkill(skill);
+					game.broadcastAll(
+						function (player, type) {
+							if (player.marks.olrengong_mark) player.marks.olrengong_mark.firstChild.innerHTML = get.translation(type).slice(0, 1);
+						},
+						player,
+						get.type2(card)
+					);
+				},
+				intro: {
+					content: "上次使用：$",
+				},
+				onremove: true,
+				trigger: {
+					global: "useCard1",
+				},
+				content() {
+					lib.skill[event.name].init(player, event.name);
+				},
+			},
+		},
+	},
 	//烈袁绍袁术
 	dclieti: {
 		audio: 2,
 		trigger: {
-			global: "gameDrawBegin",
+			//因为需要兼容联机，所以加上replaceHandcards的时机，该事件是联机时的手气卡事件
+			global: ["gameDrawBegin", "replaceHandcardsBegin"],
 		},
 		forced: true,
+		popup: false,
 		async content(event, trigger, player) {
 			const me = player;
-			const numx = trigger.num;
-			trigger.num =
-				typeof numx == "function"
-					? function (player) {
-							if (player == me) {
-								return 2 * numx(player);
-							}
-							return numx(player);
-					  }
-					: function (player) {
-							if (player == me) {
-								return 2 * numx;
-							}
-							return numx;
-					  };
-			await player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
+			if (trigger.name == "gameDraw") {
+				player.logSkill(event.name);
+				const numx = trigger.num;
+				trigger.num =
+					typeof numx == "function"
+						? function (player) {
+								if (player == me) {
+									return 2 * numx(player);
+								}
+								return numx(player);
+						  }
+						: function (player) {
+								if (player == me) {
+									return 2 * numx;
+								}
+								return numx;
+						  };
+				player.changeSkin({ characterName: "yuanshaoyuanshu" }, "yuanshaoyuanshu_shao");
+			}
 			if (!trigger.gaintag) trigger.gaintag = {};
 			trigger.gaintag[me.playerid] = (num, cards) => {
 				const numy = Math.ceil(num / 2);
@@ -109,7 +256,7 @@ const skills = {
 			if (gaintag.length == 1 && gaintag[0] != lib.skill.dclieti.getName(player)) {
 				const name = gaintag[0];
 				player.logSkill(event.name);
-				await player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
+				player.changeSkin({ characterName: "yuanshaoyuanshu" }, name);
 				if (name == "yuanshaoyuanshu_shao") await player.chooseUseTarget({ name: "wanjian", isCard: true }, true);
 				if (name == "yuanshaoyuanshu_shu") await player.draw(2);
 			}
@@ -139,9 +286,8 @@ const skills = {
 			if (name == "damage") str += "弃置一张「袁绍」牌令自己本回合下次造成的伤害翻倍";
 			else str += "弃置一张「袁术」牌令自己本回合下次摸牌翻倍";
 			event.result = await player
-				.chooseToDiscard(str, "h", "chooseonly", card => {
-					return card.hasGaintag(tag);
-				})
+				.chooseToDiscard(str, "h", "chooseonly", card => card.hasGaintag(get.event("tag")))
+				.set("tag", tag)
 				.set("ai", card => 6 - get.value(card))
 				.forResult();
 		},

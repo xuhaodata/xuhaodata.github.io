@@ -1,4 +1,10 @@
 const translates = {
+	caoying_basic: "基本",
+	caoying_trick: "锦囊",
+	caoying_equip: "装备",
+	caoying_basic_bg: "基本",
+	caoying_trick_bg: "锦囊",
+	caoying_equip_bg: "装备",
 	xinfu_lingren: "凌人",
 	xinfu_lingren_info: "每回合限一次。当你使用带有伤害类基本牌或普通锦囊牌指定目标后，你可以猜测其中的一个目标的手牌中是否有基本牌，锦囊牌或装备牌。若你猜中的项目数：≥1，此牌对该角色的伤害+1；≥2，你摸两张牌；≥3，你获得技能〖奸雄〗和〖行殇〗直到你的下回合开始。",
 	xinfu_fujian: "伏间",
@@ -1497,6 +1503,19 @@ const translates = {
 	olpingzhong_info: "锁定技，你每回合使用的前X张牌能多指定X个目标。你受到伤害后，你摸X张牌（X为场上没有手牌的角色数+1）。",
 	olsuyi: "肃衣",
 	olsuyi_info: "出牌阶段限一次，你可以令一名其他角色随机使用牌堆中一张装备牌，然后视为对其使用一张【杀】。",
+	ol_guanhai: "OL管亥",
+	ol_guanhai_prefix: "OL",
+	olxiewei: "卸尾",
+	olxiewei_info: "你可以将两张手牌置于武将牌上，称为「饵」，视为使用一张【杀】或【闪】。",
+	olyouque: "诱阙",
+	olyouque_info: "出牌阶段，你可以用点数最小的「饵」拼点。没赢的角色弃置点数大于其拼点牌的所有手牌，视为对赢的角色使用一张【杀】。此【杀】造成伤害后，你摸两张牌，若「饵」的花色均不为黑桃，此技能本阶段失效",
+	ol_zhangmancheng: "OL张曼成",
+	ol_zhangmancheng_prefix: "OL",
+	olkuangxin: "狂信",
+	olkuangxin_info: "锁定技，出牌阶段开始时，你失去任意点体力，摸等量的牌并展示已损失体力值+1张手牌。",
+	olleishi: "雷噬",
+	olleishi_judge: "雷噬·判定",
+	olleishi_info: "出牌阶段限X次（X为你上次发动〖狂信〗展示牌的数量），你使用本回合展示过的牌结算完成后，可进行一次判定并获得判定牌，若判定结果与使用牌的花色：相同，你对一名目标角色造成一点雷电伤害；不同，你展示一张牌，本回合下次判定时，若此牌在你的手牌区内，将此牌作为判定牌。",
 };
 
 export default translates;

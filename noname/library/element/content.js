@@ -3074,15 +3074,21 @@ export const Content = {
 				numx = num(player);
 			}
 
-			//别问，问就是初始手牌要有标记 by 星の语	
+			//别问，问就是初始手牌要有标记 by 星の语
 			//event.gaintag支持函数、字符串、数组。数组就是添加一连串的标记；函数的返回格式为[[cards1,gaintag1],[cards2,gaintag2]...]
 			const cards = player.getTopCards ? player.getTopCards(numx) : get.cards(numx);
 			if (event.gaintag?.[player.playerid]) {
 				const gaintag = event.gaintag[player.playerid];
 				const list = typeof gaintag == "function" ? gaintag(numx, cards) : [[cards, gaintag]];
-				for (let i = list.length - 1; i >= 0; i--) {
-					player.directgain(list[i][0], null, list[i][1]);
-				}
+				game.broadcastAll(
+					(player, list) => {
+						for (let i = list.length - 1; i >= 0; i--) {
+							player.directgain(list[i][0], null, list[i][1]);
+						}
+					},
+					player,
+					list
+				);
 			} else player.directgain(cards);
 
 			if (player.singleHp === true && get.mode() != "guozhan" && (lib.config.mode != "doudizhu" || _status.mode != "online")) {
@@ -3715,9 +3721,15 @@ export const Content = {
 			for (var i = 0; i < hs.length; i++) {
 				hs[i].discard(false);
 			}
-			var cards = get.cards(hs.length);
+			const cards = get.cards(hs.length);
+			if (event.gaintag?.[game.me.playerid]) {
+				const gaintag = event.gaintag[game.me.playerid];
+				const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+				for (let i = list.length - 1; i >= 0; i--) {
+					game.me.directgain(list[i][0], null, list[i][1]);
+				}
+			} else game.me.directgain(cards);
 			game.me._start_cards = cards;
-			game.me.directgain(cards);
 		}
 	},
 	replaceHandcardsOL: function () {
@@ -3739,8 +3751,20 @@ export const Content = {
 					player,
 					hs
 				);
-				var cards = get.cards(hs.length);
-				player.directgain(cards);
+				const cards = get.cards(hs.length);
+				if (event.gaintag?.[player.playerid]) {
+					const gaintag = event.gaintag[player.playerid];
+					const list = typeof gaintag == "function" ? gaintag(hs.length, cards) : [[cards, gaintag]];
+					game.broadcastAll(
+						(player, list) => {
+							for (let i = list.length - 1; i >= 0; i--) {
+								player.directgain(list[i][0], null, list[i][1]);
+							}
+						},
+						player,
+						list
+					);
+				} else player.directgain(cards);
 				player._start_cards = cards;
 			}
 		};
@@ -4801,140 +4825,164 @@ export const Content = {
 			if (event.visibleMove) event.done.visible = true;
 		}
 	},
-	chooseToDiscard: function () {
-		"step 0";
-		if (event.autochoose()) {
-			event.result = {
-				bool: true,
-				autochoose: true,
-				cards: player.getCards(event.position),
-				rawcards: player.getCards(event.position),
-			};
-			for (var i = 0; i < event.result.cards.length; i++) {
-				if (!lib.filter.cardDiscardable(event.result.cards[i], player, event)) {
-					event.result.cards.splice(i--, 1);
-				}
-			}
-		} else {
-			// &&!lib.filter.wuxieSwap(trigger)
-			if (game.modeSwapPlayer && !_status.auto && player.isUnderControl()) {
-				game.modeSwapPlayer(player);
-			}
-			event.rangecards = player.getCards(event.position);
-			for (var i = 0; i < event.rangecards.length; i++) {
-				if (lib.filter.cardDiscardable(event.rangecards[i], player, event)) {
-					event.rangecards.splice(i--, 1);
-				} else {
-					event.rangecards[i].uncheck("chooseToDiscard");
-				}
-			}
-			var range = get.select(event.selectCard);
-			if (event.isMine()) {
-				game.check();
-				if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
-					ui.click.cancel();
-					return;
-				}
-				game.pause();
-				if (range[1] > 1 && typeof event.selectCard != "function") {
-					event.promptdiscard = ui.create.control("AI代选", function () {
-						ai.basic.chooseCard(event.ai);
-						if (_status.event.custom && _status.event.custom.add.card) {
-							_status.event.custom.add.card();
-						}
-						for (var i = 0; i < ui.selected.cards.length; i++) {
-							ui.selected.cards[i].updateTransform(true);
-						}
-					});
-				}
-				if (Array.isArray(event.dialog)) {
-					event.dialog = ui.create.dialog.apply(this, event.dialog);
-					event.dialog.open();
-					event.dialog.classList.add("noselect");
-				} else if (event.prompt != false) {
-					var str;
-					if (typeof event.prompt == "string") str = event.prompt;
-					else {
-						str = "请弃置";
-						if (range[0] == range[1]) str += get.cnNumber(range[0]);
-						else if (range[1] == Infinity) str += "至少" + get.cnNumber(range[0]);
-						else str += get.cnNumber(range[0]) + "至" + get.cnNumber(range[1]);
-						str += "张";
-						if (event.position == "h" || event.position == undefined) str += "手";
-						if (event.position == "e") str += "装备";
-						str += "牌";
+	chooseToDiscard: [
+		async (event, trigger, player) => {
+			event.filterCard = (event => {
+				const filterCard = event.filterCard;
+				return function (card, player) {
+					if (!lib.filter.cardDiscardable(card, player, this)) return false;
+					return filterCard.call(this, card, player);
+				};
+			})(event);
+			if (!player.getCards(event.position).filter(card => event.filterCard(card, player)).length) {
+				event.result = {
+					bool: false,
+					cards: [],
+				};
+			} else if (event.autochoose()) {
+				event.result = {
+					bool: true,
+					autochoose: true,
+					cards: player.getCards(event.position),
+					rawcards: player.getCards(event.position),
+				};
+				for (var i = 0; i < event.result.cards.length; i++) {
+					if (!lib.filter.cardDiscardable(event.result.cards[i], player, event)) {
+						event.result.cards.splice(i--, 1);
 					}
-					event.dialog = ui.create.dialog(str);
-					if (event.prompt2) {
-						event.dialog.addText(event.prompt2, event.prompt2.length <= 20);
+				}
+			} else {
+				if (game.modeSwapPlayer && !_status.auto && player.isUnderControl()) {
+					game.modeSwapPlayer(player);
+				}
+				event.rangecards = player.getCards(event.position);
+				for (var i = 0; i < event.rangecards.length; i++) {
+					if (lib.filter.cardDiscardable(event.rangecards[i], player, event)) {
+						event.rangecards.splice(i--, 1);
+					} else {
+						event.rangecards[i].uncheck("chooseToDiscard");
 					}
-					if (Array.isArray(event.selectCard)) {
-						event.promptbar = event.dialog.add("0/" + get.numStr(event.selectCard[1], "card"));
-						event.custom.add.card = function () {
-							_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
+				}
+				const directFilter = event.forced && typeof event.filterOk != "function" && typeof event.selectCard != "function" && !event.complexCard;
+				const cards = directFilter ? player.getCards(event.position).filter(card => !card.classList.contains("uncheck") && lib.filter.cardAiIncluded(card) && event.filterCard(card, player)) : [];
+				const range = get.select(event.selectCard);
+				if (directFilter && (range[0] >= cards.length || range[1] <= -1)) {
+					if (player.isOut())
+						event.result = {
+							cards: [],
 						};
+					else
+						event.result = {
+							bool: true,
+							cards: cards,
+						};
+				} else if (event.isMine()) {
+					game.check();
+					if (event.hsskill && !event.forced && _status.prehidden_skills.includes(event.hsskill)) {
+						ui.click.cancel();
+						return;
 					}
-				} else if (get.itemtype(event.dialog) == "dialog") {
-					event.dialog.style.display = "";
-					event.dialog.open();
+					game.pause();
+					if (range[1] > 1 && typeof event.selectCard != "function") {
+						event.promptdiscard = ui.create.control("AI代选", function () {
+							ai.basic.chooseCard(event.ai);
+							if (_status.event.custom && _status.event.custom.add.card) {
+								_status.event.custom.add.card();
+							}
+							for (var i = 0; i < ui.selected.cards.length; i++) {
+								ui.selected.cards[i].updateTransform(true);
+							}
+						});
+					}
+					if (Array.isArray(event.dialog)) {
+						event.dialog = ui.create.dialog.apply(this, event.dialog);
+						event.dialog.open();
+						event.dialog.classList.add("noselect");
+					} else if (event.prompt != false) {
+						let str;
+						if (typeof event.prompt == "string") str = event.prompt;
+						else {
+							str = "请弃置";
+							if (range[0] == range[1]) str += get.cnNumber(range[0]);
+							else if (range[1] == Infinity) str += "至少" + get.cnNumber(range[0]);
+							else str += get.cnNumber(range[0]) + "至" + get.cnNumber(range[1]);
+							str += "张";
+							if (event.position == "h" || event.position == undefined) str += "手";
+							if (event.position == "e") str += "装备";
+							str += "牌";
+						}
+						event.dialog = ui.create.dialog(str);
+						if (event.prompt2) {
+							event.dialog.addText(event.prompt2, event.prompt2.length <= 20);
+						}
+						if (Array.isArray(event.selectCard)) {
+							event.promptbar = event.dialog.add("0/" + get.numStr(event.selectCard[1], "card"));
+							event.custom.add.card = function () {
+								_status.event.promptbar.innerHTML = ui.selected.cards.length + "/" + get.numStr(_status.event.selectCard[1], "card");
+							};
+						}
+					} else if (get.itemtype(event.dialog) == "dialog") {
+						event.dialog.style.display = "";
+						event.dialog.open();
+					}
+				} else if (event.isOnline()) {
+					event.result = await event.sendAsync();
+				} else {
+					event.result = "ai";
 				}
-			} else if (event.isOnline()) {
-				event.send();
-			} else {
-				event.result = "ai";
 			}
-		}
-		"step 1";
-		if (event.result == "ai") {
-			game.check();
-			if ((ai.basic.chooseCard(event.ai) || forced) && (!event.filterOk || event.filterOk())) {
-				ui.click.ok();
-			} else if (event.skill) {
-				var skill = event.skill;
-				ui.click.cancel();
-				event._aiexclude.add(skill);
-				event.redo();
-				game.resume();
-			} else {
-				ui.click.cancel();
+		},
+		async (event, trigger, player) => {
+			if (event.result == "ai") {
+				game.check();
+				if ((ai.basic.chooseCard(event.ai) || event.forced) && (!event.filterOk || event.filterOk())) {
+					ui.click.ok();
+				} else if (event.skill) {
+					const skill = event.skill;
+					ui.click.cancel();
+					event._aiexclude.add(skill);
+					event.redo();
+					game.resume();
+				} else {
+					ui.click.cancel();
+				}
 			}
-		}
-		if (event.rangecards) {
-			for (var i = 0; i < event.rangecards.length; i++) {
-				event.rangecards[i].recheck("chooseToDiscard");
+			if (event.rangecards) {
+				for (var i = 0; i < event.rangecards.length; i++) {
+					event.rangecards[i].recheck("chooseToDiscard");
+				}
 			}
-		}
-		"step 2";
-		event.resume();
-		if (event.promptdiscard) {
-			event.promptdiscard.close();
-		}
-		"step 3";
-		if (event.result.bool && event.result.cards && event.result.cards.length && !game.online && event.autodelay && !event.isMine()) {
-			if (typeof event.autodelay == "number") {
-				game.delayx(event.autodelay);
-			} else {
-				game.delayx();
+		},
+		async (event, trigger, player) => {
+			event.resume();
+			if (typeof event.promptdiscard?.close == "function") event.promptdiscard.close();
+		},
+		async (event, trigger, player) => {
+			if (event.result.bool && event.result.cards?.length && !game.online && event.autodelay && !event.isMine()) {
+				if (typeof event.autodelay == "number") {
+					await game.delayx(event.autodelay);
+				} else {
+					await game.delayx();
+				}
 			}
-		}
-		"step 4";
-		if (event.logSkill && event.result.bool && !game.online) {
-			if (typeof event.logSkill == "string") {
-				player.logSkill(event.logSkill);
-			} else if (Array.isArray(event.logSkill)) {
-				player.logSkill.apply(player, event.logSkill);
+		},
+		async (event, trigger, player) => {
+			if (event.logSkill && event.result.bool && !game.online) {
+				if (typeof event.logSkill == "string") {
+					player.logSkill(event.logSkill);
+				} else if (Array.isArray(event.logSkill)) {
+					player.logSkill.apply(player, event.logSkill);
+				}
 			}
-		}
-		if (!game.online && !event.chooseonly) {
-			if (typeof event.delay == "boolean") {
-				event.done = player.discard(event.result.cards).set("delay", event.delay);
-			} else {
+			if (!game.online && !event.chooseonly) {
 				event.done = player.discard(event.result.cards);
+				if (typeof event.delay == "boolean") event.done.delay = event.delay;
+				event.done.discarder = player;
+				await event.done;
 			}
-			event.done.discarder = player;
-		}
-		if (event.dialog && event.dialog.close) event.dialog.close();
-	},
+			if (typeof event.dialog?.close == "function") event.dialog.close();
+		},
+	],
 	gaincardMultiple: function () {
 		"step 0";
 		event.type = "gain";
@@ -8553,7 +8601,7 @@ export const Content = {
 			}
 			cards[num].fix();
 			cards[num].style.transform = "";
-			cards[num].addGaintag(event.gaintag);
+			event.gaintag.forEach(tag => cards[num].addGaintag(tag));
 			if (event.knowers) {
 				cards[num].addKnower(event.knowers); //添加事件设定的知情者。
 			}
@@ -8927,7 +8975,9 @@ export const Content = {
 			for (var j = 0; j < cardx.length; j++) {
 				if (cardx[j].gaintag && cardx[j].gaintag.length) {
 					event.gaintag_map[cardx[j].cardid] = cardx[j].gaintag.slice(0);
-					cardx[j].removeGaintag(true);
+					//仅移除非永久标记
+					const tags = cardx[j].gaintag.filter(tag => tag.indexOf("eternal_") !== 0);
+					tags.forEach(tag => cardx[j].removeGaintag(tag));
 				}
 
 				cardx[j].style.transform += " scale(0.2)";
