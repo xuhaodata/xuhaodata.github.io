@@ -5140,11 +5140,7 @@ export class Player extends HTMLDivElement {
 			if (!this.forced) return false;
 			if (typeof this.selectCard == "function") return false;
 			if (this.complexCard || this.complexSelect || this.filterOk) return false;
-			let evt = this.getParent();
-			while (evt?.name) {
-				if (evt.name.startsWith("chooseToCompare")) return false;
-				evt = evt.getParent();
-			}
+			if (this.type === "compare") return false;
 			var cards = this.player.getCards(this.position);
 			if (cards.some(card => !this.filterCard(card, this.player, this))) return false;
 			return get.select(this.selectCard)[0] >= this.player.countCards(this.position);

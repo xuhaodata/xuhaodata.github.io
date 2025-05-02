@@ -551,7 +551,7 @@ const skills = {
 											.forResult();
 							if (result?.bool && result?.links?.length) {
 								const card = get.autoViewAs({ name: result.links[0][2], isCard: true, nature: result.links[0][3] });
-								await target.useCard(card, false, target1);
+								await player.useCard(card, false, target1);
 							}
 						}
 					}
@@ -3081,7 +3081,7 @@ const skills = {
 			if (["baonue_maxHp", "背水！"].includes(control)) await player.loseMaxHp(true);
 			if (player.canUse(juedou, target, false)) {
 				const next = player.useCard(juedou, target, false);
-				if (control == "背水！") next.baseDamage++;
+				next.baseDamage = control == "背水！" ? 2 : 1;
 				await next;
 			}
 		},
