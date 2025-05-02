@@ -2888,8 +2888,7 @@ const skills = {
 							(player.countCards("he", card => {
 								if (get.position(card) === "h" && _status.connectMode) return true;
 								return lib.filter.cardDiscardable(card, player);
-							}) >= 2 &&
-								(player.isDamaged() || game.hasPlayer(target => target !== player && target.isDamaged())))
+							}) >= 2 && game.hasPlayer(target => target.isDamaged()))
 						);
 					},
 					async cost(event, trigger, player) {
@@ -2897,7 +2896,7 @@ const skills = {
 							.chooseCardTarget({
 								prompt: get.prompt2(event.name.slice(0, -"_cost".length)),
 								filterTarget(card, player, target) {
-									return target !== player && [player, target].some(current => current.isDamaged());
+									return target.isDamaged();
 								},
 								filterCard: lib.filter.cardDiscardable,
 								selectCard: 2,
