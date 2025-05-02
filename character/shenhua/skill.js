@@ -3241,6 +3241,8 @@ const skills = {
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
 				if (
+					arg?.target &&
+					arg?.card &&
 					get.attitude(player, arg.target) <= 0 &&
 					arg.card.name == "sha" &&
 					player.countCards("h", function (card) {

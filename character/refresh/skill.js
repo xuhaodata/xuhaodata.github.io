@@ -12542,7 +12542,7 @@ const skills = {
 			order: 9,
 			directHit_ai: true,
 			skillTagFilter(player, tag, arg) {
-				if (!arg.target.hasSkill("new_yijue_" + player.playerid)) return false;
+				if (!arg?.target?.hasSkill("new_yijue_" + player.playerid)) return false;
 			},
 		},
 		subSkill: {
@@ -14313,7 +14313,7 @@ const skills = {
 			ignoreSkill: true,
 			skillTagFilter(player, tag, arg) {
 				if (tag == "directHit_ai") {
-					return get.attitude(player, arg.target) <= 0;
+					return arg?.target && get.attitude(player, arg.target) <= 0;
 				}
 				if (!arg || arg.isLink || !arg.card || arg.card.name != "sha") return false;
 				if (!arg.target || get.attitude(player, arg.target) >= 0) return false;

@@ -2547,7 +2547,7 @@ export class Library {
 						Mohua: "水墨",
 						Xiangong: "先攻",
 						Zhuzhang: "竹杖",
-						Shuimo: "幻彩",
+						// Shuimo: "幻彩",
 						Anhei: "黑暗",
 						Mozhua: "魔爪",
 						Shenjian: "神剑",
@@ -11022,6 +11022,7 @@ export class Library {
 				},
 				directHit_ai: true,
 				skillTagFilter: (player, tag, arg) => {
+					if (!arg?.card) return false;
 					const card = get.autoViewAs(arg.card);
 					if (card.name != "sha" || !card.storage.stratagem_buffed) return false;
 					const target = arg.target;
