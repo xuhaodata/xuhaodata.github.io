@@ -20632,12 +20632,12 @@ const skills = {
 	},
 	miaoxian: {
 		hiddenCard(player, name) {
-			return get.type(name) == "trick" && !player.hasSkill("miaoxian2") && player.countCards("h", { color: "black" }) == 1;
+			return get.type(name) == "trick" && !player.hasSkill("miaoxian_used") && player.countCards("h", { color: "black" }) == 1;
 		},
 		audio: 2,
 		enable: "chooseToUse",
 		filter(event, player) {
-			if (player.hasSkill("miaoxian2")) return false;
+			if (player.hasSkill("miaoxian_used")) return false;
 			var cards = player.getCards("h", { color: "black" });
 			if (cards.length != 1) return false;
 			var mod2 = game.checkMod(cards[0], player, "unchanged", "cardEnabled2", player);
@@ -20694,7 +20694,7 @@ const skills = {
 						name: links[0][2],
 					},
 					onuse(links, player) {
-						player.addTempSkill("miaoxian2");
+						player.addTempSkill("miaoxian_used");
 					},
 				};
 			},
@@ -20719,19 +20719,13 @@ const skills = {
 					player.draw();
 				},
 			},
-			backup: {
-				audio: "miaoxian",
-			},
+			backup: { audio: "miaoxian" },
+			used: { charlotte: true },
 		},
 		ai: {
 			order: 12,
-			result: {
-				player: 1,
-			},
+			result: { player: 1 },
 		},
-	},
-	miaoxian2: {
-		charlotte: true,
 	},
 	//樊玉凤
 	bazhan: {

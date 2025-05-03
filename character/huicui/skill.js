@@ -1265,15 +1265,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = trigger.target;
 			const cards = await player.draw().forResult();
+			if (get.itemtype(cards) != "cards") return;
 			await player.showCards(cards, get.translation(player) + "发动了【乘烟】");
 			const card = cards[0];
 			if (card.name == "sha" || (get.type(card) == "trick" && get.info(card).filterTarget)) {
 				player.addTempSkill("dcchengyan_effect");
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
-			}
-			if (card.name != "sha" && get.type(card) != "trick") {
-				await player.draw().set("gaintag", ["dcxidi_tag"]);
-			}
+			} else await player.draw().set("gaintag", ["dcxidi_tag"]);
 		},
 		subSkill: {
 			effect: {
