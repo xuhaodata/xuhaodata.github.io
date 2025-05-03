@@ -684,7 +684,7 @@ const skills = {
 		forced: true,
 		locked: false,
 		filter(event, player) {
-			return !player.isMaxHandcard(true) && !_status.currentPhase.isMaxHandcard(true) && player != _status.currentPhase;
+			return !player.isMaxHandcard(true) && !_status.currentPhase?.isMaxHandcard(true) && player != _status.currentPhase;
 		},
 		content() {
 			player.draw();
@@ -10102,7 +10102,7 @@ const skills = {
 								return !player.getStorage("dcshangyu_transfer").includes(current);
 							})
 							.sortBySeat(_status.currentPhase);
-					if (targets.length && targets[0] === _status.currentPhase && !_status.currentPhase.getCardUsable("sha")) targets.push(targets.shift());
+					if (targets.length && targets[0] === _status.currentPhase && !_status.currentPhase?.getCardUsable("sha")) targets.push(targets.shift());
 					event.cards = cards;
 					player
 						.chooseTarget(
@@ -14631,7 +14631,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let cards = get.cards(3 - player.countMark("dcxialei_clear"));
-			game.cardsGotoOrdering(cards);
+			await game.cardsGotoOrdering(cards);
 			let result;
 			if (cards.length == 1) result = { bool: true, links: cards };
 			else result = await player.chooseButton(["霞泪：获得其中的一张牌", cards], true).forResult();
@@ -14646,20 +14646,20 @@ const skills = {
 						.set("ai", () => _status.event.bool)
 						.set(
 							"bool",
-							(function () {
+							(() => {
 								if (!player.hasSkill("dcanzhi")) return Math.random() < 0.5;
 								if (player.isTempBanned("dcanzhi")) {
-									var next = _status.currentPhase.getNext();
-									var judges = next.getCards("j");
-									var val = 0;
+									const next = _status.currentPhase?.getNext();
+									if (!next) return Math.random() < 0.5;
+									const judges = next.getCards("j");
+									let val = 0;
 									if (judges.length && !next.hasWuxie()) {
-										var att = get.attitude(player, next);
-										for (var i = 0; ; i++) {
+										const att = get.attitude(player, next);
+										for (var i = 0; judges.length; i++) {
 											var judge = judges[i] && get.judge(judges[i]),
 												card = cards[i];
 											if (!judge || !card) break;
 											val += judge(card) * att;
-											i++;
 										}
 									}
 									if (val > 0) return false;
@@ -21402,7 +21402,7 @@ const skills = {
 					if (get.itemtype(player) !== "player" || player === target) return 1;
 					let num = 1,
 						ds = 2 + get.sgn(player.hp - target.hp);
-					if (player === _status.currentPhase && _status.currentPhase.group === "qun" && target.hasZhuSkill("yuwei", player)) num = 2;
+					if (player === _status.currentPhase && _status.currentPhase?.group === "qun" && target.hasZhuSkill("yuwei", player)) num = 2;
 					if (
 						target.getHistory("gain", function (evt) {
 							return evt.getParent(2).name === "shiyuan" && evt.cards.length === ds;

@@ -3797,7 +3797,7 @@ const skills = {
 					)
 					.set("ai", function (target) {
 						var player = _status.event.player;
-						var current = _status.currentPhase.next;
+						var current = _status.currentPhase?.next;
 						var max = 20,
 							att = 0;
 						while (max > 0) {

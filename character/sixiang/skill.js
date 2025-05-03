@@ -3335,7 +3335,7 @@ const skills = {
 		audio: "renzheng",
 		trigger: { global: ["damageCancelled", "damageZero"] },
 		filter(event, player, name) {
-			if (!_status.currentPhase || !_status.currentPhase.isIn()) return false;
+			if (!_status.currentPhase?.isIn()) return false;
 			if (name == "damageCancelled") return true;
 			return event.change_history.some(i => i < 0);
 		},

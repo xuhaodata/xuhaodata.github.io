@@ -2882,29 +2882,30 @@ const skills = {
 			return _status.currentPhase;
 		},
 		filter(event, player) {
-			var target = _status.currentPhase;
-			return player != target && target && target.isAlive() && event.toShow?.some(i => get.character(i).skills?.includes("taoyin"));
+			const target = _status.currentPhase;
+			return player != target && target?.isAlive() && event.toShow?.some(i => get.character(i).skills?.includes("taoyin"));
 		},
 		check(event, player) {
 			return get.attitude(player, _status.currentPhase) < 0;
 		},
-		content() {
-			_status.currentPhase.addTempSkill("taoyin2");
-			_status.currentPhase.addMark("taoyin2", 2, false);
+		async content(event, trigger, player) {
+			const {
+				targets: [target],
+			} = event;
+			target.addTempSkill(event.name + "_effect");
+			target.addMark(event.name + "_effect", 2, false);
 		},
-		ai: {
-			expose: 0.2,
-		},
-	},
-	taoyin2: {
-		onremove: true,
-		charlotte: true,
-		intro: {
-			content: "手牌上限-#",
-		},
-		mod: {
-			maxHandcard(player, num) {
-				return num - player.countMark("taoyin2");
+		ai: { expose: 0.2 },
+		subSkill: {
+			effect: {
+				onremove: true,
+				charlotte: true,
+				intro: { content: "本回合手牌上限-#" },
+				mod: {
+					maxHandcard(player, num) {
+						return num - player.countMark("taoyin_effect");
+					},
+				},
 			},
 		},
 	},

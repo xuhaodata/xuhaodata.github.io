@@ -4662,7 +4662,7 @@ const skills = {
 						const { result } = await player
 							.chooseToMove("水月：将牌按顺序置于牌堆顶(左为上)", true)
 							.set("list", [["牌堆顶", cards]])
-							.set("reverse", _status.currentPhase && _status.currentPhase.next && get.attitude(player, _status.currentPhase.next) > 0)
+							.set("reverse", _status.currentPhase?.next && get.attitude(player, _status.currentPhase.next) > 0)
 							.set("processAI", function (list) {
 								const cards = list[0][1].slice(0);
 								cards.sort(function (a, b) {

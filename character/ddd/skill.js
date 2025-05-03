@@ -1082,11 +1082,7 @@ const skills = {
 		},
 		chooseButton: {
 			dialog(event, player) {
-				return ui.create.dialog(
-					"并肩",
-					[["sha", "shan"], "vcard"],
-					"hidden"
-				);
+				return ui.create.dialog("并肩", [["sha", "shan"], "vcard"], "hidden");
 			},
 			filter(button, player) {
 				if (ui.selected.buttons.length) {
@@ -5319,22 +5315,24 @@ const skills = {
 							.set("processAI", function (list) {
 								var cards = list[0][1],
 									player = _status.event.player;
-								var target = _status.currentPhase.next;
+								var target = _status.currentPhase?.next;
 								var att = get.sgn(get.attitude(player, target));
 								var top = [];
-								var judges = target.getCards("j");
 								var stopped = false;
-								if (player != target || !target.hasWuxie()) {
-									for (var i = 0; i < judges.length; i++) {
-										var judge = get.judge(judges[i]);
-										cards.sort(function (a, b) {
-											return (judge(b) - judge(a)) * att;
-										});
-										if (judge(cards[0]) * att < 0) {
-											stopped = true;
-											break;
-										} else {
-											top.unshift(cards.shift());
+								if (target) {
+									var judges = target.getCards("j");
+									if (player != target || !target.hasWuxie()) {
+										for (var i = 0; i < judges.length; i++) {
+											var judge = get.judge(judges[i]);
+											cards.sort(function (a, b) {
+												return (judge(b) - judge(a)) * att;
+											});
+											if (judge(cards[0]) * att < 0) {
+												stopped = true;
+												break;
+											} else {
+												top.unshift(cards.shift());
+											}
 										}
 									}
 								}

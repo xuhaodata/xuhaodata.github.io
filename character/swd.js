@@ -1677,7 +1677,7 @@ game.import("character", function () {
 				},
 				filter(event, player) {
 					if (player == _status.currentPhase) return false;
-					if (!_status.currentPhase.countCards("he")) return false;
+					if (!_status.currentPhase?.countCards("he")) return false;
 					return event.cards && event.cards.length == 1;
 				},
 				content() {

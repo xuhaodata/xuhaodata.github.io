@@ -1828,11 +1828,11 @@ export default () => {
 					next._triggered = null;
 					next.custom.replace.target = event.customreplacetarget;
 					next.selectButton = [3, 3];
-					next.filterButton = function(button) {
+					next.filterButton = function (button) {
 						let { current } = get.event().getParent("game");
 						if (current) {
 							let { name } = current;
-							let banrule  = _status.banlist[name];
+							let banrule = _status.banlist[name];
 							if (!banrule) {
 								return true;
 							}
@@ -1846,7 +1846,7 @@ export default () => {
 							}
 						}
 						return true;
-					}
+					};
 					// next.custom.add.button=function(){
 					//		if(ui.cheat2&&ui.cheat2.backup) return;
 					//		_status.event.dialog.content.childNodes[1].innerHTML=
@@ -8969,7 +8969,7 @@ export default () => {
 				frequent: true,
 				unique: true,
 				filter: function (event, player) {
-					return _status.currentPhase != player;
+					return _status.currentPhase?.isIn() && _status.currentPhase != player;
 				},
 				content: function () {
 					"step 0";
