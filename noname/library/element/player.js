@@ -2179,30 +2179,53 @@ export class Player extends HTMLDivElement {
 			}, "hs")
 		)
 			return true;
+		const checkEnable = (enable, event, evtName) => {
+			if (typeof enable === "function") return enable(event);
+			if (Array.isArray(enable)) return enable.some(i => checkEnable(i, event, evtName));
+			if (enable === "phaseUse") return event.type === "phase" && evtName === "chooseToUse";
+			if (typeof enable === "string") return enable === evtName;
+			return false;
+		};
 		const skills = player.getSkills("invisible").concat(lib.skill.global);
 		game.expandSkills(skills);
 		for (let i = 0; i < skills.length; i++) {
 			const skill = skills[i],
-				ifo = get.info(skill),
-				hiddenCard = ifo.hiddenCard;
-			if (
-				evtNames.some(evtName => {
-					let evt = event.getParent(evtName);
-					if (get.itemtype(evt) !== "event") evt = get.event();
-					if (!evt) return false;
-					if (ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)] && evt?.name === evtName) ifo["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
-					if (!lib.filter.filterEnable(evt, player, skill)) return false;
-					if (ifo.viewAs && get.is.object(ifo.viewAs) && ifo.viewAs?.name === name) {
-						if (ifo.viewAsFilter && ifo.viewAsFilter(player) === false) return false;
-						if (evt.filterCard && !evt.filterCard(get.autoViewAs(ifo.viewAs, "unsure"), player, evt)) return false;
-						return true;
-					}
-					return false;
-				})
-			) {
-				return true;
+				info = get.info(skill),
+				hiddenCard = info.hiddenCard;
+			if (info.usable !== undefined) {
+				let num = info.usable;
+				if (typeof num === "function") num = info.usable(skill, player);
+				if (typeof num === "number" && get.skillCount(skill, player) >= num) continue;
+			}
+			if (info.round && info.round - (game.roundNumber - player.storage[skill + "_roundcount"]) > 0) continue;
+			if (player.storage[`temp_ban_${skill}`]) continue;
+			if (info.viewAs && get.is.object(info.viewAs) && info.viewAs?.name === name) {
+				const goon = !info.viewAsFilter || info.viewAsFilter(player) !== false;
+				const bool =
+					!info.filter ||
+					(typeof info.filter === "function" &&
+						evtNames.some(evtName => {
+							let evt = event.getParent(evtName);
+							if (get.itemtype(evt) !== "event") evt = get.event();
+							if (!evt || !checkEnable(info.enable, evt, evtName)) return false;
+							if (evt.name === evtName && typeof evt.filterCard == "function" && !evt.filterCard(get.autoViewAs(info.viewAs, "unsure"), player, evt)) return false;
+							if (evt.name === evtName && info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+							return evt.name === evtName ? info.filter(evt, player, evt.triggername) : true;
+						}));
+				if (goon && bool) return true;
 			} else if (typeof hiddenCard == "function") {
-				if (hiddenCard(player, name)) return true;
+				const goon = hiddenCard(player, name);
+				const bool =
+					!info.filter ||
+					(typeof info.filter === "function" &&
+						evtNames.some(evtName => {
+							let evt = event.getParent(evtName);
+							if (get.itemtype(evt) !== "event") evt = get.event();
+							if (!evt || !checkEnable(info.enable, evt, evtName)) return false;
+							if (evt.name === evtName && info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)]) info["on" + evtName.slice(0, 1).toUpperCase() + evtName.slice(1)](evt);
+							return evt.name === evtName ? info.filter(evt, player, evt.triggername) : true;
+						}));
+				if (goon && bool) return true;
 			}
 		}
 		return false;
@@ -11093,7 +11116,7 @@ export class Player extends HTMLDivElement {
 			if (eventInfo?.length) {
 				game.broadcastAll(
 					function (node, eventInfo, id) {
-						if (!node.node) {
+						if (!node?.node) {
 							node = [...ui.arena.childNodes].find(c => {
 								if (c.classList.contains("thrown") && c.classList.contains("card")) {
 									if (c._cardid == id && !c.selectedt) {
@@ -11103,7 +11126,7 @@ export class Player extends HTMLDivElement {
 								}
 							});
 						}
-						if (!node.node) return;
+						if (!node?.node) return;
 						node.classList.add("infoflip");
 						let next = ui.create.div(".cardsetion", eventInfo, node);
 						next.style.setProperty("display", "block", "important");

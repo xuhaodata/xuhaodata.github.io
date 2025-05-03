@@ -935,6 +935,7 @@ const skills = {
 	//谋荀彧
 	dcsbbizuo: {
 		audio: 2,
+		audioname: ["dc_sb_xunyu_shadow"],
 		limited: true,
 		skillAnimation: true,
 		animationColor: "thunder",

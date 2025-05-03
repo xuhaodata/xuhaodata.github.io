@@ -3172,7 +3172,7 @@ const skills = {
 							(player.countCards("he", card => {
 								if (get.position(card) === "h" && _status.connectMode) return true;
 								return lib.filter.cardDiscardable(card, player);
-							}) >= 2 && game.hasPlayer(target => target !== player))
+							}) >= 2 && game.hasPlayer(target => target.isDamaged()))
 						);
 					},
 					async cost(event, trigger, player) {
@@ -3180,7 +3180,7 @@ const skills = {
 							.chooseCardTarget({
 								prompt: get.prompt2(event.name.slice(0, -"_cost".length)),
 								filterTarget(card, player, target) {
-									return !player.getStorage("olhedao_effect").includes(target);
+									return target.isDamaged();
 								},
 								filterCard: lib.filter.cardDiscardable,
 								selectCard: 2,
@@ -4151,7 +4151,7 @@ const skills = {
 				},
 				ai: {
 					respondSha: true,
-					skillTagFilter(player, arg) {
+					skillTagFilter(player, tag, arg) {
 						if (arg === "respond" || !player.isPhaseUsing()) return false;
 						if (player.getStat("skill").olzhonglve_wusheng || !player.countCards("hes")) return false;
 					},
@@ -29007,7 +29007,8 @@ const skills = {
 						replace: { window() {} },
 					});
 					next.backup(name);
-					await next;
+					const { result } = await next;
+					if (!result?.bool) break;
 				}
 			}
 		},

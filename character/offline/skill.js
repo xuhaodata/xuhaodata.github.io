@@ -8182,12 +8182,11 @@ const skills = {
 	},
 	//张南
 	tyfenwu: {
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		frequent: true,
 		async content(event, trigger, player) {
 			const result = await player.draw().forResult();
+			if (get.itemtype(result) != "cards") return;
 			await player.showCards(get.translation(player) + "发动了【奋武】", result);
 			if (result?.length != 1) return;
 			let list = [],
@@ -8213,7 +8212,7 @@ const skills = {
 					return get.player().getUseValue(card);
 				})
 				.forResult();
-			if (result2.bool && player.getCards("h").includes(card)) {
+			if (result2.bool && result2?.links?.length && player.getCards("h").includes(card)) {
 				const cardx = { name: result2.links[0][2], natrue: result2.links[0][3] };
 				game.broadcastAll(function (card) {
 					lib.skill.tyfenwu_backup.viewAs = card;
@@ -8241,6 +8240,7 @@ const skills = {
 				selectCard: 1,
 				check: card => 7 - get.value(card),
 				popname: true,
+				log: false,
 			},
 		},
 	},
