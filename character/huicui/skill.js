@@ -1271,7 +1271,7 @@ const skills = {
 				player.addTempSkill("dcchengyan_effect");
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
 			}
-			if (card.name != "sha" && get.type(card) != "trick") {
+			else {
 				await player.draw().set("gaintag", ["dcxidi_tag"]);
 			}
 		},
@@ -1313,14 +1313,14 @@ const skills = {
 		forced: true,
 		content() {
 			const cards = player.getCards("h", card => player._start_cards.includes(card));
-			player.addGaintag(cards, "dcyunzheng_tag");
+			player.addGaintag(cards, "eternal_dcyunzheng_tag");
 		},
 		mod: {
 			ignoredHandcard(card) {
-				if (card.hasGaintag("dcyunzheng_tag")) return true;
+				if (card.hasGaintag("eternal_dcyunzheng_tag")) return true;
 			},
 			cardDiscardable(card, _, name) {
-				if (name == "phaseDiscard" && card.hasGaintag("dcyunzheng_tag")) return false;
+				if (name == "phaseDiscard" && card.hasGaintag("eternal_dcyunzheng_tag")) return false;
 			},
 		},
 		group: "dcyunzheng_fengyin",
@@ -1342,14 +1342,14 @@ const skills = {
 						return false;
 					return game.hasPlayer(target => {
 						if (player === target) return false;
-						return target.hasCard(card => card.hasGaintag("dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
+						return target.hasCard(card => card.hasGaintag("eternal_dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
 					});
 				},
 				logTarget(event, player) {
 					return game
 						.filterPlayer(target => {
 							if (player === target) return false;
-							return target.hasCard(card => card.hasGaintag("dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
+							return target.hasCard(card => card.hasGaintag("eternal_dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
 						})
 						.sortBySeat();
 				},
@@ -1358,7 +1358,7 @@ const skills = {
 					const targets = game
 						.filterPlayer(target => {
 							if (player === target) return false;
-							return target.hasCard(card => card.hasGaintag("dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
+							return target.hasCard(card => card.hasGaintag("eternal_dcyunzheng_tag"), "h") == !target.hasSkill("dcyunzheng_block");
 						})
 						.sortBySeat();
 					for (const target of targets) {
@@ -1369,17 +1369,17 @@ const skills = {
 			global: {
 				mod: {
 					aiValue(player, card, num) {
-						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("dcyunzheng_tag")) return;
+						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("eternal_dcyunzheng_tag")) return;
 						if (player.hasSkill("dcyunzheng")) return num * 1.2;
 						return num / 10;
 					},
 					aiUseful(player, card, num) {
-						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("dcyunzheng_tag")) return;
+						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("eternal_dcyunzheng_tag")) return;
 						if (player.hasSkill("dcyunzheng")) return num * 1.2;
 						return num / 10;
 					},
 					aiOrder(player, card, num) {
-						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("dcyunzheng_tag")) return;
+						if (num <= 0 || get.itemtype(card) !== "card" || !card.hasGaintag("eternal_dcyunzheng_tag")) return;
 						if (player.hasSkill("dcyunzheng")) return num * 0.8;
 						return num * 10;
 					},
@@ -1438,24 +1438,24 @@ const skills = {
 			if (result.bool) {
 				let cards = result.cards.slice();
 				await player.showCards(cards, get.translation(player) + "发动了【惑心】");
-				const cardx = cards.filter(card => card.hasGaintag("dcyunzheng_tag") || get.suit(card) == get.suit(trigger.card));
+				const cardx = cards.filter(card => card.hasGaintag("eternal_dcyunzheng_tag") || get.suit(card) == get.suit(trigger.card));
 				if (cardx.length) {
 					cards.removeArray(cardx);
 					const result2 = await player
-						.chooseBool("是否获得" + get.translation(cardx) + "？")
+						.chooseBool("惑心：是否获得" + get.translation(cardx) + "？")
 						.set("choice", get.value(cardx, player) > 7)
 						.forResult();
 					if (result2.bool) {
 						const next = player.gain(cardx, target, "give");
-						if (cardx[0].hasGaintag("dcyunzheng_tag")) next.gaintag.add("dcyunzheng_tag");
+						if (cardx[0].hasGaintag("eternal_dcyunzheng_tag")) next.gaintag.add("eternal_dcyunzheng_tag");
 						await next;
 						await event.trigger("dchuoxin_update");
 					}
 				}
-				if (cards.some(card => !card.hasGaintag("dcyunzheng_tag"))) {
+				if (cards.some(card => !card.hasGaintag("eternal_dcyunzheng_tag"))) {
 					target.addGaintag(
-						cards.filter(card => !card.hasGaintag("dcyunzheng_tag")),
-						"dcyunzheng_tag"
+						cards.filter(card => !card.hasGaintag("eternal_dcyunzheng_tag")),
+						"eternal_dcyunzheng_tag"
 					);
 					await event.trigger("dchuoxin_update");
 				}

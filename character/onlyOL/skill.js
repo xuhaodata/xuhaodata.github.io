@@ -131,20 +131,28 @@ const skills = {
 				filter(event, player) {
 					const storage = player.storage.olguifu_record;
 					if (event.card?.name) return !storage.card.includes(event.card.name);
-					const skill = get.sourceSkillFor(event.getParent().name),
-						info = get.info(skill);
-					if (!info || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) return false;
-					return !storage.skill.includes(skill);
+					let skill = "",
+						count = 0;
+					do {
+						count++;
+						const evt = event.getParent(count);
+						if (!evt?.name) break;
+						skill = get.sourceSkillFor(evt.name);
+						const info = get.info(skill);
+						if (!info || !Object.keys(info).length || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) continue;
+						else if (!storage.skill.includes(skill)) {
+							event.set("olguifu_record", skill);
+							return true;
+						}
+					} while (true);
+					return false;
 				},
 				forced: true,
 				locked: false,
 				content() {
 					let storage = player.storage[event.name];
 					if (trigger.card) storage["card"].add(trigger.card.name);
-					else {
-						const skill = get.sourceSkillFor(trigger.getParent().name);
-						storage["skill"].add(skill);
-					}
+					else if (trigger.olguifu_record) storage["skill"].add(trigger.olguifu_record);
 					player.markSkill(event.name);
 				},
 				intro: {
@@ -1884,10 +1892,12 @@ const skills = {
 					}
 					return true;
 				});
-			event.result = {
-				bool: result.bool,
-				cost_data: result.links[0],
-			};
+			if (result?.links) {
+				event.result = {
+					bool: result.bool,
+					cost_data: result.links[0],
+				};
+			}
 		},
 		choice: {
 			async discard(event, trigger, player) {

@@ -2673,6 +2673,7 @@ const skills = {
 		subSkill: {
 			buff: {
 				charlotte: true,
+				onremove: true,
 				mod: {
 					globalFrom(from, to) {
 						if (from.getStorage("twodcspzhuiji_buff").includes(to)) return -Infinity;

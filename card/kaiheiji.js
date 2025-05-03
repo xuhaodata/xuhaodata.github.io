@@ -150,7 +150,8 @@ game.import("card", function () {
 						.set("ai2", function () {
 							return get.effect_use.apply(this, arguments) + 0.01;
 						})
-						.set("addCount", false);
+						.set("addCount", false)
+						.forResult();
 					if (!result.bool) await event.target.loseHp();
 				},
 			},
@@ -176,7 +177,6 @@ game.import("card", function () {
 					if (evt.player == target) {
 						evt.set("skipTao", true);
 					}
-					player.draw();
 				},
 			},
 			//红运当头用的树上开花的ai
@@ -360,40 +360,40 @@ game.import("card", function () {
 				silent: true,
 				forceLoad: true,
 				forceDie: true,
+				chooseToUse(current, source, eventId) {
+					const next = current.chooseToUse();
+					next.set("prompt", "是否对" + get.translation(source) + "使用【落井下石】？");
+					next.set("filterCard", function (card, player) {
+						if (get.name(card) != "luojing") return false;
+						return lib.filter.cardEnabled(card, player, "forceEnable");
+					});
+					next.set("filterTarget", function (card, player, target) {
+						if (target != _status.event.sourcex) return false; // && !ui.selected.targets.includes(_status.event.sourcex)
+						return lib.filter.targetEnabled.apply(this, arguments);
+					});
+					next.set("sourcex", source);
+					next.set("goon", -get.attitude(current, source));
+					next.set("ai1", function (card) {
+						return _status.event.goon;
+					});
+					next.set("id", eventId);
+					next.set("_global_waiting", true);
+					return next;
+				},
 				async content(event, trigger, player) {
 					const source = trigger.player,
 						targets = game.filterPlayer(target => target != source).sortBySeat();
 					if (!targets.some(target => target.hasUsableCard("luojing"))) return;
 					//处理问题
-					let luojing_ok = undefined;
-					const goon = Math.round(Math.random());
-					const chooseToUse = (current, source, eventId) => {
-						const next = current.chooseToUse();
-						next.set("prompt", "是否对" + get.translation(source) + "使用【落井下石】？");
-						next.set("filterCard", function (card, player) {
-							if (get.name(card) != "luojing") return false;
-							return lib.filter.cardEnabled(card, player, "forceEnable");
-						});
-						next.set("filterTarget", function (card, player, target) {
-							if (target != _status.event.sourcex) return false; // && !ui.selected.targets.includes(_status.event.sourcex)
-							return lib.filter.targetEnabled.apply(this, arguments);
-						});
-						next.set("sourcex", source);
-						next.set("goon", -get.attitude(player, source));
-						next.set("ai1", function (card) {
-							return _status.event.goon;
-						});
-						next.set("id", eventId);
-						next.set("_global_waiting", true);
-						return next;
-					};
+					let luojing_ok = undefined,
+						results = {};
 					//人类和AI
 					let humans = targets.filter(current => current === game.me || current.isOnline());
 					let locals = targets.slice(0).randomSort();
 					locals.removeArray(humans);
 					const eventId = get.id();
 					const send = (current, source, eventId) => {
-						chooseToUse(current, source, eventId);
+						lib.skill.luojing_skill.chooseToUse(current, source, eventId);
 						game.resume();
 					};
 					//让读条不消失并显示读条
@@ -401,17 +401,29 @@ game.import("card", function () {
 					let time = 90000;
 					if (lib.configOL && lib.configOL.choose_timeout) time = parseInt(lib.configOL.choose_timeout) * 1000;
 					targets.forEach(current => current.showTimer(time));
-					//先处理人类玩家
+					//先处理单机的他人控制玩家/AI玩家
+					if (!luojing_ok && locals.length > 0) {
+						for (const current of locals) {
+							const result = await lib.skill.luojing_skill.chooseToUse(current, source).forResult();
+							if (result && result.bool) {
+								luojing_ok = current;
+								results[current.playerid] = result;
+							}
+						}
+					}
+					//再处理人类玩家
 					if (humans.length > 0) {
 						const solve = function (resolve, reject) {
 							return function (result, player) {
+								//game.log(player,result.bool);
 								if (result && result.bool && !luojing_ok) {
 									luojing_ok = player;
+									results[player.playerid] = result;
 									resolve();
 								} else reject();
 							};
 						};
-						//等待第一位回答正确（兑现Promise）的玩家，若回答错误（Promise被拒绝）则继续等待
+						//等待第一位使用（兑现Promise）的玩家，若不使用（Promise被拒绝）则继续等待
 						await Promise.any(
 							humans.map(current => {
 								return new Promise(async (resolve, reject) => {
@@ -419,11 +431,11 @@ game.import("card", function () {
 										current.send(send, current, source, eventId);
 										current.wait(solve(resolve, reject));
 									} else {
-										const next = chooseToUse(current, source, eventId);
+										const next = lib.skill.luojing_skill.chooseToUse(current, source, eventId);
 										const solver = solve(resolve, reject);
 										if (_status.connectMode) game.me.wait(solver);
 										const result = await next.forResult();
-										if (_status.connectMode && !answer_ok) game.me.unwait(result, current);
+										if (_status.connectMode && !luojing_ok) game.me.unwait(result, current);
 										else solver(result, current);
 									}
 								});
@@ -431,22 +443,14 @@ game.import("card", function () {
 						).catch(() => {});
 						game.broadcastAll("cancel", eventId);
 					}
-					//再处理单机的他人控制玩家/AI玩家
-					if (!luojing_ok && locals.length > 0) {
-						for (const current of locals) {
-							const result = await chooseToUse(current, source).forResult();
-							if (result && result.bool) {
-								luojing_ok = current;
-							}
-						}
-					}
 					//清除读条
 					delete event._global_waiting;
 					for (const i of targets) {
 						i.hideTimer();
 					}
+					await luojing_ok.useResult(results[luojing_ok.playerid]);
 					//await game.delay();
-					//await luojing_ok.draw();
+					await luojing_ok.draw();
 				},
 			},
 			/*shengsi_skill: {

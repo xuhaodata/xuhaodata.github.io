@@ -300,7 +300,7 @@ window.noname_character_replace = {
 	yuji: ["xin_yuji", "re_yuji", "yuji", "pot_yuji", "diy_yuji", "ns_yuji", "ns_yujisp"],
 	yujin: ["yujin", "ol_yujin", "yujin_yujin", "sb_yujin", "tw_yujin", "jd_sb_yujin", "ddd_yujin", "xin_yujin", "re_yujin"],
 	zangba: ["zangba", "tw_zangba"],
-	zhangbao: ["zhangbao", "re_zhangbao", "std_zhangbao", "ns_zhangbao"],
+	zhangbao: ["zhangbao", "re_zhangbao", "ns_zhangbao"],
 	zhangchangpu: ["ol_zhangchangpu", "zhangchangpu", "sp_zhangchangpu"],
 	zhangchu: ["zhangchu", "jsrg_zhangchu"],
 	zhangchunhua: ["zhangchunhua", "ol_zhangchunhua", "jin_zhangchunhua", "re_zhangchunhua", "star_zhangchunhua"],

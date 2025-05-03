@@ -1349,7 +1349,7 @@ const skills = {
 				card = event.cards[0];
 			player.addGaintag(card, "mbjianji");
 			player.addTempSkill(event.name + "_put");
-			event.targets.forEach(c => c.addTempSkill(event.name + "_fake"));
+			event.targets.forEach(target => target.addTempSkill(event.name + "_fake"));
 			const result = await target1.chooseToCompare(target2).set("mbjianji", true).forResult();
 			const sha = async function sha(target, victim) {
 				if (!target.canUse({ name: "sha", isCard: true }, victim, false, false)) return;

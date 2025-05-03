@@ -264,6 +264,7 @@ const skills = {
 			} else return;
 		},
 		ai: {
+			combo: "olxiewei",
 			order: 7,
 			result: {
 				player: 1,
@@ -33028,7 +33029,7 @@ const skills = {
 					})()
 				);
 			if (!bool) return;
-			const choices = links.map(i => i[2]);
+			const choices = links.map(i => i[2].slice(8));
 			if (!event.isMine() && !event.isOnline()) await game.delayx();
 			let num = 0;
 			["basic", "trick", "equip"].forEach(type => {
