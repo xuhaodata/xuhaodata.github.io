@@ -166,7 +166,7 @@ const skills = {
 		},
 	},
 	olmoubian: {
-		audio: 5,
+		audio: 4,
 		derivation: ["olzhouxi"],
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {

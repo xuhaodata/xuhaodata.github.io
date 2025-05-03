@@ -29,6 +29,9 @@ game.import("character", function () {
 				["yuanshaoyuanshu_shao", []],
 				["yuanshaoyuanshu_shu", []],
 			],
+			taipingsangong: [
+				["taipingsangong_ultimate", ["die:taipingsangong"]]
+			],
 		},
 		characterFilter: { ...characterFilters },
 		characterInitFilter: { ...characterInitFilters },
