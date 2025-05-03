@@ -2460,7 +2460,7 @@ const skills = {
 					animationColor: "metal",
 					num: result.control,
 					async content(event, trigger, player) {
-						player.awakenSkill("dcdixian");
+						player.awakenSkill(event.name);
 						const num = get.numString(lib.skill.dcdixian_backup.num);
 						const card = get.cardPile2(card => get.number(card, false) < num);
 						if (!card) {
@@ -5507,7 +5507,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.awakenSkill("dctongdao");
+			player.awakenSkill(event.name);
 			const removeSkills = target.getSkills(null, false, false).filter(i => {
 				const info = get.info(i);
 				return !info || !info.charlotte;
@@ -6334,7 +6334,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "soil",
 		content() {
-			player.awakenSkill("dcsbsushen");
+			player.awakenSkill(event.name);
 			player.storage.dcsbsushen_reload = [Boolean(player.storage.dcsbfumou), player.countCards("h"), player.getHp()];
 			player.addSkill("dcsbsushen_reload");
 			player.addSkills("dcsbrushi");
@@ -6370,7 +6370,7 @@ const skills = {
 		*content(event, map) {
 			const player = map.player,
 				storage = player.storage.dcsbsushen_reload;
-			player.awakenSkill("dcsbrushi");
+			player.awakenSkill(event.name);
 			player.removeSkill("dcsbsushen_reload");
 			if (Boolean(player.storage.dcsbfumou) !== storage[0]) {
 				if (player.hasSkill("dcsbfumou", null, null, false)) {
@@ -6616,7 +6616,7 @@ const skills = {
 		animationColor: "fire",
 		derivation: ["dcxingmen"],
 		async content(event, trigger, player) {
-			player.awakenSkill("dcfenhui");
+			player.awakenSkill(event.name);
 			const target = event.target;
 			const count = player.getAllHistory("useCard", evt => {
 				return evt.targets && evt.targets.includes(target);
@@ -7992,7 +7992,6 @@ const skills = {
 		},
 	},
 	fengying: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		enable: "phaseUse",
@@ -8002,7 +8001,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		async content(event, trigger, player) {
-			player.awakenSkill("fengying");
+			player.awakenSkill(event.name);
 			await player.discard(player.getCards("h"));
 			const evt = player.insertPhase();
 			player
@@ -8351,7 +8350,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		async content(event, trigger, player) {
-			player.awakenSkill("dcyuxin");
+			player.awakenSkill(event.name);
 			trigger.player.recover((trigger.player == player ? 1 : player.getHp()) - trigger.player.hp);
 		},
 	},
@@ -9932,7 +9931,7 @@ const skills = {
 		animationColor: "wood",
 		content() {
 			"step 0";
-			player.awakenSkill("dcruxian");
+			player.awakenSkill(event.name);
 			player.addTempSkill("dczhangcai_all", { player: "phaseBegin" });
 		},
 		ai: {
@@ -11680,7 +11679,7 @@ const skills = {
 		derivation: ["dcyongjue", "dcshushen", "dcshenzhi", "dcguixiu", "dccunsi"],
 		content() {
 			"step 0";
-			player.awakenSkill("dcxunbie");
+			player.awakenSkill(event.name);
 			var characters = ["dc_ganfuren", "dc_mifuren"];
 			game.countPlayer(current => {
 				if (current.name1 == "dc_ganfuren" || current.name2 == "dc_ganfuren") {
@@ -11774,7 +11773,7 @@ const skills = {
 		derivation: "dcyongjue",
 		content() {
 			"step 0";
-			player.awakenSkill("dccunsi");
+			player.awakenSkill(event.name);
 			target.addSkills("dcyongjue");
 			if (target != player) player.draw(2);
 		},
@@ -12465,7 +12464,7 @@ const skills = {
 		content() {
 			"step 0";
 			var card = cards[0];
-			player.awakenSkill("dczhizhe");
+			player.awakenSkill(event.name);
 			var cardx = game.createCard2(card.name, card.suit, card.number, card.nature);
 			player.gain(cardx).gaintag.add("dczhizhe");
 			player.addSkill("dczhizhe_effect");
@@ -12807,7 +12806,7 @@ const skills = {
 			return gains.filter(card => get.type(card) == "trick");
 		},
 		content() {
-			player.awakenSkill("dcjijiao");
+			player.awakenSkill(event.name);
 			var cards = lib.skill.dcjijiao.getCards(player);
 			if (cards.length) {
 				target.gain(cards, "gain2").gaintag.add("dcjijiao");
@@ -14872,7 +14871,7 @@ const skills = {
 			return player.hasSkill("dclianji_1") && player.hasSkill("dclianji_2");
 		},
 		content() {
-			player.awakenSkill("dcmoucheng");
+			player.awakenSkill(event.name);
 			player.changeSkills(["xinjingong"], ["dclianji"]);
 		},
 		ai: {
@@ -17159,7 +17158,7 @@ const skills = {
 		animationColor: "wood",
 		content() {
 			"step 0";
-			player.awakenSkill("dcligong");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
 			"step 1";
@@ -17912,7 +17911,7 @@ const skills = {
 			return player.getStorage("dcgeyuan").length == 3;
 		},
 		content() {
-			player.awakenSkill("dcgusuan");
+			player.awakenSkill(event.name);
 			player.storage.dcgusuan = true;
 			player.loseMaxHp();
 		},
@@ -18696,7 +18695,7 @@ const skills = {
 			return get.rank(event.player.name, true) >= 5;
 		},
 		content() {
-			player.awakenSkill("huaping");
+			player.awakenSkill(event.name);
 			var skills = trigger.player.getSkills(null, false, false).filter(function (i) {
 				var info = get.info(i);
 				return info && !info.charlotte;
@@ -18978,7 +18977,7 @@ const skills = {
 				var target = result.targets[0];
 				event.target = target;
 				player.logSkill("juetao", target);
-				player.awakenSkill("juetao");
+				player.awakenSkill(event.name);
 			} else event.finish();
 			"step 2";
 			var card = get.bottomCards()[0];
@@ -19609,7 +19608,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			"step 0";
-			player.awakenSkill("syxiongyi");
+			player.awakenSkill(event.name);
 			if (!_status.characterlist) {
 				lib.skill.pingjian.initList();
 			}
@@ -19906,7 +19905,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "wood",
 		content() {
-			player.awakenSkill("mengqing");
+			player.awakenSkill(event.name);
 			player.gainMaxHp(3);
 			player.recover(3);
 			//player.removeSkill('zhukou');
@@ -21780,7 +21779,7 @@ const skills = {
 			return Math.abs(player.hp - player.countCards("h")) >= 3;
 		},
 		content() {
-			player.awakenSkill("choujue");
+			player.awakenSkill(event.name);
 			player.storage.choujue = true;
 			player.loseMaxHp();
 			player.addSkills("beishui");
@@ -21802,7 +21801,7 @@ const skills = {
 			return Math.min(player.hp, player.countCards("h")) < 2;
 		},
 		content() {
-			player.awakenSkill("beishui");
+			player.awakenSkill(event.name);
 			player.storage.beishui = true;
 			player.loseMaxHp();
 			player.addSkills("qingjiao");
@@ -22088,7 +22087,7 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		content() {
 			"step 0";
-			player.awakenSkill("zhanyuan");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
 			"step 1";
@@ -23076,7 +23075,7 @@ const skills = {
 		animationColor: "wood",
 		filterTarget: lib.filter.notMe,
 		content() {
-			player.awakenSkill("zhafu");
+			player.awakenSkill(event.name);
 			player.addSkill("zhafu_hf");
 			target.addMark("zhafu_hf", 1);
 		},

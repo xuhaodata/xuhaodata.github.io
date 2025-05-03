@@ -6128,7 +6128,7 @@ const skills = {
 		*content(event, map) {
 			var player = map.player;
 			var trigger = map.trigger;
-			player.awakenSkill("olsbranji");
+			player.awakenSkill(event.name);
 			var num = lib.skill.olsbranji.getNum(player);
 			const skills = [];
 			if (num >= player.getHp()) {

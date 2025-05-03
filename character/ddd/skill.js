@@ -2334,7 +2334,7 @@ const skills = {
 		content() {
 			"step 0";
 			event.count = 1;
-			player.awakenSkill("dddquche");
+			player.awakenSkill(event.name);
 			player.addTempSkill("dddquche_effect");
 			player.addMark("dddquche_effect", 1, false);
 			player.give(cards, target);
@@ -5388,7 +5388,7 @@ const skills = {
 			return get.effect(event.targets[0], event.card, player, player) < get.effect(player, event.card, player, player);
 		},
 		content() {
-			player.awakenSkill("dddjiexing");
+			player.awakenSkill(event.name);
 			player.addSkill("dddjiexing_reset");
 			if (trigger.name == "recover") {
 				trigger.cancel();

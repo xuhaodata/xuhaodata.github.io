@@ -840,7 +840,7 @@ const skills = {
 			}, "h");
 		},
 		content() {
-			player.awakenSkill("dezhang");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("weishu");
 		},
@@ -1890,7 +1890,7 @@ const skills = {
 		animationColor: "thunder",
 		content() {
 			"step 0";
-			player.awakenSkill("xiongzhi");
+			player.awakenSkill(event.name);
 			"step 1";
 			var card = get.cards()[0];
 			event.card = card;
@@ -3646,7 +3646,7 @@ const skills = {
 			return player.countMark("sanchen") > 2;
 		},
 		content() {
-			player.awakenSkill("zhaotao");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("pozhu");
 		},

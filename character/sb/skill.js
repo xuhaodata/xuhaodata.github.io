@@ -2959,7 +2959,7 @@ const skills = {
 				animationColor: "thunder",
 				async content(event, trigger, player) {
 					player.storage.sbsongwei_delete = true;
-					player.awakenSkill("sbsongwei_delete");
+					player.awakenSkill(event.name);
 					event.target.removeSkills(event.target.getStockSkills(false, true));
 				},
 				ai: {
@@ -4503,7 +4503,7 @@ const skills = {
 		derivation: ["sbyingzi", "gzyinghun"],
 		content() {
 			"step 0";
-			player.awakenSkill("sbhunzi");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			player.changeHujia(1, null, true);
@@ -4535,12 +4535,11 @@ const skills = {
 		},
 		zhuSkill: true,
 		limited: true,
-		mark: true,
 		skillAnimation: true,
 		animationColor: "wood",
 		content() {
 			"step 0";
-			player.awakenSkill("sbzhiba");
+			player.awakenSkill(event.name);
 			event.targets = game
 				.filterPlayer(current => {
 					return current.group == "wu" && current != player;
@@ -5258,7 +5257,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("sbniepan");
+			player.awakenSkill(event.name);
 			player.discard(player.getCards("hej"));
 			"step 1";
 			player.draw(2);
@@ -5555,7 +5554,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("sbzhiji");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			player.chooseTarget("志继：令至少一名角色获得“北伐”标记", true, [1, Infinity]).set("ai", target => -get.attitude(player, target));
@@ -5860,7 +5859,7 @@ const skills = {
 		multiline: true,
 		content() {
 			"step 0";
-			player.awakenSkill("sbzhangwu");
+			player.awakenSkill(event.name);
 			var num = Math.min(game.roundNumber - 1, 3);
 			var cards = target.getCards("he"),
 				count = cards.length;
@@ -6685,7 +6684,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("sbfenwei");
+			player.awakenSkill(event.name);
 			for (var i = 0; i < cards.length; i++) {
 				targets[i].addToExpansion(cards[i], player, "give").gaintag.add("sbfenwei_effect");
 			}
@@ -8236,7 +8235,7 @@ const skills = {
 			return player.hujia >= 3;
 		},
 		content() {
-			player.awakenSkill("sbdujiang");
+			player.awakenSkill(event.name);
 			player.addSkills("sbduojing");
 			player.storage.sbkeji = true;
 		},

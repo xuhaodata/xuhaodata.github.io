@@ -1813,7 +1813,7 @@ export default () => {
 				},
 				content: function () {
 					"step 0";
-					player.awakenSkill("xiechan");
+					player.awakenSkill(event.name);
 					player.chooseToCompare(target);
 					"step 1";
 					if (result.bool) player.useCard({ name: "juedou" }, target, "noai");

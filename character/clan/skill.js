@@ -1641,7 +1641,7 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			player.awakenSkill("clanjianji");
+			player.awakenSkill(event.name);
 			const card = new lib.element.VCard({ name: "sha" });
 			const targets = game.filterPlayer(target => {
 					return trigger.player.getPrevious() == target || trigger.player.getNext() == target;
@@ -3053,7 +3053,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("clanbaozu");
+			player.awakenSkill(event.name);
 			"step 1";
 			trigger.player.link(true);
 			trigger.player.recover();

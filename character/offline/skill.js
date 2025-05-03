@@ -1704,7 +1704,7 @@ const skills = {
 			threaten: 1.5,
 		},
 	},
-	hm_wenchen: {
+	hm_weichenn: {
 		limited: true,
 		enable: "phaseUse",
 		filterTarget: lib.filter.notMe,
@@ -1714,11 +1714,11 @@ const skills = {
 		multitarget: true,
 		async content(event, trigger, player) {
 			const { targets } = event;
-			player.awakenSkill("hm_wenchen");
+			player.awakenSkill(event.name);
 			await player.showCards(targets[0].getCards("h"));
 			await game.asyncDraw([player, targets[1]], 3);
 			for (const i of targets) {
-				i.addTempSkill("hm_wenchen_buff");
+				i.addTempSkill("hm_weichenn_buff");
 			}
 			while (true) {
 				const list = targets[0].getCards("h", card => get.tag(card, "damage"));
@@ -4929,7 +4929,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "metal",
 		content() {
-			player.awakenSkill("yymujun");
+			player.awakenSkill(event.name);
 			target.addSkills("yicong");
 		},
 		ai: {
@@ -9646,7 +9646,7 @@ const skills = {
 			"step 1";
 			if (result.bool) {
 				player.logSkill("jdfenwei", result.targets);
-				player.awakenSkill("jdfenwei");
+				player.awakenSkill(event.name);
 				trigger.getParent().excluded.addArray(result.targets);
 				if (result.targets.includes(player)) player.addTempSkill("jdfenwei_qixi");
 			}
@@ -11668,7 +11668,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		async content(event, trigger, player) {
-			player.awakenSkill("psjizun");
+			player.awakenSkill(event.name);
 			if (!player.hasSkill("psqingsuan")) await player.addSkills("psqingsuan");
 			else await player.recoverTo(player.maxHp);
 		},
@@ -13664,7 +13664,7 @@ const skills = {
 			return player.countMark("pkwuku") > 2;
 		},
 		content() {
-			player.awakenSkill("pksanchen");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
 			player.addSkills("pkmiewu");
@@ -14617,7 +14617,7 @@ const skills = {
 		animationColor: "water",
 		content() {
 			"step 0";
-			player.awakenSkill("psqibu");
+			player.awakenSkill(event.name);
 			var cards = game.cardsGotoOrdering(get.cards(7)).cards;
 			game.updateRoundNumber();
 			event.cards = cards;
@@ -14673,7 +14673,7 @@ const skills = {
 				var target = result.targets[0];
 				event.target = target;
 				player.logSkill("psjianwei", target);
-				player.awakenSkill("psjianwei");
+				player.awakenSkill(event.name);
 				player.loseHp();
 			} else event.finish();
 			"step 2";
@@ -16087,7 +16087,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("yjyongdi");
+			player.awakenSkill(event.name);
 			let target = event.targets[0],
 				mode = get.mode();
 			if (player !== target && (mode !== "identity" || player.identity !== "nei")) player.addExpose(0.3);
@@ -16535,7 +16535,7 @@ const skills = {
 		selectTarget: () => [1, game.roundNumber],
 		contentBefore() {
 			"step 0";
-			player.awakenSkill("yjweiquan");
+			player.awakenSkill(event.name);
 			player.chooseTarget("威权：选择获得牌的角色", true).set("ai", target => {
 				var att = get.attitude(_status.event.player, target),
 					num = target.needsToDiscard(targets.filter(i => i != target && i.countCards("h")).length);
@@ -18194,12 +18194,7 @@ const skills = {
 		filter(event, player) {
 			return !player.storage.suiren;
 		},
-		intro: {
-			content: "limited",
-		},
-		mark: true,
 		direct: true,
-		unique: true,
 		limited: true,
 		content() {
 			"step 0";
@@ -18214,7 +18209,7 @@ const skills = {
 			"step 1";
 			if (result.bool) {
 				player.storage.suiren = true;
-				player.awakenSkill("suiren");
+				player.awakenSkill(event.name);
 				player.logSkill("suiren", result.targets);
 				player.removeSkills("reyicong");
 				player.gainMaxHp();
@@ -18337,12 +18332,11 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "gray",
 		audio: true,
-		unique: true,
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		content() {
 			"step 0";
-			player.awakenSkill("zuixiang");
+			player.awakenSkill(event.name);
 			event.cards = player.showCards(get.cards(3)).cards;
 			player.addToExpansion(event.cards, "gain2").gaintag.add("zuixiang2");
 			"step 1";

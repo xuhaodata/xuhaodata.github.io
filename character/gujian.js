@@ -2416,7 +2416,7 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					target.damage(2, "fire");
-					player.awakenSkill("jiehuo");
+					player.awakenSkill(event.name);
 					"step 1";
 					player.die();
 				},

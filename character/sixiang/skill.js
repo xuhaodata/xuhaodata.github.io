@@ -2972,7 +2972,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		async content(event, trigger, player) {
-			player.awakenSkill("stdxiongyi");
+			player.awakenSkill(event.name);
 			const targets = event.targets.sortBySeat();
 			let keep = true;
 			while (true) {

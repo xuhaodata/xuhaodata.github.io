@@ -2505,7 +2505,7 @@ const skills = {
 		},
 		content() {
 			player.changeZhuanhuanji("diezhang");
-			player.awakenSkill("duanwan");
+			player.awakenSkill(event.name);
 			var num = 2 - player.hp;
 			if (num > 0) player.recover(num);
 		},

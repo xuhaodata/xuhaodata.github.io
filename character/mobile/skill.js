@@ -3982,7 +3982,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "metal",
 		async content(event, trigger, player) {
-			player.awakenSkill("friendfangqiu");
+			player.awakenSkill(event.name);
 			const storage = player.getStorage("friendyance_record");
 			storage[4] = true;
 			player.popup(storage[1]);
@@ -4543,7 +4543,7 @@ const skills = {
 					animationColor: "metal",
 					log: false,
 					async content(event, trigger, player) {
-						player.awakenSkill("potzhenfeng");
+						player.awakenSkill(event.name);
 						if (get.info(event.name).item === "recover") {
 							player.logSkill("potzhenfeng", null, null, null, [null]);
 							player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow1");
@@ -6272,7 +6272,7 @@ const skills = {
 		filterCard: true,
 		selectCard: [-1, -2],
 		async content(event, trigger, player) {
-			player.awakenSkill("mbxiongsi");
+			player.awakenSkill(event.name);
 			const targets = game.filterPlayer(current => current !== player);
 			for (const target of targets) {
 				player.line(target, "thunder");
@@ -7237,7 +7237,7 @@ const skills = {
 		multiline: true,
 		async contentBefore(event, trigger, player) {
 			player.changeSkin({ characterName: "mb_caomao" }, "mb_caomao_shadow");
-			player.awakenSkill("mbjuejin");
+			player.awakenSkill(event.skill);
 		},
 		async content(event, trigger, player) {
 			const target = event.target;
@@ -7564,7 +7564,7 @@ const skills = {
 		selectCard: -1,
 		check: () => 1,
 		onuse(result, player) {
-			player.awakenSkill("sidai");
+			player.awakenSkill(event.name);
 			player.addTempSkill("sidai_tao");
 			player.addTempSkill("sidai_shan");
 		},
@@ -7788,7 +7788,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		async content(event, trigger, player) {
-			player.awakenSkill("zhoulin");
+			player.awakenSkill(event.name);
 			player.changeHujia(2, null, true);
 			const {
 				result: { control },
@@ -12961,7 +12961,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		content() {
-			player.awakenSkill("spdaizui");
+			player.awakenSkill(event.name);
 			trigger.source.addSkill("spdaizui2");
 			trigger.source.addToExpansion(trigger.cards.filterInD(), "gain2").gaintag.add("spdaizui2");
 			trigger.cancel();
@@ -13967,7 +13967,7 @@ const skills = {
 			return get.attitude(player, event.player) > 0;
 		},
 		content() {
-			player.awakenSkill("bihuo");
+			player.awakenSkill(event.name);
 			trigger.player.draw(3);
 			trigger.player.addTempSkill("bihuo_effect", "roundStart");
 			trigger.player.addMark("bihuo_effect", game.countPlayer(), false);
@@ -14134,7 +14134,7 @@ const skills = {
 			return player.getExpansions("jibing").length >= game.countGroup();
 		},
 		content() {
-			player.awakenSkill("moucuan");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("binghuo");
 		},
@@ -17002,7 +17002,7 @@ const skills = {
 			player.$fullscreenpop("败移", "thunder");
 		},
 		content() {
-			player.awakenSkill("baiyi");
+			player.awakenSkill(event.name);
 			game.broadcastAll(
 				function (target1, target2) {
 					game.swapSeat(target1, target2);
@@ -17134,7 +17134,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("shanli");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.chooseTarget(true, "选择【擅立】的目标").set("ai", function (target) {
 				var att = get.attitude(_status.event.player, target);
@@ -17267,7 +17267,7 @@ const skills = {
 			return event.type == "dying" && player == event.dying;
 		},
 		content() {
-			player.awakenSkill("requanfeng");
+			player.awakenSkill(event.name);
 			player.gainMaxHp(2);
 			player.recover(4);
 		},
@@ -17317,7 +17317,7 @@ const skills = {
 			return true;
 		},
 		content() {
-			player.awakenSkill("requanfeng");
+			player.awakenSkill(event.name);
 			player.removeSkills("hongyi");
 			var skills = trigger.player.getStockSkills("仲村由理", "天下第一").filter(function (skill) {
 				var info = get.info(skill);
@@ -17357,7 +17357,7 @@ const skills = {
 		animationColor: "thunder",
 		content() {
 			"step 0";
-			player.awakenSkill("quanfeng");
+			player.awakenSkill(event.name);
 			var list = trigger.player.getStockSkills("仲村由理", "天下第一").filter(function (skill) {
 				var info = get.info(skill);
 				return info && !info.juexingji && !info.hiddenSkill && !info.zhuSkill && !info.charlotte && !info.limited && !info.dutySkill;
@@ -17751,7 +17751,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("refuli");
+			player.awakenSkill(event.name);
 			event.num = game.countGroup();
 			if (event.num > player.hp) player.recover(event.num - player.hp);
 			"step 1";
@@ -19050,7 +19050,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("rehongju");
+			player.awakenSkill(event.name);
 			player.draw(player.getExpansions("rezhengrong").length);
 			"step 1";
 			if (player.countCards("h") == 0) event.goto(3);
@@ -19843,7 +19843,7 @@ const skills = {
 		logTarget: "player",
 		content() {
 			"step 0";
-			player.awakenSkill("wanlan");
+			player.awakenSkill(event.name);
 			var hs = player.getCards("h");
 			if (hs.length) player.discard(hs);
 			"step 1";
@@ -20619,7 +20619,7 @@ const skills = {
 		animationColor: "fire",
 		content() {
 			player.addSkill("rexushen2");
-			player.awakenSkill("rexushen");
+			player.awakenSkill(event.name);
 			player.loseHp(
 				game.countPlayer(function (current) {
 					return current.hasSex("male");
@@ -20835,7 +20835,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		content() {
-			player.awakenSkill("remoucheng");
+			player.awakenSkill(event.name);
 			player.changeSkills(["jingong"], ["relianji"]);
 			player.gainMaxHp();
 			player.recover();
@@ -22176,7 +22176,7 @@ const skills = {
 			return player.countMark("yizan_use") >= 3;
 		},
 		content() {
-			player.awakenSkill("xinfu_longyuan");
+			player.awakenSkill(event.name);
 			player.storage.yizan = true;
 		},
 		derivation: "yizan_rewrite",

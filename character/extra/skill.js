@@ -1581,7 +1581,7 @@ const skills = {
 			return player.countMark("xinrenjie") >= 4;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("xinbaiyin");
+			player.awakenSkill(event.name);
 			await player.loseMaxHp();
 			await player.addSkills("xinjilve");
 		},
@@ -1935,7 +1935,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "metal",
 		async content(event, trigger, player) {
-			player.awakenSkill("huandao");
+			player.awakenSkill(event.name);
 			const { target } = event;
 			await target.turnOver(false);
 			await target.link(false);
@@ -3072,7 +3072,7 @@ const skills = {
 			var player = map.player,
 				trigger = map.trigger;
 			var target = trigger.player;
-			player.awakenSkill("jxzhaoluan");
+			player.awakenSkill(event.name);
 			trigger.cancel();
 			const skills = target.getSkills(null, false, false).filter(skill => {
 				var info = get.info(skill);
@@ -3775,7 +3775,7 @@ const skills = {
 		seatRelated: true,
 		content() {
 			"step 0";
-			player.awakenSkill("dcqijing");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("dccuixin");
 			"step 1";
@@ -5360,7 +5360,7 @@ const skills = {
 					return true;
 				},
 				content() {
-					player.awakenSkill("dili_qionglan");
+					player.awakenSkill(event.name);
 					var list = ["dili_shengzhi", "dili_chigang", "dili_quandao", "dili_jiaohui", "dili_yuanlv"];
 					var list2 = list.randomRemove(2);
 					if (list2.includes("dili_quandao") && list2.includes("dili_jiaohui")) {
@@ -5773,7 +5773,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("pingxiang");
+			player.awakenSkill(event.name);
 			player.loseMaxHp(9);
 			event.num = 0;
 			"step 1";
@@ -6718,7 +6718,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("stianyi");
+			player.awakenSkill(event.name);
 			player.gainMaxHp(2);
 			player.recover();
 			"step 1";
@@ -6792,7 +6792,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("resghuishi");
+			player.awakenSkill(event.name);
 			var list = target.getSkills(null, false, false).filter(function (skill) {
 				var info = lib.skill[skill];
 				return info && info.juexingji && !target.awakenedSkills.includes(skill);
@@ -6853,7 +6853,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		content() {
 			"step 0";
-			player.awakenSkill("sghuishi");
+			player.awakenSkill(event.name);
 			var list = target.getSkills(null, false, false).filter(function (skill) {
 				var info = lib.skill[skill];
 				return info && info.juexingji;
@@ -8045,7 +8045,7 @@ const skills = {
 		limited: true,
 		content() {
 			"step 0";
-			player.awakenSkill("shenfen");
+			player.awakenSkill(event.name);
 			player.storage.baonu -= 6;
 			player.markSkill("baonu");
 			player.syncStorage("baonu");
@@ -8191,7 +8191,7 @@ const skills = {
 			return player.countMark("renjie") >= 4;
 		},
 		content() {
-			player.awakenSkill("sbaiyin");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("jilue");
 		},
@@ -8890,7 +8890,7 @@ const skills = {
 		multitarget: true,
 		multiline: true,
 		contentBefore() {
-			player.awakenSkill("yeyan");
+			player.awakenSkill(event.skill);
 		},
 		content() {
 			"step 0";
@@ -9935,7 +9935,7 @@ const skills = {
 		multitarget: true,
 		content() {
 			"step 0";
-			player.awakenSkill("nzry_dinghuo");
+			player.awakenSkill(event.name);
 			player.storage.nzry_dinghuo = true;
 			"step 1";
 			player.removeMark("nzry_junlve", player.countMark("nzry_junlve"));

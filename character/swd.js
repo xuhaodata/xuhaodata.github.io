@@ -1500,7 +1500,7 @@ game.import("character", function () {
 					trigger.num++;
 					player.addSkill("shenyan2");
 					player.storage.shenyan = true;
-					player.awakenSkill("shenyan");
+					player.awakenSkill(event.name);
 					player.storage.shenyan2 = [];
 					var players = game.filterPlayer();
 					for (var i = 0; i < players.length; i++) {
@@ -1748,7 +1748,7 @@ game.import("character", function () {
 				animationColor: "fire",
 				content() {
 					"step 0";
-					player.awakenSkill("hxunzhi");
+					player.awakenSkill(event.name);
 					player.storage.hxunzhi = true;
 					var targets = game.filterPlayer(function (current) {
 						return player.canUse("wanjian", current);
@@ -1998,7 +1998,7 @@ game.import("character", function () {
 				filterTarget: true,
 				selectTarget: [1, Infinity],
 				contentBefore() {
-					player.awakenSkill("jinlin");
+					player.awakenSkill(event.skill);
 					player.storage.jinlin = true;
 				},
 				content() {
@@ -2201,7 +2201,7 @@ game.import("character", function () {
 				selectTarget: [1, 3],
 				content() {
 					"step 0";
-					player.awakenSkill("bingfeng");
+					player.awakenSkill(event.name);
 					player.removeSkill("xuanzhou");
 					player.loseMaxHp();
 					player.storage.bingfeng = true;
@@ -3134,7 +3134,7 @@ game.import("character", function () {
 				},
 				content() {
 					"step 0";
-					player.awakenSkill("shouyin");
+					player.awakenSkill(event.name);
 					player.storage.shouyin = true;
 					player.turnOver();
 					"step 1";
@@ -6460,7 +6460,7 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					player.storage.xuehuang = true;
-					player.awakenSkill("xuehuang");
+					player.awakenSkill(event.name);
 					player.showHandcards();
 					var cards = player.getCards("h");
 					player.discard(cards);
@@ -7130,7 +7130,7 @@ game.import("character", function () {
 				},
 				content() {
 					player.storage.duijue = true;
-					player.awakenSkill("duijue");
+					player.awakenSkill(event.name);
 					var evt = _status.event;
 					for (var i = 0; i < 10; i++) {
 						if (evt && evt.getParent) {

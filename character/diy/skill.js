@@ -3015,7 +3015,7 @@ const skills = {
 			);
 		},
 		content() {
-			player.awakenSkill("nstaiping");
+			player.awakenSkill(event.name);
 			player.storage.nstaiping = true;
 			if (
 				player.getAllHistory("sourceDamage", function (evt) {
@@ -3322,7 +3322,7 @@ const skills = {
 			return player.countMark("nsdiewu") >= player.hp;
 		},
 		content() {
-			player.awakenSkill("nspojian");
+			player.awakenSkill(event.name);
 			player.storage.nspojian = true;
 			player.loseMaxHp();
 			player.draw(2);
@@ -3612,7 +3612,7 @@ const skills = {
 			if (result.bool) {
 				var target = result.targets[0];
 				player.logSkill("nsxingchu", target);
-				player.awakenSkill("nsxingchu");
+				player.awakenSkill(event.name);
 				var he = trigger.player.getCards("he");
 				if (he.length) target.gain(he, trigger.player, "giveAuto", "bySelf");
 				target.gainMaxHp();
@@ -3793,7 +3793,7 @@ const skills = {
 			return player.getExpansions("nsjiquan_mark").length > 4;
 		},
 		content() {
-			player.awakenSkill("nsfuwei");
+			player.awakenSkill(event.name);
 			player.storage.nsfuwei = true;
 			player.addSkill("nsdiemou");
 			player.addSkill("nszhihuang");
@@ -4671,7 +4671,7 @@ const skills = {
 			trigger.player.draw(2);
 			trigger.player.storage.ns_chuanshu2 = player;
 			trigger.player.addSkill("ns_chuanshu2");
-			player.awakenSkill("ns_chuanshu");
+			player.awakenSkill(event.name);
 		},
 	},
 	ns_chuanshu2: {
@@ -5775,7 +5775,7 @@ const skills = {
 			return [game.zhu];
 		},
 		content() {
-			player.awakenSkill("nscuanquan");
+			player.awakenSkill(event.name);
 			game.broadcastAll(function (player) {
 				var tmp = player.maxHp;
 				player.identity = "zhu";
@@ -5806,7 +5806,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("nstianji");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			trigger.player.recover(1 - trigger.player.hp);
@@ -6207,7 +6207,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("nswulie");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			player.chooseCardButton(Array.from(ui.discardPile.childNodes), "将至多三张任意顺置于牌堆顶（先选择的在上）", true, [1, 3]);
@@ -6860,7 +6860,7 @@ const skills = {
 			return target !== player;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("nshaoling");
+			player.awakenSkill(event.name);
 			const target = event.target;
 			let targets = game
 				.filterPlayer(cur => {
@@ -8497,7 +8497,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("guihan");
+			player.awakenSkill(event.name);
 			player.recover();
 			"step 1";
 			player.draw(2);
@@ -9031,7 +9031,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("junkdili");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			var skills = player.getSkills(null, false, false).filter(function (i) {
