@@ -1892,12 +1892,10 @@ const skills = {
 					}
 					return true;
 				});
-			if (result?.links) {
-				event.result = {
-					bool: result.bool,
-					cost_data: result.links[0],
-				};
-			}
+			event.result = {
+				bool: result.bool,
+				cost_data: result.links[0],
+			};
 		},
 		choice: {
 			async discard(event, trigger, player) {

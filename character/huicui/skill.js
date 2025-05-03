@@ -1271,7 +1271,7 @@ const skills = {
 				player.addTempSkill("dcchengyan_effect");
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
 			}
-			else {
+			if (card.name != "sha" && get.type(card) != "trick") {
 				await player.draw().set("gaintag", ["dcxidi_tag"]);
 			}
 		},

@@ -415,7 +415,6 @@ game.import("card", function () {
 					if (humans.length > 0) {
 						const solve = function (resolve, reject) {
 							return function (result, player) {
-								//game.log(player,result.bool);
 								if (result && result.bool && !luojing_ok) {
 									luojing_ok = player;
 									results[player.playerid] = result;
