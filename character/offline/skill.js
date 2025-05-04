@@ -217,7 +217,7 @@ const skills = {
 				const { result } = await target.chooseCard("鸱咽：将任意张牌置于武将牌上直到回合结束", [1, Infinity], true, "he").set("ai", card => {
 					const player = get.player();
 					if (ui.selected.cards.length) return 0;
-					return 6 - get.value.card(card);
+					return 6 - get.value(card);
 				});
 				if (result?.bool && result?.cards?.length) {
 					target.addSkill(event.name + "_gain");
@@ -3019,7 +3019,7 @@ const skills = {
 					source: "damageBegin1",
 				},
 				filter(event, player) {
-					return event.source && player.getExpansions("hm_xiongshi").length > 0;
+					return event.source?.isIn() && player.getExpansions("hm_xiongshi").length > 0;
 				},
 				async cost(event, trigger, player) {
 					const { source } = trigger;
@@ -3033,7 +3033,7 @@ const skills = {
 				async content(event, trigger, player) {
 					const { cost_data } = event;
 					const { source } = trigger;
-					await game.loseToDiscardpile(cost_data);
+					await source.loseToDiscardpile(cost_data);
 					trigger.num++;
 				},
 			},
