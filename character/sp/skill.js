@@ -3179,7 +3179,7 @@ const skills = {
 							.chooseCardTarget({
 								prompt: get.prompt2(event.name.slice(0, -"_cost".length)),
 								filterTarget(card, player, target) {
-									return target.isDamaged();
+									return target !== player && [player, target].some(current => current.isDamaged());
 								},
 								filterCard: lib.filter.cardDiscardable,
 								selectCard: 2,

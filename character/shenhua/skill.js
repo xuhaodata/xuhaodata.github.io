@@ -73,6 +73,13 @@ const skills = {
 				return selected >= select[0] && selected <= select[1];
 			}
 		},
+		ai1(card) {
+			return 6 - get.value(card);
+		},
+		ai2(target) {
+			const player = get.player();
+			return get.effect(target, { name: "tiesuo" }, player, player);
+		},
 		discard: false,
 		lose: false,
 		delay: false,
@@ -82,6 +89,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
+		},
+		ai: {
+			order(item, player) {
+				if (game.hasPlayer(current => get.effect(current, { name: "tiesuo" }, player, player) > 0) || player.hasCard(card => get.suit(card) == "club" && player.canRecast(card), "h")) return 8;
+				return 1;
+			},
+			result: { player: 1 },
 		},
 	},
 	//新杀小加强 陈到

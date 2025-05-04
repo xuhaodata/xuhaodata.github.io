@@ -5129,6 +5129,16 @@ const skills = {
 				player.draw(cards.length);
 			}
 		},
+		ai: {
+			order: 7,
+			result: { 
+				player: 1,
+				target(player, target){
+					if (player.hasSkill("sblianhuan_blocker")) return 0;
+					return lib.card.tiesuo.ai.result.target(player, target);
+				} 
+			},
+		},
 		subSkill: {
 			blocker: { charlotte: true },
 			use: {
