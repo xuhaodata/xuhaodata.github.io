@@ -3,7 +3,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
 	// 十常侍共用技能
-	pschangsghi: {
+	pschangshi: {
 		initSkill(changshi, skill) {
 			if (!lib.skill[skill]) {
 				lib.skill[skill] = {
@@ -45,14 +45,14 @@ const skills = {
 				skill
 			);
 		},
-		group: "pschangsghi_remove",
+		group: "pschangshi_remove",
 		subSkill: {
 			remove: {
 				trigger: { player: "removeMark" },
 				forced: true,
 				locked: false,
 				filter(event, player) {
-					return get.info("pschangsghi").changshi.some(name => event.markName == `${name}_${player.playerid}`);
+					return get.info("pschangshi").changshi.some(name => event.markName == `${name}_${player.playerid}`);
 				},
 				async content(event, trigger, player) {
 					await player.loseMaxHp();
@@ -65,17 +65,17 @@ const skills = {
 					global: "phaseDiscardBegin",
 				},
 				filter(event, player) {
-					if (get.info("pschangsghi").changshi.every(name => !player.hasMark(`${name}_${player.playerid}`))) return false;
+					if (get.info("pschangshi").changshi.every(name => !player.hasMark(`${name}_${player.playerid}`))) return false;
 					if (event.name == "phaseDiscard") return get.info("jsrgzhenglve").isFirst(event.player);
 					if (event.player.hp + event.player.hujia > event.num) return false;
 					return game.hasPlayer(current => {
-						return current != player && get.info("pschangsghi").changshi.some(name => current.hasMark(`${name}_${current.playerid}`));
+						return current != player && get.info("pschangshi").changshi.some(name => current.hasMark(`${name}_${current.playerid}`));
 					});
 				},
 				async cost(event, trigger, player) {
 					if (trigger.name == "phaseDiscard") {
 						const { player: target } = trigger;
-						const { result } = await player.chooseBool(get.prompt(event.skill, target), `摸一张牌，令其本局游戏手牌上限+1`).set("chioce", get.attitude(player, target) > 0);
+						const { result } = await player.chooseBool(get.prompt(event.skill, target), `摸一张牌，令其本局游戏手牌上限+1`).set("choice", get.attitude(player, target) > 0);
 						event.result = {
 							bool: result?.bool,
 							targets: [target],
@@ -85,7 +85,7 @@ const skills = {
 							.chooseTarget(
 								get.prompt(event.skill),
 								(card, player, target) => {
-									return target != player && get.info("pschangsghi").changshi.some(name => target.hasMark(`${name}_${target.playerid}`));
+									return target != player && get.info("pschangshi").changshi.some(name => target.hasMark(`${name}_${target.playerid}`));
 								},
 								`选择一名角色转移伤害`
 							)
@@ -102,12 +102,12 @@ const skills = {
 					} = event;
 					if (trigger.name == "phaseDiscard") {
 						await player.draw();
-						target.addSkill("pschangsghi_hand");
-						target.addMark("pschangsghi_hand", 1, false);
+						target.addSkill("pschangshi_hand");
+						target.addMark("pschangshi_hand", 1, false);
 					} else {
 						trigger.cancel();
 						await game.delay(0.5);
-						const marks = get.info("pschangsghi").changshi.filter(name => player.hasMark(`${name}_${player.playerid}`));
+						const marks = get.info("pschangshi").changshi.filter(name => player.hasMark(`${name}_${player.playerid}`));
 						if (marks.length == 1) {
 							const mark = `${marks[0]}_${player.playerid}`;
 							player.removeMark(mark, 1);
@@ -120,7 +120,7 @@ const skills = {
 								if (!player.hasMark(mark)) player.removeSkill(mark);
 							}
 						}
-						if (get.info("pschangsghi").changshi.every(name => !player.hasMark(`${name}_${player.playerid}`))) player.removeSkill(event.name);
+						if (get.info("pschangshi").changshi.every(name => !player.hasMark(`${name}_${player.playerid}`))) player.removeSkill(event.name);
 						await target
 							.damage(trigger.source ? trigger.source : "nosource", trigger.nature, trigger.num)
 							.set("card", trigger.card)
@@ -135,7 +135,7 @@ const skills = {
 				intro: { content: "手牌上限+#" },
 				mod: {
 					maxHandcard(player, num) {
-						return num + player.countMark("pschangsghi_hand");
+						return num + player.countMark("pschangshi_hand");
 					},
 				},
 			},
@@ -147,7 +147,7 @@ const skills = {
 		enable: "phaseUse",
 		usable(skill, player) {
 			return game.filterPlayer().reduce((num, current) => {
-				const count = get.info("pschangsghi").changshi.reduce((sum, name) => sum + current.countMark(`${name}_${current.playerid}`), 0);
+				const count = get.info("pschangshi").changshi.reduce((sum, name) => sum + current.countMark(`${name}_${current.playerid}`), 0);
 				return num + count;
 			}, 0);
 		},
@@ -187,7 +187,7 @@ const skills = {
 			},
 		},
 		ai: {
-			combo: "pschangsghi",
+			combo: "pschangshi",
 			order: 7,
 			result: { player: 1 },
 			threaten: 1.9,
@@ -2417,7 +2417,7 @@ const skills = {
 			else {
 				const bool = await player
 					.chooseBool(get.prompt(event.skill, target), "令其弃置装备区任意张牌，然后此牌额外结算X次（X为其装备区的牌数）")
-					.set("chioce", get.effect(target, card, player, player) > 0)
+					.set("choice", get.effect(target, card, player, player) > 0)
 					.forResultBool();
 				event.result = {
 					bool: bool,
@@ -11084,7 +11084,7 @@ const skills = {
 			target.markAuto("jdfengtu_phase", [trigger.player]);
 		},
 		onRound(event) {
-			return (event.relatedEvent || event.getParent(2)).name != "jdfengtu_phase";
+			return event.getParent().skill != "jdfengtu_phase" && (event.relatedEvent || event.getParent(2)).name != "jdfengtu_phase";
 		},
 		check(source, player) {
 			const players = game.players
