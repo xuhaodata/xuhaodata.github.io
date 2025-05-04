@@ -62,8 +62,8 @@ const skills = {
 							.getParent()
 							.filterCard(get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { olguifu_viewAs: true } }, "unsure"), player, get.event().getParent());
 					},
-					check(button, player) {
-						return player.getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"));
+					check(button) {
+						return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"));
 					},
 					backup(links, player) {
 						return {

@@ -186,11 +186,14 @@ game.import("card", function () {
 				type: "trick",
 				selectTarget: 2,
 				toself: true,
+				complexTarget:true,
 				filterTarget(card, player, target) {
-					return target == player || (target != player && target.countCards("h"));
-				},
-				filterOk() {
-					return ui.selected.targets.includes(get.player());
+					const selected = ui.selected.targets,
+						bool1 = target == player,
+						bool2 = target != player && target.countCards("h");
+					if (!selected.length) return bool1 || bool2;
+					if (selected.includes(player)) return bool2;
+					else return bool1;
 				},
 				modTarget: true,
 				async content(event, trigger, player) {
@@ -447,7 +450,7 @@ game.import("card", function () {
 					for (const i of targets) {
 						i.hideTimer();
 					}
-					await luojing_ok.useResult(results[luojing_ok.playerid]);
+					if (luojing_ok.isOnline()) await luojing_ok.useResult(results[luojing_ok.playerid]);
 					//await game.delay();
 					await luojing_ok.draw();
 				},
