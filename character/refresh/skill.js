@@ -1440,7 +1440,7 @@ const skills = {
 			return !stat || !stat.includes(target);
 		},
 		filter(event, player) {
-			return player.countCards("h") > 0 && game.hasPlayer(current => lib.skill.refuman.filterTarget(null, player, current));
+			return player.countCards("he") > 0 && game.hasPlayer(current => lib.skill.refuman.filterTarget(null, player, current));
 		},
 		filterCard: lib.filter.cardDiscardable,
 		position: "he",
