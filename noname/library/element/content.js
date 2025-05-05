@@ -2745,7 +2745,6 @@ player.removeVirtualEquip(card);
 				game.send("server", "config", lib.configOL);
 			}
 		}
-		game.log();
 		game.log(player, "的回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
@@ -3878,7 +3877,6 @@ player.removeVirtualEquip(card);
 				game.send("server", "config", lib.configOL);
 			}
 		}
-		game.log();
 		game.log(player, "的回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
