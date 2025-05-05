@@ -23,14 +23,7 @@ game.import("card", function () {
 				//用的无中的ai改的
 				ai: {
 					wuxie(target, card, player, viewer) {
-						if (get.mode() == "guozhan") {
-							if (!_status._aozhan) {
-								if (!player.isMajor()) {
-									if (!viewer.isMajor()) return 0;
-								}
-							}
-						}
-						if (target.countCards("h") * Math.max(target.hp, 5) > 6) return 0;
+						if (get.attitude(viewer, player._trueMe || player) > 0) return 0;
 					},
 					basic: {
 						order: 7,
@@ -42,7 +35,7 @@ game.import("card", function () {
 					},
 				},
 			},
-			//兄弟齐心无ai
+			//兄弟齐心ai修改自推心置腹
 			qixin: {
 				audio: true,
 				fullskin: true,
@@ -54,6 +47,7 @@ game.import("card", function () {
 					const target = event.target,
 						cards1 = player.getCards("h"),
 						cards2 = target.getCards("h");
+					if (!cards1.length && !cards2.length) return;
 					for (const targetx of [player, target]) {
 						await targetx
 							.lose(targetx == player ? cards1 : cards2, ui.ordering, "visible")
@@ -80,7 +74,7 @@ game.import("card", function () {
 							switch (get.sgn(att)) {
 								case 1: //这里的ai写得很糙
 									const cards = cards1.concat(cards2),
-										cardsx = cards.randomGets(Math.floor(cards.length / 2));
+										cardsx = cards.filter(card => 8 - get.value(card, target));
 									return [cardsx, cards.removeArray(cardsx)];
 								case 0:
 								case -1:
@@ -97,6 +91,24 @@ game.import("card", function () {
 						if (num > 0) await target.draw();
 						else if (num < 0) await player.draw();
 					}
+				},
+				ai: {
+					order: 5,
+					tag: {
+						loseCard: 1,
+						gain: 1,
+					},
+					wuxie(target, card, player, viewer) {
+						if (get.attitude(player, target) > 0 && get.attitude(viewer, player) > 0) {
+							return 0;
+						}
+					},
+					result: {
+						target(player, target) {
+							if (get.attitude(player, target) <= 0) return 0;
+							return 1 + target.countCards("h");
+						},
+					},
 				},
 			},
 			//两肋插刀照搬增兵减灶ai
@@ -132,7 +144,7 @@ game.import("card", function () {
 					},
 				},
 			},
-			//劝酒无ai
+			//劝酒ai不完善
 			khquanjiu: {
 				audio: true,
 				fullskin: true,
@@ -154,8 +166,37 @@ game.import("card", function () {
 						.forResult();
 					if (!result.bool) await event.target.loseHp();
 				},
+				ai: {
+					wuxie(target, card, player, viewer, status) {
+						let att = get.attitude(viewer, target),
+							eff = get.effect(target, card, player, target);
+						if (Math.abs(att) < 1 || status * eff * att >= 0) return 0;
+						return 1;
+					},
+					basic: {
+						order: 7.2,
+						useful: [5, 1],
+						value: 5,
+					},
+					result: {
+						player(player, target) {
+							let res = 0,
+								att = get.sgnAttitude(player, target);
+							res -= att * (0.8 * target.countCards("hs") + 0.6 * target.countCards("e") + 3.6);
+							return res;
+						},
+						target(player, target) {
+							return -1;
+						},
+					},
+					tag: {
+						respond: 1,
+						multitarget: 1,
+						multineg: 1,
+					},
+				},
 			},
-			//落井下石无ai
+			//落井下石ai很粗糙
 			luojing: {
 				global: "luojing_skill",
 				audio: true,
@@ -164,9 +205,9 @@ game.import("card", function () {
 				ai: {
 					basic: {
 						useful: [6, 4, 3],
-						value: [6, 4, 3],
+						value: 9,
 					},
-					result: { player: 1 },
+					result: { target: -1 },
 					expose: 0.2,
 				},
 				filterTarget(card, player, target) {
@@ -177,6 +218,12 @@ game.import("card", function () {
 					if (evt.player == target) {
 						evt.set("skipTao", true);
 					}
+					player
+						.when({ global: "dyingAfter" })
+						.filter(evtx => evtx == evt)
+						.then(() => {
+							player.draw();
+						});
 				},
 			},
 			//红运当头用的树上开花的ai
@@ -184,16 +231,12 @@ game.import("card", function () {
 				enable: true,
 				fullskin: true,
 				type: "trick",
-				selectTarget: 2,
 				toself: true,
-				complexTarget:true,
 				filterTarget(card, player, target) {
-					const selected = ui.selected.targets,
-						bool1 = target == player,
-						bool2 = target != player && target.countCards("h");
-					if (!selected.length) return bool1 || bool2;
-					if (selected.includes(player)) return bool2;
-					else return bool1;
+					return target != player && target.countCards("h");
+				},
+				changeTarget(player, targets) {
+					targets.push(player);
 				},
 				modTarget: true,
 				async content(event, trigger, player) {
@@ -247,9 +290,6 @@ game.import("card", function () {
 				fullskin: true,
 				type: "trick",
 				wuxieable: true,
-				savable(card, player, dying) {
-					return dying != player;
-				},
 				filterTarget(card, player, target) {
 					return player != target && target.isDying();
 				},
@@ -269,7 +309,7 @@ game.import("card", function () {
 					result: { target: 1 },
 				},
 			},
-			//雷公没ai
+			//雷公ai不完善
 			leigong: {
 				global: ["leigong_skill"],
 				audio: true,
@@ -281,6 +321,31 @@ game.import("card", function () {
 				reverseOrder: true,
 				content() {
 					target.executeDelayCardEffect("shandian");
+				},
+				ai: {
+					wuxie(target, card, player, viewer, status) {
+						let att = get.attitude(viewer, target),
+							eff = get.effect(target, card, player, target);
+						if (Math.abs(att) < 1 || status * eff * att >= 0) return 0;
+						return 1;
+					},
+					basic: {
+						order: 4,
+						useful: [5, 1],
+						value: 4,
+					},
+					result: {
+						target(player, target) {
+							return -1;
+						},
+					},
+					tag: {
+						damage: 0.16,
+						thunderDamage: 0.16,
+						natureDamage: 0.16,
+						multitarget: 1,
+						multineg: 1,
+					},
 				},
 			},
 			//有难同当照搬铁索ai
@@ -357,9 +422,7 @@ game.import("card", function () {
 		skill: {
 			luojing_skill: {
 				trigger: { player: "dying" },
-				priority: 5,
-				popup: false,
-				forced: true,
+				priority: 10,
 				silent: true,
 				forceLoad: true,
 				forceDie: true,
@@ -403,11 +466,11 @@ game.import("card", function () {
 					event._global_waiting = true;
 					let time = 90000;
 					if (lib.configOL && lib.configOL.choose_timeout) time = parseInt(lib.configOL.choose_timeout) * 1000;
-					targets.forEach(current => current.showTimer(time));
+					game.filterPlayer().forEach(current => current.showTimer(time));
 					//先处理单机的他人控制玩家/AI玩家
-					if (!luojing_ok && locals.length > 0) {
+					if (locals.length > 0) {
 						for (const current of locals) {
-							const result = await lib.skill.luojing_skill.chooseToUse(current, source).forResult();
+							const result = await lib.skill.luojing_skill.chooseToUse(current, source).set("nouse", true).forResult();
 							if (result && result.bool) {
 								luojing_ok = current;
 								results[current.playerid] = result;
@@ -415,10 +478,11 @@ game.import("card", function () {
 						}
 					}
 					//再处理人类玩家
-					if (humans.length > 0) {
+					if (humans.length > 0 && !luojing_ok) {
 						const solve = function (resolve, reject) {
 							return function (result, player) {
 								if (result && result.bool && !luojing_ok) {
+									game.broadcast("cancel", eventId);
 									luojing_ok = player;
 									results[player.playerid] = result;
 									resolve();
@@ -436,7 +500,7 @@ game.import("card", function () {
 										const next = lib.skill.luojing_skill.chooseToUse(current, source, eventId);
 										const solver = solve(resolve, reject);
 										if (_status.connectMode) game.me.wait(solver);
-										const result = await next.forResult();
+										const result = await next.set("nouse", true).forResult();
 										if (_status.connectMode && !luojing_ok) game.me.unwait(result, current);
 										else solver(result, current);
 									}
@@ -447,39 +511,112 @@ game.import("card", function () {
 					}
 					//清除读条
 					delete event._global_waiting;
-					for (const i of targets) {
+					for (const i of game.filterPlayer()) {
 						i.hideTimer();
 					}
-					if (luojing_ok.isOnline()) await luojing_ok.useResult(results[luojing_ok.playerid]);
+					await luojing_ok.useResult(results[luojing_ok.playerid]);
 					//await game.delay();
-					await luojing_ok.draw();
+					//await luojing_ok.draw();
 				},
 			},
-			/*shengsi_skill: {
-				trigger: { global: "dying" },
-				forced: true,
-				priority: 10,
-				filter(event, player) {
+			shengsi_skill: {
+				trigger: { player: "dying" },
+				silent: true,
+				priority: 6,
+				/*filter(event, player) {
 					return player.hasUsableCard("shengsi") && player != event.player;
-				},
-				content() {
-					const next = player.chooseToUse();
-					next.set("prompt", "是否对" + get.translation(trigger.player) + "使用【生死与共】？");
+				},*/
+				chooseToUse(current, source, eventId) {
+					const next = current.chooseToUse();
+					next.set("prompt", "是否对" + get.translation(source) + "使用【生死与共】？");
 					next.set("filterCard", function (card, player) {
 						if (get.name(card) != "shengsi") return false;
 						return lib.filter.cardEnabled(card, player, "forceEnable");
 					});
 					next.set("filterTarget", function (card, player, target) {
-						if (target != _status.event.sourcex) return false;// && !ui.selected.targets.includes(_status.event.sourcex)
+						if (target != _status.event.sourcex && !ui.selected.targets.includes(_status.event.sourcex)) return false; //
 						return lib.filter.targetEnabled.apply(this, arguments);
 					});
-					next.set("sourcex", trigger.player);
-					next.set("goon", get.attitude(player, trigger.player));
+					next.set("sourcex", source);
+					next.set("goon", get.attitude(current, source));
 					next.set("ai1", function (card) {
 						return _status.event.goon;
 					});
+					next.set("id", eventId);
+					next.set("_global_waiting", true);
+					return next;
 				},
-			},*/
+				async content(event, trigger, player) {
+					const source = trigger.player,
+						targets = game.filterPlayer(target => target != source).sortBySeat();
+					if (!targets.some(target => target.hasUsableCard("shengsi"))) return;
+					//处理问题
+					let shengsi_ok = undefined,
+						results = {};
+					//人类和AI
+					let humans = targets.filter(current => current === game.me || current.isOnline());
+					let locals = targets.slice(0).randomSort();
+					locals.removeArray(humans);
+					const eventId = get.id();
+					const send = (current, source, eventId) => {
+						lib.skill.shengsi_skill.chooseToUse(current, source, eventId);
+						game.resume();
+					};
+					//让读条不消失并显示读条
+					event._global_waiting = true;
+					let time = 90000;
+					if (lib.configOL && lib.configOL.choose_timeout) time = parseInt(lib.configOL.choose_timeout) * 1000;
+					game.filterPlayer().forEach(current => current.showTimer(time));
+					//先处理单机的他人控制玩家/AI玩家
+					if (locals.length > 0) {
+						for (const current of locals) {
+							const result = await lib.skill.shengsi_skill.chooseToUse(current, source).set("nouse", true).forResult();
+							if (result && result.bool) {
+								shengsi_ok = current;
+								results[current.playerid] = result;
+							}
+						}
+					}
+					//再处理人类玩家
+					if (humans.length > 0 && !shengsi_ok) {
+						const solve = function (resolve, reject) {
+							return function (result, player) {
+								if (result && result.bool && !shengsi_ok) {
+									game.broadcast("cancel", eventId);
+									shengsi_ok = player;
+									results[player.playerid] = result;
+									resolve();
+								} else reject();
+							};
+						};
+						//等待第一位使用（兑现Promise）的玩家，若不使用（Promise被拒绝）则继续等待
+						await Promise.any(
+							humans.map(current => {
+								return new Promise(async (resolve, reject) => {
+									if (current.isOnline()) {
+										current.send(send, current, source, eventId);
+										current.wait(solve(resolve, reject));
+									} else {
+										const next = lib.skill.shengsi_skill.chooseToUse(current, source, eventId);
+										const solver = solve(resolve, reject);
+										if (_status.connectMode) game.me.wait(solver);
+										const result = await next.set("nouse", true).forResult();
+										if (_status.connectMode && !shengsi_ok) game.me.unwait(result, current);
+										else solver(result, current);
+									}
+								});
+							})
+						).catch(() => {});
+						game.broadcastAll("cancel", eventId);
+					}
+					//清除读条
+					delete event._global_waiting;
+					for (const i of game.filterPlayer()) {
+						i.hideTimer();
+					}
+					await shengsi_ok.useResult(results[shengsi_ok.playerid]);
+				},
+			},
 			shengsi_debuff: {
 				charlotte: true,
 				forced: true,
