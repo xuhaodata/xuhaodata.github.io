@@ -482,7 +482,7 @@ const skills = {
 				.set("ai", () => get.event().list.length - 1)
 				.set("list", list)
 				.forResult();
-			if (typeof result.index !== "number") return;
+			if (typeof result?.index !== "number") return;
 			let num = result.index + 1,
 				judge = [];
 			while (num--) {

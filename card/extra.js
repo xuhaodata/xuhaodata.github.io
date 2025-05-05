@@ -622,7 +622,7 @@ game.import("card", function () {
 						}
 					}
 					game.broadcast(
-						function (muniu, cards) {
+						(muniu, cards) => {
 							muniu.storages = cards;
 						},
 						muniu,
@@ -700,13 +700,13 @@ game.import("card", function () {
 									event.finish();
 									return;
 								}
-								if (muniu.storages == undefined) muniu.storages = [];
-								if (!muniu.storage) muniu.storage = {};
+								muniu.storages ??= [];
+								muniu.storage ??= {};
 								if (typeof muniu.storage.used != "number") muniu.storage.used = 0;
 								muniu.storage.used++;
 								muniu.storages.push(event.cards[0]);
 								game.broadcast(
-									function (muniu, cards) {
+									(muniu, cards) => {
 										muniu.storages = cards;
 									},
 									muniu,
@@ -714,38 +714,34 @@ game.import("card", function () {
 								);
 								await game.delayx();
 								player.updateMarks();
-								const players = game.filterPlayer(function (current) {
-									if (current.canEquip(muniu) && current != player && !current.isTurnedOver() && get.attitude(player, current) >= 3 && get.attitude(current, player) >= 3) {
-										return true;
-									}
+								const players = game.filterPlayer(current => {
+									return current.canEquip(muniu) && current != player && !current.isTurnedOver() && get.attitude(player, current) >= 3 && get.attitude(current, player) >= 3;
 								});
 								players.sort(lib.sort.seat);
 								const choice = players[0];
 								const next = player
-									.chooseTarget("是否移动木牛流马？", function (card, player, target) {
+									.chooseTarget("是否移动木牛流马？", (card, player, target) => {
 										return !target.isMin() && player != target && target.canEquip(_status.event.muniu);
 									})
 									.set("muniu", muniu);
-								next.set("ai", function (target) {
+								next.set("ai", target => {
 									return target == _status.event.choice ? 1 : -1;
 								});
 								next.set("choice", choice);
 								const { result } = await next;
-								if (result.bool) {
+								if (result?.bool && result?.targets?.length) {
 									const card = player.getCards("e", i => i[i.cardSymbol] == muniu)[0];
 									if (card) {
-										result.targets[0].equip(card);
+										await result.targets[0].equip(card);
 										player.$give(card, result.targets[0]);
 										player.line(result.targets, "green");
-										game.delay();
+										await game.delay();
 									}
 								} else {
 									player.updateMarks();
 								}
 							},
-							ai: {
-								result: { player: 1 },
-							},
+							ai: { result: { player: 1 } },
 						};
 					},
 					prompt(links, player) {
@@ -755,9 +751,7 @@ game.import("card", function () {
 				ai: {
 					order: 1,
 					expose: 0.1,
-					result: {
-						player: 1,
-					},
+					result: { player: 1 },
 				},
 				mod: {
 					cardEnabled2(card, player) {
