@@ -11828,7 +11828,6 @@ export class Player extends HTMLDivElement {
 						}
 						if (id == "ordering" && ["phaseJudge", "executeDelayCardEffect"].includes(event.getParent().name)) return false;
 						if (id != "judge") {
-							game.log(id);
 							return true;
 						}
 					};
@@ -11940,7 +11939,6 @@ export class Player extends HTMLDivElement {
 							} else if (card._destroyed_Virtua === true) return true;
 						}
 						if (id != "equip") {
-							game.log(id);
 							return true;
 						}
 					};
