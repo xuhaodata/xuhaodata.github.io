@@ -13250,14 +13250,98 @@ export class Library {
 
 						player.directgain(info.handcards);
 						lib.playerOL[i] = player;
-						if (info.vcardsMap) {
+						/*if (info.vcardsMap) {
 							for (var i = 0; i < info.vcardsMap.equips.length; i++) {
 								player.addVirtualEquip(info.vcardsMap.equips[i], info.vcardsMap.equips[i].cards);
 							}
 							for (var i = 0; i < info.vcardsMap.judges.length; i++) {
 								player.addVirtualJudge(info.vcardsMap.judges[i], info.vcardsMap.judges[i].cards);
 							}
+						}*/
+						for (var i = 0; i < info.equips.length; i++) {
+							let card = info.equips[i],
+								id = card.cardid,
+								map = info.equips_map[id];
+							card.fix();
+							card.style.transform = "";
+							card.classList.remove("drawinghidden");
+							delete card._transform;
+							if (map.isViewAsCard) {
+								card.isViewAsCard = true;
+								if (map._destroyed_Virtua) card._destroyed_Virtua = map._destroyed_Virtua;
+								if (map.destroyed) card.destroyed = map.destroyed;
+								card.cards = map?.vcard?.cards || [];
+								card.viewAs = map?.vcard?.name || card.name;
+								card.classList.add("fakeequip");
+							} else {
+								card.classList.remove("fakeequip");
+								delete card.viewAs;
+							}
+							if (map.name2) card.node.name2.innerHTML = map.name2;
+							if (map.vcard) {
+								const cardSymbol = Symbol("card");
+								card.cardSymbol = cardSymbol;
+								card[cardSymbol] = map.vcard;
+								if (map.vcard.subtypes) card.subtypes = map.vcard.subtypes;
+								if (map.vcard.cards?.length) {
+									for (let j of map.vcard.cards) {
+										j.goto(ui.special);
+										j.destiny = player.node.equips;
+									}
+								}
+								player.addVirtualEquip(map.vcard, map.vcard.cards);
+							}
+							let equipped = false,
+								equipNum = get.equipNum(card);
+							if (player.node.equips.childNodes.length) {
+								for (let i = 0; i < player.node.equips.childNodes.length; i++) {
+									if (get.equipNum(player.node.equips.childNodes[i]) >= equipNum) {
+										equipped = true;
+										player.node.equips.insertBefore(card, player.node.equips.childNodes[i]);
+										break;
+									}
+								}
+							}
+							if (equipped === false) {
+								player.node.equips.appendChild(card);
+							}
 						}
+						for (var i = 0; i < info.judges.length; i++) {
+							let card = info.judges[i],
+								id = card.cardid,
+								map = info.judges_map[id];
+							card.fix();
+							card.style.transform = "";
+							card.classList.remove("drawinghidden");
+							delete card._transform;
+							if (map.isViewAsCard) {
+								card.isViewAsCard = true;
+								if (map._destroyed_Virtua) card._destroyed_Virtua = map._destroyed_Virtua;
+								if (map.destroyed) card.destroyed = map.destroyed;
+								card.cards = map?.vcard?.cards || [];
+								card.viewAs = map?.vcard?.name || card.name;
+								card.classList.add("fakejudge");
+							} else {
+								card.classList.remove("fakejudge");
+								delete card.viewAs;
+							}
+							if (map.name2) card.node.name2.innerHTML = map.name2;
+							if (map.vcard) {
+								const cardSymbol = Symbol("card");
+								card.cardSymbol = cardSymbol;
+								card[cardSymbol] = map.vcard;
+								if (map.vcard.subtypes) card.subtypes = map.vcard.subtypes;
+								if (map.vcard.cards?.length) {
+									for (let j of map.vcard.cards) {
+										j.goto(ui.special);
+										j.destiny = player.node.judges;
+									}
+								}
+								player.addVirtualJudge(map.vcard, map.vcard.cards);
+							}
+							player.node.judges.insertBefore(card, player.node.judges.firstChild);
+						}
+
 						for (var i = 0; i < info.handcards.length; i++) {
 							info.handcards[i].addGaintag(info.gaintag[i]);
 						}

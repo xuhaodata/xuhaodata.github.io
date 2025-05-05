@@ -783,8 +783,8 @@ const skills = {
 					.set("ai", card => {
 						const { player, target } = get.event();
 						const att = get.attitude(player, target);
-						const eff = get.effect(player, get.event().getTrigger().card, target, player);
-						if (att > 0 || eff > 0) return 0;
+						const eff = get.damageEffect(player, target, player);
+						if (eff > 0) return 0;
 						return 7 - get.value(card);
 					})
 					.forResult();
