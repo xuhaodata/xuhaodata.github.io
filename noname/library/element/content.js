@@ -8566,7 +8566,7 @@ player.removeVirtualEquip(card);
 				}
 				cards[num].fix();
 				cards[num].style.transform = "";
-				cards[num].addGaintag(event.gaintag);
+				event.gaintag.forEach(tag => cards[num].addGaintag(tag));
 				if (event.knowers) {
 					cards[num].addKnower(event.knowers); //添加事件设定的知情者。
 				}
