@@ -5250,7 +5250,7 @@ const skills = {
 		},
 		logTarget: "player",
 		logAudio(event, player) {
-			return "twxiayong" + (event.player === player ? 1 : 2) + ".mp3";
+			return "twxiayong" + (lib.skill.twxiayong.audioname.includes(player.name) ? "_" + player.name : "") + (event.player === player ? 1 : 2) + ".mp3";
 		},
 		locked: true,
 		forced: true,

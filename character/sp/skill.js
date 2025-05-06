@@ -4052,7 +4052,7 @@ const skills = {
 			if (source?.isIn()) {
 				player.line(source);
 				const resultx = await source
-					.chooseToGive(player, "e", "筮算：交给" + get.translation(player) + "一张装备区的牌，或失去1点体力或将武将牌翻面")
+					.chooseToGive(player, "e", "蓍算：交给" + get.translation(player) + "一张装备区的牌，或失去1点体力或将武将牌翻面")
 					.set("ai", card => {
 						const player = get.player();
 						if (get.effect(player, { name: "losehp" }, player, player) > 0 || player.isTurnedOver()) return 0;
@@ -4116,6 +4116,7 @@ const skills = {
 		},
 	},
 	olzonglve: {
+		audio: 2,
 		trigger: { source: "damageSource" },
 		filter(event, player) {
 			if (event.player === player || !event.player.isIn() || !event.player.countCards("hej")) return false;
@@ -4136,6 +4137,7 @@ const skills = {
 		group: "olzonglve_wusheng",
 		subSkill: {
 			wusheng: {
+				audio: "olzonglve",
 				enable: "phaseUse",
 				usable: 1,
 				filter(event, player) {

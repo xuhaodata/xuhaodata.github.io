@@ -1,4 +1,13 @@
 export default {
+	"#olguifu1": "天命在我，何须急于一时。",
+	"#olguifu2": "天数已定，如渊潜龙！",
+	"#olmoubian1": "别跟我谈什么对错！我的灵魂，即是我的正义！",
+	"#olmoubian2": "我这把剑，该见见血了！",
+	"#olmoubian3": "无天无界，我就是天命！",
+	"#olmoubian4": "自今日起，我剑由我不由人！",
+	"#olzhouxi1": "你降，不降，都得死！",
+	"#olzhouxi2": "我就像这夜，终将吞噬一切！",
+	"#dm_simayi:die": "哈哈哈哈哈哈，天数……我还是输给了天数？",
 	"#rezhuikong_ol_fuhuanghou1": "曹贼一日不除，旦夕如不终日。",
 	"#rezhuikong_ol_fuhuanghou2": "见许田曹瞒骖乘，叫人如芒在背。",
 	"#olqiuyuan1": "我父伏完常有杀操之心，今当修书一封，秘密图之。",
