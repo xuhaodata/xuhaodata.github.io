@@ -132,7 +132,7 @@ game.import("card", function () {
 				ai: {
 					order: 7,
 					useful: 4,
-					value: 10,
+					value: 9,
 					tag: {
 						draw: 2,
 					},
@@ -217,10 +217,11 @@ game.import("card", function () {
 					const evt = event.getParent("dying");
 					if (evt.player == target) {
 						evt.set("skipTao", true);
+						evt.untrigger();
 					}
 					player
-						.when({ global: "dyingAfter" })
-						.filter(evtx => evtx == evt)
+						.when({ global: "dieAfter" })
+						.filter(evtx => evtx.player == target)
 						.then(() => {
 							player.draw();
 						});
@@ -287,9 +288,9 @@ game.import("card", function () {
 			},
 			//生死与共照搬草船的ai
 			shengsi: {
+				global: "shengsi_skill",
 				fullskin: true,
 				type: "trick",
-				wuxieable: true,
 				filterTarget(card, player, target) {
 					return player != target && target.isDying();
 				},
@@ -319,8 +320,20 @@ game.import("card", function () {
 				selectTarget: -1,
 				filterTarget: true,
 				reverseOrder: true,
-				content() {
-					target.executeDelayCardEffect("shandian");
+				async content(event, trigger, player) {
+					const target = event.target,
+						cardname = "shandian";
+					const VCard = ui.create.card();
+					VCard._destroy = true;
+					VCard.expired = true;
+					const info = lib.card[cardname];
+					VCard.init(["", "", cardname, info && info.cardnature]);
+					target.$phaseJudge(VCard);
+					target.popup(cardname, "thunder");
+					const result = await target.judge(VCard).forResult();
+					ui.clear();
+					VCard.delete();
+					if (result.bool == false) await target.damage(3, "thunder", "nosource");
 				},
 				ai: {
 					wuxie(target, card, player, viewer, status) {
@@ -360,7 +373,7 @@ game.import("card", function () {
 				},
 				reverseOrder: true,
 				content() {
-					target.link();
+					if (!target.isLinked()) target.link(true);
 				},
 				//照搬铁索的ai
 				ai: {
@@ -422,11 +435,11 @@ game.import("card", function () {
 		skill: {
 			luojing_skill: {
 				trigger: { player: "dying" },
-				priority: 10,
+				firstDo: true,
 				silent: true,
 				forceLoad: true,
 				forceDie: true,
-				chooseToUse(current, source, eventId) {
+				chooseToUse(current, source, eventId, eventData) {
 					const next = current.chooseToUse();
 					next.set("prompt", "是否对" + get.translation(source) + "使用【落井下石】？");
 					next.set("filterCard", function (card, player) {
@@ -438,12 +451,18 @@ game.import("card", function () {
 						return lib.filter.targetEnabled.apply(this, arguments);
 					});
 					next.set("sourcex", source);
+					next.set("targetRequired", true);
 					next.set("goon", -get.attitude(current, source));
 					next.set("ai1", function (card) {
 						return _status.event.goon;
 					});
 					next.set("id", eventId);
 					next.set("_global_waiting", true);
+					if (eventData) {
+						for (let key in eventData) {
+							if (next[key] === undefined) next[key] = eventData[key];
+						}
+					}
 					return next;
 				},
 				async content(event, trigger, player) {
@@ -451,40 +470,44 @@ game.import("card", function () {
 						targets = game.filterPlayer(target => target != source).sortBySeat();
 					if (!targets.some(target => target.hasUsableCard("luojing"))) return;
 					//处理问题
-					let luojing_ok = undefined,
-						results = {};
+					let use_player = undefined,
+						use_result = undefined;
 					//人类和AI
-					let humans = targets.filter(current => current === game.me || current.isOnline());
+					let humans = targets.filter(current => (current === game.me || current.isOnline()) && current.hasUsableCard("luojing"));
 					let locals = targets.slice(0).randomSort();
 					locals.removeArray(humans);
 					const eventId = get.id();
-					const send = (current, source, eventId) => {
-						lib.skill.luojing_skill.chooseToUse(current, source, eventId);
+					const send = (current, source, eventId, eventData) => {
+						lib.skill[event.name].chooseToUse(current, source, eventId, eventData);
 						game.resume();
 					};
 					//让读条不消失并显示读条
 					event._global_waiting = true;
 					let time = 90000;
 					if (lib.configOL && lib.configOL.choose_timeout) time = parseInt(lib.configOL.choose_timeout) * 1000;
-					game.filterPlayer().forEach(current => current.showTimer(time));
+					targets.forEach(current => current.showTimer(time));
 					//先处理单机的他人控制玩家/AI玩家
 					if (locals.length > 0) {
 						for (const current of locals) {
-							const result = await lib.skill.luojing_skill.chooseToUse(current, source).set("nouse", true).forResult();
+							//人机和主机都必须nouse，不然会出现一张牌使用两次的情况
+							const result = await lib.skill[event.name].chooseToUse(current, source).set("nouse", true).forResult();
 							if (result && result.bool) {
-								luojing_ok = current;
-								results[current.playerid] = result;
+								use_player = current;
+								use_result = result;
+								break;
 							}
 						}
 					}
 					//再处理人类玩家
-					if (humans.length > 0 && !luojing_ok) {
+					if (humans.length > 0 && !use_player) {
 						const solve = function (resolve, reject) {
 							return function (result, player) {
-								if (result && result.bool && !luojing_ok) {
+								if (result && result.bool && !use_player) {
+									//关闭窗口
 									game.broadcast("cancel", eventId);
-									luojing_ok = player;
-									results[player.playerid] = result;
+									//存储结果
+									use_player = player;
+									use_result = result;
 									resolve();
 								} else reject();
 							};
@@ -494,14 +517,27 @@ game.import("card", function () {
 							humans.map(current => {
 								return new Promise(async (resolve, reject) => {
 									if (current.isOnline()) {
-										current.send(send, current, source, eventId);
+										//得记得处理onchooseToUse，不然有些印牌技能会炸
+										const onchooseToUse_data = current.chooseToUse();
+										onchooseToUse_data.setContent(async function () {});
+										event.next.remove(onchooseToUse_data);
+										var skills = current.getSkills("invisible").concat(lib.skill.global);
+										game.expandSkills(skills);
+										for (let skill of skills) {
+											var info = lib.skill[skill];
+											if (info?.onChooseToUse) {
+												info.onChooseToUse(onchooseToUse_data);
+											}
+										}
+										onchooseToUse_data.cancel(null, null, true);
+										current.send(send, current, source, eventId, onchooseToUse_data);
 										current.wait(solve(resolve, reject));
 									} else {
-										const next = lib.skill.luojing_skill.chooseToUse(current, source, eventId);
+										const next = lib.skill[event.name].chooseToUse(current, source, eventId);
 										const solver = solve(resolve, reject);
 										if (_status.connectMode) game.me.wait(solver);
 										const result = await next.set("nouse", true).forResult();
-										if (_status.connectMode && !luojing_ok) game.me.unwait(result, current);
+										if (_status.connectMode && !use_player) game.me.unwait(result, current);
 										else solver(result, current);
 									}
 								});
@@ -511,22 +547,32 @@ game.import("card", function () {
 					}
 					//清除读条
 					delete event._global_waiting;
-					for (const i of game.filterPlayer()) {
+					for (const i of targets) {
 						i.hideTimer();
 					}
-					await luojing_ok.useResult(results[luojing_ok.playerid]);
-					//await game.delay();
-					//await luojing_ok.draw();
+					//处理结果
+					const result = use_result;
+					if (result && result._sendskill) lib.skill[result._sendskill[0]] = result._sendskill[1];
+					if (use_player && result && result.skill) {
+						//有些印牌技能是有precontent的
+						const info = get.info(result.skill);
+						if (info && info.precontent && !game.online) {
+							const next = game.createEvent("pre_" + result.skill);
+							next.setContent(info.precontent);
+							next.set("result", result);
+							next.set("player", use_player);
+							await next;
+						}
+					}
+					if (use_player) await use_player.useResult(result);
 				},
 			},
 			shengsi_skill: {
 				trigger: { player: "dying" },
 				silent: true,
-				priority: 6,
-				/*filter(event, player) {
-					return player.hasUsableCard("shengsi") && player != event.player;
-				},*/
-				chooseToUse(current, source, eventId) {
+				priority: -100,
+				xxxresult: ["shengsi_skill", "shengsi", "useResult"],
+				chooseToUse(current, source, eventId, eventData) {
 					const next = current.chooseToUse();
 					next.set("prompt", "是否对" + get.translation(source) + "使用【生死与共】？");
 					next.set("filterCard", function (card, player) {
@@ -538,12 +584,18 @@ game.import("card", function () {
 						return lib.filter.targetEnabled.apply(this, arguments);
 					});
 					next.set("sourcex", source);
+					next.set("targetRequired", true);
 					next.set("goon", get.attitude(current, source));
 					next.set("ai1", function (card) {
 						return _status.event.goon;
 					});
 					next.set("id", eventId);
 					next.set("_global_waiting", true);
+					if (eventData) {
+						for (let key in eventData) {
+							if (next[key] === undefined) next[key] = eventData[key];
+						}
+					}
 					return next;
 				},
 				async content(event, trigger, player) {
@@ -551,40 +603,44 @@ game.import("card", function () {
 						targets = game.filterPlayer(target => target != source).sortBySeat();
 					if (!targets.some(target => target.hasUsableCard("shengsi"))) return;
 					//处理问题
-					let shengsi_ok = undefined,
-						results = {};
+					let use_player = undefined,
+						use_result = undefined;
 					//人类和AI
-					let humans = targets.filter(current => current === game.me || current.isOnline());
+					let humans = targets.filter(current => (current === game.me || current.isOnline()) && current.hasUsableCard("shengsi"));
 					let locals = targets.slice(0).randomSort();
 					locals.removeArray(humans);
 					const eventId = get.id();
-					const send = (current, source, eventId) => {
-						lib.skill.shengsi_skill.chooseToUse(current, source, eventId);
+					const send = (current, source, eventId, eventData) => {
+						lib.skill[event.name].chooseToUse(current, source, eventId, eventData);
 						game.resume();
 					};
 					//让读条不消失并显示读条
 					event._global_waiting = true;
 					let time = 90000;
 					if (lib.configOL && lib.configOL.choose_timeout) time = parseInt(lib.configOL.choose_timeout) * 1000;
-					game.filterPlayer().forEach(current => current.showTimer(time));
+					targets.forEach(current => current.showTimer(time));
 					//先处理单机的他人控制玩家/AI玩家
 					if (locals.length > 0) {
 						for (const current of locals) {
-							const result = await lib.skill.shengsi_skill.chooseToUse(current, source).set("nouse", true).forResult();
+							//人机和主机都必须nouse，不然会出现一张牌使用两次的情况
+							const result = await lib.skill[event.name].chooseToUse(current, source).set("nouse", true).forResult();
 							if (result && result.bool) {
-								shengsi_ok = current;
-								results[current.playerid] = result;
+								use_player = current;
+								use_result = result;
+								break;
 							}
 						}
 					}
 					//再处理人类玩家
-					if (humans.length > 0 && !shengsi_ok) {
+					if (humans.length > 0 && !use_player) {
 						const solve = function (resolve, reject) {
 							return function (result, player) {
-								if (result && result.bool && !shengsi_ok) {
+								if (result && result.bool && !use_player) {
+									//关闭窗口
 									game.broadcast("cancel", eventId);
-									shengsi_ok = player;
-									results[player.playerid] = result;
+									//存储结果
+									use_player = player;
+									use_result = result;
 									resolve();
 								} else reject();
 							};
@@ -594,14 +650,27 @@ game.import("card", function () {
 							humans.map(current => {
 								return new Promise(async (resolve, reject) => {
 									if (current.isOnline()) {
-										current.send(send, current, source, eventId);
+										//得记得处理onchooseToUse，不然有些印牌技能会炸
+										const onchooseToUse_data = current.chooseToUse();
+										onchooseToUse_data.setContent(async function () {});
+										event.next.remove(onchooseToUse_data);
+										var skills = current.getSkills("invisible").concat(lib.skill.global);
+										game.expandSkills(skills);
+										for (let skill of skills) {
+											var info = lib.skill[skill];
+											if (info?.onChooseToUse) {
+												info.onChooseToUse(onchooseToUse_data);
+											}
+										}
+										onchooseToUse_data.cancel(null, null, true);
+										current.send(send, current, source, eventId, onchooseToUse_data);
 										current.wait(solve(resolve, reject));
 									} else {
-										const next = lib.skill.shengsi_skill.chooseToUse(current, source, eventId);
+										const next = lib.skill[event.name].chooseToUse(current, source, eventId);
 										const solver = solve(resolve, reject);
 										if (_status.connectMode) game.me.wait(solver);
 										const result = await next.set("nouse", true).forResult();
-										if (_status.connectMode && !shengsi_ok) game.me.unwait(result, current);
+										if (_status.connectMode && !use_player) game.me.unwait(result, current);
 										else solver(result, current);
 									}
 								});
@@ -611,10 +680,24 @@ game.import("card", function () {
 					}
 					//清除读条
 					delete event._global_waiting;
-					for (const i of game.filterPlayer()) {
+					for (const i of targets) {
 						i.hideTimer();
 					}
-					await shengsi_ok.useResult(results[shengsi_ok.playerid]);
+					//处理结果
+					const result = use_result;
+					if (result && result._sendskill) lib.skill[result._sendskill[0]] = result._sendskill[1];
+					if (use_player && result && result.skill) {
+						//有些印牌技能是有precontent的
+						const info = get.info(result.skill);
+						if (info && info.precontent && !game.online) {
+							const next = game.createEvent("pre_" + result.skill);
+							next.setContent(info.precontent);
+							next.set("result", result);
+							next.set("player", use_player);
+							await next;
+						}
+					}
+					if (use_player) await use_player.useResult(result);
 				},
 			},
 			shengsi_debuff: {
@@ -663,7 +746,7 @@ game.import("card", function () {
 			luojing: "落井下石",
 			luojing_bg: "落",
 			luojing_skill: "落井下石",
-			luojing_info: "一名其他角色进入濒死状态时，对其使用，结束其濒死结算，你摸一张牌。",
+			luojing_info: "一名其他角色进入濒死状态时，对其使用，结束其濒死结算，其死亡后你摸一张牌。",
 			hongyun: "红运当头",
 			hongyun_bg: "红",
 			hongyun_info: "出牌阶段，对你和一名有手牌的其他角色使用，令你与其各弃置至多两张牌，从牌堆或弃牌堆中获得等量红桃牌。",

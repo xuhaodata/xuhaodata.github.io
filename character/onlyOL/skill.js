@@ -89,16 +89,7 @@ const skills = {
 								player.logSkill(skill);
 								player.addTempSkill(skill + "_used");
 								player.markAuto(skill + "_used", card.name);
-								player.when("useCard1").then(() => {
-									const stat = player.getStat().card,
-										card = trigger.card,
-										name = card.name;
-									if (card.storage?.olguifu_viewAs && trigger.addCount !== false) {
-										trigger.addCount = false;
-										if (typeof stat[name] === "number") stat[name]--;
-										//game.log(card,"不计入次数");
-									}
-								});
+								event.getParent().addCount = false;
 							},
 						};
 					},

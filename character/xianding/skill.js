@@ -988,7 +988,7 @@ const skills = {
 				.step(async (event, trigger, player) => {
 					let cards = game
 						.getGlobalHistory("cardMove", evt => {
-							if (evt.name == "lose") {
+							if (evt.name.indexOf("lose") == 0) {
 								if (evt.position !== ui.discardPile || evt.type === "discard") return false; //|| evt.getlx === false
 								return true;
 							} else if (evt.name == "cardsDiscard") {
@@ -1232,7 +1232,6 @@ const skills = {
 				.filter(evt => evt === trigger.getParent())
 				.then(() => {
 					player.removeSkill("dcsbxianshi_wuxie");
-					console.log(Array.from(ui.ordering.childNodes));
 					let cards = [];
 					let history = game.getGlobalHistory("everything", evt => {
 						if (evt == trigger) return true;

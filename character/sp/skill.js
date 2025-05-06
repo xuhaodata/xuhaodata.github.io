@@ -3172,7 +3172,7 @@ const skills = {
 							(player.countCards("he", card => {
 								if (get.position(card) === "h" && _status.connectMode) return true;
 								return lib.filter.cardDiscardable(card, player);
-							}) >= 2 && game.hasPlayer(target => target.isDamaged()))
+							}) >= 2 && game.hasPlayer(target => target != player))
 						);
 					},
 					async cost(event, trigger, player) {
@@ -8457,7 +8457,7 @@ const skills = {
 			const bolDialog = ["请选择替换的武将", [list, "character"]];
 			const { result } = await target.chooseButton(bolDialog).set("ai", button => {
 				const target = get.player();
-				const num = lib.skill.skill_zhangji_B.getNum(target.name);
+				let num = lib.skill.skill_zhangji_B.getNum(target.name);
 				if (target.name2 != undefined) num = Math.min(num, lib.skill.skill_zhangji_B.getNum(target.name2));
 				return lib.skill.skill_zhangji_B.getNum(button.link) - num;
 			});

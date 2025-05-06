@@ -4933,6 +4933,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			if (typeof event.dialog?.close == "function") event.dialog.close();
 			if (event.logSkill && event.result.bool && !game.online) {
 				if (typeof event.logSkill == "string") {
 					player.logSkill(event.logSkill);
@@ -4946,7 +4947,6 @@ player.removeVirtualEquip(card);
 				event.done.discarder = player;
 				await event.done;
 			}
-			if (typeof event.dialog?.close == "function") event.dialog.close();
 		},
 	],
 	gaincardMultiple: function () {

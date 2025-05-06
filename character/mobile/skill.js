@@ -1645,12 +1645,10 @@ const skills = {
 			return 6 - get.value(card);
 		},
 		precontent() {
+			event.getParent().addCount = false;
 			event.result._apply_args = {
 				oncard: (card, player) => {
 					const evt = get.event();
-					if (evt.addCount !== false) {
-						evt.addCount = false;
-					}
 					evt.directHit.addArray(
 						evt.targets.filter(target => {
 							return !target.hasCard(cardx => get.color(cardx, target) == get.color(card), "h");
