@@ -3179,9 +3179,7 @@ const skills = {
 						event.result = await player
 							.chooseCardTarget({
 								prompt: get.prompt2(event.name.slice(0, -"_cost".length)),
-								filterTarget(card, player, target) {
-									return target !== player && [player, target].some(current => current.isDamaged());
-								},
+								filterTarget: lib.filter.notMe,
 								filterCard: lib.filter.cardDiscardable,
 								selectCard: 2,
 								position: "he",

@@ -819,7 +819,7 @@ const skills = {
 				locked: false,
 				trigger: { source: "damageBegin1" },
 				filter(event, player) {
-					return event?.card?.name == "sha" && event.getParent(2).targets.includes(event.player) && event.notLink();
+					return event.notLink() && event?.card?.name == "sha" && event.getParent("useCard").targets?.includes(event.player);
 				},
 				logTarget: "player",
 				content() {
