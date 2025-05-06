@@ -416,7 +416,7 @@ const skills = {
 		animationColor: "thunder",
 		content() {
 			"step 0";
-			player.awakenSkill("rejuyi");
+			player.awakenSkill(event.name);
 			"step 1";
 			player.drawTo(player.maxHp);
 			"step 2";
@@ -504,10 +504,9 @@ const skills = {
 			});
 		},
 		limited: true,
-		mark: true,
 		content() {
 			"step 0";
-			player.awakenSkill("rexingshuai");
+			player.awakenSkill(event.name);
 			var targets = game.filterPlayer();
 			targets.sortBySeat(_status.currentPhase);
 			targets.remove(player);
@@ -1441,7 +1440,7 @@ const skills = {
 			return !stat || !stat.includes(target);
 		},
 		filter(event, player) {
-			return player.countCards("h") > 0 && game.hasPlayer(current => lib.skill.refuman.filterTarget(null, player, current));
+			return player.countCards("he") > 0 && game.hasPlayer(current => lib.skill.refuman.filterTarget(null, player, current));
 		},
 		filterCard: lib.filter.cardDiscardable,
 		position: "he",
@@ -3870,7 +3869,7 @@ const skills = {
 			return player.isDamaged();
 		},
 		content() {
-			player.awakenSkill("xsqianxin");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("rejianyan");
 		},
@@ -5400,7 +5399,7 @@ const skills = {
 		selectTarget: -1,
 		multiline: true,
 		contentBefore() {
-			player.awakenSkill("reluanwu");
+			player.awakenSkill(event.skill);
 		},
 		content() {
 			"step 0";
@@ -5698,7 +5697,7 @@ const skills = {
 			return player.getExpansions("xinquanji").length > 2;
 		},
 		content() {
-			player.awakenSkill("xinzili");
+			player.awakenSkill(event.name);
 			player.recover();
 			player.draw(2);
 			player.loseMaxHp();
@@ -5937,7 +5936,7 @@ const skills = {
 		delay: false,
 		content() {
 			"step 0";
-			player.awakenSkill("rexianzhou");
+			player.awakenSkill(event.name);
 			player.give(cards, target);
 			player.recover(cards.length);
 			"step 1";
@@ -6097,7 +6096,7 @@ const skills = {
 			return player.countCards("h") < player.maxHp;
 		},
 		content() {
-			player.awakenSkill("jiezhong");
+			player.awakenSkill(event.name);
 			player.draw(Math.min(5, player.maxHp - player.countCards("h")));
 		},
 	},
@@ -6241,19 +6240,17 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		audio: 2,
-		unique: true,
 		juexingji: true,
 		//priority:-10,
 		derivation: "reguanxing",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
 		forced: true,
 		filter(event, player) {
-			if (player.storage.zhiji) return false;
 			return player.countCards("h") == 0;
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("olzhiji");
+			player.awakenSkill(event.name);
 			player.chooseDrawRecover(2, true);
 			"step 1";
 			player.loseMaxHp();
@@ -7035,7 +7032,7 @@ const skills = {
 		filterTarget: true,
 		content() {
 			"step 0";
-			player.awakenSkill("xinjiefan");
+			player.awakenSkill(event.name);
 			event.players = game.filterPlayer(function (current) {
 				return current != target && current.inRange(target);
 			});
@@ -7625,7 +7622,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("yongjin");
+			player.awakenSkill(event.name);
 			event.count = 3;
 			event.cards = [];
 			"step 1";
@@ -8002,7 +7999,7 @@ const skills = {
 	olzaoxian: {
 		inherit: "zaoxian",
 		content() {
-			player.awakenSkill("olzaoxian");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("jixi");
 			player.insertPhase();
@@ -8913,7 +8910,7 @@ const skills = {
 			if (result.bool) {
 				var targets = result.targets.sortBySeat();
 				player.logSkill("wulie", targets);
-				player.awakenSkill("wulie");
+				player.awakenSkill(event.name);
 				player.loseHp(targets.length);
 				while (targets.length) {
 					targets[0].addSkill("wulie2");
@@ -9302,14 +9299,11 @@ const skills = {
 	},
 	oltishen: {
 		audio: "retishen",
-		unique: true,
-		mark: true,
 		skillAnimation: true,
 		animationColor: "soil",
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			if (player.storage.oltishen) return false;
 			return player.isDamaged();
 		},
 		check(event, player) {
@@ -9318,12 +9312,9 @@ const skills = {
 			return player.getDamagedHp() < game.roundNumber;
 		},
 		content() {
-			player.awakenSkill("oltishen");
+			player.awakenSkill(event.name);
 			player.recover(player.maxHp - player.hp);
 			player.draw(player.maxHp - player.hp);
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	rexuanfeng: {
@@ -9698,7 +9689,7 @@ const skills = {
 		},
 		content() {
 			player.markSkill("rejiushi_mark");
-			player.awakenSkill("chengzhang");
+			player.awakenSkill(event.name);
 			player.storage.chengzhang = true;
 			player.recover();
 			player.draw();
@@ -9929,17 +9920,11 @@ const skills = {
 	},
 	olniepan: {
 		audio: 2,
-		unique: true,
 		enable: "chooseToUse",
-		mark: true,
 		skillAnimation: true,
 		limited: true,
 		animationColor: "orange",
-		init(player) {
-			player.storage.olniepan = false;
-		},
 		filter(event, player) {
-			if (player.storage.olniepan) return false;
 			if (event.type == "dying") {
 				if (player != event.dying) return false;
 				return true;
@@ -9948,7 +9933,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("olniepan");
+			player.awakenSkill(event.name);
 			player.storage.olniepan = true;
 			player.discard(player.getCards("hej"));
 			"step 1";
@@ -9990,9 +9975,6 @@ const skills = {
 			threaten(player, target) {
 				if (!target.storage.olniepan) return 0.6;
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	rewurong: {
@@ -10489,7 +10471,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("olruoyu");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			"step 1";
 			if (player.hp < 3) player.recover(3 - player.hp);
@@ -12684,7 +12666,7 @@ const skills = {
 					filterTarget: lib.filter.notMe,
 					ai1(card) {
 						const player = get.player();
-						if (card.name != "du" && get.attitude(player, _status.currentPhase) < 0 && _status.currentPhase.needsToDiscard()) return -1;
+						if (card.name != "du" && get.attitude(player, _status.currentPhase) < 0 && _status.currentPhase?.needsToDiscard()) return -1;
 						for (var i = 0; i < ui.selected.cards.length; i++) {
 							if (get.type(ui.selected.cards[i]) == get.type(card) || (ui.selected.cards[i].name == "du" && card.name != "du")) return -1;
 						}
@@ -13614,7 +13596,7 @@ const skills = {
 			return false;
 		},
 		content() {
-			player.awakenSkill("qinxue");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.chooseDrawRecover(2, true);
 			player.addSkills("gongxin");
@@ -13893,7 +13875,7 @@ const skills = {
 			return player.hp < player.storage.retishen2 - 1;
 		},
 		content() {
-			player.awakenSkill("retishen");
+			player.awakenSkill(event.name);
 			player.recover(player.storage.retishen2 - player.hp);
 			player.draw(player.storage.retishen2 - player.hp);
 			player.storage.retishen = true;
@@ -14516,7 +14498,7 @@ const skills = {
 			return player.hp < player.maxHp;
 		},
 		content() {
-			player.awakenSkill("qianxin");
+			player.awakenSkill(event.name);
 			player.addSkills("jianyan");
 			player.loseMaxHp();
 		},
@@ -14631,8 +14613,6 @@ const skills = {
 		animationColor: "wood",
 		audio: 2,
 		audioname2: { heqi: "fenwei_heqi" },
-		unique: true,
-		mark: true,
 		limited: true,
 		trigger: { global: "useCardToPlayered" },
 		//priority:5,
@@ -14643,9 +14623,6 @@ const skills = {
 			if (event.targets.length < 2) return false;
 			if (player.storage.fenwei) return false;
 			return true;
-		},
-		init(player) {
-			player.storage.fenwei = false;
 		},
 		direct: true,
 		content() {
@@ -14664,15 +14641,12 @@ const skills = {
 				.set("targets", trigger.targets);
 			"step 1";
 			if (result.bool) {
-				player.awakenSkill("fenwei");
+				player.awakenSkill(event.name);
 				player.logSkill("fenwei", result.targets);
 				player.storage.fenwei = true;
 				trigger.getParent().excluded.addArray(result.targets);
 				game.delay();
 			}
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	chulao: {

@@ -961,7 +961,7 @@ const skills = {
 		discard: false,
 		lose: false,
 		async content(event, trigger, player) {
-			player.awakenSkill("zhongyi");
+			player.awakenSkill(event.name);
 			player.addTempSkill("zhongyi2", "roundStart");
 			player.addToExpansion(player, "give", event.cards).gaintag.add("zhongyi2");
 		},
@@ -1746,13 +1746,14 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
+		juexingji: true,
 		skillAnimation: true,
 		animationColor: "gray",
 		filter(event, player) {
 			return player.isDamaged() && game.dead.filter(target => target.isFriendOf(player)).length > 0;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("zhanshen");
+			player.awakenSkill(event.name);
 			const cards = player.getEquips(1);
 			if (cards.length) player.discard(cards);
 			player.loseMaxHp();

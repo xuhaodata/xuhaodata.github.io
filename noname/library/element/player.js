@@ -3387,7 +3387,27 @@ export class Player extends HTMLDivElement {
 			handcards: this.getCards("hs"),
 			gaintag: [],
 			equips: this.getCards("e"),
+			equips_map: this.getCards("e").reduce((map, value) => {
+				let id = value.cardid;
+				map[id] = {};
+				if (value.isViewAsCard) map[id].isViewAsCard = true;
+				if (value._destroyed_Virtua) map[id]._destroyed_Virtua = value._destroyed_Virtua;
+				if (value.destroyed) map[id].destroyed = value.destroyed;
+				if (value.node.name2.innerHTML) map[id].name2 = value.node.name2.innerHTML;
+				if (value.cardSymbol) map[id].vcard = value[value.cardSymbol];
+				return map;
+			}, {}),
 			judges: this.getCards("j"),
+			judges_map: this.getCards("j").reduce((map, value) => {
+				let id = value.cardid;
+				map[id] = {};
+				if (value.isViewAsCard) map[id].isViewAsCard = true;
+				if (value._destroyed_Virtua) map[id]._destroyed_Virtua = value._destroyed_Virtua;
+				if (value.destroyed) map[id].destroyed = value.destroyed;
+				if (value.node.name2.innerHTML) map[id].name2 = value.node.name2.innerHTML;
+				if (value.cardSymbol) map[id].vcard = value[value.cardSymbol];
+				return map;
+			}, {}),
 			specials: this.getCards("s"),
 			expansions: this.getCards("x"),
 			vcardsMap: this.vcardsMap,
@@ -5140,11 +5160,7 @@ export class Player extends HTMLDivElement {
 			if (!this.forced) return false;
 			if (typeof this.selectCard == "function") return false;
 			if (this.complexCard || this.complexSelect || this.filterOk) return false;
-			let evt = this.getParent();
-			while (evt?.name) {
-				if (evt.name.startsWith("chooseToCompare")) return false;
-				evt = evt.getParent();
-			}
+			if (this.type === "compare") return false;
 			var cards = this.player.getCards(this.position);
 			if (cards.some(card => !this.filterCard(card, this.player, this))) return false;
 			return get.select(this.selectCard)[0] >= this.player.countCards(this.position);
@@ -7104,19 +7120,26 @@ export class Player extends HTMLDivElement {
 		next.setContent(lib.element.content.equip);
 		//if (get.is.object(next.card) && next.card.cards) next.card = next.card.cards[0];
 		//next.cards = [next.card];
+		//不接受VCard
 		let itemtype = get.itemtype(card);
 		if (itemtype === "card") {
 			next.cards = [card];
-		} else if (itemtype === "cards") {
-			next.cards = card.slice(0);
-		} else if (Array.isArray(card)) {
-			next.vcards = card.slice(0);
 		} else {
-			next.card = card;
-			if (card?.cards) next.cards = card.cards;
+			next.cards = card?.cards || [];
 		}
+		if (card.isViewAsCard) {
+			next.card = card;
+			next.cards = card[card.cardSymbol].cards;
+			next.vcard = card[card.cardSymbol];
+		} else next.card = card;
 		if (draw) {
 			next.draw = true;
+		}
+		//检查card合法性
+		if (next.cards.length > 1 && next.cards.some(cardx => cardx.isViewAsCard)) {
+			//装备牌的实体牌数大于1时需要全部都为真实卡牌
+			_status.event.next.remove(next);
+			next.resolve();
 		}
 		next.getd = function (player, key, position) {
 			if (!position) position = ui.discardPile;
@@ -7176,7 +7199,8 @@ export class Player extends HTMLDivElement {
 		var next = game.createEvent("addJudge");
 		if (get.itemtype(card) == "card") {
 			next.card = card;
-			next.cards = [card];
+			if (card.isViewAsCard) next.cards = card[card.cardSymbol].cards;
+			else next.cards = [card];
 		} else {
 			next.cards = cards;
 			if (get.itemtype(next.cards) == "card") next.cards = [next.cards];
@@ -11734,7 +11758,11 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	addVirtualJudge(card, cards) {
-		card.initID();
+		let cardx;
+		if (get.itemtype(card) == "card" && card.isViewAsCard) {
+			cardx = card[card.cardSymbol];
+		} else cardx = card;
+		cardx.initID();
 		const player = this;
 		game.broadcast(
 			(player, card, cards) => {
@@ -11744,8 +11772,8 @@ export class Player extends HTMLDivElement {
 			card,
 			cards
 		);
-		game.addVideo("addVirtualJudge", player, [get.vcardInfo(card), get.cardsInfo(cards)]);
-		player.vcardsMap?.judges.push(card);
+		game.addVideo("addVirtualJudge", player, [get.vcardInfo(cardx), get.cardsInfo(cards)]);
+		player.vcardsMap?.judges.push(cardx);
 		if (_status.discarded) {
 			_status.discarded.removeArray(cards);
 		}
@@ -11753,31 +11781,89 @@ export class Player extends HTMLDivElement {
 		//game.addVideo("addVirtualJudge", ???);
 	}
 	$addVirtualJudge(VCard, cards) {
-		const player = this;
-		const isViewAsCard = cards.length !== 1 || cards[0].name !== VCard.name,
+		if (game.online) return;
+		const player = this,
+			card = VCard;
+		const isViewAsCard = cards.length !== 1 || cards[0].name !== VCard.name || !card.isCard,
 			info = get.info(VCard, false);
-		cards.forEach(card => {
-			card.fix();
-			card.style.transform = "";
-			card.classList.remove("drawinghidden");
-			delete card._transform;
-			if (isViewAsCard) {
-				card.viewAs = VCard.name;
-				if (card.classList.contains("fullskin") || card.classList.contains("fullborder")) {
-					card.classList.add("fakejudge");
-					card.node.background.innerHTML = lib.translate[card.viewAs + "_bg"] || get.translation(card.viewAs)[0];
+		let cardx;
+		if (get.itemtype(card) == "card" && card.isViewAsCard) {
+			cardx = card;
+		} else cardx = isViewAsCard ? game.createCard(card.name, cards.length == 1 ? get.suit(cards[0]) : "none", cards.length == 1 ? get.number(cards[0]) : 0) : cards[0];
+		game.broadcastAll(
+			(player, cardx, isViewAsCard, VCard, cards) => {
+				cardx.fix();
+				if (!cardx.isViewAsCard) {
+					const cardSymbol = Symbol("card");
+					cardx.cardSymbol = cardSymbol;
+					cardx[cardSymbol] = VCard;
 				}
-			} else {
-				delete card.viewAs;
-				card.classList.remove("fakejudge");
-			}
-			card.classList.add("drawinghidden");
-			player.node.judges.insertBefore(card, player.node.judges.firstChild);
-		});
-		ui.updatej(player);
+				cardx.style.transform = "";
+				cardx.classList.remove("drawinghidden");
+				delete cardx._transform;
+				if (isViewAsCard && !cardx.isViewAsCard) {
+					cardx.isViewAsCard = true;
+					cardx.destroyLog = false;
+					for (let i of cards) {
+						i.goto(ui.special);
+						i.destiny = player.node.judges;
+					}
+					if (cardx.destroyed) cardx._destroyed_Virtua = cardx.destroyed;
+					cardx.destroyed = function (card, id, player, event) {
+						if (card._destroyed_Virtua) {
+							if (typeof card._destroyed_Virtua == "function") {
+								let bool = card._destroyed_Virtua(card, id, player, event);
+								if (bool === true) return true;
+							} else if (lib.skill[card._destroyed_Virtua]) {
+								if (player) {
+									if (player.hasSkill(card._destroyed_Virtua)) {
+										delete card._destroyed_Virtua;
+										return false;
+									}
+								}
+								return true;
+							} else if (typeof card._destroyed_Virtua == "string") {
+								return card._destroyed_Virtua == id;
+							} else if (card._destroyed_Virtua === true) return true;
+						}
+						if (id == "ordering" && ["phaseJudge", "executeDelayCardEffect"].includes(event.getParent().name)) return false;
+						if (id != "judge") {
+							return true;
+						}
+					};
+				}
+				const suit = get.translation(cardx.suit),
+					number = get.strNumber(cardx.number);
+				cardx.classList.add("drawinghidden");
+				if (isViewAsCard) {
+					cardx.cards = cards || [];
+					cardx.viewAs = VCard.name;
+					//cardx.node.name2.innerHTML = `${suit}${number} [${get.translation(VCard.name)}]`;
+					if (cardx.classList.contains("fullskin") || cardx.classList.contains("fullborder")) {
+						cardx.node.background.innerHTML = lib.translate[cardx.viewAs + "_bg"] || get.translation(cardx.viewAs)[0];
+					}
+					cardx.classList.add("fakejudge");
+				} else {
+					delete cardx.viewAs;
+					//cardx.node.name2.innerHTML = `${suit}${number} ${VCard.name}`;
+					cardx.classList.remove("fakejudge");
+				}
+				player.node.judges.insertBefore(cardx, player.node.judges.firstChild);
+				ui.updatej(player);
+			},
+			player,
+			cardx,
+			isViewAsCard,
+			VCard,
+			cards
+		);
 	}
 	addVirtualEquip(card, cards) {
-		card.initID();
+		let cardx;
+		if (get.itemtype(card) == "card" && card.isViewAsCard) {
+			cardx = card[card.cardSymbol];
+		} else cardx = card;
+		cardx.initID();
 		const player = this;
 		game.broadcast(
 			(player, card, cards) => {
@@ -11787,8 +11873,8 @@ export class Player extends HTMLDivElement {
 			card,
 			cards
 		);
-		game.addVideo("addVirtualEquip", player, [get.vcardInfo(card), get.cardsInfo(cards)]);
-		player.vcardsMap?.equips.push(card);
+		game.addVideo("addVirtualEquip", player, [get.vcardInfo(cardx), get.cardsInfo(cards)]);
+		player.vcardsMap?.equips.push(cardx);
 		player.vcardsMap?.equips.sort((a, b) => {
 			return get.equipNum(a) - get.equipNum(b);
 		});
@@ -11801,8 +11887,9 @@ export class Player extends HTMLDivElement {
 		}
 	}
 	$addVirtualEquip(card, cards) {
+		if (game.online) return;
 		const player = this;
-		const isViewAsCard = cards.length !== 1 || cards[0].name !== card.name,
+		const isViewAsCard = cards.length !== 1 || cards[0].name !== card.name || !card.isCard,
 			info = get.info(card, false);
 		let cardShownName = get.translation(card.name);
 		if (info.subtype === "equip3") {
@@ -11810,42 +11897,87 @@ export class Player extends HTMLDivElement {
 		} else if (info.subtype === "equip4") {
 			cardShownName += "-";
 		}
-		const cardx = isViewAsCard ? game.createCard(card.name, cards.length == 1 ? get.suit(cards[0]) : "none", cards.length == 1 ? get.number(cards[0]) : 0) : cards[0];
-		cardx.fix();
-		const cardSymbol = Symbol("card");
-		cardx.cardSymbol = cardSymbol;
-		cardx[cardSymbol] = card;
-		if (card.subtypes) cardx.subtypes = card.subtypes;
-		cardx.style.transform = "";
-		cardx.classList.remove("drawinghidden");
-		delete cardx._transform;
-		const suit = get.translation(cardx.suit),
-			number = get.strNumber(cardx.number);
-		if (isViewAsCard) {
-			cardx.cards = cards || [];
-			cardx.viewAs = card.name;
-			cardx.node.name2.innerHTML = `${suit}${number} [${cardShownName}]`;
-			cardx.classList.add("fakeequip");
-		} else {
-			delete cardx.viewAs;
-			cardx.node.name2.innerHTML = `${suit}${number} ${cardShownName}`;
-			cardx.classList.remove("fakeequip");
-		}
-		let equipped = false,
-			equipNum = get.equipNum(cardx);
-		if (player.node.equips.childNodes.length) {
-			for (let i = 0; i < player.node.equips.childNodes.length; i++) {
-				if (get.equipNum(player.node.equips.childNodes[i]) >= equipNum) {
-					equipped = true;
-					player.node.equips.insertBefore(cardx, player.node.equips.childNodes[i]);
-					break;
+		let cardx;
+		if (get.itemtype(card) == "card" && card.isViewAsCard) {
+			cardx = card;
+		} else cardx = isViewAsCard ? game.createCard(card.name, cards.length == 1 ? get.suit(cards[0]) : "none", cards.length == 1 ? get.number(cards[0]) : 0) : cards[0];
+		game.broadcastAll(
+			(player, cardx, isViewAsCard, card, cards, cardShownName) => {
+				cardx.fix();
+				if (!cardx.isViewAsCard) {
+					const cardSymbol = Symbol("card");
+					cardx.cardSymbol = cardSymbol;
+					cardx[cardSymbol] = card;
 				}
-			}
-		}
-		if (equipped === false) {
-			player.node.equips.appendChild(cardx);
-			if (cards?.length && _status.discarded) _status.discarded.removeArray(cards);
-		}
+				if (card.subtypes) cardx.subtypes = card.subtypes;
+				cardx.style.transform = "";
+				cardx.classList.remove("drawinghidden");
+				delete cardx._transform;
+				if (isViewAsCard && !cardx.isViewAsCard) {
+					cardx.isViewAsCard = true;
+					cardx.destroyLog = false;
+					for (let i of cards) {
+						i.goto(ui.special);
+						i.destiny = player.node.equips;
+					}
+					if (cardx.destroyed) cardx._destroyed_Virtua = cardx.destroyed;
+					cardx.destroyed = function (card, id, player, event) {
+						if (card._destroyed_Virtua) {
+							if (typeof card._destroyed_Virtua == "function") {
+								let bool = card._destroyed_Virtua(card, id, player, event);
+								if (bool === true) return true;
+							} else if (lib.skill[card._destroyed_Virtua]) {
+								if (player) {
+									if (player.hasSkill(card._destroyed_Virtua)) {
+										delete card._destroyed_Virtua;
+										return false;
+									}
+								}
+								return true;
+							} else if (typeof card._destroyed_Virtua == "string") {
+								return card._destroyed_Virtua == id;
+							} else if (card._destroyed_Virtua === true) return true;
+						}
+						if (id != "equip") {
+							return true;
+						}
+					};
+				}
+				const suit = get.translation(cardx.suit),
+					number = get.strNumber(cardx.number);
+				if (isViewAsCard) {
+					cardx.cards = cards || [];
+					cardx.viewAs = card.name;
+					cardx.node.name2.innerHTML = `${suit}${number} [${cardShownName}]`;
+					cardx.classList.add("fakeequip");
+				} else {
+					delete cardx.viewAs;
+					cardx.node.name2.innerHTML = `${suit}${number} ${cardShownName}`;
+					cardx.classList.remove("fakeequip");
+				}
+				let equipped = false,
+					equipNum = get.equipNum(cardx);
+				if (player.node.equips.childNodes.length) {
+					for (let i = 0; i < player.node.equips.childNodes.length; i++) {
+						if (get.equipNum(player.node.equips.childNodes[i]) >= equipNum) {
+							equipped = true;
+							player.node.equips.insertBefore(cardx, player.node.equips.childNodes[i]);
+							break;
+						}
+					}
+				}
+				if (equipped === false) {
+					player.node.equips.appendChild(cardx);
+					if (cards?.length && _status.discarded) _status.discarded.removeArray(cards);
+				}
+			},
+			player,
+			cardx,
+			isViewAsCard,
+			card,
+			cards,
+			cardShownName
+		);
 	}
 	$equip(card) {
 		game.broadcast(
@@ -12448,8 +12580,8 @@ export class Player extends HTMLDivElement {
 	$phaseJudge(card) {
 		game.addVideo("phaseJudge", this, get.cardInfo(card));
 		const player = this;
-		if (card.cards?.length) {
-			const cards = card.cards;
+		if (card[card.cardSymbol]?.cards?.length) {
+			const cards = card[card.cardSymbol].cards;
 			const clone = player.$throw(cards);
 			if (lib.config.low_performance && cards[0] && cards[0].clone) {
 				const waitingForTransition = get.time();

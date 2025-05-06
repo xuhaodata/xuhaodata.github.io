@@ -3180,7 +3180,7 @@ const skills = {
 							.chooseCardTarget({
 								prompt: get.prompt2(event.name.slice(0, -"_cost".length)),
 								filterTarget(card, player, target) {
-									return target.isDamaged();
+									return target !== player && [player, target].some(current => current.isDamaged());
 								},
 								filterCard: lib.filter.cardDiscardable,
 								selectCard: 2,
@@ -4053,7 +4053,7 @@ const skills = {
 			if (source?.isIn()) {
 				player.line(source);
 				const resultx = await source
-					.chooseToGive(player, "e", "筮算：交给" + get.translation(player) + "一张装备区的牌，或失去1点体力或将武将牌翻面")
+					.chooseToGive(player, "e", "蓍算：交给" + get.translation(player) + "一张装备区的牌，或失去1点体力或将武将牌翻面")
 					.set("ai", card => {
 						const player = get.player();
 						if (get.effect(player, { name: "losehp" }, player, player) > 0 || player.isTurnedOver()) return 0;
@@ -4117,6 +4117,7 @@ const skills = {
 		},
 	},
 	olzonglve: {
+		audio: 2,
 		trigger: { source: "damageSource" },
 		filter(event, player) {
 			if (event.player === player || !event.player.isIn() || !event.player.countCards("hej")) return false;
@@ -4137,6 +4138,7 @@ const skills = {
 		group: "olzonglve_wusheng",
 		subSkill: {
 			wusheng: {
+				audio: "olzonglve",
 				enable: "phaseUse",
 				usable: 1,
 				filter(event, player) {
@@ -4663,7 +4665,7 @@ const skills = {
 						const { result } = await player
 							.chooseToMove("水月：将牌按顺序置于牌堆顶(左为上)", true)
 							.set("list", [["牌堆顶", cards]])
-							.set("reverse", _status.currentPhase && _status.currentPhase.next && get.attitude(player, _status.currentPhase.next) > 0)
+							.set("reverse", _status.currentPhase?.next && get.attitude(player, _status.currentPhase.next) > 0)
 							.set("processAI", function (list) {
 								const cards = list[0][1].slice(0);
 								cards.sort(function (a, b) {
@@ -7495,7 +7497,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseCardTarget({
-					prompt: get.prompt2("olxiangzuo"),
+					prompt: get.prompt2(event.skill),
 					filterCard: true,
 					selectCard: [1, Infinity],
 					filterTarget: lib.filter.notMe,
@@ -7546,7 +7548,7 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = event.targets[0],
 				cards = event.cards;
-			player.awakenSkill("olxiangzuo");
+			player.awakenSkill(event.name);
 			await player.give(cards, target);
 			if (
 				player.hasAllHistory("useSkill", evt => {
@@ -7604,7 +7606,7 @@ const skills = {
 				.set("logSkill", "olfeiyang");
 			"step 1";
 			if (result.bool) {
-				player.awakenSkill("olfeiyang");
+				player.awakenSkill(event.name);
 				player.discardPlayerCard(player, "j", true);
 			}
 		},
@@ -14965,7 +14967,7 @@ const skills = {
 			if (result.bool) {
 				var target = result.targets[0];
 				player.logSkill("olzeyue", target);
-				player.awakenSkill("olzeyue");
+				player.awakenSkill(event.name);
 				event.target = target;
 				var skills = target.getStockSkills("一！", "五！");
 				skills = skills.filter(function (skill) {
@@ -15801,7 +15803,7 @@ const skills = {
 				var target = result.targets[0];
 				event.target = target;
 				player.logSkill("jisi", target);
-				player.awakenSkill("jisi");
+				player.awakenSkill(event.name);
 				var list = event.skills2;
 				if (list.length == 0) event._result = { control: list[0] };
 				player
@@ -18092,7 +18094,7 @@ const skills = {
 		filterCard: () => false,
 		selectCard: -1,
 		precontent() {
-			player.awakenSkill("juesheng");
+			player.awakenSkill(event.name);
 			player.addTempSkill("juesheng_counter");
 		},
 		ai: {
@@ -19837,7 +19839,7 @@ const skills = {
 			"step 1";
 			if (result.bool) {
 				player.logSkill("quxi", result.targets);
-				player.awakenSkill("quxi");
+				player.awakenSkill(event.name);
 				player.skip("phaseDiscard");
 				if (result.targets[0].countCards("h") > result.targets[1].countCards("h")) result.targets.reverse();
 				event.gainner = result.targets[0];
@@ -20193,7 +20195,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("olxushen");
+			player.awakenSkill(event.name);
 			player.addSkills("olzhennan");
 			player.recover(1 - player.hp);
 			"step 1";
@@ -21198,7 +21200,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("luanfeng");
+			player.awakenSkill(event.name);
 			trigger.player.recover(3 - trigger.player.hp);
 			"step 1";
 			var list = [],
@@ -21374,7 +21376,7 @@ const skills = {
 		animationColor: "thunder",
 		content() {
 			"step 0";
-			player.awakenSkill("tuogu");
+			player.awakenSkill(event.name);
 			var list = trigger.player.getStockSkills("仲村由理", "天下第一").filter(function (skill) {
 				var info = get.info(skill);
 				return info && !info.juexingji && !info.hiddenSkill && !info.zhuSkill && !info.charlotte && !info.limited && !info.dutySkill;
@@ -21833,7 +21835,7 @@ const skills = {
 			});
 		},
 		content() {
-			player.awakenSkill("xinmoucheng");
+			player.awakenSkill(event.name);
 			player.changeSkills(["xinjingong"], ["xinlianji"]);
 		},
 		ai: {
@@ -24242,7 +24244,6 @@ const skills = {
 				animationColor: "gray",
 				content() {
 					player.awakenSkill("moucheng");
-					game.log(player, "失去了技能", "#g【连计】");
 					player.changeSkills(["jingong"], ["wylianji"]);
 				},
 			},
@@ -25448,7 +25449,6 @@ const skills = {
 	fuhan: {
 		audio: 2,
 		trigger: { player: "phaseBegin" },
-		unique: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "orange",
@@ -25506,7 +25506,7 @@ const skills = {
 					return get.rank(button.link, true) - lib.character[button.link][2];
 				})
 				.set("createDialog", ["将武将牌替换为一名角色", [list.randomGets(5), "character"]]);
-			player.awakenSkill("fuhan");
+			player.awakenSkill(event.name);
 			"step 1";
 			event.num = Math.min(event.num, 8);
 			player.reinitCharacter(get.character(player.name2, 3).includes("fuhan") ? player.name2 : player.name1, result.links[0]);
@@ -25523,7 +25523,6 @@ const skills = {
 	refuhan: {
 		audio: "fuhan",
 		trigger: { player: "phaseZhunbeiBegin" },
-		unique: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "orange",
@@ -25534,7 +25533,7 @@ const skills = {
 			"step 0";
 			if (player.storage.fanghun) player.draw(player.storage.fanghun);
 			player.removeMark("fanghun", player.storage.fanghun);
-			player.awakenSkill("refuhan");
+			player.awakenSkill(event.name);
 			"step 1";
 			var list;
 			if (_status.characterlist) {
@@ -25811,11 +25810,10 @@ const skills = {
 		},
 		skillAnimation: true,
 		animationColor: "gray",
-		unique: true,
 		juexingji: true,
 		content() {
 			"step 0";
-			player.awakenSkill("yjixi");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
 			"step 1";
@@ -26605,7 +26603,7 @@ const skills = {
 		multitarget: true,
 		content() {
 			"step 0";
-			player.awakenSkill("jianshu");
+			player.awakenSkill(event.name);
 			player.storage.jianshu = true;
 			player.give(cards, targets[0], "give");
 			"step 1";
@@ -26675,7 +26673,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("yongdi");
+			player.awakenSkill(event.name);
 			let target = event.targets[0],
 				mode = get.mode();
 			if (mode !== "identity" || player.identity !== "nei") player.addExpose(0.25);
@@ -28336,7 +28334,6 @@ const skills = {
 	zhiri: {
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		audio: 2,
 		skillAnimation: true,
@@ -28346,7 +28343,7 @@ const skills = {
 			return player.getExpansions("fentian").length >= 3;
 		},
 		content() {
-			player.awakenSkill("zhiri");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.storage.zhiri = true;
 			player.addSkills("xintan");
@@ -28388,7 +28385,6 @@ const skills = {
 		animationColor: "water",
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		derivation: ["mashu", "nuzhan"],
 		filter(event, player) {
@@ -28403,7 +28399,7 @@ const skills = {
 			return !player.storage.danji && player.countCards("h") > player.hp;
 		},
 		content() {
-			player.awakenSkill("danji");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills(["mashu", "nuzhan"]);
 		},
@@ -29796,19 +29792,15 @@ const skills = {
 	fengliang: {
 		skillAnimation: true,
 		animationColor: "thunder",
-		unique: true,
 		juexingji: true,
 		audio: 2,
 		derivation: "oltiaoxin",
 		trigger: { player: "dying" },
 		//priority:10,
 		forced: true,
-		filter(event, player) {
-			return !player.storage.kunfen;
-		},
 		content() {
 			"step 0";
-			player.awakenSkill("fengliang");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			if (player.hp < 2) {
@@ -30591,19 +30583,17 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		audio: 2,
-		unique: true,
 		juexingji: true,
 		derivation: "xiaoji",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			if (player.storage.fanxiang) return false;
 			return game.hasPlayer(function (current) {
-				return current.storage.liangzhu && current.storage.liangzhu.includes(player) && current.isDamaged();
+				return current.storage.liangzhu?.includes(player) && current.isDamaged();
 			});
 		},
 		forced: true,
 		content() {
-			player.awakenSkill("fanxiang");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.recover();
 			player.changeSkills(["xiaoji"], ["liangzhu"]);
@@ -31222,7 +31212,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("cunsi");
+			player.awakenSkill(event.name);
 			var cards = player.getCards("h");
 			player.give(cards, target);
 			"step 1";
@@ -31616,7 +31606,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("xiongyi");
+			player.awakenSkill(event.name);
 			game.asyncDraw(targets, 3);
 			"step 1";
 			if (player.isDamaged()) {
@@ -31737,10 +31727,9 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
-		unique: true,
 		juexingji: true,
 		filter(event, player) {
-			return player.getStat("damage") >= 3 && !player.storage.wuji;
+			return player.getStat("damage") >= 3;
 		},
 		content() {
 			"step 0";
@@ -31748,9 +31737,7 @@ const skills = {
 			player.gainMaxHp();
 			"step 1";
 			player.recover();
-			player.awakenSkill("wuji");
-			player.storage.wuji = true;
-
+			player.awakenSkill(event.name);
 			var card = get.cardPile("qinglong", "field");
 			if (card) {
 				player.gain(card, "gain2", "log");
@@ -31818,11 +31805,10 @@ const skills = {
 		},
 	},
 	oldwuji: {
-		unique: true,
 		audio: "wuji",
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
-			return player.getStat("damage") >= 3 && !player.storage.oldwuji;
+			return player.getStat("damage") >= 3;
 		},
 		forced: true,
 		juexingji: true,
@@ -31834,7 +31820,7 @@ const skills = {
 			player.gainMaxHp();
 			"step 1";
 			player.recover();
-			player.awakenSkill("oldwuji");
+			player.awakenSkill(event.name);
 		},
 	},
 	xueji: {
@@ -32913,7 +32899,7 @@ const skills = {
 		unique: true,
 		juexingji: true,
 		content() {
-			player.awakenSkill("juyi");
+			player.awakenSkill(event.name);
 			player.draw(player.maxHp);
 			player.addSkills(["benghuai", "weizhong"]);
 		},
@@ -33598,7 +33584,7 @@ const skills = {
 					);
 				},
 				contentBefore() {
-					player.awakenSkill("jianjie_yeyan");
+					player.awakenSkill(event.name);
 					var skill = lib.skill.jianjie;
 					var huoji = player.getStorage("jianjie_huoji").slice(0),
 						lianhuan = player.getStorage("jianjie_lianhuan").slice(0);
@@ -33813,7 +33799,7 @@ const skills = {
 			});
 			"step 1";
 			if (result.bool) {
-				player.awakenSkill("xinfu_xushen");
+				player.awakenSkill(event.name);
 				player.logSkill("xinfu_xushen", trigger.source);
 				if (trigger.source.name2 != undefined) {
 					trigger.source.chooseControl(trigger.source.name1, trigger.source.name2).set("prompt", "请选择要更换的武将牌");
@@ -34336,7 +34322,7 @@ const skills = {
 		trigger: { global: "dieAfter" },
 		logTarget: "player",
 		async content(e, t, player) {
-			player.awakenSkill("xinfu_songsang");
+			player.awakenSkill(event.name);
 			if (player.isDamaged()) {
 				player.recover();
 			} else player.gainMaxHp();
@@ -34530,7 +34516,7 @@ const skills = {
 		audio: 2,
 		content() {
 			"step 0";
-			player.awakenSkill("xinfu_qiai");
+			player.awakenSkill(event.name);
 			event.targets = game
 				.filterPlayer(function (current) {
 					return current != player;
@@ -34570,7 +34556,7 @@ const skills = {
 		animationColor: "gray",
 		content() {
 			"step 0";
-			player.awakenSkill("xinfu_denglou");
+			player.awakenSkill(event.name);
 			event.cards = get.cards(4);
 			event.gains = [];
 			event.discards = [];
@@ -34951,7 +34937,7 @@ const skills = {
 		discard: false,
 		lose: false,
 		content() {
-			player.awakenSkill("xinfu_zengdao");
+			player.awakenSkill(event.name);
 			target.addToExpansion(cards, player, "give").gaintag.add("xinfu_zengdao2");
 			target.addSkill("xinfu_zengdao2");
 		},

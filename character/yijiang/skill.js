@@ -238,7 +238,6 @@ const skills = {
 		audioname: ["ol_sunxiu"],
 		enable: "phaseUse",
 		usable: 1,
-		mark: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "wood",
@@ -246,7 +245,7 @@ const skills = {
 		filterTarget: lib.filter.notMe,
 		zhuSkill: true,
 		contentBefore() {
-			player.awakenSkill("xinzhaofu");
+			player.awakenSkill(event.skill);
 		},
 		content() {
 			target.addSkill("xinzhaofu_effect");
@@ -1121,7 +1120,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("xinfuli");
+			player.awakenSkill(event.name);
 			event.num = game.countGroup();
 			player.recover(event.num - player.hp);
 			"step 1";
@@ -5113,23 +5112,17 @@ const skills = {
 		audio: 2,
 		audioname: ["re_liru"],
 		enable: "phaseUse",
-		filter(event, player) {
-			return !player.storage.xinfencheng;
-		},
 		filterTarget(card, player, target) {
 			return player != target;
 		},
-		unique: true,
 		limited: true,
 		selectTarget: -1,
 		multitarget: true,
 		multiline: true,
-		mark: true,
 		line: "fire",
 		content() {
 			"step 0";
-			player.storage.xinfencheng = true;
-			player.awakenSkill("xinfencheng");
+			player.awakenSkill(event.name);
 			event.num = 1;
 			event.targets = targets.slice(0);
 			event.targets.sort(lib.sort.seat);
@@ -5198,12 +5191,6 @@ const skills = {
 					return eff;
 				},
 			},
-		},
-		init(player) {
-			player.storage.xinfencheng = false;
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	xinjuece: {
@@ -7953,7 +7940,7 @@ const skills = {
 		limited: true,
 		content() {
 			"step 0";
-			player.awakenSkill("xingshuai");
+			player.awakenSkill(event.name);
 			var targets = game.filterPlayer();
 			targets.remove(player);
 			event.targets = targets;
@@ -8582,21 +8569,15 @@ const skills = {
 		animationColor: "gray",
 		audio: "xinfencheng",
 		enable: "phaseUse",
-		filter(event, player) {
-			return !player.storage.fencheng;
-		},
 		filterTarget(card, player, target) {
 			return player != target;
 		},
-		unique: true,
 		limited: true,
 		selectTarget: -1,
-		mark: true,
 		line: "fire",
 		content() {
 			"step 0";
-			player.storage.fencheng = true;
-			player.awakenSkill("fencheng");
+			player.awakenSkill(event.name);
 			var res = get.damageEffect(target, player, target, "fire");
 			var num = Math.max(1, target.countCards("e"));
 			target
@@ -8643,12 +8624,6 @@ const skills = {
 					}
 				},
 			},
-		},
-		init(player) {
-			player.storage.fencheng = false;
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	mieji: {
@@ -8797,24 +8772,12 @@ const skills = {
 		animationColor: "wood",
 		audio: 2,
 		audioname: ["re_handang"],
-		unique: true,
 		limited: true,
-		mark: true,
-		init(player) {
-			player.storage.jiefan = false;
-		},
 		enable: "phaseUse",
-		filter(event, player) {
-			return !player.storage.jiefan;
-		},
-		intro: {
-			content: "limited",
-		},
 		filterTarget: true,
 		content() {
 			"step 0";
-			player.awakenSkill("jiefan");
-			player.storage.jiefan = true;
+			player.awakenSkill(event.name);
 			event.players = game.filterPlayer(function (current) {
 				return current != target && current.inRange(target);
 			});
@@ -8883,7 +8846,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("fuli");
+			player.awakenSkill(event.name);
 			player.recover(game.countGroup() - player.hp);
 			"step 1";
 			player.turnOver();
@@ -10162,7 +10125,7 @@ const skills = {
 		delay: false,
 		content() {
 			"step 0";
-			player.awakenSkill("xianzhou");
+			player.awakenSkill(event.name);
 			var cards = player.getCards("e");
 			player.give(cards, target);
 			event.num = cards.length;
@@ -12952,13 +12915,13 @@ const skills = {
 		skillAnimation: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
-		unique: true,
+		juexingji: true,
 		derivation: ["zyexin", "zzili", "zpaiyi"],
 		filter(event, player) {
 			return player.countCards("e") >= 2;
 		},
 		content() {
-			player.awakenSkill("zbaijiang");
+			player.awakenSkill(event.name);
 			player.gainMaxHp();
 			player.changeSkills(["zyexin", "zzili"], ["zquanji", "zzhenggong"]);
 		},
@@ -13012,7 +12975,7 @@ const skills = {
 	},
 	zzili: {
 		skillAnimation: true,
-		unique: true,
+		juexingji: true,
 		derivation: "zpaiyi",
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
@@ -13020,13 +12983,11 @@ const skills = {
 		},
 		forced: true,
 		async content(e, t, player) {
-			player.awakenSkill("zzili");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.addSkills("zpaiyi");
 		},
-		// intro:{
-		// 	content:'limited'
-		// }
+		ai: { combo: "zyexin" },
 	},
 	zpaiyi: {
 		trigger: { player: "phaseJieshuBegin" },

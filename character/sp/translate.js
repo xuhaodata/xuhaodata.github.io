@@ -1379,7 +1379,7 @@ const translates = {
 	olkuangshou_info: "锁定技，当你受到伤害后，你摸三张牌，然后弃置X张牌（X为本回合受到过伤害的角色数）。",
 	ol_niufu: "OL牛辅",
 	ol_niufu_prefix: "OL",
-	olshisuan: "筮算",
+	olshisuan: "蓍算",
 	olshisuan_info: "锁定技，当你受到伤害后，你重铸一张牌，然后伤害来源选择一项：①失去1点体力；②交给你一张装备区的牌；③将武将牌翻面。",
 	olzonglve: "纵掠",
 	olzonglve_info: "①出牌阶段限一次，你可以将一张牌当作【杀】使用。②当你使用【杀】对其他角色造成伤害后，若此【杀】没有实体牌或实体牌不均为【杀】，则你获得其区域里各一张牌。",

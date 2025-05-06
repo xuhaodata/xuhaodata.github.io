@@ -263,7 +263,7 @@ const skills = {
 			return player.hp <= event.num;
 		},
 		content() {
-			player.awakenSkill("kyou_duanfa");
+			player.awakenSkill(event.name);
 			if (player.countCards("h") > 0) player.chooseToDiscard("h", true, player.countCards("h"));
 			player.recover();
 			trigger.cancel();
@@ -1088,7 +1088,7 @@ const skills = {
 		animationColor: "gray",
 		content() {
 			"step 0";
-			player.awakenSkill("kud_buhui");
+			player.awakenSkill(event.name);
 			var cards = player.getCards("e");
 			if (cards.length) player.discard(cards);
 			player.removeSkill("kud_qiaoshou_equip");
@@ -3707,7 +3707,7 @@ const skills = {
 						.forResult();
 				},
 				async content(event, trigger, player) {
-					player.awakenSkill("erika_yousheng_mamori");
+					player.awakenSkill(event.name);
 					player.markAuto("erika_yousheng", event.targets);
 					await player.loseMaxHp(2);
 					await player.changeHujia(3);
@@ -4073,6 +4073,7 @@ const skills = {
 				},
 				async content(event, trigger, player) {
 					game.log(player, "使命失败");
+					player.awakenSkill("mia_qianmeng");
 					var target = event.targets[0];
 					var num = player.storage.mia_qianmeng.number,
 						suit = player.storage.mia_qianmeng.suit,
@@ -4493,7 +4494,7 @@ const skills = {
 		animationColor: "key",
 		content() {
 			"step 0";
-			player.awakenSkill("yukito_yaxiang");
+			player.awakenSkill(event.name);
 			player.reinitCharacter("key_yukito", "key_crow", false);
 			"step 1";
 			if (target.hp < 3) target.recover(3 - target.hp);
@@ -4661,7 +4662,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			var map = event.cost_data;
-			player.awakenSkill("misuzu_zhongyuan");
+			player.awakenSkill(event.name);
 			game.log(player, "将判定结果修改为了", "#g" + get.translation(map.suit + 2) + get.strNumber(map.number));
 			trigger.fixedResult = {
 				suit: map.suit,
@@ -5274,7 +5275,7 @@ const skills = {
 			);
 		},
 		content() {
-			player.awakenSkill("hiroto_tuolao");
+			player.awakenSkill(event.name);
 			player.draw(3);
 			player.changeSkills(["hiroto_zonglve"], ["hiroto_huyu"]);
 		},
@@ -6350,7 +6351,7 @@ const skills = {
 			return event.num < 0 && player.hp < 4;
 		},
 		content() {
-			player.awakenSkill("godan_xiaoyuan");
+			player.awakenSkill(event.name);
 			player.loseMaxHp(3);
 			player.draw(3);
 			player.removeSkills("godan_feiqu");
@@ -7554,7 +7555,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		content() {
-			player.awakenSkill("yuzuru_deyi");
+			player.awakenSkill(event.name);
 			player.changeSkills(["yuzuru_kunfen", "yuzuru_quji", "yuzuru_wangsheng"], ["yuzuru_wuxin"]);
 			player.loseMaxHp();
 			player.recover();
@@ -7649,7 +7650,7 @@ const skills = {
 		content() {
 			"step 0";
 			trigger.cancel();
-			player.awakenSkill("yuzuru_wangsheng");
+			player.awakenSkill(event.name);
 			player.storage._yuzuru_sss = true;
 			if (player.countCards("he") > 0) {
 				player.chooseCardTarget({
@@ -7760,7 +7761,7 @@ const skills = {
 			return list2.length > 2;
 		},
 		content() {
-			player.awakenSkill("ao_shixin");
+			player.awakenSkill(event.name);
 			player.changeSkills(["ao_diegui"], ["ao_kuihun"]);
 			player.gainMaxHp();
 			player.recover();
@@ -8415,7 +8416,7 @@ const skills = {
 			return num >= 3;
 		},
 		content() {
-			player.awakenSkill("riki_mengzhong");
+			player.awakenSkill(event.name);
 			player.removeSkills("riki_spwenji");
 			player.gainMaxHp();
 			player.recover();
@@ -9266,7 +9267,7 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			const target = event.targets[0];
-			player.awakenSkill("saya_powei");
+			player.awakenSkill(event.name);
 			await game.delay(3);
 			var next = game.createEvent("saya_powei_loop", false, trigger);
 			next.playertrue = player;
@@ -9651,7 +9652,7 @@ const skills = {
 			return draw >= 3;
 		},
 		content() {
-			player.awakenSkill("yui_takaramono");
+			player.awakenSkill(event.name);
 			player.addSkills("yui_yinhang");
 			player.storage._ichiban_no_takaramono = true;
 			player.gainMaxHp();
@@ -10371,7 +10372,7 @@ const skills = {
 		animationColor: "key",
 		content() {
 			"step 0";
-			player.awakenSkill("umi_qihuan");
+			player.awakenSkill(event.name);
 			player.reinitCharacter("key_umi", "key_umi2", false);
 			player.recover(game.countGroup() || 1);
 			if (!game.dead.length) event.finish();
@@ -10601,7 +10602,7 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			player.awakenSkill("yuri_wangxi");
+			player.awakenSkill(event.name);
 			var identity = "zhong";
 			if (_status.mode == "purple") {
 				if (["rNei", "bNei"].includes(player.identity)) identity = player.identity;

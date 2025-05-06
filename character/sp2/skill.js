@@ -596,7 +596,7 @@ const skills = {
 		animationColor: "water",
 		filterTarget: true,
 		async content(event, trigger, player) {
-			player.awakenSkill("starkuangzuo");
+			player.awakenSkill(event.name);
 			const target = event.target;
 			await target.addSkills("starchengfeng");
 			if (
@@ -2841,7 +2841,7 @@ const skills = {
 			return player.countCards("hej") > player.getHp();
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("dcdanji");
+			player.awakenSkill(event.name);
 			await player.loseMaxHp();
 			const num = player.maxHp - player.hp;
 			if (num) {
@@ -4744,7 +4744,7 @@ const skills = {
 			return player.maxHp <= 3;
 		},
 		content() {
-			player.awakenSkill("xiongrao");
+			player.awakenSkill(event.name);
 			game.countPlayer(function (current) {
 				if (current != player) current.addTempSkill("xiongrao_blocker");
 			});
@@ -5238,7 +5238,7 @@ const skills = {
 			"step 1";
 			if (result.bool) {
 				var target = result.targets[0];
-				player.awakenSkill("xiangshu");
+				player.awakenSkill(event.name);
 				player.logSkill("xiangshu", target);
 				target.recover(num);
 				target.draw(num);
@@ -7780,7 +7780,7 @@ const skills = {
 			return [1, _status.event.player.hp];
 		},
 		content() {
-			if (num == 0) player.awakenSkill("recuorui");
+			if (num == 0) player.awakenSkill(event.name);
 			player.gainPlayerCard(target, true, "h");
 		},
 		ai: {
@@ -7924,7 +7924,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("zongfan");
+			player.awakenSkill(event.name);
 			var num = player.countCards("he");
 			if (num > 0) {
 				player.chooseCardTarget({
@@ -9008,7 +9008,7 @@ const skills = {
 			return player.hp < 1;
 		},
 		content() {
-			player.awakenSkill("decadexushen");
+			player.awakenSkill(event.name);
 			player.addSkills("decadezhennan");
 			player.addTempSkill("decadexushen2");
 			trigger.decadexushen = true;
@@ -9979,7 +9979,7 @@ const skills = {
 			return num >= 6;
 		},
 		content() {
-			player.awakenSkill("diaoling");
+			player.awakenSkill(event.name);
 			player.storage.mubing2 = true;
 			player.markSkill("mubing_rewrite");
 			player.chooseDrawRecover(2, true);
@@ -11760,7 +11760,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "water",
 		content() {
-			player.awakenSkill("yinju");
+			player.awakenSkill(event.name);
 			player.storage.yinju2 = target;
 			player.addTempSkill("yinju2");
 			target.addTempSkill("yinju2_target");
@@ -12336,18 +12336,16 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "metal",
 		limited: true,
-		unique: true,
 		enable: "phaseUse",
 		audio: 2,
 		filter(event, player) {
-			if (player.storage.xinfu_tunjun) return false;
-			return player.storage.xinfu_lveming && player.storage.xinfu_lveming > 0;
+			return player.countMark("xinfu_lveming") > 0;
 		},
 		filterTarget: true,
 		selectTarget: 1,
 		content() {
 			"step 0";
-			player.awakenSkill("xinfu_tunjun");
+			player.awakenSkill(event.name);
 			event.num = player.storage.xinfu_lveming;
 			event.toequip = [];
 			"step 1";
@@ -12400,13 +12398,6 @@ const skills = {
 					return num;
 				},
 			},
-		},
-		mark: true,
-		intro: {
-			content: "limited",
-		},
-		init(player) {
-			player.storage.xinfu_tunjun = false;
 		},
 	},
 	xinfu_tanbei: {

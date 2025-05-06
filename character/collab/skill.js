@@ -4,6 +4,7 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 const skills = {
 	//张角三兄弟
 	oltiangong: {
+		audio: 2,
 		forced: true,
 		trigger: {
 			player: ["phaseBegin", "phaseEnd"],
@@ -35,6 +36,10 @@ const skills = {
 		},
 	},
 	oldigong: {
+		init(player) {
+			player.storage.oldigongCount = 0;
+		},
+		audio: 2,
 		trigger: { player: "useCard" },
 		forced: true,
 		filter(event, player) {
@@ -44,6 +49,10 @@ const skills = {
 			});
 		},
 		async content(event, trigger, player) {
+			if (player.storage.oldigongCount < 4) {
+				player.storage.oldigongCount++;
+				if (player.storage.oldigongCount == 4) player.changeSkin({ characterName: "taipingsangong" }, "taipingsangong_ultimate");
+			};
 			if (get.tag(trigger.card, "damage") > 0.5) trigger.baseDamage++;
 			else {
 				player
@@ -87,6 +96,7 @@ const skills = {
 		},
 	},
 	olrengong: {
+		audio: 2,
 		trigger: { player: "useCardAfter" },
 		forced: true,
 		filter(event, player) {
@@ -4918,7 +4928,7 @@ const skills = {
 			);
 			player.line(trigger.player, "green");
 			player.storage.fenxin = true;
-			player.awakenSkill("fenxin_old");
+			player.awakenSkill(event.name);
 		},
 	},
 };

@@ -777,7 +777,7 @@ game.import("character", function () {
 			woxue: {
 				trigger: { player: ["useCardAfter", "respondAfter"] },
 				filter(event, player) {
-					if (_status.currentPhase != player && !_status.currentPhase.hasSkill("gw_ciguhanshuang")) {
+					if (_status.currentPhase != player && !_status.currentPhase?.hasSkill("gw_ciguhanshuang")) {
 						return true;
 					}
 					return false;
@@ -2416,7 +2416,7 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					target.damage(2, "fire");
-					player.awakenSkill("jiehuo");
+					player.awakenSkill(event.name);
 					"step 1";
 					player.die();
 				},

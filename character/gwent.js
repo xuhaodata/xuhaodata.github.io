@@ -3117,7 +3117,7 @@ game.import("character", function () {
 					if (!_status.xuezhou) return false;
 					if (player == _status.xuezhou) return false;
 					if (!player.isIn() || !_status.xuezhou.isIn()) return false;
-					if (_status.currentPhase.hasSkill("xuezhou_hp2")) return false;
+					if (_status.currentPhase?.hasSkill("xuezhou_hp2")) return false;
 					switch (_status.xuezhou.storage.xuezhou) {
 						case 1:
 							return player == event.player;

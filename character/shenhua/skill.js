@@ -73,6 +73,13 @@ const skills = {
 				return selected >= select[0] && selected <= select[1];
 			}
 		},
+		ai1(card) {
+			return 6 - get.value(card);
+		},
+		ai2(target) {
+			const player = get.player();
+			return get.effect(target, { name: "tiesuo" }, player, player);
+		},
 		discard: false,
 		lose: false,
 		delay: false,
@@ -82,6 +89,13 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			await player.recast(event.cards);
+		},
+		ai: {
+			order(item, player) {
+				if (game.hasPlayer(current => get.effect(current, { name: "tiesuo" }, player, player) > 0) || player.hasCard(card => get.suit(card) == "club" && player.canRecast(card), "h")) return 8;
+				return 1;
+			},
+			result: { player: 1 },
 		},
 	},
 	//新杀小加强 陈到
@@ -526,7 +540,7 @@ const skills = {
 			return player.getExpansions("zhengrong").length >= 3;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("hongju");
+			player.awakenSkill(event.name);
 			const cards = player.getExpansions("zhengrong");
 			if (cards.length && player.countCards("h")) {
 				const next = player.chooseToMove("征荣：是否交换“荣”和手牌？");
@@ -680,7 +694,7 @@ const skills = {
 			return player.getExpansions("drlt_zhenrong").length >= 3 && game.dead.length > 0;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("drlt_hongju");
+			player.awakenSkill(event.name);
 			const cards = player.getExpansions("drlt_zhenrong");
 			if (cards.length && player.countCards("h")) {
 				const next = player.chooseToMove("征荣：是否交换“荣”和手牌？");
@@ -1133,7 +1147,7 @@ const skills = {
 			return !player.hasEnabledSlot() || player.hp == 1;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("drlt_poshi");
+			player.awakenSkill(event.name);
 			await player.loseMaxHp();
 			const num = player.maxHp - player.countCards("h");
 			if (num > 0) await player.draw(num);
@@ -1310,9 +1324,7 @@ const skills = {
 			},
 		},
 		locked: false,
-		unique: true,
 		enable: "phaseUse",
-		mark: true,
 		skillAnimation: true,
 		animationColor: "gray",
 		limited: true,
@@ -1323,7 +1335,7 @@ const skills = {
 			return target != player;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("drlt_xiongluan");
+			player.awakenSkill(event.name);
 			const disables = [];
 			for (let i = 1; i <= 5; i++) {
 				for (let j = 0; j < player.countEnabledSlot(i); j++) {
@@ -1360,9 +1372,6 @@ const skills = {
 					return 0;
 				},
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	drlt_xiongluan1: {
@@ -2332,7 +2341,7 @@ const skills = {
 				const { result } = await player
 					.chooseToMove("恃才：将牌按顺序置于牌堆顶", true)
 					.set("list", [["牌堆顶", cards]])
-					.set("reverse", _status.currentPhase && _status.currentPhase.next && get.attitude(player, _status.currentPhase.next) > 0)
+					.set("reverse", _status.currentPhase?.next && get.attitude(player, _status.currentPhase.next) > 0)
 					.set("processAI", function (list) {
 						const cards = list[0][1].slice(0);
 						cards.sort(function (a, b) {
@@ -3072,20 +3081,9 @@ const skills = {
 		},
 	},
 	qimou: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		enable: "phaseUse",
-		filter(event, player) {
-			return !player.storage.qimou;
-		},
-		init(player) {
-			player.storage.qimou = false;
-		},
-		mark: true,
-		intro: {
-			content: "limited",
-		},
 		skillAnimation: true,
 		animationColor: "orange",
 		async content(event, trigger, player) {
@@ -3105,7 +3103,7 @@ const skills = {
 				map[cn] = i;
 				list.push(cn);
 			}
-			player.awakenSkill("qimou");
+			player.awakenSkill(event.name);
 			player.storage.qimou = true;
 			const { result } = await player
 				.chooseControl(list, function () {
@@ -3313,7 +3311,7 @@ const skills = {
 			return player.countCards("h") == 0;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("zhiji");
+			player.awakenSkill(event.name);
 			await player.chooseDrawRecover(2, true);
 			await player.loseMaxHp();
 			await player.addSkills("reguanxing");
@@ -3462,7 +3460,7 @@ const skills = {
 			return player.isMinHp();
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("ruoyu");
+			player.awakenSkill(event.name);
 			await player.gainMaxHp();
 			await player.recover();
 			await player.addSkills("rejijiang");
@@ -3684,7 +3682,6 @@ const skills = {
 		animationColor: "thunder",
 		audio: 2,
 		audioname: ["re_dengai"],
-		unique: true,
 		juexingji: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
@@ -3693,7 +3690,7 @@ const skills = {
 		},
 		derivation: "jixi",
 		async content(event, trigger, player) {
-			player.awakenSkill("zaoxian");
+			player.awakenSkill(event.name);
 			await player.loseMaxHp();
 			await player.addSkills("jixi");
 		},
@@ -5453,12 +5450,12 @@ const skills = {
 	wansha2: {
 		mod: {
 			cardSavable(card, player) {
-				if (card.name == "tao" && _status.currentPhase && _status.currentPhase.isIn() && _status.currentPhase.hasSkill("wansha") && _status.currentPhase != player) {
+				if (card.name == "tao" && _status.currentPhase?.isIn() && _status.currentPhase.hasSkill("wansha") && _status.currentPhase != player) {
 					if (!player.isDying()) return false;
 				}
 			},
 			cardEnabled(card, player) {
-				if (card.name == "tao" && _status.currentPhase && _status.currentPhase.isIn() && _status.currentPhase.hasSkill("wansha") && _status.currentPhase != player) {
+				if (card.name == "tao" && _status.currentPhase?.isIn() && _status.currentPhase.hasSkill("wansha") && _status.currentPhase != player) {
 					if (!player.isDying()) return false;
 				}
 			},
@@ -5599,17 +5596,11 @@ const skills = {
 		audio: 2,
 		audioname: ["re_pangtong"],
 		audioname2: { sb_pangtong: "sbniepan" },
-		unique: true,
 		enable: "chooseToUse",
-		mark: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "fire",
-		init(player) {
-			player.storage.niepan = false;
-		},
 		filter(event, player) {
-			if (player.storage.niepan) return false;
 			if (event.type == "dying") {
 				if (player != event.dying) return false;
 				return true;
@@ -5619,7 +5610,7 @@ const skills = {
 			return false;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("niepan");
+			player.awakenSkill(event.name);
 			player.storage.niepan = true;
 			await player.discard(player.getCards("hej"));
 			await player.link(false);
@@ -5646,24 +5637,15 @@ const skills = {
 				if (!target.storage.niepan) return 0.6;
 			},
 		},
-		intro: {
-			content: "limited",
-		},
 	},
 	oldniepan: {
 		audio: "niepan",
 		audioname2: { sb_pangtong: "sbniepan" },
-		unique: true,
 		enable: "chooseToUse",
-		mark: true,
 		skillAnimation: true,
 		limited: true,
 		animationColor: "orange",
-		init(player) {
-			player.storage.oldniepan = false;
-		},
 		filter(event, player) {
-			if (player.storage.oldniepan) return false;
 			if (event.type == "dying") {
 				if (player != event.dying) return false;
 				return true;
@@ -5671,7 +5653,7 @@ const skills = {
 			return false;
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("oldniepan");
+			player.awakenSkill(event.name);
 			player.storage.oldniepan = true;
 			await player.discard(player.getCards("hej"));
 			await player.link(false);
@@ -5697,9 +5679,6 @@ const skills = {
 			threaten(player, target) {
 				if (!target.storage.oldniepan) return 0.6;
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	quhu: {
