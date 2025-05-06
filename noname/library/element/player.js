@@ -556,6 +556,8 @@ export class Player extends HTMLDivElement {
 		let eventName = get.event().name;
 		if (eventName.startsWith("pre_")) eventName = eventName.slice(4);
 		if (eventName.endsWith("_backup")) eventName = eventName.slice(0, eventName.lastIndexOf("_backup"));
+		if (eventName.endsWith("ContentBefore")) eventName = eventName.slice(0, eventName.lastIndexOf("ContentBefore"));
+		if (eventName.endsWith("ContentAfter")) eventName = eventName.slice(0, eventName.lastIndexOf("ContentAfter"));
 		const sourceSkill = get.sourceSkillFor(eventName);
 		/**
 		 * 作用域

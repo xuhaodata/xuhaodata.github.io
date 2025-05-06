@@ -122,30 +122,34 @@ const skills = {
 				filter(event, player) {
 					const storage = player.storage.olguifu_record;
 					if (event.card?.name) return !storage.card.includes(event.card.name);
+					const skill = lib.skill.olguifu_record.findSkill(event);
+					return skill && !storage.skill.includes(skill);
+				},
+				findSkill(event) {//别在cost里写player.when来造成伤害，100%找不到
 					let skill = "",
 						count = 0;
 					do {
 						count++;
-						const name = event.getParent(count)?.name;
+						let name = event.getParent(count)?.name;
 						if (!name) break;
 						if (name.startsWith("pre_")) name = name.slice(4);
 						if (name.endsWith("_backup")) name = name.slice(0, name.lastIndexOf("_backup"));
+						if (name.endsWith("ContentBefore")) name = name.slice(0, name.lastIndexOf("ContentBefore"));
+						if (name.endsWith("ContentAfter")) name = name.slice(0, name.lastIndexOf("ContentAfter"));
 						skill = get.sourceSkillFor(name);
 						const info = get.info(skill);
 						if (!info || !Object.keys(info).length || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) continue;
-						else if (!storage.skill.includes(skill)) {
-							event.set("olguifu_record", skill);
-							return true;
-						}
+						return skill;
 					} while (true);
-					return false;
+					return null;
 				},
 				forced: true,
 				locked: false,
 				content() {
 					let storage = player.storage[event.name];
+					const skill = lib.skill[event.name].findSkill(trigger);
 					if (trigger.card) storage["card"].add(trigger.card.name);
-					else if (trigger.olguifu_record) storage["skill"].add(trigger.olguifu_record);
+					else if (skill) storage["skill"].add(skill);
 					player.markSkill(event.name);
 				},
 				intro: {
