@@ -1265,15 +1265,13 @@ const skills = {
 		async content(event, trigger, player) {
 			const target = trigger.target;
 			const cards = await player.draw().forResult();
+			if (get.itemtype(cards) != "cards") return;
 			await player.showCards(cards, get.translation(player) + "发动了【乘烟】");
 			const card = cards[0];
 			if (card.name == "sha" || (get.type(card) == "trick" && get.info(card).filterTarget)) {
 				player.addTempSkill("dcchengyan_effect");
 				player.markAuto("dcchengyan_effect", [[trigger.card, card, target]]);
-			}
-			if (card.name != "sha" && get.type(card) != "trick") {
-				await player.draw().set("gaintag", ["dcxidi_tag"]);
-			}
+			} else await player.draw().set("gaintag", ["dcxidi_tag"]);
 		},
 		subSkill: {
 			effect: {
@@ -2134,7 +2132,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		async content(event, trigger, player) {
-			player.awakenSkill("dcfanshi");
+			player.awakenSkill(event.name);
 			const info = get.info("dcjianzhuan").choices;
 			let choices = [];
 			for (const i in info) {
@@ -2365,7 +2363,7 @@ const skills = {
 		filterCard: () => false,
 		selectCard: [-2, -1],
 		async content(event, trigger, player) {
-			player.awakenSkill("dcchenlve");
+			player.awakenSkill(event.name);
 			const cards = ["cardPile", "discardPile"].map(pos => Array.from(ui[pos].childNodes)).flat();
 			const sishiList = [];
 			const isSishi = card => card.storage.dcsanshi;
@@ -2540,7 +2538,7 @@ const skills = {
 		animationColor: "water",
 		derivation: ["dczifu"],
 		async content(event, trigger, player) {
-			player.awakenSkill("dcmouli");
+			player.awakenSkill(event.name);
 			await player.gainMaxHp();
 			await player.recover();
 			await player.addSkills("dczifu");
@@ -6547,7 +6545,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("dcchongxu");
+			player.awakenSkill(event.name);
 			player.removeSkills("dchuiling");
 			player.gainMaxHp(Math.min(game.countPlayer(), player.countMark("dchuiling")));
 			"step 1";
@@ -8019,7 +8017,7 @@ const skills = {
 			return player.countMark("yizan_use") >= 3;
 		},
 		content() {
-			player.awakenSkill("dclongyuan");
+			player.awakenSkill(event.name);
 			player.draw(2);
 			player.recover();
 			player.storage.yizan = true;
@@ -8295,13 +8293,9 @@ const skills = {
 		},
 		animationColor: "thunder",
 		skillAnimation: "legend",
-		mark: true,
-		intro: {
-			content: "limited",
-		},
 		content() {
 			"step 0";
-			player.awakenSkill("dcyongdi");
+			player.awakenSkill(event.name);
 			//player.logSkill('dcyongdi',target);
 			if (!game.hasPlayer(current => current.maxHp < target.maxHp)) {
 				target.gainMaxHp();
@@ -8481,7 +8475,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("dcshuaijie");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			var choices = [];
 			var choiceList = ["获得“私掠”角色至多三张牌", "从牌堆随机获得三张类型各不相同的牌"];
@@ -9614,7 +9608,7 @@ const skills = {
 		lose: false,
 		content() {
 			"step 0";
-			player.awakenSkill("dcyongbi");
+			player.awakenSkill(event.name);
 			if (player.hasSkill("dcyingyu", null, null, false)) player.storage.dcyingyu = true;
 			player.give(cards, target);
 			"step 1";
@@ -10880,7 +10874,7 @@ const skills = {
 				});
 			"step 1";
 			if (result.bool) {
-				player.awakenSkill("dczecai");
+				player.awakenSkill(event.name);
 				var target = result.targets[0];
 				player.logSkill("dczecai", target);
 				target.addAdditionalSkills("dczecai_effect", "rejizhi");
@@ -13838,7 +13832,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("zhuangrong");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			if (player.maxHp > player.hp) player.recover(player.maxHp - player.hp);

@@ -1828,11 +1828,11 @@ export default () => {
 					next._triggered = null;
 					next.custom.replace.target = event.customreplacetarget;
 					next.selectButton = [3, 3];
-					next.filterButton = function(button) {
+					next.filterButton = function (button) {
 						let { current } = get.event().getParent("game");
 						if (current) {
 							let { name } = current;
-							let banrule  = _status.banlist[name];
+							let banrule = _status.banlist[name];
 							if (!banrule) {
 								return true;
 							}
@@ -1846,7 +1846,7 @@ export default () => {
 							}
 						}
 						return true;
-					}
+					};
 					// next.custom.add.button=function(){
 					//		if(ui.cheat2&&ui.cheat2.backup) return;
 					//		_status.event.dialog.content.childNodes[1].innerHTML=
@@ -7224,7 +7224,7 @@ export default () => {
 						if (player.storage.xiangxing) {
 							player.addSkill("xiangxing" + player.storage.xiangxing);
 						} else {
-							player.awakenSkill("xiangxing");
+							player.awakenSkill(event.name);
 						}
 						player.popup("xiangxing");
 						game.log(player, "失去了一枚星");
@@ -8969,7 +8969,7 @@ export default () => {
 				frequent: true,
 				unique: true,
 				filter: function (event, player) {
-					return _status.currentPhase != player;
+					return _status.currentPhase?.isIn() && _status.currentPhase != player;
 				},
 				content: function () {
 					"step 0";
@@ -9549,12 +9549,11 @@ export default () => {
 				audio: "hunzi",
 				juexingji: true,
 				derivation: ["reyingzi", "yinghun"],
-				unique: true,
 				trigger: {
 					player: "phaseZhunbeiBegin",
 				},
 				filter: function (event, player) {
-					return player.hp <= 2 && !player.storage.boss_hunzi;
+					return player.hp <= 2;
 				},
 				forced: true,
 				content: function () {
@@ -9566,7 +9565,7 @@ export default () => {
 					player.addSkill("yinghun");
 					game.log(player, "获得了技能", "#g【英姿】和【英魂】");
 					game.log(player, "", "#y【魂佑】");
-					player.awakenSkill("boss_hunzi");
+					player.awakenSkill(event.name);
 					player.storage.boss_hunzi = true;
 				},
 				ai: {

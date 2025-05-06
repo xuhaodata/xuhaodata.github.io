@@ -1552,7 +1552,7 @@ const skills = {
 				animationColor: "thunder",
 				async content(event, trigger, player) {
 					player.storage.twsongwei_delete = true;
-					player.awakenSkill("twsongwei_delete");
+					player.awakenSkill(event.name);
 					event.target.removeSkills(event.target.getStockSkills(false, true));
 				},
 				ai: {
@@ -2527,7 +2527,7 @@ const skills = {
 		animationColor: "water",
 		content() {
 			"step 0";
-			player.awakenSkill("twdanji");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			"step 1";
 			player.addSkills(["mashu", "nuzhan"]);
@@ -3115,7 +3115,7 @@ const skills = {
 			);
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("twchenglong");
+			player.awakenSkill(event.name);
 			const cards = player.getExpansions("twciyin");
 			if (cards.length) await player.gain(cards, "gain2");
 			await player.removeSkills("twciyin");
@@ -9811,7 +9811,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("twshigong");
+			player.awakenSkill(event.name);
 			var target = _status.currentPhase;
 			if (target.hp <= 0) event._result = { bool: false };
 			else
@@ -9923,7 +9923,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "thunder",
 		content() {
-			player.awakenSkill("twxingqi");
+			player.awakenSkill(event.name);
 			player.recover();
 			if (!player.awakenedSkills.includes("twmibei")) {
 				var list = ["basic", "equip", "trick"],
@@ -11022,7 +11022,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("twneirao");
+			player.awakenSkill(event.name);
 			player.removeSkills("twjiekuang");
 			"step 1";
 			var num = player.countCards("he"),
@@ -11970,7 +11970,7 @@ const skills = {
 		filterTarget: true,
 		content() {
 			"step 0";
-			player.awakenSkill("twjiefan");
+			player.awakenSkill(event.name);
 			event.players = game.filterPlayer(function (current) {
 				return current != target && current.inRange(target);
 			});
@@ -12471,7 +12471,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("twcuorui");
+			player.awakenSkill(event.name);
 			var num = 0;
 			for (var target of game.players) {
 				if (target != player && target.countCards("h") > num) num = target.countCards("h");
@@ -12591,7 +12591,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("twhongju");
+			player.awakenSkill(event.name);
 			player.draw(player.getExpansions("twzhengrong").length);
 			"step 1";
 			if (player.countCards("h") == 0) event.goto(3);
@@ -15733,7 +15733,7 @@ const skills = {
 				.forResult();
 		},
 		async content(event, trigger, player) {
-			player.awakenSkill("twchuanshu");
+			player.awakenSkill(event.name);
 			const target = event.targets[0];
 			target.addMark("twchuanshu_mark", 1, false);
 			target.addSkill("twchuanshu_effect");
@@ -16305,7 +16305,7 @@ const skills = {
 		animationColor: "thunder",
 		content() {
 			"step 0";
-			player.awakenSkill("twtuidao");
+			player.awakenSkill(event.name);
 			var list1 = ["equip3", "equip4"].map(i => get.translation(i)),
 				list2 = ["basic", "trick", "equip"].map(i => get.translation(i));
 			var targets = player.getStorage("twsuizheng"),
@@ -16884,7 +16884,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("twzhongchi");
+			player.awakenSkill(event.name);
 			"step 1";
 			player.recover(2);
 			player.addSkill("twzhongchi_effect");
@@ -17431,7 +17431,7 @@ const skills = {
 		logTarget: (event, player) => game.filterPlayer(current => current != player),
 		content() {
 			"step 0";
-			player.awakenSkill("twshanghe");
+			player.awakenSkill(event.name);
 			event.targets = game.filterPlayer(current => current != player);
 			event.num = 0;
 			event.jiu = false;
@@ -18195,7 +18195,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("twbudao");
+			player.awakenSkill(event.name);
 			player.loseMaxHp();
 			player.recover();
 			var skills = lib.skill.twbudao.derivation,
@@ -19360,7 +19360,7 @@ const skills = {
 		selectCard: -1,
 		check: () => 1,
 		onuse(result, player) {
-			player.awakenSkill("twsidai");
+			player.awakenSkill(event.name);
 			player.addTempSkill("twsidai_effect");
 		},
 		ai: {
@@ -19777,7 +19777,7 @@ const skills = {
 			} else event.finish();
 			"step 2";
 			player.logSkill("twjuezhu", target);
-			player.awakenSkill("twjuezhu");
+			player.awakenSkill(event.name);
 			player.disableEquip(result.control);
 			target.disableJudge();
 			player.markAuto("twjuezhu_restore", [[target, result.control]]);
@@ -20242,7 +20242,7 @@ const skills = {
 			num = Math.min(num, 8);
 			event.num = num;
 			player.removeMark("fanghun", player.storage.fanghun);
-			player.awakenSkill("twfuhan");
+			player.awakenSkill(event.name);
 			if (_status.characterlist) {
 				list = [];
 				for (var i = 0; i < _status.characterlist.length; i++) {

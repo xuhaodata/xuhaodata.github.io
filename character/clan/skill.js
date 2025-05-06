@@ -393,9 +393,7 @@ const skills = {
 	//族杨赐
 	clanqieyi: {
 		audio: 2,
-		trigger: {
-			player: ["phaseUseBegin", "useCardAfter"],
-		},
+		trigger: { player: ["phaseUseBegin", "useCardAfter"] },
 		filter(event, player) {
 			if (event.name == "useCard") {
 				if (!player.hasSkill("clanqieyi_effect") || !lib.suits.includes(get.suit(event.card))) return false;
@@ -411,9 +409,7 @@ const skills = {
 					.set("ai", () => true)
 					.forResult();
 			} else {
-				event.result = {
-					bool: true,
-				};
+				event.result = { bool: true };
 			}
 		},
 		async content(event, trigger, player) {
@@ -461,9 +457,7 @@ const skills = {
 				},
 				silent: true,
 				charlotte: true,
-				trigger: {
-					player: "useCard",
-				},
+				trigger: { player: "useCard" },
 				content() {
 					lib.skill.clanqieyi_effect.init(player, event.name);
 				},
@@ -472,39 +466,34 @@ const skills = {
 	},
 	clanjianzhi: {
 		audio: 2,
-		trigger: {
-			player: "phaseJieshuBegin",
-		},
+		trigger: { player: "phaseJieshuBegin" },
 		forced: true,
 		filter(event, player) {
 			const num = player.getHistory("useSkill", evt => evt.skill == "clanqieyi").length;
 			return num > 0;
 		},
 		async content(event, trigger, player) {
-			const list = [],
-				used = player.getHistory("useSkill", evt => evt.skill == "clanqieyi").length;
-			while (list.length < used) list.add(list.length + 1);
+			const list = Array.from({
+				length: player.getHistory("useSkill", evt => evt.skill == "clanqieyi").length,
+			}).map((_, i) => get.cnNumber(i + 1, true));
 			const result = await player
 				.chooseControl(list)
-				.set("prompt", `###谏直###进行至多${used}次判定，并执行后续效果`)
+				.set("prompt", `###谏直###进行至多${get.cnNumber(list.length)}次判定，并执行后续效果`)
 				.set("ai", () => get.event().list.length - 1)
 				.set("list", list)
 				.forResult();
-			const num = result.index + 1,
+			if (typeof result?.index !== "number") return;
+			let num = result.index + 1,
 				judge = [];
-			let count = 1;
-			while (true) {
+			while (num--) {
 				const judgeEvent = player.judge();
 				judgeEvent.judge2 = result => result.bool;
 				judgeEvent.set("callback", async event => {
 					event.getParent().orderingCards.remove(event.card);
 				});
-				const {
-					result: { card },
-				} = await judgeEvent;
-				judge.push(card);
-				count++;
-				if (count > num) break;
+				const { result } = await judgeEvent;
+				if (!result?.card) break;
+				else judge.push(result.card);
 			}
 			const suits = player
 				.getHistory("useCard")
@@ -574,9 +563,7 @@ const skills = {
 			}
 			if (judge.some(card => !suits.includes(get.suit(card, false)))) await player.damage("nosource", "thunder");
 		},
-		ai: {
-			combo: "clanqieyi",
-		},
+		ai: { combo: "clanqieyi" },
 	},
 	clanquhuo: {
 		audio: 2,
@@ -1641,7 +1628,7 @@ const skills = {
 		},
 		logTarget: "player",
 		async content(event, trigger, player) {
-			player.awakenSkill("clanjianji");
+			player.awakenSkill(event.name);
 			const card = new lib.element.VCard({ name: "sha" });
 			const targets = game.filterPlayer(target => {
 					return trigger.player.getPrevious() == target || trigger.player.getNext() == target;
@@ -3053,7 +3040,7 @@ const skills = {
 		},
 		content() {
 			"step 0";
-			player.awakenSkill("clanbaozu");
+			player.awakenSkill(event.name);
 			"step 1";
 			trigger.player.link(true);
 			trigger.player.recover();

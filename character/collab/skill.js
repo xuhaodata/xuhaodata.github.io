@@ -4932,7 +4932,7 @@ const skills = {
 			);
 			player.line(trigger.player, "green");
 			player.storage.fenxin = true;
-			player.awakenSkill("fenxin_old");
+			player.awakenSkill(event.name);
 		},
 	},
 };

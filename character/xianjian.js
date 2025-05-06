@@ -280,7 +280,7 @@ game.import("character", function () {
 				},
 				content() {
 					"step 0";
-					player.awakenSkill("lingquan");
+					player.awakenSkill(event.name);
 					player.draw(3);
 					player.addSkill("shuiyun");
 					"step 1";
@@ -297,7 +297,7 @@ game.import("character", function () {
 					return player.storage.shuiyun_count >= 3;
 				},
 				content() {
-					player.awakenSkill("shenwu");
+					player.awakenSkill(event.name);
 					player.gainMaxHp();
 					player.recover();
 					player.addSkill("huimeng");
@@ -976,7 +976,7 @@ game.import("character", function () {
 				content() {
 					"step 0";
 					trigger.cancel();
-					player.awakenSkill("shiying");
+					player.awakenSkill(event.name);
 					player.storage.shiying = true;
 
 					player.maxHp = 3;
@@ -1142,7 +1142,7 @@ game.import("character", function () {
 				},
 				content() {
 					"step 0";
-					player.awakenSkill("yanshi");
+					player.awakenSkill(event.name);
 					player.gainMaxHp();
 					"step 1";
 					player.recover();
@@ -1604,23 +1604,14 @@ game.import("character", function () {
 			},
 			huahu: {
 				enable: "phaseUse",
-				unique: true,
-				mark: true,
 				skillAnimation: true,
 				animationColor: "metal",
-				init(player) {
-					player.storage.huahu = false;
-				},
-				filter(event, player) {
-					if (player.storage.huahu) return false;
-					return true;
-				},
 				filterTarget(card, player, target) {
 					return target != player;
 				},
 				selectTarget: [1, Infinity],
 				contentBefore() {
-					player.awakenSkill("huahu");
+					player.awakenSkill(event.name);
 					player.storage.huahu = true;
 					player.loseMaxHp(true);
 					player.clearSkills();
@@ -1655,9 +1646,6 @@ game.import("character", function () {
 							return 0;
 						},
 					},
-				},
-				intro: {
-					content: "limited",
 				},
 			},
 			binxin: {
@@ -1893,18 +1881,14 @@ game.import("character", function () {
 				},
 			},
 			fenshi: {
-				unique: true,
 				skillAnimation: true,
 				animationColor: "fire",
 				trigger: { player: "dyingAfter" },
 				forced: true,
-				mark: true,
+				juexingji: true,
 				derivation: "longhuo",
-				intro: {
-					content: "limited",
-				},
 				content() {
-					player.awakenSkill("fenshi");
+					player.awakenSkill(event.name);
 					player.changeHujia(2);
 					player.draw(2);
 					player.addSkill("longhuo");

@@ -2547,7 +2547,7 @@ game.import("character", function () {
 					player.chooseButton(dialog, true).ai = function (button) {
 						return get.rank(button.link, true);
 					};
-					player.awakenSkill("szbianshen");
+					player.awakenSkill(event.name);
 					"step 1";
 					player.reinit(get.character(player.name2, 3).includes("szbianshen") ? player.name2 : player.name1, result.links[0]);
 					player.hp = player.maxHp;
@@ -2751,7 +2751,7 @@ game.import("character", function () {
 					"step 3";
 					if (player.storage.pyuhuo == "mid") {
 						player.storage.pyuhuo = "over";
-						player.awakenSkill("pyuhuo");
+						player.awakenSkill(event.name);
 						player.hp = 6;
 						player.maxHp = 6;
 						player.draw(6);
@@ -3940,7 +3940,7 @@ game.import("character", function () {
 					player.changeHujia(2);
 					player.removeSkill("nuyan");
 					player.addSkill("nuyan2");
-					player.awakenSkill("chouhuo");
+					player.awakenSkill(event.name);
 				},
 			},
 			nuyan2: {
@@ -6586,7 +6586,7 @@ game.import("character", function () {
 				},
 				content() {
 					player.storage.anying = true;
-					player.awakenSkill("anying");
+					player.awakenSkill(event.name);
 					player.removeSkill("shengguang");
 					player.addAdditionalSkill("anying", "xinci");
 				},
@@ -7292,7 +7292,7 @@ game.import("character", function () {
 				content() {
 					player.storage.tuteng_awake = true;
 					player.loseMaxHp();
-					player.awakenSkill("zuling");
+					player.awakenSkill(event.name);
 				},
 			},
 			huanfeng: {

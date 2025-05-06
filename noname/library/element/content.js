@@ -618,13 +618,14 @@ export const Content = {
 	},
 	//选择顶装备要顶的牌
 	replaceEquip: async function (event, trigger, player) {
-		const vcards = event.vcards ?? [event.card];
+		let vcards = [];
+		vcards.push(event.card[event.card.cardSymbol] ? event.card[event.card.cardSymbol] : get.autoViewAs(event.card, void 0, false));
 		const specializedVCards = [],
 			normalVCards = [];
 		const replacedCards = [];
 		vcards.forEach(card => {
 			const info = get.info(card, false);
-			(info.customSwap ? specializedVCards : normalVCards).push(card);
+			(info?.customSwap ? specializedVCards : normalVCards).push(card);
 		});
 		specializedVCards.forEach(card => {
 			const info = get.info(card, false);
@@ -685,10 +686,7 @@ export const Content = {
 		}
 		event.result = {
 			vcards: replacedCards,
-			cards: replacedCards.reduce((cards, vcard) => {
-				if (vcard.cards) cards.addArray(vcard.cards);
-				return cards;
-			}, []),
+			cards: player.getCards("e", i => replacedCards.includes(i[i.cardSymbol])),
 		};
 	},
 	replaceEquip_old: function () {
@@ -764,25 +762,20 @@ export const Content = {
 	//装备牌
 	equip: async function (event, trigger, player) {
 		event.visible = true;
-		if (event.vcards && !event.cards) {
-			event.cards = event.vcards.reduce((cards, vcard) => {
-				if (vcard.cards) cards.addArray(vcard.cards);
-				return cards;
-			}, []);
+		//先确定这次的cards是什么成分也防止有人在equipBegin之类的时机往里面塞垃圾
+		if (event.cards.length > 1 && event.cards.some(cardx => cardx.isViewAsCard)) {
+			//实体牌数大于1且里面有虚拟假牌，终止此事件
+			event.untrigger();
+			return;
 		}
 		//进行第一轮先行判断，让所有装备牌的原主失去装备牌
-		if (event.cards) {
+		let loseCards = [];
+		//判断card是不是假牌，如果是改为失去假牌
+		if (event.card.isViewAsCard) loseCards.add(event.card);
+		else loseCards.addArray(event.cards);
+		if (loseCards.length) {
 			const map = {};
-			//第一轮初判断的event.cards会在后面的步骤被覆盖，所以此处安心修改
-			if (event.card) {
-				const cardx = get.cardPile(cardx => {
-					if (cardx[cardx.cardSymbol] !== event.card) return false;
-					const owner = get.owner(cardx, "judge");
-					return owner && (owner != player || get.position(cardx) != "e");
-				}, "field");
-				if (cardx) event.cards.add(cardx);
-			}
-			for (const i of event.cards) {
+			for (const i of loseCards) {
 				var owner = get.owner(i, "judge");
 				if (owner && (owner != player || get.position(i) != "e")) {
 					var id = owner.playerid;
@@ -810,11 +803,14 @@ export const Content = {
 		const handleEquip = async card => {
 			let cards = [];
 			// @ts-ignore
-			if (get.itemtype(card) === "card") {
+			if (get.itemtype(card) === "card" && !card.isViewAsCard) {
 				cards = [card];
-				card = get.autoViewAs(card, void 0, false);
+				card = card.cardSymbol ? card[card.cardSymbol] : get.autoViewAs(card, void 0, false);
+				event.vcards.push(card);
 			} else {
-				cards = card.cards ?? [];
+				if (get.itemtype(card) === "card" && card.isViewAsCard) event.vcards.push(card[card.cardSymbol]);
+				else event.vcards.push(card);
+				cards = event.cards ?? [];
 			}
 			let cardInfo = get.info(card, false);
 			if (player.isMin() || !player.canEquip(card)) {
@@ -848,14 +844,14 @@ export const Content = {
 						var next = game.createEvent("equip_" + card.name);
 						next.setContent(cardInfo.onEquip[i]);
 						next.player = player;
-						next.card = card;
+						next.card = event.vcards[0];
 						await next;
 					}
 				} else {
 					var next = game.createEvent("equip_" + card.name);
 					next.setContent(cardInfo.onEquip);
 					next.player = player;
-					next.card = card;
+					next.card = event.vcards[0];
 					await next;
 				}
 				if (cardInfo.equipDelay != false) await game.delayx();
@@ -865,44 +861,15 @@ export const Content = {
 				await game.delayx();
 			}
 		};
-		//生成虚拟牌列表
-		if (!event.vcards) {
-			if (event.card) {
-				// @ts-ignore
-				if (get.itemtype(event.card) === "card") event.card = get.autoViewAs(event.card, void 0, false);
-				event.vcards = [event.card];
-			} else event.vcards = event.cards.map(card => get.autoViewAs(card, void 0, false));
-		}
-		//过滤被销毁的装备牌
-		event.vcards = event.vcards.filter(card => {
-			let cards;
-			// @ts-ignore
-			if (get.itemtype(card) === "card") {
-				cards = [card];
-				card = get.autoViewAs(card);
-			} else {
-				cards = card.cards ?? [];
+		//检查实体牌会不会被销毁
+		for (let cardx of event.cards) {
+			if (cardx.willBeDestroyed("equip", player, event)) {
+				cardx.selfDestroy(event);
+				return;
+			} else if ("hejx".includes(get.position(cardx, true))) {
+				return;
 			}
-			let canMoveOn = true;
-			cards.forEach(card => {
-				if (card.willBeDestroyed("equip", player, event)) {
-					card.selfDestroy(event);
-					canMoveOn = false;
-					return;
-				} else if (canMoveOn) {
-					// @ts-ignore
-					if ("hejx".includes(get.position(card, true))) {
-						canMoveOn = false;
-						return;
-					}
-				}
-			});
-			return canMoveOn;
-		});
-		event.cards = event.vcards.reduce((cards, vcard) => {
-			if (vcard.cards) cards.addArray(vcard.cards);
-			return cards;
-		}, []);
+		}
 		//同时播放所有装备牌的装备动画
 		if (event.cards.length) {
 			if (event.draw) {
@@ -933,7 +900,7 @@ export const Content = {
 		const replaceEquipEvent = game.createEvent("replaceEquip");
 		replaceEquipEvent.player = player;
 		// @ts-ignore
-		replaceEquipEvent.vcards = event.vcards;
+		replaceEquipEvent.card = event.card;
 		replaceEquipEvent.setContent("replaceEquip");
 		const result = await replaceEquipEvent.forResult();
 		// @ts-ignore
@@ -942,12 +909,7 @@ export const Content = {
 			event.swapped = true;
 			const loseEvent = player.lose(result.cards, "visible").set("type", "equip").set("getlx", false);
 			loseEvent.swapEquip = true;
-			if (
-				event.vcards.some(card => {
-					const info = get.info(card, false);
-					return info && info.loseThrow;
-				})
-			) {
+			if (get.info(event.card, true)?.loseThrow) {
 				player.$throw(result.cards, 1000);
 			}
 			await loseEvent;
@@ -958,14 +920,15 @@ export const Content = {
 				}
 			}
 		}
-		result?.vcards?.forEach(card => {
-			player.removeVirtualEquip(card);
-		});
+		//就算是vcard也应该用lose处理
+		/*result?.vcards?.forEach(card => {
+player.removeVirtualEquip(card);
+});*/
 		//然后处理每一张装备牌的装备
-		for (const card of event.vcards) {
-			event.card = card;
-			await handleEquip(card);
-		}
+		event.vcards = [];
+		await handleEquip(event.card);
+		//如果event.card是实体牌，改为虚拟牌
+		if (get.itemtype(event.card) == "card") event.card = event.card[event.card.cardSymbol];
 		if (event.updatePile) game.updateRoundNumber();
 	},
 	equip_old: function () {
@@ -2715,18 +2678,20 @@ export const Content = {
 		"step 0";
 		game.log(player, "和", target, "交换了装备区中的牌");
 		event.cards = [player.getCards("e"), target.getCards("e")];
-		event.vcards = [player.getVCards("e"), target.getVCards("e")];
+		//		event.vcards = [player.getVCards("e"), target.getVCards("e")];
 		game.loseAsync({
 			player: player,
 			target: target,
 			cards1: event.cards[0],
 			cards2: event.cards[1],
-			vcards1: event.vcards[0],
-			vcards2: event.vcards[1],
 		}).setContent("swapHandcardsx");
 		"step 1";
-		player.equip(event.vcards[1]);
-		target.equip(event.vcards[0]);
+		for (var i = 0; i < event.cards[1].length; i++) {
+			if (get.position(event.cards[1][i], true) == "o") player.equip(event.cards[1][i]);
+		}
+		for (var i = 0; i < event.cards[0].length; i++) {
+			if (get.position(event.cards[0][i], true) == "o") target.equip(event.cards[0][i]);
+		}
 	},
 	disableJudge: function () {
 		"step 0";
@@ -2780,7 +2745,6 @@ export const Content = {
 				game.send("server", "config", lib.configOL);
 			}
 		}
-		game.log();
 		game.log(player, "的回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
@@ -3913,7 +3877,6 @@ export const Content = {
 				game.send("server", "config", lib.configOL);
 			}
 		}
-		game.log();
 		game.log(player, "的回合开始");
 		player._noVibrate = true;
 		if (get.config("identity_mode") != "zhong" && get.config("identity_mode") != "purple" && !_status.connectMode) {
@@ -4046,18 +4009,18 @@ export const Content = {
 	phaseJudge: function () {
 		"step 0";
 		game.log(player, "进入了判定阶段");
-		event.cards = player.getVCards("j");
+		event.cards = player.getCards("j");
 		if (!event.cards.length) event.finish();
 		"step 1";
 		if (cards.length) {
 			event.card = cards.pop();
 			var cardName = event.card.name,
 				cardInfo = lib.card[cardName];
-			var currentCards = player.getCards("j");
-			if (cardInfo.noEffect || event.card.cards?.some(card => !currentCards.includes(card))) {
+			var VJudge = event.card[event.card.cardSymbol];
+			if (cardInfo.noEffect) {
 				event.redo();
 			} else {
-				if (event.card.cards?.length) player.lose(event.card.cards, "visible", ui.ordering);
+				if (event.card) player.lose(event.card, "visible", ui.ordering);
 				player.$phaseJudge(event.card);
 				event.cancelled = false;
 				event.trigger("phaseJudge");
@@ -7261,13 +7224,13 @@ export const Content = {
 			if (ui.selected.targets.length) {
 				if (!get.event("aimTargets").includes(target)) return false;
 				var from = ui.selected.targets[0];
-				var js = from.getVCards("j", filterCard);
+				var js = from.getCards("j", filterCard);
 				for (var i = 0; i < js.length; i++) {
 					if (_status.event.nojudge) break;
 					if (target.canAddJudge(js[i])) return true;
 				}
 				if (target.isMin()) return false;
-				var es = from.getVCards("e", filterCard);
+				var es = from.getCards("e", filterCard);
 				for (var i = 0; i < es.length; i++) {
 					if (target.canEquip(es[i], _status.event.canReplace)) return true;
 				}
@@ -7318,7 +7281,7 @@ export const Content = {
 					if (
 						game.hasPlayer(function (current) {
 							if (current != target && get.attitude(player, current) > 0) {
-								var es = target.getVCards("e", filterCard);
+								var es = target.getCards("e", filterCard);
 								for (var i = 0; i < es.length; i++) {
 									if (get.value(es[i], target) > 0 && current.canEquip(es[i], _status.event.canReplace) && get.effect(current, es[i], player, player) > (_status.event.canReplace ? get.effect(target, es[i], player, player) : 0)) return true;
 								}
@@ -7332,7 +7295,7 @@ export const Content = {
 			}
 			const current = ui.selected.targets[0],
 				pos = get.event("nojudge") ? "e" : "ej",
-				cards = current.getVCards(pos, filterCard),
+				cards = current.getCards(pos, filterCard),
 				att2 = get.sgn(get.attitude(player, current));
 			let maxEff = 0;
 			for (let card of cards) {
@@ -7379,12 +7342,12 @@ export const Content = {
 		"step 3";
 		if (targets.length == 2) {
 			const dialogArgs = ["请选择要移动的牌"];
-			const es = targets[0].getVCards("e", card => {
+			const es = targets[0].getCards("e", card => {
 					return event.filter(card) && targets[1].canEquip(card, event.canReplace);
 				}),
 				js = event.nojudge
 					? []
-					: targets[0].getVCards("j", card => {
+					: targets[0].getCards("j", card => {
 							return event.filter(card) && targets[1].canAddJudge(card);
 					  });
 			if (es.length) {
@@ -7439,7 +7402,7 @@ export const Content = {
 		if (result.bool && result.links.length) {
 			var link = result.links[0],
 				position = "j";
-			if (event.targets[0].getVCards("e").includes(link)) {
+			if (event.targets[0].getCards("e").includes(link)) {
 				if (!link.cards?.length) event.targets[0].removeVirtualEquip(link);
 				event.targets[1].equip(link);
 			} else {
@@ -8488,14 +8451,6 @@ export const Content = {
 			next.delay = false;
 		}
 		"step 3";
-		event.vcards1?.forEach(card => {
-			if (card.cards?.every(cardx => get.position(cardx) != "e")) player.removeVirtualEquip(card);
-			else event.getParent().vcards[0].remove(card);
-		});
-		event.vcards2?.forEach(card => {
-			if (card.cards?.every(cardx => get.position(cardx) != "e")) target.removeVirtualEquip(card);
-			else event.getParent().vcards[1].remove(card);
-		});
 		if (!event.delayed) game.delay();
 	},
 	gainMultiple: function () {
@@ -8601,7 +8556,7 @@ export const Content = {
 			}
 			cards[num].fix();
 			cards[num].style.transform = "";
-			event.gaintag.forEach(tag => cards[num].addGaintag(tag));
+			cards[num].addGaintag(event.gaintag);
 			if (event.knowers) {
 				cards[num].addKnower(event.knowers); //添加事件设定的知情者。
 			}
@@ -8920,6 +8875,14 @@ export const Content = {
 			}
 		}
 		"step 1";
+		event.vcards = {
+			//这玩意拿来存储假牌
+			cards: [],
+			es: [],
+			js: [],
+		};
+		//这个拿来存储虚拟牌对应的实体牌
+		event.vcard_cards = [];
 		event.gaintag_map = {};
 		var hs = [],
 			es = [],
@@ -8938,21 +8901,52 @@ export const Content = {
 			} else if (cards[i].parentNode) {
 				if (cards[i].parentNode.classList.contains("equips")) {
 					cards[i].original = "e";
-					let loseCards = cards[i].cards ? cards[i].cards : [cards[i]];
-					cardx.addArray(loseCards);
-					loseCards.forEach(cardi => {
-						es.push(cardi);
-						event.vcard_map.set(cardi, cards[i].card || get.autoViewAs(cards[i], void 0, false));
-					});
+					const VEquip = cards[i][cards[i].cardSymbol];
+					if (VEquip) {
+						//判断是否是假牌
+						if (cards[i].isViewAsCard) {
+							let loseCards = VEquip.cards;
+							//解体！
+							cardx.addArray(loseCards);
+							event.vcard_cards.addArray(loseCards);
+							loseCards.forEach(cardi => {
+								cardi.original = "e";
+								delete cardi.destiny;
+								es.push(cardi);
+								event.vcard_map.set(cardi, VEquip || get.autoViewAs(cards[i], void 0, false));
+							});
+						} else {
+							es.push(cards[i]);
+							event.vcard_map.set(cards[i], VEquip || get.autoViewAs(cards[i], void 0, false));
+							event.vcard_cards.add(cards[i]);
+						}
+						event.vcards.cards.push(cards[i]);
+						event.vcards.es.push(cards[i]);
+					}
 				} else if (cards[i].parentNode.classList.contains("judges")) {
 					cards[i].original = "j";
-					js.push(cards[i]);
-					const VJudge = player.getVCards("j").find(card => {
-						return card.cards?.includes(cards[i]);
-					});
+					const VJudge = cards[i][cards[i].cardSymbol];
 					if (VJudge) {
-						event.vcard_map.set(cards[i], VJudge);
-					} else event.vcard_map.set(cards[i], get.autoViewAs(cards[i], void 0, false));
+						//判断是否是假牌
+						if (cards[i].isViewAsCard) {
+							let loseCards = VJudge.cards;
+							//解体！
+							cardx.addArray(loseCards);
+							event.vcard_cards.addArray(loseCards);
+							loseCards.forEach(cardi => {
+								cardi.original = "j";
+								delete cardi.destiny;
+								js.push(cardi);
+								event.vcard_map.set(cardi, VJudge || get.autoViewAs(cards[i], void 0, false));
+							});
+						} else {
+							js.push(cards[i]);
+							event.vcard_map.set(cards[i], VJudge || get.autoViewAs(cards[i], void 0, false));
+							event.vcard_cards.add(cards[i]);
+						}
+						event.vcards.cards.push(cards[i]);
+						event.vcards.js.push(cards[i]);
+					}
 				} else if (cards[i].parentNode.classList.contains("expansions")) {
 					cards[i].original = "x";
 					xs.push(cards[i]);
@@ -9031,6 +9025,7 @@ export const Content = {
 		game.broadcast(
 			function (player, cards, num) {
 				for (var i = 0; i < cards.length; i++) {
+					cards[i].removeGaintag(true);
 					cards[i].classList.remove("glow");
 					cards[i].classList.remove("glows");
 					cards[i].fix();
@@ -9043,11 +9038,13 @@ export const Content = {
 				_status.cardPileNum = num;
 			},
 			player,
-			cards,
+			cards.slice(),
 			ui.cardPile.childNodes.length
 		);
 		game.addVideo("lose", player, [get.cardsInfo(hs), get.cardsInfo(es), get.cardsInfo(js), get.cardsInfo(ss)]);
 		event.cards2 = hs.concat(es);
+		cards.removeArray(event.vcards.cards);
+		cards.addArray(event.vcard_cards);
 		player.getHistory("lose").push(event);
 		game.getGlobalHistory().cardMove.push(event);
 		player.update();
@@ -9087,10 +9084,10 @@ export const Content = {
 			});
 		}
 		"step 2";
-		if (num < cards.length) {
-			if (event.es.includes(cards[num]) || cards[num].cards?.some(i => event.es.includes(i))) {
+		if (num < event.vcards.cards.length) {
+			if (event.vcards.es.includes(event.vcards.cards[num])) {
 				event.loseEquip = true;
-				const VEquip = cards[num][cards[num].cardSymbol];
+				const VEquip = event.vcards.cards[num][event.vcards.cards[num].cardSymbol];
 				if (VEquip) {
 					player.removeVirtualEquip(VEquip);
 					//player.removeEquipTrigger(cards[num]);
@@ -9101,10 +9098,8 @@ export const Content = {
 						return;
 					}
 				}
-			} else if (event.js.includes(cards[num])) {
-				const VJudge = player.getVCards("j").find(card => {
-					return card.cards?.includes(cards[num]);
-				});
+			} else if (event.vcards.js.includes(event.vcards.cards[num])) {
+				const VJudge = event.vcards.cards[num][event.vcards.cards[num].cardSymbol];
 				if (VJudge) {
 					player.removeVirtualJudge(VJudge);
 				}
@@ -9682,6 +9677,7 @@ export const Content = {
 		}
 	},
 	//暂时还是只能一次加一张牌，需要后续跟进处理
+	//一次加一张够用了
 	addJudge: async function (event, trigger, player) {
 		let card, cardName;
 		if (typeof event.card == "string") {
@@ -9691,9 +9687,14 @@ export const Content = {
 		} else {
 			cardName = event.card.name;
 			if (get.itemtype(event.card) === "card") {
-				event.cards = [event.card];
-				card = get.autoViewAs(event.card, void 0, false);
-				event.card = card;
+				if (event.card.cardSymbol) {
+					event.cards = event.card[event.card.cardSymbol].cards;
+					if (!event.card.isViewAsCard) event.card = event.card[event.card.cardSymbol];
+				} else {
+					card = get.autoViewAs(event.card, void 0, false);
+					event.card = card;
+					event.cards = event.card.cards ?? [];
+				}
 			} else if (!event.card.cards?.length && event.cards?.length) {
 				card = get.autoViewAs({ name: cardName, isCard: true }, event.cards);
 				event.card = card;
@@ -9707,9 +9708,12 @@ export const Content = {
 			visible = cardInfo && !cardInfo.blankCard;
 		event.visible = visible;
 		//失去牌的一长串
-		if (event.cards?.length) {
+		let loseCards = [];
+		if (event.card.isViewAsCard) loseCards.add(event.card);
+		else loseCards.addArray(event.cards);
+		if (loseCards.length) {
 			const map = {};
-			for (const i of event.cards) {
+			for (const i of loseCards) {
 				var owner = get.owner(i, "judge");
 				if (owner /* && (owner != player || get.position(i) != "e")*/) {
 					var id = owner.playerid;
@@ -9732,21 +9736,14 @@ export const Content = {
 				await next;
 				event.relatedLose = next;
 			}
-			let canMoveOn = true;
-			event.cards.forEach(card => {
+			for (let card of loseCards) {
 				if (card.willBeDestroyed("judge", player, event)) {
 					card.selfDestroy(event);
-					canMoveOn = false;
 					return;
-				} else if (canMoveOn) {
-					// @ts-ignore
-					if ("hejx".includes(get.position(card, true))) {
-						canMoveOn = false;
-						return;
-					}
+				} else if ("hejx".includes(get.position(card, true))) {
+					return;
 				}
-			});
-			if (!canMoveOn) return;
+			}
 		}
 		if (!cardInfo.effect && !cardInfo.noEffect) {
 			if (event.cards.length) await game.cardsDiscard(event.cards);
@@ -9766,10 +9763,10 @@ export const Content = {
 			},
 			player,
 			event.card,
-			event.cards
+			loseCards
 		);
 		player.addVirtualJudge(event.card, event.cards);
-		const isViewAsCard = cards?.length !== 1 || cards[0].name !== card.name;
+		const isViewAsCard = cards?.length !== 1 || cards[0].name !== card.name || !card.isCard;
 		if (isViewAsCard && cards?.length) {
 			if (cardInfo.blankCard) {
 				game.log(player, '被扣置了<span class="yellowtext">' + get.translation(cardName) + "</span>");
@@ -9779,6 +9776,7 @@ export const Content = {
 		} else {
 			game.log(player, "被贴上了", card);
 		}
+		if (get.itemtype(event.card) == "card") event.card = event.card[event.card.cardSymbol];
 	},
 	addJudge_old: function () {
 		"step 0";
