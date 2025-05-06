@@ -126,9 +126,11 @@ const skills = {
 						count = 0;
 					do {
 						count++;
-						const evt = event.getParent(count);
-						if (!evt?.name) break;
-						skill = get.sourceSkillFor(evt.name);
+						const name = event.getParent(count)?.name;
+						if (!name) break;
+						if (name.startsWith("pre_")) name = name.slice(4);
+						if (name.endsWith("_backup")) name = name.slice(0, name.lastIndexOf("_backup"));
+						skill = get.sourceSkillFor(name);
 						const info = get.info(skill);
 						if (!info || !Object.keys(info).length || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) continue;
 						else if (!storage.skill.includes(skill)) {
