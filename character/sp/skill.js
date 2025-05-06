@@ -264,6 +264,7 @@ const skills = {
 			} else return;
 		},
 		ai: {
+			combo: "olxiewei",
 			order: 7,
 			result: {
 				player: 1,
@@ -3171,16 +3172,14 @@ const skills = {
 							(player.countCards("he", card => {
 								if (get.position(card) === "h" && _status.connectMode) return true;
 								return lib.filter.cardDiscardable(card, player);
-							}) >= 2 && game.hasPlayer(target => target.isDamaged()))
+							}) >= 2 && game.hasPlayer(target => target != player))
 						);
 					},
 					async cost(event, trigger, player) {
 						event.result = await player
 							.chooseCardTarget({
 								prompt: get.prompt2(event.name.slice(0, -"_cost".length)),
-								filterTarget(card, player, target) {
-									return target !== player && [player, target].some(current => current.isDamaged());
-								},
+								filterTarget: lib.filter.notMe,
 								filterCard: lib.filter.cardDiscardable,
 								selectCard: 2,
 								position: "he",
@@ -8456,7 +8455,7 @@ const skills = {
 			const bolDialog = ["请选择替换的武将", [list, "character"]];
 			const { result } = await target.chooseButton(bolDialog).set("ai", button => {
 				const target = get.player();
-				const num = lib.skill.skill_zhangji_B.getNum(target.name);
+				let num = lib.skill.skill_zhangji_B.getNum(target.name);
 				if (target.name2 != undefined) num = Math.min(num, lib.skill.skill_zhangji_B.getNum(target.name2));
 				return lib.skill.skill_zhangji_B.getNum(button.link) - num;
 			});
@@ -33015,7 +33014,7 @@ const skills = {
 					})()
 				);
 			if (!bool) return;
-			const choices = links.map(i => i[2]);
+			const choices = links.map(i => i[2].slice(8));
 			if (!event.isMine() && !event.isOnline()) await game.delayx();
 			let num = 0;
 			["basic", "trick", "equip"].forEach(type => {

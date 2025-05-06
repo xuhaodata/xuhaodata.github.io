@@ -552,6 +552,13 @@ export class Player extends HTMLDivElement {
 			skillName = "player_when_" + Math.random().toString(36).slice(-8);
 		} while (lib.skill[skillName] != null);
 		const vars = {};
+		//获取sourceSkill
+		let eventName = get.event().name;
+		if (eventName.startsWith("pre_")) eventName = eventName.slice(4);
+		if (eventName.endsWith("_backup")) eventName = eventName.slice(0, eventName.lastIndexOf("_backup"));
+		if (eventName.endsWith("ContentBefore")) eventName = eventName.slice(0, eventName.lastIndexOf("ContentBefore"));
+		if (eventName.endsWith("ContentAfter")) eventName = eventName.slice(0, eventName.lastIndexOf("ContentAfter"));
+		const sourceSkill = get.sourceSkillFor(eventName);
 		/**
 		 * 作用域
 		 * @type { ((code: string) => any)? }
@@ -563,6 +570,7 @@ export class Player extends HTMLDivElement {
 			forced: true,
 			charlotte: true,
 			popup: false,
+			sourceSkill: sourceSkill,
 			// 必要条件
 			/** @type { Required<Skill>['filter'][] } */
 			filterFuns: [],

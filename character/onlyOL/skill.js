@@ -62,8 +62,8 @@ const skills = {
 							.getParent()
 							.filterCard(get.autoViewAs({ name: button.link[2], nature: button.link[3], storage: { olguifu_viewAs: true } }, "unsure"), player, get.event().getParent());
 					},
-					check(button, player) {
-						return player.getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"));
+					check(button) {
+						return get.player().getUseValue(get.autoViewAs({ name: button.link[2], nature: button.link[3] }, "unsure"));
 					},
 					backup(links, player) {
 						return {
@@ -89,16 +89,7 @@ const skills = {
 								player.logSkill(skill);
 								player.addTempSkill(skill + "_used");
 								player.markAuto(skill + "_used", card.name);
-								player.when("useCard1").then(() => {
-									const stat = player.getStat().card,
-										card = trigger.card,
-										name = card.name;
-									if (card.storage?.olguifu_viewAs && trigger.addCount !== false) {
-										trigger.addCount = false;
-										if (typeof stat[name] === "number") stat[name]--;
-										//game.log(card,"不计入次数");
-									}
-								});
+								event.getParent().addCount = false;
 							},
 						};
 					},
@@ -131,20 +122,34 @@ const skills = {
 				filter(event, player) {
 					const storage = player.storage.olguifu_record;
 					if (event.card?.name) return !storage.card.includes(event.card.name);
-					const skill = get.sourceSkillFor(event.getParent().name),
-						info = get.info(skill);
-					if (!info || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) return false;
-					return !storage.skill.includes(skill);
+					const skill = lib.skill.olguifu_record.findSkill(event);
+					return skill && !storage.skill.includes(skill);
+				},
+				findSkill(event) {//别在cost里写player.when来造成伤害，100%找不到
+					let skill = "",
+						count = 0;
+					do {
+						count++;
+						let name = event.getParent(count)?.name;
+						if (!name) break;
+						if (name.startsWith("pre_")) name = name.slice(4);
+						if (name.endsWith("_backup")) name = name.slice(0, name.lastIndexOf("_backup"));
+						if (name.endsWith("ContentBefore")) name = name.slice(0, name.lastIndexOf("ContentBefore"));
+						if (name.endsWith("ContentAfter")) name = name.slice(0, name.lastIndexOf("ContentAfter"));
+						skill = get.sourceSkillFor(name);
+						const info = get.info(skill);
+						if (!info || !Object.keys(info).length || info.charlotte || info.equipSkill || lib.skill.global.includes(skill)) continue;
+						return skill;
+					} while (true);
+					return null;
 				},
 				forced: true,
 				locked: false,
 				content() {
 					let storage = player.storage[event.name];
+					const skill = lib.skill[event.name].findSkill(trigger);
 					if (trigger.card) storage["card"].add(trigger.card.name);
-					else {
-						const skill = get.sourceSkillFor(trigger.getParent().name);
-						storage["skill"].add(skill);
-					}
+					else if (skill) storage["skill"].add(skill);
 					player.markSkill(event.name);
 				},
 				intro: {

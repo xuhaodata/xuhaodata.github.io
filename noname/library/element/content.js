@@ -3100,6 +3100,7 @@ player.removeVirtualEquip(card);
 			var hs = game.me.getCards("h");
 			game.addVideo("lose", game.me, [get.cardsInfo(hs), [], [], []]);
 			for (var i = 0; i < hs.length; i++) {
+				hs[i].removeGaintag(true);
 				hs[i].discard(false);
 			}
 
@@ -3683,6 +3684,7 @@ player.removeVirtualEquip(card);
 		if (result && result.bool) {
 			var hs = game.me.getCards("h");
 			for (var i = 0; i < hs.length; i++) {
+				hs[i].removeGaintag(true);
 				hs[i].discard(false);
 			}
 			const cards = get.cards(hs.length);
@@ -3709,6 +3711,7 @@ player.removeVirtualEquip(card);
 					function (player, hs) {
 						game.addVideo("lose", player, [get.cardsInfo(hs), [], [], []]);
 						for (var i = 0; i < hs.length; i++) {
+							hs[i].removeGaintag(true);
 							hs[i].discard(false);
 						}
 					},
@@ -4930,6 +4933,7 @@ player.removeVirtualEquip(card);
 			}
 		},
 		async (event, trigger, player) => {
+			if (typeof event.dialog?.close == "function") event.dialog.close();
 			if (event.logSkill && event.result.bool && !game.online) {
 				if (typeof event.logSkill == "string") {
 					player.logSkill(event.logSkill);
@@ -4943,7 +4947,6 @@ player.removeVirtualEquip(card);
 				event.done.discarder = player;
 				await event.done;
 			}
-			if (typeof event.dialog?.close == "function") event.dialog.close();
 		},
 	],
 	gaincardMultiple: function () {
@@ -8970,7 +8973,7 @@ player.removeVirtualEquip(card);
 				if (cardx[j].gaintag && cardx[j].gaintag.length) {
 					event.gaintag_map[cardx[j].cardid] = cardx[j].gaintag.slice(0);
 					//仅移除非永久标记
-					const tags = cardx[j].gaintag.filter(tag => tag.indexOf("eternal_") !== 0);
+					const tags = cardx[j].gaintag.filter(tag => !tag.startsWith("eternal_"));
 					tags.forEach(tag => cardx[j].removeGaintag(tag));
 				}
 

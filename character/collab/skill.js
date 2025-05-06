@@ -15,10 +15,6 @@ const skills = {
 			return true;
 		},
 		async content(event, trigger, player) {
-			/*await player.gain(game.createCard2("luojing", "heart", 7), "gain2");
-			game.filterPlayer(target=>target!=player).forEach(async target=>{
-				await target.useCard({name:"qixin",isCard:true},player,false);
-			})*/
 			if (trigger.name == "phase") {
 				const name = event.triggername == "phaseBegin" ? "leigong" : "younan",
 					card = get.autoViewAs({ name: name, isCard: true });
