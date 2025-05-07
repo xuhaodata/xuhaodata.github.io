@@ -21192,6 +21192,17 @@ const skills = {
 	},
 	xinfu_qianchong: {
 		audio: 1,
+		init(player, skill) {
+			const es = player.getCards("e");
+			if (es.length) {
+				if (es.every(card => get.color(card) == "red")) player.addAdditionalSkill(skill, "mingzhe");
+				else if (es.every(card => get.color(card) == "black")) player.addAdditionalSkill(skill, "weimu");
+				else player.removeAdditionalSkill(skill);
+			} else player.removeAdditionalSkill(skill);
+		},
+		onremove(player, skill) {
+			player.removeAdditionalSkill(skill);
+		},
 		trigger: { player: "phaseUseBegin" },
 		filter(event, player) {
 			if (["basic", "trick", "equip"].every(type => player.getStorage("xinfu_qianchong_effect").includes(type))) return false;
@@ -21203,6 +21214,7 @@ const skills = {
 			}
 			return false;
 		},
+		locked: true,
 		async cost(event, trigger, player) {
 			const list = ["basic", "trick", "equip", "cancel2"];
 			list.removeArray(player.getStorage("xinfu_qianchong_effect"));
@@ -21229,7 +21241,7 @@ const skills = {
 			player.popup(str, "thunder");
 		},
 		derivation: ["weimu", "mingzhe"],
-		group: ["qc_weimu", "qc_mingzhe"],
+		group: "xinfu_qianchong_change",
 		subSkill: {
 			effect: {
 				charlotte: true,
@@ -21246,50 +21258,26 @@ const skills = {
 					},
 				},
 			},
-		},
-	},
-	qc_weimu: {
-		audio: true,
-		trigger: { global: "useCard1" },
-		forced: true,
-		firstDo: true,
-		filter(event, player) {
-			if (player.hasSkill("weimu")) return false;
-			if (event.player == player) return false;
-			if (get.color(event.card) != "black" || get.type(event.card) != "trick") return false;
-			var es = player.getCards("e");
-			if (!es.length) return false;
-			for (var i = 0; i < es.length; i++) {
-				if (get.color(es[i]) != "black") return false;
-			}
-			var info = lib.card[event.card.name];
-			return info && info.selectTarget && info.selectTarget == -1 && !info.toself;
-		},
-		async content() {},
-		mod: {
-			targetEnabled(card, player, target) {
-				var bool = true;
-				var es = target.getCards("e");
-				if (!es.length) bool = false;
-				for (var i = 0; i < es.length; i++) {
-					if (get.color(es[i]) != "black") bool = false;
-				}
-				if (bool && (get.type(card) == "trick" || get.type(card) == "delay") && get.color(card) == "black") return false;
+			change: {
+				trigger: {
+					player: "loseAfter",
+					global: ["equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],
+				},
+				filter(event, player) {
+					if (event.name == "equip" && event.player == player) return true;
+					return event.getl?.(player)?.es?.length;
+				},
+				forced: true,
+				popup: false,
+				async content(event, trigger, player) {
+					const skill = "xinfu_qianchong";
+					get.info(skill).init(player, skill);
+				},
 			},
 		},
 	},
-	qc_mingzhe: {
-		audio: true,
-		inherit: "mingzhe",
-		filter(event, player) {
-			if (player.hasSkill("mingzhe")) return false;
-			const es = player.getCards("e");
-			if (!es.length || es.some(card => get.color(card) != "red")) return false;
-			if (player == _status.currentPhase) return false;
-			if (event.name.indexOf("lose") != 0) return get.color(event.card) == "red";
-			return event.type == "discard";
-		},
-	},
+	qc_weimu: { audio: true },
+	qc_mingzhe: { audio: true },
 	xinfu_shangjian: {
 		audio: 2,
 		getNum(player) {
