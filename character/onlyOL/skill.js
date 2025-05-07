@@ -4009,7 +4009,7 @@ const skills = {
 			aiOrder(player, card, num) {
 				if (typeof card == "object" && _status.currentPhase === player) {
 					const evt = player.getLastUsed(1);
-					if (evt && evt.card && ((get.suit(evt.card) && get.suit(evt.card) == get.suit(card)) || (evt.card.number && evt.card.number == get.number(card)))) {
+					if (evt && evt.card && ((get.suit(evt.card) && get.suit(evt.card) == get.suit(card)) || get.type2(evt.card) == get.type2(card))) {
 						return num + 10;
 					}
 				}
