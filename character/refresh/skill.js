@@ -13428,6 +13428,9 @@ const skills = {
 	reluoyi: {
 		audio: 2,
 		trigger: { player: "phaseDrawBegin1" },
+		filter(event, player) {
+			return !event.numFixed;
+		},
 		check(event, player) {
 			if (player.countCards("h", "sha")) return true;
 			return Math.random() < 0.5;
@@ -13435,7 +13438,7 @@ const skills = {
 		content() {
 			"step 0";
 			player.addTempSkill("reluoyi2", { player: "phaseBefore" });
-			trigger.cancel(null, null, "notrigger");
+			trigger.changeToZero();
 			"step 1";
 			event.cards = get.cards(3);
 			player.showCards(event.cards, "裸衣");
