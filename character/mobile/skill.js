@@ -12937,28 +12937,23 @@ const skills = {
 		trigger: { player: "useCard" },
 		filter(event, player) {
 			player.addTip("xingtu", `行图 ${get.translation(get.number(event.card, player))}`);
-			var evt = lib.skill.dcjianying.getLastUsed(player, event);
-			if (!evt || !evt.card) return false;
-			var num1 = get.number(event.card),
+			const evt = lib.skill.dcjianying.getLastUsed(player, event);
+			if (!evt?.card) return false;
+			const num1 = get.number(event.card),
 				num2 = get.number(evt.card);
-			return typeof num1 == "number" && typeof num2 == "number" && num2 % num1 == 0;
+			return typeof num1 == "number" && typeof num2 == "number" && num2 != 0 && num2 % num1 == 0;
 		},
 		forced: true,
-		content() {
-			player.draw();
+		async content(event, trigger, player) {
+			await player.draw();
 		},
 		mod: {
 			cardUsable(card, player) {
 				if (typeof card == "object") {
 					let num1 = get.number(card);
 					if (num1 != "unsure" && typeof num1 != "number") return;
-					if (!card.cards) return;
-					for (var i of card.cards) {
-						if (i.hasGaintag("xingtu1")) return Infinity;
-					}
-					let evt = lib.skill.dcjianying.getLastUsed(player);
-					if (!evt || !evt.card) return;
-					let num2 = get.number(evt.card);
+					if ([card].concat(card.cards || []).some(cardx => get.itemtype(cardx) === "card" && cardx.hasGaintag("xingtu1"))) return Infinity;
+					let num2 = player.storage.xingtu_mark;
 					if (typeof num2 == "number" && num1 % num2 == 0) return Infinity;
 				}
 			},
@@ -12970,18 +12965,16 @@ const skills = {
 					for (var i of card.cards) {
 						if (i.hasGaintag("xingtu1")) return num + 5;
 					}
-					let evt = lib.skill.dcjianying.getLastUsed(player);
-					if (!evt || !evt.card) return;
-					let num2 = get.number(evt.card);
+					let num2 = player.storage.xingtu_mark;
 					if (typeof num2 == "number" && num1 % num2 == 0) return num + 5;
 				}
 			},
 		},
 		init(player) {
 			player.addSkill("xingtu_mark");
-			var history = player.getAllHistory("useCard");
+			const history = player.getAllHistory("useCard");
 			if (history.length) {
-				var trigger = history[history.length - 1],
+				const trigger = history[history.length - 1],
 					num = get.number(trigger.card);
 				player.storage.xingtu_mark = num;
 				player[typeof num != "number" ? "unmarkSkill" : "markSkill"]("xingtu_mark");
@@ -13002,33 +12995,31 @@ const skills = {
 					global: "loseAsyncAfter",
 				},
 				filter(event, player, name) {
-					return name == "useCard1" || (event.getg(player).length && player.countCards("h"));
+					return name == "useCard1" || (event.getg?.(player)?.length && player.countCards("h"));
 				},
 				direct: true,
 				firstDo: true,
-				content() {
-					"step 0";
+				async content(event, trigger, player) {
 					player.removeGaintag("xingtu1");
 					player.removeGaintag("xingtu2");
 					if (event.triggername == "useCard1") {
-						var num = get.number(trigger.card, player);
+						const num = get.number(trigger.card, player);
 						player.storage.xingtu_mark = num;
 						player[typeof num != "number" ? "unmarkSkill" : "markSkill"]("xingtu_mark");
-						if (typeof num != "number") event.finish();
+						if (typeof num != "number") return;
 					}
-					"step 1";
-					var cards1 = [],
+					const cards1 = [],
 						cards2 = [],
 						num = player.storage.xingtu_mark;
 					player.getCards("h").forEach(card => {
-						var numx = get.number(card, player);
+						const numx = get.number(card, player);
 						if (typeof numx == "number") {
 							if (numx % num == 0) cards1.push(card);
-							if (num % numx == 0) cards2.push(card);
+							if (num % numx == 0 && typeof num == "number" && num != 0) cards2.push(card);
 						}
 					});
-					player.addGaintag(cards1, "xingtu1");
-					player.addGaintag(cards2, "xingtu2");
+					if (cards1.length) player.addGaintag(cards1, "xingtu1");
+					if (cards2.length) player.addGaintag(cards2, "xingtu2");
 				},
 				intro: { content: "上一张牌的点数：#" },
 			},

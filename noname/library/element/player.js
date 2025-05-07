@@ -7144,7 +7144,7 @@ export class Player extends HTMLDivElement {
 			next.draw = true;
 		}
 		//检查card合法性
-		if (next.cards.length > 1 && next.cards.some(cardx => cardx.isViewAsCard)) {
+		if ((next.cards.length > 1 && next.cards.some(cardx => cardx.isViewAsCard)) || !next.card.name) {
 			//装备牌的实体牌数大于1时需要全部都为真实卡牌
 			_status.event.next.remove(next);
 			next.resolve();

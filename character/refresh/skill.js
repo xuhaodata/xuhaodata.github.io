@@ -4700,29 +4700,29 @@ const skills = {
 		check(event, player) {
 			return get.attitude(player, event.player) >= 0;
 		},
-		//priority:-5,
 		logTarget: "player",
 		async content(event, trigger, player) {
-			while (player.isIn() && trigger.player.isIn()) {
-				await game.asyncDraw([trigger.player, player]);
+			const {
+				targets: [target],
+			} = event;
+			while (player.isIn() && target.isIn()) {
+				const { result: list1 } = await player.draw("nodelay");
+				const { result: list2 } = await target.draw();
 				await game.delayx();
-				let getGainSuit = function (player) {
-						let last = player.getHistory("gain", function (evt) {
-							return evt.getParent(2) == event;
-						});
-						if (last.length) {
-							let evt = last.pop();
-							if (evt.cards.length == 1 && player.getCards("h").includes(evt.cards[0])) return get.suit(evt.cards[0], player);
-						} else return player;
-					},
-					bool;
-				if (getGainSuit(player) == getGainSuit(trigger.player)) bool = await player.chooseBool("是否继续发动【樵拾】？", "和" + get.translation(trigger.player) + "各摸一张牌").forResultBool();
-				if (!bool) break;
+				if (
+					[list1, list2].every(cards => get.itemtype(cards) == "cards") &&
+					list1.length == list2.length &&
+					list1
+						.map(card => get.suit(card, player))
+						.toUniqued()
+						.every(suit => list2.some(card => get.suit(card, target) == suit))
+				) {
+					const { result } = await player.chooseBool("是否继续发动【樵拾】？", `和${get.translation(target)}各摸一张牌`);
+					if (!result?.bool) break;
+				} else break;
 			}
 		},
-		ai: {
-			expose: 0.1,
-		},
+		ai: { expose: 0.1 },
 	},
 	reyanyu: {
 		audio: 2,
@@ -5387,86 +5387,9 @@ const skills = {
 	},
 	reluanwu: {
 		audio: "luanwu",
-		audioname: ["re_jiaxu"],
-		unique: true,
-		enable: "phaseUse",
-		limited: true,
-		skillAnimation: "epic",
-		animationColor: "thunder",
-		filterTarget(card, player, target) {
-			return target != player;
-		},
-		selectTarget: -1,
-		multiline: true,
-		contentBefore() {
-			player.awakenSkill(event.skill);
-		},
-		content() {
-			"step 0";
-			target
-				.chooseToUse(
-					"乱武：使用一张杀或失去1点体力",
-					function (card) {
-						if (get.name(card) != "sha") return false;
-						return lib.filter.filterCard.apply(this, arguments);
-					},
-					function (card, player, target) {
-						if (player == target) return false;
-						var dist = get.distance(player, target);
-						if (dist > 1) {
-							if (
-								game.hasPlayer(function (current) {
-									return current != player && get.distance(player, current) < dist;
-								})
-							) {
-								return false;
-							}
-						}
-						return lib.filter.filterTarget.apply(this, arguments);
-					}
-				)
-				.set("ai2", function () {
-					return get.effect_use.apply(this, arguments) - _status.event.effect;
-				})
-				.set("effect", get.effect(target, { name: "losehp" }, target, target));
-			"step 1";
-			if (result.bool == false) {
-				target.loseHp();
-			}
-		},
-		contentAfter() {
-			player.chooseUseTarget("sha", "是否使用一张【杀】？", false, "nodistance");
-		},
-		ai: {
-			order: 1,
-			result: {
-				player(player) {
-					if (lib.config.mode == "identity" && game.zhu.isZhu && player.identity == "fan") {
-						if (game.zhu.hp == 1 && game.zhu.countCards("h") <= 2) return 1;
-					}
-					var num = 0;
-					var players = game.filterPlayer();
-					for (var i = 0; i < players.length; i++) {
-						var att = get.attitude(player, players[i]);
-						if (att > 0) att = 1;
-						if (att < 0) att = -1;
-						if (players[i] != player && players[i].hp <= 3) {
-							const hs = players[i].countCards("hs");
-							if (hs === 0) num += att / players[i].hp;
-							else if (hs === 1) num += att / 2 / players[i].hp;
-							else if (hs === 2) num += att / 4 / players[i].hp;
-						}
-						if (players[i].hp == 1) num += att * 1.5;
-					}
-					if (player.hp == 1) {
-						return -num;
-					}
-					if (player.hp == 2) {
-						return -game.players.length / 4 - num;
-					}
-					return -game.players.length / 3 - num;
-				},
-			},
+		inherit: "luanwu",
+		async contentAfter(event, trigger, player) {
+			await player.chooseUseTarget("sha", "是否使用一张【杀】？", false, "nodistance");
 		},
 	},
 	reweimu: {
