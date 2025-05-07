@@ -7507,7 +7507,7 @@ const skills = {
 		selectCard: -1,
 		check: () => 1,
 		onuse(result, player) {
-			player.awakenSkill(event.name);
+			player.awakenSkill("sidai");
 			player.addTempSkill("sidai_tao");
 			player.addTempSkill("sidai_shan");
 		},

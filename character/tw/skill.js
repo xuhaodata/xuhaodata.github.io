@@ -19360,7 +19360,7 @@ const skills = {
 		selectCard: -1,
 		check: () => 1,
 		onuse(result, player) {
-			player.awakenSkill(event.name);
+			player.awakenSkill("twsidai");
 			player.addTempSkill("twsidai_effect");
 		},
 		ai: {

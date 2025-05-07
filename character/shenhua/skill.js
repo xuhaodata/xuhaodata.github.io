@@ -7278,26 +7278,25 @@ const skills = {
 		preHidden: true,
 		line: "thunder",
 		async cost(event, trigger, player) {
-			const next = player.chooseTarget(get.prompt2("leiji")).setHiddenSkill(event.name.slice(0, -5));
-			next.ai = function (target) {
-				if (target.hasSkill("hongyan")) return 0;
-				return get.damageEffect(target, _status.event.player, _status.event.player, "thunder");
-			};
-			event.result = await next.forResult();
+			event.result = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					const player = get.player();
+					if (target.hasSkill("hongyan")) return 0;
+					return get.damageEffect(target, player, player, "thunder");
+				})
+				.setHiddenSkill(event.skill)
+				.forResult();
 		},
 		async content(event, trigger, player) {
 			const [target] = event.targets;
-			const next = target.judge(function (card) {
+			const next = target.judge(card => {
 				if (get.suit(card) == "spade") return -4;
 				return 0;
 			});
-			next.judge2 = function (result) {
-				return result.bool == false ? true : false;
-			};
-			const bool = await next.forResultBool();
-			if (bool == false) {
-				await target.damage(2, "thunder");
-			}
+			next.judge2 = result => !result.bool;
+			const { result } = await next;
+			if (!result?.bool) await target.damage(2, "thunder");
 		},
 		ai: {
 			mingzhi: false,
