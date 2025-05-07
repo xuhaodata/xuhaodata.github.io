@@ -27432,31 +27432,30 @@ const skills = {
 		derivation: ["new_rewusheng", "xindangxian", "rezhiman"],
 	},
 	zhengnan: {
-		derivation: ["new_rewusheng", "dangxian", "rezhiman"],
 		audio: 2,
 		trigger: { global: "dieAfter" },
 		frequent: true,
-		content() {
-			"step 0";
-			player.draw(3);
-			"step 1";
-			var list = lib.skill.zhengnan.derivation.filter(skill => !player.hasSkill(skill));
-			if (list.length == 1) event._result = { control: list[0] };
-			else if (list.length > 0) {
-				player
-					.chooseControl(list)
-					.set("prompt", "选择获得一项技能")
-					.set("ai", function () {
-						if (_status.event.controls.includes("dangxian")) return "dangxian";
-						return _status.event.controls[0];
-					});
-			} else event.finish();
-			"step 2";
-			if (result.control) {
-				player.addSkills(result.control);
+		async content(event, trigger, player) {
+			await player.draw(3);
+			const list = lib.skill.zhengnan.derivation.filter(skill => !player.hasSkill(skill, null, false, false));
+			if (list.length > 0) {
+				const result =
+					list.length > 1
+						? await player
+								.chooseControl(list)
+								.set("prompt", "选择获得一项技能")
+								.set("ai", function () {
+									const controls = get.event().controls;
+									if (controls.includes("oldangxian")) return "oldangxian";
+									return controls[0];
+								})
+								.forResult()
+						: { control: list[0] };
+				if (result.control) await player.addSkills(result.control);
 			}
 		},
 		ai: { threaten: 2 },
+		derivation: ["new_rewusheng", "oldangxian", "rezhiman"],
 	},
 	wusheng_guansuo: { audio: 1 },
 	dangxian_guansuo: { audio: 1 },

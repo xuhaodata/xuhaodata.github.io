@@ -3107,10 +3107,6 @@ const skills = {
 				return get.player().getUseValue(new lib.element.VCard({ name: button.link[2], nature: button.link[3] }));
 			},
 			prompt(links, player) {
-				const num = game
-					.getGlobalHistory("useCard")
-					.map(evt => get.type2(evt.card))
-					.unique().length;
 				let prompt = "将你";
 				if (_status.currentPhase?.isIn() && _status.currentPhase !== player) prompt += "与" + get.translation(_status.currentPhase);
 				prompt += "的一张牌置入弃牌堆，";

@@ -2171,6 +2171,7 @@ const skills = {
 	//OL界廖化
 	oldangxian: {
 		audio: 2,
+		audioname2: { guansuo: "dangxian_guansuo" },
 		trigger: { player: "phaseBegin" },
 		forced: true,
 		async content(event, trigger, player) {
