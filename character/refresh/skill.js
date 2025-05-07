@@ -403,7 +403,6 @@ const skills = {
 		},
 	},
 	rejuyi: {
-		unique: true,
 		audio: 2,
 		derivation: ["benghuai", "reweizhong"],
 		trigger: { player: "phaseZhunbeiBegin" },
@@ -4958,7 +4957,6 @@ const skills = {
 	},
 	//新主公技
 	xinhuangtian: {
-		unique: true,
 		audio: "xinhuangtian2",
 		audioname: ["zhangjiao", "re_zhangjiao"],
 		global: "xinhuangtian2",
@@ -5021,7 +5019,6 @@ const skills = {
 	rejijiang: {
 		audio: "jijiang1",
 		audioname: ["liushan", "re_liubei", "re_liushan", "ol_liushan"],
-		unique: true,
 		group: ["rejijiang1", "rejijiang3"],
 		zhuSkill: true,
 		filter(event, player) {
@@ -6949,7 +6946,6 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "wood",
 		audio: 2,
-		unique: true,
 		limited: true,
 		enable: "phaseUse",
 		filterTarget: true,
@@ -7522,7 +7518,6 @@ const skills = {
 	yongjin: {
 		audio: 2,
 		audioname: ["xin_lingtong"],
-		unique: true,
 		limited: true,
 		skillAnimation: true,
 		animationColor: "wood",
@@ -8402,7 +8397,6 @@ const skills = {
 	},
 	olbaonue: {
 		audio: 2,
-		unique: true,
 		zhuSkill: true,
 		trigger: { global: "damageSource" },
 		filter(event, player) {
@@ -8817,7 +8811,6 @@ const skills = {
 		limited: true,
 		skillAnimation: true,
 		animationColor: "wood",
-		unique: true,
 		filter(event, player) {
 			return player.hp > 0;
 		},
@@ -9595,7 +9588,6 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		derivation: "rejiushi_mark",
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "water",
@@ -9785,7 +9777,6 @@ const skills = {
 		},
 	},
 	reqimou: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		enable: "phaseUse",
@@ -10381,7 +10372,6 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "fire",
 		audio: 2,
-		unique: true,
 		juexingji: true,
 		zhuSkill: true,
 		keepSkill: true,
@@ -10521,7 +10511,6 @@ const skills = {
 		trigger: { global: "phaseBefore", player: "enterGame" },
 		forced: true,
 		zhuSkill: true,
-		unique: true,
 		filter(event, player) {
 			return (event.name != "phase" || game.phaseNumber == 0) && player.hasZhuSkill("olxueyi");
 		},
@@ -10543,21 +10532,22 @@ const skills = {
 			},
 		},
 		group: "olxueyi_draw",
-	},
-	olxueyi_draw: {
-		audio: "olxueyi",
-		trigger: { player: "phaseUseBegin" },
-		prompt2: "弃置一枚「裔」标记，然后摸一张牌",
-		sourceSkill: "olxueyi",
-		check(event, player) {
-			return player.getUseValue("wanjian") > 0 || !player.needsToDiscard();
-		},
-		filter(event, player) {
-			return player.hasZhuSkill("olxueyi") && player.hasMark("olxueyi");
-		},
-		content() {
-			player.removeMark("olxueyi", 1);
-			player.draw();
+		subSkill: {
+			draw: {
+				audio: "olxueyi",
+				trigger: { player: "phaseUseBegin" },
+				prompt2: "弃置一枚「裔」标记，然后摸一张牌",
+				check(event, player) {
+					return player.getUseValue("wanjian") > 0 || !player.needsToDiscard();
+				},
+				filter(event, player) {
+					return player.hasZhuSkill("olxueyi") && player.hasMark("olxueyi");
+				},
+				content() {
+					player.removeMark("olxueyi", 1);
+					player.draw();
+				},
+			},
 		},
 	},
 	olhunzi: {
@@ -10585,7 +10575,6 @@ const skills = {
 	},
 	olzhiba: {
 		audio: 2,
-		unique: true,
 		zhuSkill: true,
 		global: "olzhiba2",
 	},
@@ -13512,7 +13501,6 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "wood",
 		audio: 2,
-		unique: true,
 		juexingji: true,
 		derivation: "gongxin",
 		trigger: { player: ["phaseZhunbeiBegin", "phaseJieshuBegin"] },
@@ -13530,7 +13518,6 @@ const skills = {
 	},
 	qingjian: {
 		audio: 2,
-		unique: true,
 		trigger: { player: "gainAfter" },
 		direct: true,
 		usable: 4,
