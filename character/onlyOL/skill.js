@@ -2190,6 +2190,7 @@ const skills = {
 				},
 				charlotte: true,
 				audio: "oldangxian",
+				audioname2: { guansuo: "dangxian_guansuo" },
 				trigger: { player: ["phaseUseBegin", "phaseUseEnd"] },
 				filter(event, player, name) {
 					if (event._extraPhaseReason !== "oldangxian") return false;
