@@ -5596,15 +5596,11 @@ const skills = {
 	//张布
 	mbchengxiong: {
 		audio: 2,
-		trigger: {
-			player: "useCardToTargeted",
-		},
-		locked: false,
+		trigger: { player: "useCardToTargeted" },
 		filter(event, player) {
-			if (get.type2(event.card) != "trick") return false;
-			if (player === event.target) return false;
+			if (get.type2(event.card) !== "trick" || !event.isFirstTarget || event.targets.includes(player)) return false;
 			const num = lib.skill.mbchengxiong.phaseUsed(event, player);
-			return game.hasPlayer(current => current.countCards("he") >= num);
+			return game.hasPlayer(current => current !== player && current.countCards("he") >= num);
 		},
 		phaseUsed(event, player) {
 			let phase = null;
@@ -5622,7 +5618,7 @@ const skills = {
 			event.result = await player
 				.chooseTarget(get.prompt2("mbchengxiong"), function (card, player, target) {
 					const num = get.event("num");
-					return target.countCards("he") >= num;
+					return target !== player && target.countCards("he") >= num;
 				})
 				.set("num", num)
 				.set("color", get.color(trigger.card))
@@ -5649,6 +5645,7 @@ const skills = {
 				.forResult();
 			if (result.bool && get.color(result.links[0]) == get.color(trigger.card)) await target.damage();
 		},
+		locked: false,
 		mod: {
 			aiOrder(player, card, num) {
 				if (get.type2(card) == "trick") return num + 10;
@@ -5657,9 +5654,7 @@ const skills = {
 	},
 	mbwangzhuang: {
 		audio: 2,
-		trigger: {
-			global: "damageEnd",
-		},
+		trigger: { global: "damageEnd" },
 		filter(event, player) {
 			if (event.card) return false;
 			return [event.source, event.player].includes(player);
@@ -5668,7 +5663,7 @@ const skills = {
 			return _status.currentPhase || player;
 		},
 		async content(event, trigger, player) {
-			await player.draw(2);
+			await player.draw();
 			if (_status.currentPhase) _status.currentPhase.addTempSkill("fengyin");
 		},
 	},
