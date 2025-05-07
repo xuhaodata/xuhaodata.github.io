@@ -15804,7 +15804,7 @@ const skills = {
 						var num = player.countMark("twchuanshu_mark");
 						trigger.card.twchuanshu_mark = num;
 						player.removeMark("twchuanshu_mark", num, false);
-					} else if (name == "damageBegin1") trigger.num++;
+					} else if (name == "damageBegin1") trigger.num += trigger.card.twchuanshu_mark;
 					else {
 						var num1 = trigger.card.twchuanshu_mark;
 						var num2 = 0;
@@ -15814,6 +15814,7 @@ const skills = {
 						var targets = player.getStorage("twchuanshu_effect").filter(function (target) {
 							return target.isIn() && target != player;
 						});
+						if(!targets.length) return;
 						if (targets.length == 1) targets[0].draw(num1 * num2);
 						else game.asyncDraw(targets, num1 * num2);
 					}
