@@ -218,6 +218,7 @@ game.import("card", function () {
 					if (evt.player == target) {
 						evt.set("skipTao", true);
 						evt.untrigger();
+						game.log(target, "跳过了濒死结算");
 					}
 					player
 						.when({ global: "dieAfter" })
@@ -473,12 +474,13 @@ game.import("card", function () {
 					let use_player = undefined,
 						use_result = undefined;
 					//人类和AI
-					let humans = targets.filter(current => (current === game.me || current.isOnline()) && current.hasUsableCard("luojing"));
-					let locals = targets.slice(0).randomSort();
+					let targetsx = targets.filter(target => target.hasUsableCard("luojing"));
+					let humans = targetsx.filter(target => target === game.me || target.isOnline());
+					let locals = targetsx.slice(0).randomSort();
 					locals.removeArray(humans);
 					const eventId = get.id();
 					const send = (current, source, eventId, eventData) => {
-						lib.skill[event.name].chooseToUse(current, source, eventId, eventData);
+						lib.skill.luojing_skill.chooseToUse(current, source, eventId, eventData);
 						game.resume();
 					};
 					//让读条不消失并显示读条
@@ -606,12 +608,13 @@ game.import("card", function () {
 					let use_player = undefined,
 						use_result = undefined;
 					//人类和AI
-					let humans = targets.filter(current => (current === game.me || current.isOnline()) && current.hasUsableCard("shengsi"));
-					let locals = targets.slice(0).randomSort();
+					let targetsx = targets.filter(target => target.hasUsableCard("shengsi"));
+					let humans = targetsx.filter(target => target === game.me || target.isOnline());
+					let locals = targetsx.slice(0).randomSort();
 					locals.removeArray(humans);
 					const eventId = get.id();
 					const send = (current, source, eventId, eventData) => {
-						lib.skill[event.name].chooseToUse(current, source, eventId, eventData);
+						lib.skill.shengsi_skill.chooseToUse(current, source, eventId, eventData);
 						game.resume();
 					};
 					//让读条不消失并显示读条

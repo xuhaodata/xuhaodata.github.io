@@ -5352,53 +5352,49 @@ const skills = {
 	luanwu: {
 		audio: 2,
 		audioname: ["re_jiaxu"],
-		unique: true,
 		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(current => player != current);
+		},
 		limited: true,
 		skillAnimation: "epic",
 		animationColor: "thunder",
-		filterTarget(card, player, target) {
-			return target != player;
-		},
+		filterTarget: lib.filter.notMe,
 		selectTarget: -1,
-		multitarget: true,
 		multiline: true,
+		async contentBefore(event, trigger, player) {
+			player.awakenSkill(event.skill);
+		},
 		async content(event, trigger, player) {
-			player.awakenSkill(event.name);
-			const currented = [player];
-			let current = player.next;
-			do {
-				currented.push(current);
-				current.addTempClass("target");
-				const { result } = await current
-					.chooseToUse(
-						"乱武：使用一张杀或失去1点体力",
-						function (card) {
-							if (get.name(card) != "sha") return false;
-							return lib.filter.cardEnabled.apply(this, arguments);
-						},
-						function (card, player, target) {
-							if (player == target) return false;
-							const dist = get.distance(player, target);
-							if (dist > 1) {
-								if (
-									game.hasPlayer(function (current) {
-										return current != player && get.distance(player, current) < dist;
-									})
-								) {
-									return false;
-								}
+			const { target } = event;
+			const { result } = await target
+				.chooseToUse(
+					"乱武：使用一张【杀】或失去1点体力",
+					function (card) {
+						if (get.name(card) != "sha") return false;
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					function (card, player, target) {
+						if (player == target) return false;
+						var dist = get.distance(player, target);
+						if (dist > 1) {
+							if (
+								game.hasPlayer(function (current) {
+									return current != player && get.distance(player, current) < dist;
+								})
+							) {
+								return false;
 							}
-							return lib.filter.filterTarget.apply(this, arguments);
 						}
-					)
-					.set("ai2", function () {
-						return get.effect_use.apply(this, arguments) + 0.01;
-					})
-					.set("addCount", false);
-				if (!result?.bool) await current.loseHp();
-				current = current.next;
-			} while (!currented.includes(current) && !void (await game.delay(0.5)));
+						return lib.filter.filterTarget.apply(this, arguments);
+					}
+				)
+				.set("ai2", function () {
+					return get.effect_use.apply(this, arguments) - get.event("effect");
+				})
+				.set("effect", get.effect(target, { name: "losehp" }, target, target))
+				.set("addCount", false);
+			if (!result?.bool) await target.loseHp();
 		},
 		ai: {
 			order: 1,

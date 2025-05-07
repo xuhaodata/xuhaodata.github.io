@@ -1100,8 +1100,37 @@ const skills = {
 		audio: 4,
 		logAudio: () => 2,
 		inherit: "luanwu",
-		contentBefore() {
-			player.addTempSkill("sbluanwu_add");
+		async contentBefore(event, trigger, player) {
+			player.addTempSkill(event.skill + "_add");
+			player.awakenSkill(event.skill);
+		},
+		async content(event, trigger, player) {
+			const { target } = event;
+			const { result } = await target
+				.chooseToUse(
+					"乱武：使用一张【杀】或失去1点体力",
+					function (card) {
+						if (get.name(card) != "sha") return false;
+						return lib.filter.filterCard.apply(this, arguments);
+					},
+					function (card, player, target) {
+						if (player == target || target == get.event("targetx")) return false;
+						const dist = get.distance(player, target);
+						if (dist > 1) {
+							if (game.hasPlayer(current => current != player && get.distance(player, current) < dist)) {
+								return false;
+							}
+						}
+						return lib.filter.filterTarget.apply(this, arguments);
+					}
+				)
+				.set("ai2", function () {
+					return get.effect_use.apply(this, arguments) - get.event("effect");
+				})
+				.set("effect", get.effect(target, { name: "losehp" }, target, target))
+				.set("addCount", false)
+				.set("targetx", player);
+			if (!result?.bool) await target.loseHp();
 		},
 		subSkill: {
 			add: {
@@ -1143,12 +1172,8 @@ const skills = {
 		},
 		derivation: ["sbwansha_rewrite", "sbweimu_rewrite"],
 	},
-	sbwansha_rewrite: {
-		nopop: true,
-	},
-	sbweimu_rewrite: {
-		nopop: true,
-	},
+	sbwansha_rewrite: { nopop: true },
+	sbweimu_rewrite: { nopop: true },
 	sbweimu: {
 		audio: 4,
 		trigger: {
