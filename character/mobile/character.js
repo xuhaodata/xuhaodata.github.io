@@ -102,7 +102,7 @@ const characters = {
 		sex: "male",
 		group: "qun",
 		hp: 3,
-		skills: ["potdaozhuan", "potfuji"],
+		skills: ["potfuji", "potdaozhuan"],
 	},
 	pot_lougui: {
 		sex: "male",
@@ -999,7 +999,7 @@ const characters = {
 	zhangbu: {
 		sex: "male",
 		group: "wu",
-		hp: 4,
+		hp: 3,
 		skills: ["mbchengxiong", "mbwangzhuang"],
 	},
 	mb_wangjing: {
