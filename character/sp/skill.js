@@ -1257,8 +1257,8 @@ const skills = {
 			const dialog = [`${get.translation(event.name)}：请猜测${get.translation(get.translation(target))}手牌中的基本牌牌名`, [cardname, "vcard"]];
 			const {
 				result: { links },
-			} = await player.chooseButton(dialog, [1, Infinity], true).set("ai", () => -0.5 + Math.random());
-			let list = links.map(c => answer.map(i => i.name).includes(c[2]));
+			} = await player.chooseButton(dialog, [0, Infinity], true).set("ai", () => -0.5 + Math.random());
+			let list = cardname.map(c => answer.some(i => get.name(i) === c[2]) === links?.map(j => j[2]).includes(c[2]));
 			if (list.includes(true)) await player.recover();
 			if (list.includes(false)) {
 				const card = answer.filter(c => lib.filter.canBeGained(c, player, target)).randomGet();
