@@ -33581,7 +33581,7 @@ const skills = {
 					);
 				},
 				contentBefore() {
-					player.awakenSkill(event.name);
+					player.awakenSkill(event.skill);
 					var skill = lib.skill.jianjie;
 					var huoji = player.getStorage("jianjie_huoji").slice(0),
 						lianhuan = player.getStorage("jianjie_lianhuan").slice(0);

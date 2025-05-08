@@ -4491,7 +4491,7 @@ const skills = {
 					animationColor: "metal",
 					log: false,
 					async content(event, trigger, player) {
-						player.awakenSkill(event.name);
+						player.awakenSkill("potzhenfeng");
 						if (get.info(event.name).item === "recover") {
 							player.logSkill("potzhenfeng", null, null, null, [null]);
 							player.changeSkin({ characterName: "pot_taishici" }, "pot_taishici_shadow1");

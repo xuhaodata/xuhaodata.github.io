@@ -985,9 +985,7 @@ const skills = {
 	//贾诩
 	sbwansha: {
 		audio: 2,
-		trigger: {
-			global: "dying",
-		},
+		trigger: { global: "dying" },
 		filter(event, player) {
 			const position = player.storage.sbwansha ? "hej" : "h";
 			return event.player.countCards(position);
@@ -1001,8 +999,11 @@ const skills = {
 				position = player.storage.sbwansha ? "hej" : "h";
 			const num = 2,
 				prompt = `选择其中〇至${get.cnNumber(num)}张牌`;
-			let cards = await player.choosePlayerCard(target, position, [0, num], true, prompt).set("visible", true).forResultCards();
-			let result = await target
+			let result;
+			result = await player.choosePlayerCard(target, position, [0, num], true, prompt).set("visible", true).forResult();
+			if (!result?.cards?.length) return;
+			let { cards } = result;
+			result = await target
 				.chooseControl()
 				.set("choiceList", [`令${get.translation(player)}将${player === target ? get.translation(cards) : "其选择的牌"}分配给其他角色`, `弃置所有未被${get.translation(player)}选择的牌`])
 				.set("ai", () => {
@@ -1010,7 +1011,7 @@ const skills = {
 				})
 				.set(
 					"goon",
-					(function () {
+					(() => {
 						const att = get.sgnAttitude(target, player),
 							hs = target.countCards(position);
 						if (att > 0 || hs > 5) return true;
@@ -1025,7 +1026,7 @@ const skills = {
 					})()
 				)
 				.forResult();
-			if (result.index === 0 && cards.length) {
+			if (result?.index === 0 && cards.length) {
 				if (_status.connectMode) game.broadcastAll(() => (_status.noclearcountdown = true));
 				let given_map = {};
 				while (cards.length) {
@@ -1040,6 +1041,7 @@ const skills = {
 							})
 							.forResult();
 					}
+					if (!result?.links?.length) return;
 					const gives = result.links;
 					const result2 = await player
 						.chooseTarget("选择获得" + get.translation(gives) + "的角色", true, (card, player, target) => {
@@ -1053,12 +1055,13 @@ const skills = {
 							gives.reduce((sum, card) => sum + get.value(card), 0)
 						)
 						.forResult();
-					if (result2.bool) {
+					if (result2?.bool && result2?.targets?.length) {
 						cards.removeArray(gives);
 						const id = result2.targets[0].playerid;
 						if (!given_map[id]) given_map[id] = [];
 						given_map[id].addArray(gives);
 					}
+					else return;
 				}
 				if (_status.connectMode) game.broadcastAll(() => delete _status.noclearcountdown);
 				let list = [];
@@ -1072,10 +1075,10 @@ const skills = {
 					.loseAsync({
 						gain_list: list,
 						giver: player,
-						animate: "gain2",
+						animate: "draw",
 					})
 					.setContent("gaincardMultiple");
-			} else if (result.index) {
+			} else if (result?.index === 1) {
 				const discard = target.getCards(position).removeArray(cards);
 				if (discard.length) await target.discard(discard);
 			}
@@ -1086,11 +1089,11 @@ const skills = {
 				mod: {
 					cardEnabled(card, player) {
 						var source = _status.currentPhase;
-						if (card.name == "tao" && source && source != player && source.hasSkill("sbwansha") && !player.isDying()) return false;
+						if (card.name == "tao" && source?.isIn() && source != player && source.hasSkill("sbwansha") && !player.isDying()) return false;
 					},
 					cardSavable(card, player) {
 						var source = _status.currentPhase;
-						if (card.name == "tao" && source && source != player && source.hasSkill("sbwansha") && !player.isDying()) return false;
+						if (card.name == "tao" && source?.isIn() && source != player && source.hasSkill("sbwansha") && !player.isDying()) return false;
 					},
 				},
 			},
