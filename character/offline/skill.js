@@ -223,7 +223,7 @@ const skills = {
 			},
 		},
 	},
-	zombieshimu: {
+	zombielongmu: {
 		trigger: { global: ["die", "recoverBefore"] },
 		filter(event, player) {
 			const target = event.player;
@@ -283,8 +283,8 @@ const skills = {
 				}
 			}
 		},
-		group: "zombieshimu_weimu",
-		global: "zombieshimu_global",
+		group: "zombielongmu_weimu",
+		global: "zombielongmu_global",
 		subSkill: {
 			weimu: {
 				trigger: { target: "useCardToTarget", player: "addJudgeBefore" },
@@ -318,7 +318,7 @@ const skills = {
 					effect: {
 						target(card, player, target2) {
 							const target = _status.currentPhase;
-							if (target?.hasSkill("zombieshimu") && target !== player && get.tag(card, "recover")) return "zeroplayertarget";
+							if (target?.hasSkill("zombielongmu") && target !== player && get.tag(card, "recover")) return "zeroplayertarget";
 						},
 					},
 				},
@@ -328,7 +328,7 @@ const skills = {
 	zombieshibian: {
 		trigger: { player: "changeCharacterAfter" },
 		filter(event, player) {
-			return event.getParent().name === "zombieshimu" || event.getParent().name === "zombieganran";
+			return event.getParent().name === "zombielongmu" || event.getParent().name === "zombieganran";
 		},
 		forced: true,
 		async content(event, trigger, target) {
