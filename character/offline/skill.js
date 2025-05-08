@@ -230,7 +230,8 @@ const skills = {
 			if (event.name === "recover") return _status.currentPhase === player && target !== player;
 			if (get.is.playerNames(target, "zombie_zombie")) return false;
 			return player.hasAllHistory("useSkill", evt => {
-				if (!evt?.targets?.includes(target)) return false;
+				if (evt.type !== "player") return false;
+				if (!Array.isArray(evt.targets) || !evt.targets.includes(target)) return false;
 				let skill = evt.skill,
 					info = get.info(skill);
 				if (!info || info.charlotte) return false;
@@ -373,14 +374,14 @@ const skills = {
 						const origin_checkResult = game.checkResult;
 						game.checkResult = function () {
 							const player = game.me._trueMe || game.me;
-							if (game.players.every(i => i !== (player["zombieshibian"] || player) || i["zombieshibian"] === (player["zombieshibian"] || player))) game.over(true);
+							if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) game.over(true);
 							return origin_checkResult.apply(this, arguments);
 						};
 					}
 					if (typeof game.checkOnlineResult === "function") {
 						const origin_checkOnlineResult = game.checkOnlineResult;
 						game.checkOnlineResult = function (player) {
-							if (game.players.every(i => i !== (player["zombieshibian"] || player) || i["zombieshibian"] === (player["zombieshibian"] || player))) return true;
+							if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) return true;
 							return origin_checkOnlineResult.apply(this, arguments);
 						};
 					}
