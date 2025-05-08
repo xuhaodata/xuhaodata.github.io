@@ -3,7 +3,7 @@ const characters = {
 		sex: "male",
 		group: "shen",
 		hp: 3,
-		skills: ["zombiesangluan", "zombieshibao", "zombiechuce", "zombieshimu"],
+		skills: ["zombiesangluan", "zombieshibao", "zombiechuce", "zombielongmu"],
 		groupInGuozhan: "qun",
 	},
 	zombie_zombie: {

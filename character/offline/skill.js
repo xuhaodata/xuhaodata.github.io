@@ -223,14 +223,15 @@ const skills = {
 			},
 		},
 	},
-	zombieshimu: {
+	zombielongmu: {
 		trigger: { global: ["die", "recoverBefore"] },
 		filter(event, player) {
 			const target = event.player;
 			if (event.name === "recover") return _status.currentPhase === player && target !== player;
 			if (get.is.playerNames(target, "zombie_zombie")) return false;
 			return player.hasAllHistory("useSkill", evt => {
-				if (!evt?.targets?.includes(target)) return false;
+				if (evt.type !== "player") return false;
+				if (!Array.isArray(evt.targets) || !evt.targets.includes(target)) return false;
 				let skill = evt.skill,
 					info = get.info(skill);
 				if (!info || info.charlotte) return false;
@@ -282,8 +283,8 @@ const skills = {
 				}
 			}
 		},
-		group: "zombieshimu_weimu",
-		global: "zombieshimu_global",
+		group: "zombielongmu_weimu",
+		global: "zombielongmu_global",
 		subSkill: {
 			weimu: {
 				trigger: { target: "useCardToTarget", player: "addJudgeBefore" },
@@ -317,7 +318,7 @@ const skills = {
 					effect: {
 						target(card, player, target2) {
 							const target = _status.currentPhase;
-							if (target?.hasSkill("zombieshimu") && target !== player && get.tag(card, "recover")) return "zeroplayertarget";
+							if (target?.hasSkill("zombielongmu") && target !== player && get.tag(card, "recover")) return "zeroplayertarget";
 						},
 					},
 				},
@@ -327,7 +328,7 @@ const skills = {
 	zombieshibian: {
 		trigger: { player: "changeCharacterAfter" },
 		filter(event, player) {
-			return event.getParent().name === "zombieshimu" || event.getParent().name === "zombieganran";
+			return event.getParent().name === "zombielongmu" || event.getParent().name === "zombieganran";
 		},
 		forced: true,
 		async content(event, trigger, target) {
@@ -373,14 +374,14 @@ const skills = {
 						const origin_checkResult = game.checkResult;
 						game.checkResult = function () {
 							const player = game.me._trueMe || game.me;
-							if (game.players.every(i => i !== (player["zombieshibian"] || player) || i["zombieshibian"] === (player["zombieshibian"] || player))) game.over(true);
+							if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) game.over(true);
 							return origin_checkResult.apply(this, arguments);
 						};
 					}
 					if (typeof game.checkOnlineResult === "function") {
 						const origin_checkOnlineResult = game.checkOnlineResult;
 						game.checkOnlineResult = function (player) {
-							if (game.players.every(i => i !== (player["zombieshibian"] || player) || i["zombieshibian"] === (player["zombieshibian"] || player))) return true;
+							if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) return true;
 							return origin_checkOnlineResult.apply(this, arguments);
 						};
 					}
@@ -434,7 +435,7 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
 			return game.dead.some(target => {
-				if (!target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) return false;
+				if (target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) return false;
 				return game.getGlobalHistory("everything", evt => evt.name === "die" && evt.player === target && evt.source === player).length > 0;
 			});
 		},
