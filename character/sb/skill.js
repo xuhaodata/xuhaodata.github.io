@@ -14,7 +14,7 @@ const skills = {
 			const target = event.player;
 			const evtx = event.getParent(2);
 			const card = event.card;
-			const name = card.name;
+			const name = card?.name;
 			if (!card || !["sha", "juedou"].includes(name)) return false;
 			if (target == player) return false;
 			if (name == "sha") {
@@ -1060,8 +1060,7 @@ const skills = {
 						const id = result2.targets[0].playerid;
 						if (!given_map[id]) given_map[id] = [];
 						given_map[id].addArray(gives);
-					}
-					else return;
+					} else return;
 				}
 				if (_status.connectMode) game.broadcastAll(() => delete _status.noclearcountdown);
 				let list = [];
@@ -5159,12 +5158,12 @@ const skills = {
 		},
 		ai: {
 			order: 7,
-			result: { 
+			result: {
 				player: 1,
-				target(player, target){
+				target(player, target) {
 					if (player.hasSkill("sblianhuan_blocker")) return 0;
 					return lib.card.tiesuo.ai.result.target(player, target);
-				} 
+				},
 			},
 		},
 		subSkill: {
