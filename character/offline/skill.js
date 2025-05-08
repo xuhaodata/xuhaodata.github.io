@@ -435,7 +435,7 @@ const skills = {
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
 			return game.dead.some(target => {
-				if (!target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) return false;
+				if (target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) return false;
 				return game.getGlobalHistory("everything", evt => evt.name === "die" && evt.player === target && evt.source === player).length > 0;
 			});
 		},
