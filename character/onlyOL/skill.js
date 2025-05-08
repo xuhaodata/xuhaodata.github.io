@@ -5486,7 +5486,6 @@ const skills = {
 		},
 	},
 	olsbshishou: {
-		unique: true,
 		audio: 6,
 		trigger: {
 			global: ["loseAfter", "equipAfter", "addJudgeAfter", "gainAfter", "loseAsyncAfter", "addToExpansionAfter"],

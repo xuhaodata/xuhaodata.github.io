@@ -1928,7 +1928,6 @@ const skills = {
 		},
 	},
 	starhaoshou: {
-		unique: true,
 		audio: 2,
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
@@ -2208,7 +2207,6 @@ const skills = {
 		ai: { combo: "starcanxi" },
 	},
 	starzhonggu: {
-		unique: true,
 		audio: 2,
 		trigger: { player: "phaseDrawBegin2" },
 		filter(event, player) {
@@ -12038,7 +12036,6 @@ const skills = {
 	baijia: {
 		audio: 2,
 		audioname: ["tw_beimihu"],
-		unique: true,
 		derivation: "bmcanshi",
 		juexingji: true,
 		ai: { combo: "guju" },

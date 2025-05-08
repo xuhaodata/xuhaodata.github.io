@@ -1366,6 +1366,7 @@ const skills = {
 		trigger: { global: "damageBegin1" },
 		filter(event, player) {
 			const skill = "psanmou_effect";
+			if(!event.source) return false;
 			if (event.source != player && event.player != player) return false;
 			return event.source.getStorage(skill).includes(event.player) && !event.source.getRoundHistory("sourceDamage", evt => evt.player == player).length;
 		},
@@ -8089,10 +8090,8 @@ const skills = {
 		audio: "xinfuli",
 		skillAnimation: true,
 		animationColor: "soil",
-		unique: true,
 		limited: true,
 		enable: "chooseToUse",
-		mark: true,
 		filter(event, player) {
 			if (event.type != "dying") return false;
 			if (player != event.dying) return false;
@@ -8104,19 +8103,15 @@ const skills = {
 			await player.drawTo(2);
 		},
 		ai: {
+			order: 3,
 			save: true,
 			skillTagFilter(player, arg, target) {
 				return player == target;
 			},
-			result: {
-				player: 10,
-			},
+			result: { player: 10 },
 			threaten(player, target) {
 				if (!target.storage.tyfuli) return 0.9;
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	//冯习
@@ -8590,8 +8585,6 @@ const skills = {
 				return current != player && current.group == "shu";
 			});
 		},
-		mark: true,
-		unique: true,
 		limited: true,
 		async cost(event, trigger, player) {
 			event.result = await player
@@ -9621,7 +9614,6 @@ const skills = {
 		},
 	},
 	jdfenwei: {
-		unique: true,
 		limited: true,
 		audio: "sbfenwei",
 		trigger: { global: "useCardToPlayered" },
@@ -11656,14 +11648,11 @@ const skills = {
 	},
 	psjizun: {
 		audio: 2,
-		trigger: {
-			player: "dyingAfter",
-		},
+		trigger: { player: "dyingAfter" },
 		filter(event, player) {
 			return player.isDamaged() || !player.hasSkill("psqingsuan");
 		},
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "orange",
@@ -16051,15 +16040,10 @@ const skills = {
 	},
 	yjyongdi: {
 		audio: "yongdi",
-		unique: true,
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		animationColor: "thunder",
 		skillAnimation: "legend",
-		mark: true,
-		intro: {
-			content: "limited",
-		},
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2("yjyongdi"), (card, player, target) => {
@@ -18082,11 +18066,8 @@ const skills = {
 	xinfu_xiaode: {
 		subSkill: {
 			remove: {
-				unique: true,
 				charlotte: true,
-				trigger: {
-					player: "phaseAfter",
-				},
+				trigger: { player: "phaseAfter" },
 				forced: true,
 				popup: false,
 				content() {
@@ -18095,9 +18076,7 @@ const skills = {
 				},
 			},
 		},
-		trigger: {
-			global: "dieAfter",
-		},
+		trigger: { global: "dieAfter" },
 		direct: true,
 		filter(skill, event) {
 			return !event.hasSkill("xinfu_xiaode_remove");
@@ -18287,7 +18266,6 @@ const skills = {
 			return false;
 		},
 		direct: true,
-		unique: true,
 		gainable: true,
 		content() {
 			"step 0";

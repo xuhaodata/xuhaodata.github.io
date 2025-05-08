@@ -7726,7 +7726,6 @@ const skills = {
 	zhoulin: {
 		audio: 2,
 		limited: true,
-		unique: true,
 		enable: "phaseUse",
 		skillAnimation: true,
 		animationColor: "fire",
@@ -9374,7 +9373,6 @@ const skills = {
 		},
 	},
 	xinlijun: {
-		unique: true,
 		audio: "nzry_lijun1",
 		trigger: { global: "useCardAfter" },
 		filter(event, player) {
@@ -17674,10 +17672,8 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "soil",
 		audio: 2,
-		unique: true,
 		limited: true,
 		enable: "chooseToUse",
-		mark: true,
 		filter(event, player) {
 			if (event.type != "dying") return false;
 			if (player != event.dying) return false;
@@ -18974,7 +18970,6 @@ const skills = {
 		trigger: { player: "phaseZhunbeiBegin" },
 		audio: "drlt_hongju",
 		forced: true,
-		unique: true,
 		juexingji: true,
 		skillAnimation: true,
 		animationColor: "thunder",
@@ -19041,9 +19036,7 @@ const skills = {
 			player.addSkills("reqingce");
 			player.loseMaxHp();
 		},
-		ai: {
-			combo: "rezhengrong",
-		},
+		ai: { combo: "rezhengrong" },
 	},
 	reqingce: {
 		enable: "phaseUse",
@@ -19768,7 +19761,6 @@ const skills = {
 			return !player.hasUnknown();
 		},
 		limited: true,
-		unique: true,
 		filter(event, player) {
 			return event.player.hp <= 0;
 		},
@@ -22087,11 +22079,8 @@ const skills = {
 	xinfu_longyuan: {
 		audio: 2,
 		forced: true,
-		unique: true,
 		juexingji: true,
-		trigger: {
-			player: "phaseZhunbeiBegin",
-		},
+		trigger: { player: "phaseZhunbeiBegin" },
 		skillAnimation: true,
 		animationColor: "orange",
 		filter(event, player) {
@@ -22102,9 +22091,7 @@ const skills = {
 			player.storage.yizan = true;
 		},
 		derivation: "yizan_rewrite",
-		ai: {
-			combo: "yizan_use",
-		},
+		ai: { combo: "yizan_use" },
 	},
 	xinfu_jingxie: {
 		audio: 2,

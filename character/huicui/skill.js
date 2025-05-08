@@ -2121,7 +2121,6 @@ const skills = {
 		},
 	},
 	dcfanshi: {
-		unique: true,
 		audio: 2,
 		trigger: { player: "phaseJieshuBegin" },
 		filter(event, player) {
@@ -2150,9 +2149,7 @@ const skills = {
 			await player.changeSkills(["dcfudou"], ["dcjianzhuan"]);
 		},
 		derivation: "dcfudou",
-		ai: {
-			combo: "dcjianzhuan",
-		},
+		ai: { combo: "dcjianzhuan" },
 	},
 	dcfudou: {
 		audio: 2,
@@ -8006,11 +8003,8 @@ const skills = {
 	dclongyuan: {
 		audio: "xinfu_longyuan",
 		forced: true,
-		unique: true,
 		juexingji: true,
-		trigger: {
-			global: "phaseEnd",
-		},
+		trigger: { global: "phaseEnd" },
 		skillAnimation: true,
 		animationColor: "orange",
 		filter(event, player) {
@@ -8023,9 +8017,7 @@ const skills = {
 			player.storage.yizan = true;
 		},
 		derivation: "yizan_rewrite",
-		ai: {
-			combo: "yizan_use",
-		},
+		ai: { combo: "yizan_use" },
 	},
 	//黄皓
 	dcqinqing: {
@@ -8285,7 +8277,6 @@ const skills = {
 	dcyongdi: {
 		audio: "yongdi",
 		audioname: ["xinping"],
-		unique: true,
 		limited: true,
 		enable: "phaseUse",
 		filterTarget(card, player, target) {
@@ -8296,8 +8287,7 @@ const skills = {
 		content() {
 			"step 0";
 			player.awakenSkill(event.name);
-			//player.logSkill('dcyongdi',target);
-			if (!game.hasPlayer(current => current.maxHp < target.maxHp)) {
+			if (!target.isMaxMaxHp()) {
 				target.gainMaxHp();
 			}
 			"step 1";

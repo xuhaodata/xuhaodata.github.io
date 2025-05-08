@@ -5033,9 +5033,7 @@ const skills = {
 		},
 		enable: ["chooseToUse", "chooseToRespond"],
 		viewAs: { name: "sha" },
-		filterCard() {
-			return false;
-		},
+		filterCard: () => false,
 		selectCard: -1,
 		ai: {
 			order() {
@@ -13767,17 +13765,11 @@ const skills = {
 	},
 	retishen: {
 		audio: 2,
-		unique: true,
-		mark: true,
 		skillAnimation: true,
 		animationColor: "soil",
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
-		init(player) {
-			player.storage.retishen = false;
-		},
 		filter(event, player) {
-			if (player.storage.retishen) return false;
 			if (typeof player.storage.retishen2 == "number") {
 				return player.hp < player.storage.retishen2;
 			}
@@ -13791,7 +13783,6 @@ const skills = {
 			player.awakenSkill(event.name);
 			player.recover(player.storage.retishen2 - player.hp);
 			player.draw(player.storage.retishen2 - player.hp);
-			player.storage.retishen = true;
 		},
 		intro: {
 			mark(dialog, content, player) {
@@ -14402,7 +14393,6 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		audio: 2,
-		unique: true,
 		juexingji: true,
 		trigger: { source: "damageSource" },
 		forced: true,

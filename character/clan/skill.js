@@ -1552,7 +1552,6 @@ const skills = {
 		},
 	},
 	clanjianji: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },

@@ -5937,7 +5937,6 @@ const skills = {
 		audio: 2,
 		trigger: { player: "phaseUseEnd" },
 		zhuSkill: true,
-		unique: true,
 		popup: false,
 		filter(event, player) {
 			if (!player.hasZhuSkill("sbjijiang")) return false;

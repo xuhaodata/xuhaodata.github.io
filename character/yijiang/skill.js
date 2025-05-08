@@ -6935,7 +6935,6 @@ const skills = {
 		},
 	},
 	rezhaofu: {
-		unique: true,
 		global: "rezhaofu2",
 		zhuSkill: true,
 	},
@@ -6955,7 +6954,6 @@ const skills = {
 	zhaofu: {
 		audio: 2,
 		audioname: ["ol_sunxiu"],
-		unique: true,
 		global: "zhaofu2",
 		zhuSkill: true,
 		locked: true,
@@ -7413,7 +7411,6 @@ const skills = {
 	zhanjue5: {},
 	qinwang: {
 		audio: "qinwang1",
-		unique: true,
 		group: ["qinwang1"],
 		zhuSkill: true,
 		filter(event, player) {
@@ -7915,7 +7912,6 @@ const skills = {
 			re_caorui: "rexingshuai",
 		},
 		trigger: { player: "dying" },
-		//priority:6,
 		zhuSkill: true,
 		filter(event, player) {
 			if (player.hp > 0) return false;
@@ -7924,8 +7920,6 @@ const skills = {
 				return current != player && current.group == "wei";
 			});
 		},
-		mark: true,
-		unique: true,
 		limited: true,
 		content() {
 			"step 0";
@@ -8820,17 +8814,11 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "soil",
 		audio: 2,
-		unique: true,
 		limited: true,
 		enable: "chooseToUse",
-		init(player) {
-			player.storage.fuli = false;
-		},
-		mark: true,
 		filter(event, player) {
 			if (event.type != "dying") return false;
 			if (player != event.dying) return false;
-			if (player.storage.fuli) return false;
 			return true;
 		},
 		content() {
@@ -8852,9 +8840,6 @@ const skills = {
 			threaten(player, target) {
 				if (!target.storage.fuli) return 0.9;
 			},
-		},
-		intro: {
-			content: "limited",
 		},
 	},
 	qianxi: {
@@ -10018,7 +10003,6 @@ const skills = {
 		animationColor: "thunder",
 		audio: 2,
 		audioname: ["re_zhonghui"],
-		unique: true,
 		juexingji: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		forced: true,
@@ -10101,7 +10085,6 @@ const skills = {
 		animationColor: "gray",
 		audio: 2,
 		audioname: ["xin_caifuren", "ol_caifuren"],
-		unique: true,
 		limited: true,
 		enable: "phaseUse",
 		filter(event, player) {
@@ -10110,7 +10093,6 @@ const skills = {
 		filterTarget(card, player, target) {
 			return player != target;
 		},
-		mark: true,
 		delay: false,
 		content() {
 			"step 0";
@@ -10147,9 +10129,6 @@ const skills = {
 				event.num2++;
 				event.redo();
 			}
-		},
-		intro: {
-			content: "limited",
 		},
 		ai: {
 			order: 1,
