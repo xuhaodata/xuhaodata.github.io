@@ -3277,7 +3277,9 @@ const skills = {
 				await player.draw();
 				player.addTempSkill(["potfuji_sha", "potfuji_shan"], { player: "phaseBegin" });
 			}
-			player.when({ player: "phaseBegin" }).then(() => player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji"));
+			player.when({ player: "phaseBegin" }).then(() => {
+				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
+			})
 		},
 		ai: {
 			order: 10,
