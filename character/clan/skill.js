@@ -149,32 +149,27 @@ const skills = {
 		},
 		async content(event, trigger, player) {
 			let cards = player.getCards("h", card => get.color(card, player) == "black"),
-				goon = () => !player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && player.hasCard(card => cards.includes(card) && player.hasUseTarget(card, null, false), "h");
+				lastCard;
 			await player.showHandcards(`${get.translation(player)}发动了〖佯疾〗`);
-			while (goon()) {
-				const result = await player
-					.chooseToUse(function (card, player, event) {
-						return cards.includes(card) && get.color(card, player) === "black" && lib.filter.filterCard.apply(this, arguments);
-					}, "佯疾：请使用一张黑色牌")
-					.set("forced", true)
-					.set("addCount", false)
-					.forResult();
-				const card = result.cards[0];
-				cards.remove(card);
-				if (!goon()) {
-					const target = _status.currentPhase;
-					if (card && get.suit(card, player) == "spade" && (!get.owner(card) || get.owner(card) === player) && target.canAddJudge(get.autoViewAs({ name: "lebu" }, card))) {
-						await target.addJudge({ name: "lebu" }, card);
-					}
+			while (true) {
+				if (!cards.length) break;
+				const card = cards.shift();
+				if (player.hasUseTarget(card)) {
+					lastCard = card;
+					await player.chooseUseTarget(card, true, false);
 				}
+				if (player.hasHistory("sourceDamage", evt => evt.getParent(4) === event && evt.card === card)) break;
 			}
+			const target = _status.currentPhase;
+			if (lastCard && get.suit(lastCard, player) == "spade" && (!get.owner(card) || get.position(card) !== "h") && target?.isIn() && target.canAddJudge(get.autoViewAs({ name: "lebu" }, lastCard))) await target.addJudge({ name: "lebu" }, lastCard);
 		},
 	},
 	clandandao: {
-		trigger: {
-			player: "judgeAfter",
-		},
+		trigger: { player: "judgeAfter" },
 		forced: true,
+		filter(event, player) {
+			return _status.currentPhase?.isIn();
+		},
 		content() {
 			const target = _status.currentPhase;
 			if (!target?.isIn()) return;
@@ -191,18 +186,12 @@ const skills = {
 					markcount: () => 3,
 					content: "手牌上限+3",
 				},
-				mod: {
-					maxHandcard(player, num) {
-						return num + 3;
-					},
-				},
+				mod: { maxHandcard: (player, num) => num + 3 },
 			},
 		},
 	},
 	clanqingli: {
-		trigger: {
-			global: "phaseEnd",
-		},
+		trigger: { global: "phaseEnd" },
 		forced: true,
 		filter(event, player) {
 			return player.countCards("h") < player.getHandcardLimit();
@@ -1552,7 +1541,6 @@ const skills = {
 		},
 	},
 	clanjianji: {
-		unique: true,
 		limited: true,
 		audio: 2,
 		trigger: { global: "phaseJieshuBegin" },

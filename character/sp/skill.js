@@ -11523,7 +11523,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const map = get.info(event.skill).getMap(player);
 			const targetprompt = (map, target) => {
-				const list = map[target.playerid];
+				const list = map[target.playerid] || [];
 				let str = "";
 				for (let i = 0; i < 2; i++) {
 					if (list[i] === undefined) str += "--";
@@ -18695,7 +18695,7 @@ const skills = {
 							.loseAsync({
 								gain_list: given_map,
 								player: player,
-								cards: given_map.slice().map(list => list[1]),
+								cards: given_map.slice().flatMap(list => list[1]),
 								giver: player,
 								animate: "giveAuto",
 							})
@@ -21820,7 +21820,6 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "gray",
 		derivation: "xinjingong",
-		unique: true,
 		filter(event, player) {
 			return game.hasPlayer2(function (current) {
 				return (
@@ -21836,9 +21835,7 @@ const skills = {
 			player.awakenSkill(event.name);
 			player.changeSkills(["xinjingong"], ["xinlianji"]);
 		},
-		ai: {
-			combo: "xinlianji",
-		},
+		ai: { combo: "xinlianji" },
 	},
 	xinjingong: {
 		audio: "jingong",
@@ -24221,7 +24218,6 @@ const skills = {
 		intro: {
 			content: "已造成#点伤害",
 		},
-		unique: true,
 		juexingji: true,
 		content() {
 			player.storage.moucheng += trigger.num;
@@ -26570,16 +26566,12 @@ const skills = {
 	},
 	jianshu: {
 		audio: 2,
-		unique: true,
 		limited: true,
 		enable: "phaseUse",
 		animationColor: "thunder",
 		skillAnimation: "epic",
 		filter(event, player) {
-			return !player.storage.jianshu && player.countCards("h", { color: "black" }) > 0;
-		},
-		init(player) {
-			player.storage.jianshu = false;
+			return player.countCards("h", { color: "black" }) > 0;
 		},
 		filterTarget(card, player, target) {
 			if (target == player) return false;
@@ -26619,9 +26611,6 @@ const skills = {
 				targets[0].loseHp();
 			}
 		},
-		intro: {
-			content: "limited",
-		},
 		ai: {
 			expose: 0.4,
 			order: 4,
@@ -26637,12 +26626,10 @@ const skills = {
 	yongdi: {
 		audio: 2,
 		audioname: ["xinping"],
-		unique: true,
 		limited: true,
 		trigger: { player: "phaseZhunbeiBegin" },
 		animationColor: "thunder",
 		skillAnimation: "legend",
-		mark: true,
 		async cost(event, trigger, player) {
 			event.result = await player
 				.chooseTarget(get.prompt2("yongdi"), (card, player, target) => {
@@ -28353,7 +28340,6 @@ const skills = {
 		enable: "phaseUse",
 		usable: 1,
 		audio: 2,
-		unique: true,
 		filter(event, player) {
 			return player.getExpansions("fentian").length >= 2;
 		},
@@ -28370,9 +28356,7 @@ const skills = {
 		},
 		ai: {
 			order: 8,
-			result: {
-				target: -1,
-			},
+			result: { target: -1 },
 			combo: "fentian",
 		},
 	},
@@ -29600,12 +29584,9 @@ const skills = {
 	},
 	guiming: {
 		audio: 2,
-		unique: true,
 		zhuSkill: true,
 		locked: true,
-		ai: {
-			combo: "recanshi",
-		},
+		ai: { combo: "recanshi" },
 	},
 	canshi: {
 		audio: 2,
@@ -29636,23 +29617,25 @@ const skills = {
 			if (num > 0) {
 				player.draw(num);
 			}
-			player.addTempSkill("canshi2");
+			player.addTempSkill("canshi_effect");
+		},
+		subSkill: {
+			effect: {
+				trigger: { player: "useCard" },
+				forced: true,
+				filter(event, player) {
+					if (player.countCards("he") == 0) return false;
+					var type = get.type(event.card, "trick");
+					return type == "basic" || type == "trick";
+				},
+				autodelay: true,
+				content() {
+					player.chooseToDiscard(true, "he");
+				},
+			},
 		},
 	},
-	canshi2: {
-		trigger: { player: "useCard" },
-		forced: true,
-		sourceSkill: "canshi",
-		filter(event, player) {
-			if (player.countCards("he") == 0) return false;
-			var type = get.type(event.card, "trick");
-			return type == "basic" || type == "trick";
-		},
-		autodelay: true,
-		content() {
-			player.chooseToDiscard(true, "he");
-		},
-	},
+
 	chouhai: {
 		audio: 2,
 		trigger: { player: "damageBegin3" },
@@ -29931,7 +29914,6 @@ const skills = {
 		},
 	},
 	jilei2: {
-		unique: true,
 		charlotte: true,
 		intro: {
 			content(storage) {
@@ -30412,10 +30394,7 @@ const skills = {
 			return event.targets.includes(player) && player != event.player && event.card.name == "sha" && player.hp < player.countCards("h");
 		},
 		content() {},
-		ai: {
-			neg: true,
-		},
-		unique: true,
+		ai: { neg: true },
 		gainable: true,
 		subSkill: {
 			disable: {
@@ -31193,16 +31172,11 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		audio: 2,
-		unique: true,
 		enable: "phaseUse",
-		mark: true,
 		limited: true,
 		derivation: "yongjue",
 		filter(event, player) {
-			return !player.storage.cunsi && player.countCards("h") && !player.isTurnedOver();
-		},
-		init(player) {
-			player.storage.cunsi = false;
+			return player.countCards("h") && !player.isTurnedOver();
 		},
 		filterTarget(card, player, target) {
 			return player != target && target.hasSex("male");
@@ -31217,9 +31191,6 @@ const skills = {
 			"step 2";
 			target.markSkillCharacter("yongjue", player, "存嗣", '<div class="skill">【勇决】</div><div>每当其他角色于回合内使用一张杀，若目标不是你，你可以获得之，每回合限一次</div>');
 			player.turnOver();
-		},
-		intro: {
-			content: "limited",
 		},
 		ai: {
 			order: 4,
@@ -31579,7 +31550,6 @@ const skills = {
 	xiongyi: {
 		skillAnimation: true,
 		animationColor: "gray",
-		unique: true,
 		enable: "phaseUse",
 		audio: 2,
 		limited: true,
@@ -32890,10 +32860,9 @@ const skills = {
 		derivation: ["benghuai", "weizhong"],
 		trigger: { player: "phaseZhunbeiBegin" },
 		filter(event, player) {
-			return player.maxHp > game.countPlayer() && !player.storage.juyi;
+			return player.maxHp > game.countPlayer();
 		},
 		forced: true,
-		unique: true,
 		juexingji: true,
 		content() {
 			player.awakenSkill(event.name);
@@ -33581,7 +33550,7 @@ const skills = {
 					);
 				},
 				contentBefore() {
-					player.awakenSkill(event.name);
+					player.awakenSkill(event.skill);
 					var skill = lib.skill.jianjie;
 					var huoji = player.getStorage("jianjie_huoji").slice(0),
 						lianhuan = player.getStorage("jianjie_lianhuan").slice(0);
