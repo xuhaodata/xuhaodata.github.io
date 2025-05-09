@@ -161,7 +161,7 @@ const skills = {
 				if (player.hasHistory("sourceDamage", evt => evt.getParent(4) === event && evt.card === card)) break;
 			}
 			const target = _status.currentPhase;
-			if (lastCard && get.suit(lastCard, player) == "spade" && (!get.owner(card) || get.position(card) !== "h") && target?.isIn() && target.canAddJudge(get.autoViewAs({ name: "lebu" }, lastCard))) await target.addJudge({ name: "lebu" }, lastCard);
+			if (lastCard && get.suit(lastCard, player) == "spade" && (!get.owner(lastCard) || get.position(lastCard) !== "h") && target?.isIn() && target.canAddJudge(get.autoViewAs({ name: "lebu" }, lastCard))) await target.addJudge({ name: "lebu" }, lastCard);
 		},
 	},
 	clandandao: {
