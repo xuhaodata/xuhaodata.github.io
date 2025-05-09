@@ -465,7 +465,8 @@ const skills = {
 		},
 	},
 	twhuazhang: {
-		audio: 2,
+		audio: 3,
+		logAudio: index => (typeof index === "number" ? "twhuazhang" + index + ".mp3" : "twhuazhang" + get.rand(1, 2) + ".mp3"),
 		trigger: {
 			player: "phaseUseEnd",
 		},
@@ -489,7 +490,10 @@ const skills = {
 			}
 			if (cards.map(card => get.name(card, player)).unique().length == 1) count++;
 
-			if (count > 0) await player.draw(num);
+			if (count > 0) {
+				player.logSkill("twhuazhang", null, null, null, [3]);
+				await player.draw(num);
+			}
 			if (count > 1) {
 				player.addTempSkill("twhuazhang_hs");
 				player.addMark("twhuazhang_hs", num, false);
@@ -566,7 +570,7 @@ const skills = {
 		group: ["twqianxiong_effect"],
 		subSkill: {
 			damage: {
-				audio: 2,
+				audio: "twqianxiong",
 				onremove: true,
 				forced: true,
 				charlotte: true,
@@ -582,7 +586,7 @@ const skills = {
 				},
 			},
 			effect: {
-				audio: 2,
+				audio: "twqianxiong",
 				trigger: { global: "phaseUseBegin" },
 				filter(event, player) {
 					return event.player.getExpansions("twqianxiong").length;
@@ -648,10 +652,12 @@ const skills = {
 		},
 	},
 	twzhengshi: {
-		audio: 2,
+		audio: 3,
+		logAudio: index => (typeof index === "number" ? "twzhengshi" + index + ".mp3" : 2),
 		derivation: ["twjunsi"],
 		forced: true,
 		locked: false,
+		popup: false,
 		trigger: {
 			global: "phaseBefore",
 			player: "enterGame",
@@ -670,13 +676,14 @@ const skills = {
 					.forResult();
 				targets = result.targets.concat([player]).sortBySeat();
 			}
+			player.logSkill("twzhengshi", null, null, null, [get.rand(2, 3)]);
 			player.line(targets, "thunder");
 			for (const target of targets) await target.addSkills(["twjunsi"]);
 		},
 		group: ["twzhengshi_change"],
 		subSkill: {
 			change: {
-				audio: 2,
+				popup: false,
 				trigger: { global: ["roundStart", "dieAfter"] },
 				filter(event, player) {
 					if (!player.hasSkill("twjunsi")) return false;
@@ -737,6 +744,8 @@ const skills = {
 						})
 						.forResult();
 					const num = result.links[0] + 1;
+					player.logSkill("twzhengshi", null, null, null, [1]);
+					player.line(target);
 					target.popup(list[num - 1]);
 					game.log(target, "〖隽嗣〗的", list[num - 1]);
 					target.storage.twjunsi[Math.ceil(num / 2) - 1] += num % 2 == 1 ? 1 : -1;
@@ -746,6 +755,7 @@ const skills = {
 		},
 	},
 	twjunsi: {
+		audio: 4,
 		init(player, skill) {
 			player.storage[skill] = [1, 1];
 		},
@@ -763,11 +773,13 @@ const skills = {
 		group: ["twjunsi_source", "twjunsi_end"],
 		subSkill: {
 			source: {
-				audio: 2,
 				forced: true,
 				usable: 2,
 				trigger: {
 					source: "damageSource",
+				},
+				logAudio(event, player) {
+					if (player.name == 'huan_caopi') return ["twjunsi1.mp3", "twjunsi2.mp3"];
 				},
 				filter(event, player) {
 					const bool = !game.hasPlayer(target => target != player && target.hasSkill("twjunsi")) ? true : event.player.hasSkill("twjunsi");
@@ -780,11 +792,13 @@ const skills = {
 				},
 			},
 			end: {
-				audio: 2,
 				forced: true,
 				usable: 2,
 				trigger: {
 					player: "damageEnd",
+				},
+				logAudio(event, player) {
+					if (player.name == 'huan_caopi') return ["twjunsi3.mp3", "twjunsi4.mp3"];
 				},
 				filter(event, player) {
 					if (!event.source) return false;
