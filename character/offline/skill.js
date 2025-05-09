@@ -2,6 +2,497 @@ import { lib, game, ui, get, ai, _status } from "../../noname.js";
 
 /** @type { importCharacterConfig['skill'] } */
 const skills = {
+	//神贾诩
+	zombiesangluan: {
+		trigger: { player: "useCardAfter" },
+		filter(event, player) {
+			return get.tag(event.card, "damage") >= 0.5 && game.hasPlayer(t => t !== player);
+		},
+		async cost(event, trigger, player) {
+			event.result = await player
+				.chooseTarget(
+					get.prompt2(event.skill),
+					(card, player, target) => {
+						return Boolean(ui.selected.targets.length) || target !== player;
+					},
+					2
+				)
+				.set("ai", target => {
+					const player = get.player();
+					const source = ui.selected.targets[0];
+					if (!source) {
+						return Math.max(
+							...game
+								.filterPlayer(current => current !== player)
+								.map(current => {
+									let list = [get.effect(target, { name: "losehp" }, player, player) + get.recoverEffect(player, player, player)];
+									let cards = target.getCards("h", card => get.name(card) === "sha" && target.canUse(card, current));
+									if (cards.length) {
+										cards.sort((a, b) => get.effect(current, b, target, target) - get.effect(current, a, target, target));
+										list.push(get.effect(current, cards[0], target, player));
+									}
+									return Math.max(...list);
+								})
+						);
+					}
+					let list = [get.effect(source, { name: "losehp" }, player, player) + get.recoverEffect(player, player, player)];
+					let cards = sourcegetCards("h", card => get.name(card) === "sha" && source.canUse(card, target));
+					if (cards.length) {
+						cards.sort((a, b) => get.effect(target, b, source, source) - get.effect(target, a, source, source));
+						list.push(get.effect(target, cards[0], source, player));
+					}
+					return Math.max(...list);
+				})
+				.set("complexTarget", true)
+				.forResult();
+		},
+		line: false,
+		async content(event, trigger, player) {
+			player.line2(event.targets);
+			await game.delayx();
+			const [source, target] = event.targets;
+			const result = await source
+				.chooseToUse(function (card, player, event) {
+					if (get.name(card) !== "sha") return false;
+					return lib.filter.filterCard.apply(this, arguments);
+				}, get.translation(event.name) + "：对" + get.translation(target) + "使用一张【杀】，或失去1点体力且" + get.translation(player) + "回复1点体力")
+				.set("filterTarget", function (card, player, target) {
+					const source = get.event().sourcex;
+					if (target !== source && !ui.selected.targets.includes(source)) return false;
+					return lib.filter.filterTarget.apply(this, arguments);
+				})
+				.set("sourcex", target)
+				.set("targetRequired", true)
+				.set("complexSelect", true)
+				.forResult();
+			if (!result?.bool) {
+				await source.loseHp();
+				await player.recover();
+			}
+		},
+	},
+	zombieshibao: {
+		enable: "phaseUse",
+		filter(event, player) {
+			return game.hasPlayer(target => get.info("zombieshibao").filterTarget(null, player, target));
+		},
+		filterTarget(card, player, target) {
+			return get.is.playerNames(target, "zombie_zombie") && target.getHp() > 0;
+		},
+		async content(event, trigger, player) {
+			const target = event.target;
+			if (target.getHp() > 0) {
+				const targets = game.filterPlayer(current => [current.getPrevious(), current.getNext()].includes(target));
+				await target.loseHp(target.getHp());
+				if (targets.length > 0) {
+					player.line(targets);
+					for (const i of targets) await i.damage();
+				}
+			}
+		},
+		ai: {
+			order: 7,
+			result: {
+				player(player, target) {
+					return (
+						game.countPlayer(current => {
+							if (![current.getPrevious(), current.getNext()].includes(target)) return 0;
+							return get.damageEffect(current, player, player);
+						}) +
+						get.effect(target, { name: "losehp" }, player, player) * target.getHp()
+					);
+				},
+			},
+		},
+	},
+	zombiechuce: {
+		enable: "chooseToUse",
+		filter(event, player) {
+			return get
+				.inpileVCardList(info => {
+					return info[0] === "basic" || info[0] === "trick";
+				})
+				.some(card =>
+					player.hasCard(cardx => {
+						if (get.type2(cardx) !== "trick") return true;
+						return event.filterCard({ name: card[2], nature: card[3], cards: [cardx] }, player, event);
+					}, "hes")
+				);
+		},
+		chooseButton: {
+			dialog(event, player) {
+				const list = get.inpileVCardList(info => info[0] === "basic" || info[0] === "trick");
+				return ui.create.dialog("出策", [list, "vcard"]);
+			},
+			filter(button, player) {
+				const event = get.event().getParent();
+				return player.hasCard(cardx => {
+					if (get.type2(cardx) !== "trick") return true;
+					return event.filterCard({ name: button.link[2], nature: button.link[3], cards: [cardx] }, player, event);
+				}, "hes");
+			},
+			check(button) {
+				if (get.event().getParent().type != "phase") return 1;
+				return get.player().getUseValue({ name: button.link[2], nature: button.link[3] });
+			},
+			prompt(links, player) {
+				return "将一张锦囊牌当作" + (get.translation(links[0][3]) || "") + "【" + get.translation(links[0][2]) + "】使用";
+			},
+			backup(links, player) {
+				return {
+					filterCard(card, player) {
+						return get.type2(card) === "trick";
+					},
+					popname: true,
+					check(card) {
+						return 6 - get.value(card);
+					},
+					position: "hes",
+					viewAs: { name: links[0][2], nature: links[0][3] },
+				};
+			},
+		},
+		hiddenCard(player, name) {
+			if (!lib.inpile.includes(name) || !["basic", "trick"].includes(get.type(name))) return false;
+			return player.hasCard(card => {
+				if (_status.connectMode && get.position(card) === "h") return true;
+				return get.type2(card) === "trick";
+			}, "hes");
+		},
+		ai: {
+			fireAttack: true,
+			respondSha: true,
+			skillTagFilter(player, tag, arg) {
+				if (arg == "respond") return false;
+				if (player.getStat("skill").olsbweilin || !player.countCards("hes")) return false;
+			},
+			order(item, player) {
+				if (player && _status.event.type == "phase" && player.hasValueTarget({ name: "sha" }, true, true)) {
+					let max = 0,
+						names = get.inpileVCardList(info => {
+							const name = info[2];
+							if (name != "sha" && name != "jiu") return false;
+							return get.type(name) == "basic";
+						});
+					names = names.map(namex => {
+						return { name: namex[2], nature: namex[3] };
+					});
+					names.forEach(card => {
+						if (player.getUseValue(card) > 0) {
+							let temp = get.order(card);
+							if (card.name == "jiu") {
+								let cards = player.getCards("hs", cardx => get.value(cardx) < 8);
+								cards.sort((a, b) => get.value(a) - get.value(b));
+								if (!cards.some(cardx => get.name(cardx) == "sha" && !cards.slice(0, 2).includes(cardx))) temp = 0;
+							}
+							if (temp > max) max = temp;
+						}
+					});
+					if (max > 0) max += 15;
+					return max;
+				}
+				return 0.5;
+			},
+			result: {
+				player(player) {
+					if (_status.event.dying) return get.attitude(player, _status.event.dying);
+					return 1;
+				},
+			},
+		},
+		group: "zombiechuce_kanpo",
+		subSkill: {
+			backup: {},
+			kanpo: {
+				trigger: { global: "useCard" },
+				filter(event, player) {
+					return get.type2(event.card) === "trick" && event.player !== player;
+				},
+				usable: 1,
+				check: (event, player) => get.info("sbkanpo").subSkill.kanpo.check(event, player),
+				prompt2: event => "摸三张牌，令" + get.translation(event.card) + "无效，然后你可以视为使用此牌",
+				logTarget: "player",
+				async content(event, trigger, player) {
+					await player.draw(3);
+					trigger.targets.length = 0;
+					trigger.all_excluded = true;
+					game.log(trigger.card, "被无效了");
+					const card = new lib.element.VCard({ name: trigger.card.name, nature: trigger.card.nature, isCard: true });
+					if (get.type(card) !== "delay" && player.hasUseTarget(card)) await player.chooseUseTarget(card, null, false);
+				},
+			},
+		},
+	},
+	zombielongmu: {
+		trigger: { global: ["die", "recoverBefore"] },
+		filter(event, player) {
+			const target = event.player;
+			if (event.name === "recover") return _status.currentPhase === player && target !== player;
+			if (get.is.playerNames(target, "zombie_zombie")) return false;
+			return player.hasAllHistory("useSkill", evt => {
+				if (evt.type !== "player") return false;
+				if (!Array.isArray(evt.targets) || !evt.targets.includes(target)) return false;
+				let skill = evt.skill,
+					info = get.info(skill);
+				if (!info || info.charlotte) return false;
+				if (skill === get.sourceSkillFor(skill)) return true;
+				info = get.info(get.sourceSkillFor(skill));
+				return info && !info.charlotte;
+			});
+		},
+		forced: true,
+		logTarget: "player",
+		async content(event, trigger, player) {
+			const target = trigger.player;
+			trigger.cancel();
+			if (trigger.name === "die") {
+				const names = get.nameList(target).filter(i => i !== "zombie_zombie");
+				const result =
+					names.length > 1
+						? await player
+								.chooseControl(names)
+								.set("ai", () => {
+									const { controls } = get.event();
+									return controls.slice().sort((a, b) => get.rank(b, true) - get.rank(a, true));
+								})
+								.set("prompt", "请选择替换的武将牌")
+								.forResult()
+						: { control: names[0] };
+				if (result.control) {
+					target.revive(2);
+					let doubleDraw = false;
+					let num = (get.character("zombie_zombie").maxHp || get.character("zombie_zombie").hp) - (get.character(result.control).maxHp || get.character(result.control).hp);
+					if (num !== 0) {
+						if (typeof target.singleHp === "boolean") {
+							if (num % 2 !== 0) {
+								if (target.singleHp) {
+									target.maxHp += (num + 1) / 2;
+									target.singleHp = false;
+								} else {
+									target.maxHp += (num - 1) / 2;
+									target.singleHp = true;
+									doubleDraw = true;
+								}
+							} else target.maxHp += num / 2;
+						} else target.maxHp += num;
+						target.update();
+					}
+					event.skills = get.character(result.control).skills || [];
+					await target.reinitCharacter(result.control, "zombie_zombie");
+					if (doubleDraw) await target.doubleDraw();
+				}
+			}
+		},
+		group: "zombielongmu_weimu",
+		global: "zombielongmu_global",
+		subSkill: {
+			weimu: {
+				trigger: { target: "useCardToTarget", player: "addJudgeBefore" },
+				filter(event, player) {
+					return event.name === "addJudge" || get.type2(event.card) === "trick";
+				},
+				forced: true,
+				priority: 15,
+				content() {
+					if (trigger.name === "addJudge") {
+						trigger.cancel();
+						game.log(trigger.card, "进入了弃牌堆");
+						const owner = get.owner(trigger.card);
+						if (owner?.getCards("hejxs").includes(trigger.card)) owner.lose(trigger.card, ui.discardPile);
+						else game.cardsDiscard(trigger.card);
+					} else {
+						trigger.getParent().targets.remove(player);
+						game.log(trigger.card, "对", player, "无效");
+					}
+				},
+				ai: {
+					effect: {
+						target(card, player, target) {
+							if (get.type2(card) === "trick") return "zeroplayertarget";
+						},
+					},
+				},
+			},
+			global: {
+				ai: {
+					effect: {
+						target(card, player, target2) {
+							const target = _status.currentPhase;
+							if (target?.hasSkill("zombielongmu") && target !== player && get.tag(card, "recover")) return "zeroplayertarget";
+						},
+					},
+				},
+			},
+		},
+	},
+	zombieshibian: {
+		trigger: { player: "changeCharacterAfter" },
+		filter(event, player) {
+			return event.getParent().name === "zombielongmu" || event.getParent().name === "zombieganran";
+		},
+		forced: true,
+		async content(event, trigger, target) {
+			let { player, skills } = trigger.getParent();
+			player = player["zombieshibian"] || player;
+			if (skills.length) await target.addSkills(skills);
+			game.broadcastAll(
+				(player, target) => {
+					target["zombieshibian"] = player;
+					const identity = (target.identity = (identity => {
+						switch (identity) {
+							case "zhu":
+							case "mingzhong":
+								return "zhong";
+							case "zhu_false":
+								return "zhong_false";
+							case "bZhu":
+								return "bZhong";
+							case "rZhu":
+								return "rZhong";
+							default:
+								return identity;
+						}
+					})(player.identity));
+					if (!lib.translate[identity]) lib.translate[identity] = "尸";
+					const goon = player !== game.me && target !== game.me && player.node.identity.classList.contains("guessing") && !player.identityShown;
+					if (goon) {
+						if (target.identityShown) delete target.identityShown;
+						if (!target.node.identity.classList.contains("guessing")) target.node.identity.classList.add("guessing");
+					}
+					target.setIdentity(goon ? "cai" : undefined);
+					if (target.node.dieidentity) target.node.dieidentity.innerHTML = get.translation(target.identity + 2);
+					if (typeof player.ai?.shown === "number" && target.ai) target.ai.shown = player.ai.shown;
+					if (player.side) {
+						target.side = player.side;
+						target.node.identity.firstChild.innerHTML = player.node.identity.firstChild.innerHTML;
+						target.node.identity.dataset.color = player.node.identity.dataset.color;
+					}
+					if (_status._zombieshibian) return;
+					_status.zombieshibian = true;
+					//检测游戏胜负
+					if (typeof game.checkResult === "function") {
+						const origin_checkResult = game.checkResult;
+						game.checkResult = function () {
+							const player = game.me._trueMe || game.me;
+							if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) game.over(true);
+							return origin_checkResult.apply(this, arguments);
+						};
+					}
+					if (typeof game.checkOnlineResult === "function") {
+						const origin_checkOnlineResult = game.checkOnlineResult;
+						game.checkOnlineResult = function (player) {
+							if (game.players.filter(i => i !== player).every(i => i["zombieshibian"] === (player["zombieshibian"] || player))) return true;
+							return origin_checkOnlineResult.apply(this, arguments);
+						};
+					}
+					//检测态度
+					if (typeof get.attitude === "function") {
+						const origin_attitude = get.attitude;
+						get.attitude = function (from, to) {
+							if ((from["zombieshibian"] || from) === (to["zombieshibian"] || to)) return 114514;
+							return origin_attitude.apply(this, arguments);
+						};
+					}
+					if (typeof get.rawAttitude === "function") {
+						const origin_rawAttitude = get.rawAttitude;
+						get.rawAttitude = function (from, to) {
+							if ((from["zombieshibian"] || from) === (to["zombieshibian"] || to)) return 114514;
+							return origin_rawAttitude.apply(this, arguments);
+						};
+					}
+					//敌友判定
+					//实际上只是友方，敌方不用写
+					if (typeof lib.element.player.getFriends === "function") {
+						const origin_getFriends = lib.element.player.getFriends;
+						const getFriends = function (func, includeDie) {
+							const player = this;
+							return [origin_getFriends.apply(this, arguments), ...game[includeDie ? "filterPlayer2" : "filterPlayer"](target => (target["zombieshibian"] || target) === (player["zombieshibian"] || player))]
+								.filter(i => i !== player || func === true)
+								.unique()
+								.sortBySeat(player);
+						};
+						lib.element.player.getFriends = getFriends;
+						[...game.players, ...game.dead].forEach(i => (i.getFriends = getFriends));
+					}
+					if (typeof lib.element.player.isFriendOf === "function") {
+						const origin_isFriendOf = lib.element.player.isFriendOf;
+						const isFriendOf = function (player) {
+							if ((this["zombieshibian"] || this) === (player["zombieshibian"] || player)) return true;
+							return origin_isFriendOf.apply(this, arguments);
+						};
+						lib.element.player.isFriendOf = isFriendOf;
+						[...game.players, ...game.dead].forEach(i => (i.isFriendOf = isFriendOf));
+					}
+				},
+				player,
+				target
+			);
+		},
+		mark: true,
+		intro: { content: (孩子们我复活了, player) => "made in " + (player?.["zombieshibian"] ? get.translation(player["zombieshibian"]) : "东汉") },
+	},
+	zombieganran: {
+		trigger: { player: "phaseJieshuBegin" },
+		filter(event, player) {
+			return game.dead.some(target => {
+				if (target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) return false;
+				return game.getGlobalHistory("everything", evt => evt.name === "die" && evt.player === target && evt.source === player).length > 0;
+			});
+		},
+		forced: true,
+		logTarget(event, player) {
+			return game.dead
+				.filter(target => {
+					if (!target["zombieshibian"] || get.is.playerNames(target, "zombie_zombie")) return false;
+					return game.getGlobalHistory("everything", evt => evt.name === "die" && evt.player === target && evt.source === player).length > 0;
+				})
+				.sortBySeat();
+		},
+		async content(event, trigger, player) {
+			for (const target of event.targets) {
+				const names = get.nameList(target).filter(i => i !== "zombie_zombie");
+				const result =
+					names.length > 1
+						? await player
+								.chooseControl(names)
+								.set("ai", () => {
+									const { controls } = get.event();
+									return controls.slice().sort((a, b) => get.rank(b, true) - get.rank(a, true));
+								})
+								.set("prompt", "请选择替换的武将牌")
+								.forResult()
+						: { control: names[0] };
+				if (result.control) {
+					target.revive(2);
+					let doubleDraw = false;
+					let num = (get.character("zombie_zombie").maxHp || get.character("zombie_zombie").hp) - (get.character(result.control).maxHp || get.character(result.control).hp);
+					if (num !== 0) {
+						if (typeof target.singleHp === "boolean") {
+							if (num % 2 !== 0) {
+								if (target.singleHp) {
+									target.maxHp += (num + 1) / 2;
+									target.singleHp = false;
+								} else {
+									target.maxHp += (num - 1) / 2;
+									target.singleHp = true;
+									doubleDraw = true;
+								}
+							} else target.maxHp += num / 2;
+						} else target.maxHp += num;
+						target.update();
+					}
+					event.skills = get.character(result.control).skills || [];
+					await target.reinitCharacter(result.control, "zombie_zombie");
+					if (doubleDraw) await target.doubleDraw();
+				}
+				if (player.isDamaged()) {
+					const num = player.getDamagedHp();
+					await player.recover(num);
+					await player.draw(num);
+				}
+			}
+		},
+	},
 	// 十常侍共用技能
 	pschangshi: {
 		initSkill(changshi, skill) {
