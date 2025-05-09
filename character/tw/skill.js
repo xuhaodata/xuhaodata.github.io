@@ -744,8 +744,7 @@ const skills = {
 						})
 						.forResult();
 					const num = result.links[0] + 1;
-					player.logSkill("twzhengshi", null, null, null, [1]);
-					player.line(target);
+					player.logSkill("twzhengshi", [target], null, null, [1]);
 					target.popup(list[num - 1]);
 					game.log(target, "〖隽嗣〗的", list[num - 1]);
 					target.storage.twjunsi[Math.ceil(num / 2) - 1] += num % 2 == 1 ? 1 : -1;
