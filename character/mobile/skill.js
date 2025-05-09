@@ -962,7 +962,7 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		limited: true,
-	async content(event, trigger, player) {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			if (player.hasSkill("mbxuehen")) {
 				player.storage.mbxuehen = true;
