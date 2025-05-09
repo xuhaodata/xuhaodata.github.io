@@ -2723,7 +2723,7 @@ const skills = {
 				player != _status.currentPhase
 			);
 		},
-		content() {
+		async content(event, trigger, player) {
 			player.addTempSkill(event.nam + "_effect", { player: "phaseBeginStart" });
 			player.addMark(event.nam + "_effect", 1, false);
 		},
