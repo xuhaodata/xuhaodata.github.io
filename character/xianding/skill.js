@@ -5670,7 +5670,7 @@ const skills = {
 					.loseAsync({
 						gain_list: given_map,
 						player: player,
-						cards: given_map.slice().map(list => list[1]),
+						cards: given_map.slice().flatMap(list => list[1]),
 						giver: player,
 						animate: "giveAuto",
 					})

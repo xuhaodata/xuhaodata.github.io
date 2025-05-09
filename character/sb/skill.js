@@ -677,11 +677,10 @@ const skills = {
 				player.hasCard(card => {
 					if (card.hasGaintag("olsujian_given")) return false;
 					return !yiji || card.hasGaintag("sbyiji");
-				}, "h")
+				}, "h") &&
+				game.hasPlayer(target => target != player)
 			) {
-				const {
-					result: { bool, cards, targets },
-				} = await player.chooseCardTarget({
+				const { result } = await player.chooseCardTarget({
 					filterCard(card, player) {
 						if (card.hasGaintag("olsujian_given")) return false;
 						return !get.event().yiji || card.hasGaintag("sbyiji");
@@ -702,9 +701,10 @@ const skills = {
 					yiji: yiji,
 					position: "eh".slice(-1 + (!["identity", "doudizhu"].includes(mode) && name === "dying")), //三若为，怎么若都为构思
 				});
-				if (bool) {
+				if (result?.bool && result?.cards?.length && result?.targets?.length) {
+					const { cards } = result;
 					num -= cards.length;
-					const target = targets[0];
+					const target = result.targets[0];
 					if (given_map.some(i => i[0] == target)) {
 						given_map[given_map.indexOf(given_map.find(i => i[0] == target))][1].addArray(cards);
 					} else given_map.push([target, cards]);
@@ -723,7 +723,7 @@ const skills = {
 					.loseAsync({
 						gain_list: given_map,
 						player: player,
-						cards: given_map.slice().map(list => list[1]),
+						cards: given_map.slice().flatMap(list => list[1]),
 						giver: player,
 						animate: "giveAuto",
 					})
@@ -1003,33 +1003,35 @@ const skills = {
 			result = await player.choosePlayerCard(target, position, [0, num], true, prompt).set("visible", true).forResult();
 			if (!result?.cards?.length) return;
 			let { cards } = result;
-			result = await target
-				.chooseControl()
-				.set("choiceList", [`令${get.translation(player)}将${player === target ? get.translation(cards) : "其选择的牌"}分配给其他角色`, `弃置所有未被${get.translation(player)}选择的牌`])
-				.set("ai", () => {
-					return get.event("goon") ? 0 : 1;
-				})
-				.set(
-					"goon",
-					(() => {
-						const att = get.sgnAttitude(target, player),
-							hs = target.countCards(position);
-						if (att > 0 || hs > 5) return true;
-						if (hs < 2) return false;
-						let num;
-						if (att === 0) {
-							num = Math.min(hs, 2);
-							return hs > 2 * num;
-						}
-						num = Math.min(hs, 0.5 + 1.2 * Math.random());
-						return hs > 3 * num;
-					})()
-				)
-				.forResult();
+			if (game.hasPlayer(current => current != target)) {
+				result = await target
+					.chooseControl()
+					.set("choiceList", [`令${get.translation(player)}将${player === target ? get.translation(cards) : "其选择的牌"}分配给其他角色`, `弃置所有未被${get.translation(player)}选择的牌`])
+					.set("ai", () => {
+						return get.event("goon") ? 0 : 1;
+					})
+					.set(
+						"goon",
+						(() => {
+							const att = get.sgnAttitude(target, player),
+								hs = target.countCards(position);
+							if (att > 0 || hs > 5) return true;
+							if (hs < 2) return false;
+							let num;
+							if (att === 0) {
+								num = Math.min(hs, 2);
+								return hs > 2 * num;
+							}
+							num = Math.min(hs, 0.5 + 1.2 * Math.random());
+							return hs > 3 * num;
+						})()
+					)
+					.forResult();
+			} else result = { index: 1 };
 			if (result?.index === 0 && cards.length) {
 				if (_status.connectMode) game.broadcastAll(() => (_status.noclearcountdown = true));
 				let given_map = {};
-				while (cards.length) {
+				while (cards.length && game.hasPlayer(current => current != target)) {
 					let result;
 					if (cards.length == 1) result = { bool: true, links: cards.slice() };
 					else {
@@ -1041,26 +1043,27 @@ const skills = {
 							})
 							.forResult();
 					}
-					if (!result?.links?.length) return;
-					const gives = result.links;
-					const result2 = await player
-						.chooseTarget("选择获得" + get.translation(gives) + "的角色", true, (card, player, target) => {
-							return target != get.event().getTrigger().player;
-						})
-						.set("ai", target => {
-							return get.attitude(get.event("player"), target) * get.sgn(get.sgn(get.event("goon")) + 0.5);
-						})
-						.set(
-							"goon",
-							gives.reduce((sum, card) => sum + get.value(card), 0)
-						)
-						.forResult();
-					if (result2?.bool && result2?.targets?.length) {
-						cards.removeArray(gives);
-						const id = result2.targets[0].playerid;
-						if (!given_map[id]) given_map[id] = [];
-						given_map[id].addArray(gives);
-					} else return;
+					if (result?.links?.length) {
+						const gives = result.links;
+						result = await player
+							.chooseTarget("选择获得" + get.translation(gives) + "的角色", true, (card, player, target) => {
+								return target != get.event().getTrigger().player;
+							})
+							.set("ai", target => {
+								return get.attitude(get.event("player"), target) * get.sgn(get.sgn(get.event("goon")) + 0.5);
+							})
+							.set(
+								"goon",
+								gives.reduce((sum, card) => sum + get.value(card), 0)
+							)
+							.forResult();
+						if (result?.bool && result?.targets?.length) {
+							cards.removeArray(gives);
+							const id = result.targets[0].playerid;
+							if (!given_map[id]) given_map[id] = [];
+							given_map[id].addArray(gives);
+						} else break;
+					} else break;
 				}
 				if (_status.connectMode) game.broadcastAll(() => delete _status.noclearcountdown);
 				let list = [];
