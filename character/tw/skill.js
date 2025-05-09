@@ -779,7 +779,7 @@ const skills = {
 					source: "damageSource",
 				},
 				logAudio(event, player) {
-					if (player.name == 'huan_caopi') return ["twjunsi1.mp3", "twjunsi2.mp3"];
+					if (player.name == "huan_caopi") return ["twjunsi1.mp3", "twjunsi2.mp3"];
 				},
 				filter(event, player) {
 					const bool = !game.hasPlayer(target => target != player && target.hasSkill("twjunsi")) ? true : event.player.hasSkill("twjunsi");
@@ -798,7 +798,7 @@ const skills = {
 					player: "damageEnd",
 				},
 				logAudio(event, player) {
-					if (player.name == 'huan_caopi') return ["twjunsi3.mp3", "twjunsi4.mp3"];
+					if (player.name == "huan_caopi") return ["twjunsi3.mp3", "twjunsi4.mp3"];
 				},
 				filter(event, player) {
 					if (!event.source) return false;
