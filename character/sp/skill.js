@@ -11523,7 +11523,7 @@ const skills = {
 		async cost(event, trigger, player) {
 			const map = get.info(event.skill).getMap(player);
 			const targetprompt = (map, target) => {
-				const list = map[target.playerid];
+				const list = map[target.playerid] || [];
 				let str = "";
 				for (let i = 0; i < 2; i++) {
 					if (list[i] === undefined) str += "--";
