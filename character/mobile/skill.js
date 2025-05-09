@@ -816,11 +816,7 @@ const skills = {
 		},
 		group: ["mbxuehen_sha"],
 		subSkill: {
-			rewrite: {
-				charlotte: true,
-				init: (player, skill) => (player.storage[skill] = true),
-				onremove: true,
-			},
+			rewrite: { nopop: true },
 			sha: {
 				mod: {
 					cardname(card) {
@@ -966,10 +962,10 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		limited: true,
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			if (player.hasSkill("mbxuehen")) {
-				player.addSkill("mbxuehen_rewrite");
+				player.storage.mbxuehen = true;
 				player
 					.when({ player: "phaseUseEnd" })
 					.filter(evt => event.getParent("phaseUse") == evt)
@@ -979,7 +975,7 @@ const skills = {
 								return evt.getParent(2)?.name == "mbxuehen_sha" && evt.cards?.length;
 							})
 							.reduce((sum, evt) => sum + evt.cards.length, 0);
-						if (num < 2) player.removeSkill("mbxuehen_rewrite");
+						if (num < 2) delete player.storage.mbxuehen;
 					});
 			}
 		},
@@ -3279,7 +3275,7 @@ const skills = {
 			}
 			player.when({ player: "phaseBegin" }).then(() => {
 				player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
-			})
+			});
 		},
 		ai: {
 			order: 10,
