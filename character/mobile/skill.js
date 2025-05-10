@@ -3637,7 +3637,7 @@ const skills = {
 		subSkill: {
 			unlimit: {
 				charlotte: true,
-				mod: { cardUsable: () => true },
+				mod: { cardUsable: () => Infinity },
 				trigger: { player: "useCard1" },
 				forced: true,
 				popup: false,
