@@ -2456,7 +2456,7 @@ const skills = {
 					animationColor: "metal",
 					num: result.control,
 					async content(event, trigger, player) {
-						player.awakenSkill(event.name);
+						player.awakenSkill("dcdixian");
 						const num = get.numString(lib.skill.dcdixian_backup.num);
 						const card = get.cardPile2(card => get.number(card, false) < num);
 						if (!card) {

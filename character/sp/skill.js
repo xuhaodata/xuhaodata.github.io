@@ -1264,7 +1264,7 @@ const skills = {
 				const card = answer.filter(c => lib.filter.canBeGained(c, player, target)).randomGet();
 				if (card) await player.gain(card, "give");
 			}
-			if (list.every(c => c === true)) await player.drawTo(player.maxHp);
+			if (list.every(c => c === true)) await player.drawTo(player.getHp());
 		},
 		ai: {
 			order: 7,

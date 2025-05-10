@@ -841,7 +841,7 @@ const skills = {
 				filter(event, player, name) {
 					if (event.name == "useCard") {
 						if (name == "useCard1" && event.addCount === false) return false;
-						if (name == "useCardAfter" && !player.storage.mbxuehen_rewrite) return false;
+						if (name == "useCardAfter" && !player.storage.mbxuehen) return false;
 						return player.hasHistory("lose", evt => {
 							return evt.getParent() == event && Object.values(evt.gaintag_map).flat().includes("mbxuehen_sha");
 						});
@@ -3637,7 +3637,7 @@ const skills = {
 		subSkill: {
 			unlimit: {
 				charlotte: true,
-				mod: { cardUsable: () => true },
+				mod: { cardUsable: () => Infinity },
 				trigger: { player: "useCard1" },
 				forced: true,
 				popup: false,
