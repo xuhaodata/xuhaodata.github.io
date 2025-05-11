@@ -3701,6 +3701,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 		next.num = num;
 		next.markName = i;
+		next.log = log;
 		next.forceDie = true;
 		next.includeOut = true;
 		next.setContent("emptyEvent");
@@ -3728,6 +3729,7 @@ export class Player extends HTMLDivElement {
 		next.player = this;
 		next.num = num;
 		next.markName = i;
+		next.log = log;
 		next.forceDie = true;
 		next.includeOut = true;
 		next.setContent("emptyEvent");

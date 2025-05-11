@@ -816,11 +816,7 @@ const skills = {
 		},
 		group: ["mbxuehen_sha"],
 		subSkill: {
-			rewrite: {
-				charlotte: true,
-				init: (player, skill) => (player.storage[skill] = true),
-				onremove: true,
-			},
+			rewrite: { nopop: true },
 			sha: {
 				mod: {
 					cardname(card) {
@@ -845,7 +841,7 @@ const skills = {
 				filter(event, player, name) {
 					if (event.name == "useCard") {
 						if (name == "useCard1" && event.addCount === false) return false;
-						if (name == "useCardAfter" && !player.storage.mbxuehen_rewrite) return false;
+						if (name == "useCardAfter" && !player.storage.mbxuehen) return false;
 						return player.hasHistory("lose", evt => {
 							return evt.getParent() == event && Object.values(evt.gaintag_map).flat().includes("mbxuehen_sha");
 						});
@@ -966,10 +962,10 @@ const skills = {
 		skillAnimation: true,
 		animationColor: "orange",
 		limited: true,
-		content() {
+		async content(event, trigger, player) {
 			player.awakenSkill(event.name);
 			if (player.hasSkill("mbxuehen")) {
-				player.addSkill("mbxuehen_rewrite");
+				player.storage.mbxuehen = true;
 				player
 					.when({ player: "phaseUseEnd" })
 					.filter(evt => event.getParent("phaseUse") == evt)
@@ -979,7 +975,7 @@ const skills = {
 								return evt.getParent(2)?.name == "mbxuehen_sha" && evt.cards?.length;
 							})
 							.reduce((sum, evt) => sum + evt.cards.length, 0);
-						if (num < 2) player.removeSkill("mbxuehen_rewrite");
+						if (num < 2) delete player.storage.mbxuehen;
 					});
 			}
 		},
@@ -3651,7 +3647,7 @@ const skills = {
 		subSkill: {
 			unlimit: {
 				charlotte: true,
-				mod: { cardUsable: () => true },
+				mod: { cardUsable: () => Infinity },
 				trigger: { player: "useCard1" },
 				forced: true,
 				popup: false,
