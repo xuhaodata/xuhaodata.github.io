@@ -148,20 +148,31 @@ const skills = {
 			return player.countCards("h");
 		},
 		async content(event, trigger, player) {
-			let cards = player.getCards("h", card => get.color(card, player) == "black"),
+			let cards = player.getCards("h").filter(card => get.color(card, player) == "black" && player.hasUseTarget(card)),
 				lastCard;
 			await player.showHandcards(`${get.translation(player)}发动了〖佯疾〗`);
-			while (true) {
-				if (!cards.length) break;
-				const card = cards.shift();
-				if (player.hasUseTarget(card)) {
+			while (!player.hasHistory("sourceDamage", evt => evt.getParent(4) === event) && player.getCards("h").some(card => cards.includes(card) && player.hasUseTarget(card))) {
+				const { result } = await player
+					.chooseToUse(function (card, player, event) {
+						if (get.itemtype(card) != "card" || !get.event("cardsx").includes(card) || get.position(card) != "h") return false;
+						return lib.filter.filterCard.apply(this, arguments);
+					}, "佯疾：请使用一张黑色手牌")
+					.set("targetRequired", true)
+					.set("complexSelect", true)
+					.set("filterTarget", function (card, player, target) {
+						return lib.filter.filterTarget.apply(this, arguments);
+					})
+					.set("cardsx", cards)
+					.set("forced", true)
+					.set("addCount", false);
+				if (result?.cards?.length) {
+					const card = result.cards[0];
 					lastCard = card;
-					await player.chooseUseTarget(card, true, false);
-				}
-				if (player.hasHistory("sourceDamage", evt => evt.getParent(4) === event && evt.card === card)) break;
+					cards.remove(card);
+				} else break;
 			}
 			const target = _status.currentPhase;
-			if (lastCard && get.suit(lastCard, player) == "spade" && (!get.owner(card) || get.position(card) !== "h") && target?.isIn() && target.canAddJudge(get.autoViewAs({ name: "lebu" }, lastCard))) await target.addJudge({ name: "lebu" }, lastCard);
+			if (lastCard && get.suit(lastCard, player) == "spade" && (!get.owner(lastCard) || get.position(lastCard) !== "h") && target?.isIn() && target.canAddJudge(get.autoViewAs({ name: "lebu" }, lastCard))) await target.addJudge({ name: "lebu" }, lastCard);
 		},
 	},
 	clandandao: {
