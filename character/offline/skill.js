@@ -659,16 +659,22 @@ const skills = {
 				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 				//判断是否有印牌效果
 				if (info.viewAs) {
+					info = info.viewAs;
+					//有些viewAs是函数形式，就转成字符串了，其他的按键值对处理即可
+					if (typeof info == "function") {
+						const str = info?.toString();
+						if (!str || str.includes("isCard: true")) continue;
+					} else if (info.isCard === true) continue;
 					skill = get.sourceSkillFor(skill);
-					//通过“当作”/“当做”判断是否为转化牌而非视为使用
+					/*//通过“当作”/“当做”判断是否为转化牌而非视为使用
 					const txt = get.plainText(get.skillInfoTranslation(skill));
-					if (!skill || !["当作", "当做"].some(str => txt.includes(str))) continue;
+					if (!skill || !["当作", "当做"].some(str => txt.includes(str))) continue;*/
 					list.add(skill);
 				}
 			}
 			//最后用全局变量存储，就不需要反复执行这个函数了
 			_status.viewAsSkills = list;
-			//console.log(list);
+			console.log(list.includes("olfuhun"));
 		},
 		trigger: {
 			player: ["phaseZhunbeiBegin", "damageEnd"],
