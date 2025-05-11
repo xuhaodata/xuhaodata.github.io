@@ -3276,6 +3276,9 @@ const skills = {
 			player
 				.when({ player: ["phaseBegin", "useCard"] })
 				.filter(evt => (evt.name == "phase" ? true : !["potfuji_sha", "potfuji_shan"].some(skill => player.hasSkill(skill))))
+				.assign({
+					lastDo: true,
+				})
 				.then(() => {
 					player.changeSkin({ characterName: "pot_yuji" }, "pot_yuji");
 				});
