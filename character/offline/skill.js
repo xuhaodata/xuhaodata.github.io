@@ -11971,9 +11971,6 @@ const skills = {
 			const players = game.players
 				.slice()
 				.concat(game.dead)
-				.filter(target => {
-					return target.isAlive() || [source, player].includes(target);
-				})
 				.sort((a, b) => parseInt(a.dataset.position) - parseInt(b.dataset.position));
 			const num = players.indexOf(source),
 				num2 = players.indexOf(player);
@@ -11985,7 +11982,7 @@ const skills = {
 				trigger: { global: "phaseOver" },
 				filter(event, player) {
 					return player.getStorage("jdfengtu_phase").some(target => {
-						return lib.skill.jdfengtu.check(event.player, target);
+						return !game.players.includes(target) && lib.skill.jdfengtu.check(event.player, target);
 					});
 				},
 				forced: true,
@@ -12063,7 +12060,7 @@ const skills = {
 	},
 	jdtaishi: {
 		zhuSkill: true,
-		trigger: { global: "phaseBefore" },
+		trigger: { global: "phaseBeginStart" },
 		filter(event, player) {
 			return game.hasPlayer(current => current.isUnseen(2));
 		},
