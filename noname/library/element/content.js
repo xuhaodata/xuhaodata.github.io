@@ -7490,9 +7490,13 @@ player.removeVirtualEquip(card);
 		if (cards.length) {
 			let { cards } = event;
 			var owner = get.owner(cards[0]) || player;
-			if (owner.hasCard(card => card[card.cardSymbol]?.cards?.some(cardx => cards.includes(cardx)), "ej")) {
-				event.cards = cards = owner.getCards("ej", card => card[card.cardSymbol].cards?.some(cardx => cards.includes(cardx)));
-			}
+			owner.getCards("ej").forEach(card => {
+				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
+				if (!cardsx.length) return;
+				cards.removeArray(cardsx);
+				cards.add(card);
+			});
+			event.cards = cards;
 			var next = owner.lose(cards, "visible", ui.ordering).set("type", "use");
 			var directDiscard = [];
 			for (var i = 0; i < cards.length; i++) {
@@ -8410,9 +8414,13 @@ player.removeVirtualEquip(card);
 		if (cards.length) {
 			let { cards } = event;
 			var owner = get.owner(cards[0]) || player;
-			if (owner.hasCard(card => card[card.cardSymbol]?.cards?.some(cardx => cards.includes(cardx)), "ej")) {
-				event.cards = cards = owner.getCards("ej", card => card[card.cardSymbol].cards?.some(cardx => cards.includes(cardx)));
-			}
+			owner.getCards("ej").forEach(card => {
+				const cardsx = card?.[card.cardSymbol]?.cards?.filter(cardx => cards.includes(cardx));
+				if (!cardsx.length) return;
+				cards.removeArray(cardsx);
+				cards.add(card);
+			});
+			event.cards = cards;
 			var next = owner.lose(cards, "visible", ui.ordering).set("type", "use");
 			var directDiscard = [];
 			for (var i = 0; i < cards.length; i++) {

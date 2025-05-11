@@ -674,7 +674,7 @@ const skills = {
 			}
 			//最后用全局变量存储，就不需要反复执行这个函数了
 			_status.viewAsSkills = list;
-			console.log(list.includes("olfuhun"));
+			//console.log(list.includes("olfuhun"));
 		},
 		trigger: {
 			player: ["phaseZhunbeiBegin", "damageEnd"],
@@ -716,7 +716,7 @@ const skills = {
 					if (!ui.selected.buttons.length) {
 						if (button.link == "gain") return len < 4;
 						if (button.link == "replace") return len > 0;
-						if (button.link == "draw") return true;
+						if (button.link == "draw") return len < 4;
 						return false;
 					}
 					return ui.selected.buttons[0].link == "draw" ? false : !actions.includes(button.link);
@@ -859,16 +859,17 @@ const skills = {
 								},
 							],
 							prompts = lib.skill.chunqiubi_skill.prompts.slice();
+						//对描述和效果重新组合
 						prompts = prompts.slice(link, 4).concat(prompts.slice(0, link));
 						funcs = funcs.slice(link, 4).concat(funcs.slice(0, link));
 						const result = await player
 							.chooseControl("正序", "逆序")
-							.set("prompt", `春秋笔：令${get.translation(target)}正序或逆序执行以下项（当前显示的为正序）`)
-							.set("prompt2", `${prompts[0]}<br>${prompts[1]}<br>${prompts[2]}<br>${prompts[3]}`)
+							.set("prompt", `春秋笔：令${get.translation(target)}正序或逆序执行以下项（上面为正序。下面为逆序）`)
+							.set("prompt2", `${prompts.join("<br>")}<br><br>${[prompts[0]].concat(prompts.slice(1, 4).reverse()).join("<br>")}`)
 							.set("ai", () => Math.random())
 							.forResult();
 						if (!result?.control) return;
-						if (result.control == "逆序") funcs.reverse();
+						if (result.control == "逆序") funcs = [funcs[0]].concat(funcs.slice(1, 4).reverse());
 						for (const func of funcs) {
 							if (!target.isIn()) break;
 							await func(target);
@@ -880,7 +881,7 @@ const skills = {
 				const link = links[0];
 				let prompts = lib.skill.chunqiubi_skill.prompts.slice();
 				prompts = prompts.slice(link, 4).concat(prompts.slice(0, link));
-				return `###春秋笔：请选择目标###${prompts[0]}<br>${prompts[1]}<br>${prompts[2]}<br>${prompts[3]}`;
+				return `###春秋笔：请选择目标###${prompts.join("<br>")}<br><br>${[prompts[0]].concat(prompts.slice(1, 4).reverse()).join("<br>")}`;
 			},
 		},
 		ai: {
