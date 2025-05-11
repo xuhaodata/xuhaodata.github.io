@@ -107,6 +107,7 @@ window.noname_character_rank = {
 		"diy_zhangfei",
 	],
 	a: [
+		"chenshou",
 		"dc_xiahouxuan",
 		"yangbiao",
 		"hm_shen_zhangjiao",
@@ -2324,6 +2325,7 @@ window.noname_character_rank = {
 	],
 	rarity: {
 		legend: [
+			"chenshou",
 			"dm_simayi",
 			"shen_zhonghui",
 			"ol_feiyi",

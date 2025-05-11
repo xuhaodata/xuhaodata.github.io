@@ -14,6 +14,12 @@ const characters = {
 		skills: ["zombieshibian", "zombieganran"],
 		isUnseen: true,
 	},
+	chenshou: {
+		sex: "male",
+		group: "shu",
+		hp: 3,
+		skills: ["nschenzhi", "nsdianmo", "nszaibi"],
+	},
 	ps_zhangrang: {
 		sex: "male",
 		group: "qun",
