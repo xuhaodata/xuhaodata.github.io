@@ -11068,7 +11068,8 @@ export class Library {
 			markimage: "image/card/charge.png",
 			intro: {
 				content(storage, player) {
-					const max = player.getMaxCharge();
+					let max = player.getMaxCharge();
+					if (max == Infinity) max = "∞";
 					return `当前蓄力点数：${storage}/${max}`;
 				},
 			},
@@ -13998,6 +13999,23 @@ export class Library {
 				 * @returns {string}
 				 */
 				getSpan: () => `${get.prefixSpan("汉末")}${get.prefixSpan("神")}`,
+			},
+		],
+		[
+			"长安",
+			{	
+				showName: "镐",
+				color: "#40e0d0",
+				nature: "shenmm",
+			},
+		],
+		[
+			"长安神",
+			{
+				/**
+				 * @returns {string}
+				 */
+				getSpan: () => `${get.prefixSpan("长安")}${get.prefixSpan("神")}`,
 			},
 		],
 		[
