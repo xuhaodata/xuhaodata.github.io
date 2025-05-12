@@ -11703,7 +11703,6 @@ export class Library {
 					},
 					viewAs: {
 						name: "sha",
-						isCard: true,
 					},
 					viewAsFilter: function (player) {
 						if (!player.countCards("hs", "tao")) return false;
@@ -11731,7 +11730,6 @@ export class Library {
 					},
 					viewAs: {
 						name: "shan",
-						isCard: true,
 					},
 					prompt: "将一张桃当闪打出",
 					check: function () {

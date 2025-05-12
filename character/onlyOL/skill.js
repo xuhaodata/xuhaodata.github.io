@@ -242,18 +242,7 @@ const skills = {
 				.randomGets(3);*/
 			if (!skills.length) return;
 			const result = await player
-				.chooseButton(
-					[
-						`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`,
-						[
-							skills.map(skill => {
-								return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
-							}),
-							"textbutton",
-						],
-					],
-					true
-				)
+				.chooseButton([`###${get.translation(event.name)}###你从三个可造成伤害的技能中选择一个获得直到你的下回合开始。`, [skills, lib.skill.nsdianmo.$createButton]], true)
 				.set("ai", button => Math.random())
 				.forResult();
 			if (!result?.links) return;
@@ -1472,7 +1461,7 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					popname: true,
-					viewAs: { name: links[0][2], nature: links[0][3] },
+					viewAs: { name: links[0][2], nature: links[0][3], isCard: true },
 					precontent() {
 						player.addTempSkill("olsblucun_used", "roundStart");
 						player.markAuto("olsblucun_used", [event.result.card.name]);
@@ -1989,7 +1978,7 @@ const skills = {
 					filterCard: () => false,
 					selectCard: -1,
 					popname: true,
-					viewAs: { name: links[0][2], nature: links[0][3] },
+					viewAs: { name: links[0][2], nature: links[0][3], isCard: true },
 					async precontent(event, trigger, player) {
 						player.markAuto("olsbjueya", event.result.card.name);
 					},
@@ -2340,7 +2329,6 @@ const skills = {
 				},
 				viewAs: {
 					name: "sha",
-					isCard: true,
 				},
 				viewAsFilter(player) {
 					if (!player.countCards("hs", lib.skill["olsblixian_sha"].filterCard)) return false;
@@ -2368,7 +2356,6 @@ const skills = {
 				},
 				viewAs: {
 					name: "shan",
-					isCard: true,
 				},
 				prompt: "将一张“理贤”牌当闪打出",
 				check() {

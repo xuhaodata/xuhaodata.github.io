@@ -552,7 +552,7 @@ const skills = {
 			if (discarded?.length) {
 				game.broadcastAll(list => {
 					_status.pokerDiscarded.addArray(list);
-					game.log(list, "被移入扑克牌弃牌堆");
+					game.log(list, "移入专属弃牌堆");
 				}, discarded);
 			}
 			if (!nobroadcast) {
@@ -642,8 +642,13 @@ const skills = {
 		initList() {
 			//先用许劭评鉴那个函数初始化一下角色列表
 			if (!_status.characterlist) lib.skill.pingjian.initList();
+			//把key包和怀旧包的去了，太多没维护的了
+			const characters = _status.characterlist.slice(),
+				old = Object.keys(lib.characterPack.old).flat(),
+				key = Object.keys(lib.characterPack.key).flat();
+			characters.removeArray(old.concat(key));
 			//获取各个角色的技能并去重
-			const skills = _status.characterlist
+			const skills = characters
 				.map(i => get.character(i, 3))
 				.flat()
 				.unique();
@@ -665,16 +670,18 @@ const skills = {
 						const str = info?.toString();
 						if (!str || str.includes("isCard: true")) continue;
 					} else if (info.isCard === true) continue;
-					skill = get.sourceSkillFor(skill);
-					/*//通过“当作”/“当做”判断是否为转化牌而非视为使用
-					const txt = get.plainText(get.skillInfoTranslation(skill));
-					if (!skill || !["当作", "当做"].some(str => txt.includes(str))) continue;*/
-					list.add(skill);
-				}
+				} else if (info.chooseButton?.backup) {
+					//backup基本都是函数，也要转字符串
+					info = info.chooseButton?.backup;
+					const str = info?.toString();
+					if (!str || !str.includes("viewAs: ") || str.includes("isCard: true")) continue;
+				} else continue;
+				skill = get.sourceSkillFor(skill);
+				list.add(skill);
 			}
 			//最后用全局变量存储，就不需要反复执行这个函数了
 			_status.viewAsSkills = list;
-			//console.log(list.includes("olfuhun"));
+			//console.log(list);
 		},
 		trigger: {
 			player: ["phaseZhunbeiBegin", "damageEnd"],
@@ -699,12 +706,7 @@ const skills = {
 						],
 						"tdnodes",
 					],
-					[
-						skills.map(skill => {
-							return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
-						}),
-						"textbutton",
-					],
+					[skills, lib.skill.nsdianmo.$createButton],
 				])
 				.set("selectButton", () => {
 					if (ui.selected.buttons.length && ui.selected.buttons[0].link == "draw") return 1;
@@ -737,18 +739,7 @@ const skills = {
 				skills = player.additionalSkills[event.name]?.slice() || [];
 			if (action == "replace") {
 				const result = await player
-					.chooseButton(
-						[
-							`###点墨：请选择一个要替换的技能###${get.translation(skill)}：${get.translation(skill + "_info")}`,
-							[
-								skills.map(skill => {
-									return [skill, `${get.translation(skill)}：${get.translation(skill + "_info")}`];
-								}),
-								"textbutton",
-							],
-						],
-						true
-					)
+					.chooseButton([`###点墨：请选择一个要替换的技能###${get.translation(skill)}：${get.translation(skill + "_info")}`, [skills, lib.skill.nsdianmo.$createButton]], true)
 					.set("ai", button => Math.random())
 					.forResult();
 				if (!result?.links) return;
@@ -760,6 +751,32 @@ const skills = {
 				await player.addAdditionalSkills(event.name, skills);
 			}
 			await player.draw(4 - (player.additionalSkills[event.name]?.length || 0));
+		},
+		//创建技能卡button
+		$createButton(item, type, position, noclick, node) {
+			//搜索拥有这个技能的角色
+			const characterName = Object.keys(lib.character).find(namex => get.character(namex, 3).includes(item));
+			const info = get.character(characterName);
+			//创建这张vcard并重新赋值link
+			node = ui.create.buttonPresets.vcard(item, "vcard", position, noclick);
+			node.link = item;
+			//更改vcard的名字不然看不清
+			node.node.name.innerHTML = `<div class="name" data-nature=${get.groupnature(info[1], "raw")}m style="position: relative;color:#ffffff;fontweight:bold">${get.translation(item)}</div>`;
+			//更改vcard背景
+			node.node.background.innerHTML = "";
+			node.setBackground(characterName, "character");
+			//添加右键查看技能信息
+			node._customintro = function (uiintro, evt) {
+				const skill = node.link;
+				uiintro.add(get.translation(skill));
+				if (lib.translate[skill + "_info"]) {
+					uiintro.add(`<div class="text">${get.skillInfoTranslation(skill)}</div>`);
+					if (lib.translate[skill + "_append"]) {
+						uiintro._place_text = uiintro.add('<div class="text">' + lib.translate[skill + "_append"] + "</div>");
+					}
+				}
+			};
+			return node;
 		},
 	},
 	nszaibi: {
