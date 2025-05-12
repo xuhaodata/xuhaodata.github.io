@@ -210,10 +210,6 @@ const skills = {
 			//筛选技能
 			for (let skill of skills) {
 				let info = get.info(skill);
-				//去除觉醒技、隐匿技、势力技、主公技
-				if (!info || info.silent || info.juexingji || info.hiddenSkill || info.groupSkill || info.zhuSkill) continue;
-				//去除有联动的技能和负面技能
-				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 				//获取技能的内容，后者是一些主动技会用到的内容
 				info = info.content || info.chooseButton?.backup;
 				//将内容转为字符串
@@ -221,8 +217,13 @@ const skills = {
 				//检测是否包含“.damage(”子串，即造成伤害的函数
 				if (str?.includes(".damage(")) {
 					skill = get.sourceSkillFor(skill);
+					info = get.info(skill);
 					//双重检测，如果技能描述中不带伤害字样的去除
 					if (!skill || !get.plainText(get.skillInfoTranslation(skill)).includes("伤害")) continue;
+					//去除觉醒技、隐匿技、势力技、主公技
+					if (!info || info.silent || info.juexingji || info.hiddenSkill || info.groupSkill || info.zhuSkill) continue;
+					//去除有联动的技能和负面技能
+					if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 					list.add(skill);
 				}
 			}

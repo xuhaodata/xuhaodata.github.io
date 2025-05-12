@@ -499,7 +499,6 @@ const skills = {
 		//初始化扑克牌堆
 		init(player, skill) {
 			if (!_status.pokerPile) lib.skill[skill].initPile();
-			//game.addGlobalSkill(skill+"_lose");
 		},
 		//初始化牌堆
 		initPile() {
@@ -534,7 +533,6 @@ const skills = {
 				suits
 			);
 			lib.skill.nschenzhi.update();
-			//console.log(cards);
 		},
 		//扑克牌堆洗牌
 		washCard() {
@@ -581,6 +579,10 @@ const skills = {
 		},
 		//将扑克牌放回牌堆
 		discard(card) {
+			if (card.name != "nschenzhi_poker") {
+				card.discard(false);
+				return;
+			}
 			ui.special.appendChild(card);
 			game.broadcastAll(card => {
 				_status.pokerPile.splice(get.rand(0, _status.pokerPile.length - 1), 0, card);
@@ -658,10 +660,6 @@ const skills = {
 			//筛选技能
 			for (let skill of skills) {
 				let info = get.info(skill);
-				//去除觉醒技、隐匿技、势力技、主公技
-				if (!info || info.silent || info.juexingji || info.hiddenSkill || info.groupSkill || info.zhuSkill) continue;
-				//去除有联动的技能和负面技能
-				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 				//判断是否有印牌效果
 				if (info.viewAs) {
 					info = info.viewAs;
@@ -677,11 +675,15 @@ const skills = {
 					if (!str || !str.includes("viewAs: ") || str.includes("isCard: true")) continue;
 				} else continue;
 				skill = get.sourceSkillFor(skill);
+				info = get.info(skill);
+				//去除觉醒技、隐匿技、势力技、主公技
+				if (!info || info.silent || info.juexingji || info.hiddenSkill || info.groupSkill || info.zhuSkill) continue;
+				//去除有联动的技能和负面技能
+				if (info.ai && (info.ai.combo || info.ai.notemp || info.ai.neg)) continue;
 				list.add(skill);
 			}
 			//最后用全局变量存储，就不需要反复执行这个函数了
 			_status.viewAsSkills = list;
-			//console.log(list);
 		},
 		trigger: {
 			player: ["phaseZhunbeiBegin", "damageEnd"],
@@ -697,7 +699,7 @@ const skills = {
 			const skills = list.randomGets(2);
 			const result = await player
 				.chooseButton([
-					get.prompt2(event.skill),
+					get.prompt2(event.skill) + `<span class=thundertext style="font-weight:bold;">当前拥有技能：${get.translation(player.additionalSkills["nsdianmo"])}</span>`,
 					[
 						[
 							["gain", "获得技能"],
@@ -713,7 +715,7 @@ const skills = {
 					return 2;
 				})
 				.set("filterButton", button => {
-					const actions = ["gain", "replace"],
+					const actions = ["gain", "replace", "draw"],
 						len = get.player().additionalSkills["nsdianmo"]?.length || 0;
 					if (!ui.selected.buttons.length) {
 						if (button.link == "gain") return len < 4;
@@ -16701,119 +16703,79 @@ const skills = {
 			return player.hasHistory("useCard", evt => evt.getParent("phaseUse") == event);
 		},
 		direct: true,
-		content() {
-			"step 0";
-			var types = [];
-			player.getHistory("useCard", evt => {
-				if (evt.getParent("phaseUse") != trigger) return false;
-				types.add(get.type2(evt.card));
-			});
-			event.num = types.length;
-			event.logged = false;
-			player.chooseTarget(get.prompt("zylianji"), "令一名角色摸一张牌").set("ai", target => {
-				var player = _status.event.player;
-				if (target == player && player.needsToDiscard(1)) return 1;
-				return get.effect(target, { name: "draw" }, player, player);
-			});
-			"step 1";
-			if (result.bool) {
-				var target = result.targets[0];
-				if (!event.logged) {
-					event.logged = true;
-					player.logSkill("zylianji", target);
-				}
-				target.draw();
-			}
-			if (event.num <= 1) event.finish();
-			"step 2";
-			if (player.isHealthy()) event._result = { bool: false };
-			else player.chooseBool(get.prompt("zylianji"), "回复1点体力").set("ai", () => true);
-			"step 3";
-			if (result.bool) {
-				if (!event.logged) {
-					event.logged = true;
-					player.logSkill("zylianji");
-				}
-				player.recover();
-			}
-			if (event.num <= 2) event.finish();
-			"step 4";
-			player.chooseTarget(get.prompt("zylianji"), "跳过本回合的剩余阶段，然后令一名其他角色执行这些阶段", lib.filter.notMe).set("ai", target => {
-				var att = get.attitude(_status.event.player, target),
-					num = target.needsToDiscard(),
-					numx = player.needsToDiscard();
-				if (att < 0 && num > 0) return (-att * Math.sqrt(num)) / 3 + numx;
-				var skills = target.getSkills();
-				var val = 0;
-				for (var skill of skills) {
-					var info = get.info(skill);
-					if (info.trigger && info.trigger.player && (info.trigger.player.indexOf("phaseJieshu") == 0 || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => i.indexOf("phaseJieshu") == 0)))) {
-						var threaten = info.ai && info.ai.threaten ? info.ai.threaten : 1;
-						if (info.ai && info.ai.neg) val -= 3 * threaten;
-						else if (info.ai && info.ai.halfneg) val -= 1.5 * threaten;
-						else val += threaten;
+		async content(event, trigger, player) {
+			let logged = false;
+			const num = player
+				.getHistory("useCard", evt => evt.getParent("phaseUse") == trigger)
+				.map(evt => get.type2(evt.card))
+				.unique().length;
+			if (num > 0) {
+				const result = await player
+					.chooseTarget(get.prompt("zylianji"), "令一名角色摸一张牌")
+					.set("ai", target => {
+						var player = get.player();
+						if (target == player && player.needsToDiscard(1)) return 1;
+						return get.effect(target, { name: "draw" }, player, player);
+					})
+					.forResult();
+				if (result?.targets) {
+					const target = result.targets[0];
+					if (!logged) {
+						logged = true;
+						player.logSkill("zylianji", target);
 					}
+					await result.targets[0].draw();
 				}
-				return (att * val) / 2 + numx;
-			});
-			"step 5";
-			if (result.bool) {
-				var target = result.targets[0];
-				if (!event.logged) {
-					event.logged = true;
-					player.logSkill("zylianji", target);
-				} else player.line(target);
-				player.addTempSkill("zylianji_skip");
-				player.storage.zylianji_insert = target;
 			}
-		},
-		subSkill: {
-			skip: {
-				trigger: {
-					player: ["phaseZhunbeiBefore", "phaseJudgeBefore", "phaseDrawBefore", "phaseUseBefore", "phaseDiscardBefore", "phaseJieshuBefore"],
-				},
-				init(player) {
-					if (!player.storage.zylianji_skip) player.storage.zylianji_skip = [];
-				},
-				forced: true,
-				charlotte: true,
-				group: "zylianji_insert",
-				onremove: true,
-				content() {
-					trigger.cancel();
-					player.storage.zylianji_skip.push(trigger.name);
-				},
-			},
-			insert: {
-				trigger: { player: "phaseEnd" },
-				filter(event, player) {
-					return player.storage.zylianji_skip && player.storage.zylianji_skip.length && player.storage.zylianji_insert && player.storage.zylianji_insert.isIn();
-				},
-				forced: true,
-				charlotte: true,
-				onremove: true,
-				getStr(str) {
-					switch (str) {
-						case "phaseDraw":
-							return "player.phaseDraw();if(!player.noPhaseDelay){if(player==game.me){game.delay()}else{game.delayx()}}";
-						case "phaseDiscard":
-							return "game.broadcastAll(function(){if(ui.tempnowuxie){ui.tempnowuxie.close();delete ui.tempnowuxie;}});player.phaseDiscard();if(!player.noPhaseDelay){game.delayx()};delete player._noSkill;";
-						default:
-							return "player." + str + "();";
+			if (num > 1 && player.isDamaged()) {
+				const {
+					result: { bool },
+				} = await player.chooseBool(get.prompt("zylianji"), "回复1点体力").set("ai", () => true);
+				if (bool) {
+					if (!logged) {
+						logged = true;
+						player.logSkill("zylianji");
 					}
-				},
-				content() {
-					"step 0";
-					var func = "";
-					for (var i = 0; i < player.storage.zylianji_skip.length; i++) {
-						var phase = player.storage.zylianji_skip[i];
-						func += "\n'step" + " " + i + "'\n";
-						func += lib.skill.zylianji_insert.getStr(phase);
+					await player.recover();
+				}
+			}
+			if (num > 2) {
+				let list;
+				const evt = trigger.getParent("phase", true);
+				if (evt) list = evt.phaseList.slice(evt.num + 1);
+				if (!list.length) return;
+				const {
+					result: { targets },
+				} = await player.chooseTarget(get.prompt("zylianji"), `跳过本回合的剩余阶段，然后令一名其他角色执行一个只有${get.translation(list)}的回合`, lib.filter.notMe).set("ai", target => {
+					var att = get.attitude(_status.event.player, target),
+						num = target.needsToDiscard(),
+						numx = player.needsToDiscard();
+					if (att < 0 && num > 0) return (-att * Math.sqrt(num)) / 3 + numx;
+					var skills = target.getSkills();
+					var val = 0;
+					for (var skill of skills) {
+						var info = get.info(skill);
+						if (info.trigger && info.trigger.player && (info.trigger.player.indexOf("phaseJieshu") == 0 || (Array.isArray(info.trigger.player) && info.trigger.player.some(i => i.indexOf("phaseJieshu") == 0)))) {
+							var threaten = info.ai && info.ai.threaten ? info.ai.threaten : 1;
+							if (info.ai && info.ai.neg) val -= 3 * threaten;
+							else if (info.ai && info.ai.halfneg) val -= 1.5 * threaten;
+							else val += threaten;
+						}
 					}
-					player.line(player.storage.zylianji_insert);
-					player.storage.zylianji_insert.insertPhase().setContent(new Function(func))._noTurnOver = true;
-				},
-			},
+					return (att * val) / 2 + numx;
+				});
+				if (targets.length) {
+					const target = targets[0];
+					if (!logged) {
+						logged = true;
+						player.logSkill("zylianji", target);
+					} else player.line(target);
+					list = list.map(name => name.split("|")[0]);
+					list.forEach(name => player.skip(name));
+					game.log(player, "跳过了", list);
+					target.insertPhase().set("phaseList", list)._noTurnOver = true;
+				}
+			}
 		},
 	},
 	zymoucheng: {
