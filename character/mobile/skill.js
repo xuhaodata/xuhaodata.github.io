@@ -9071,19 +9071,11 @@ const skills = {
 			let togive = source;
 			while (source.getExpansions("mutao").length) {
 				togive = togive.getNext();
-				while (togive === source) togive = togive.getNext();
-				let card = source.getExpansions("mutao").randomGet();
-				if (card) {
-					await source.give(card, togive);
-					if (game.hasPlayer(target => target !== source)) continue;
-				}
-				break;
+				await source.give(source.getExpansions("mutao").randomGet(), togive);
 			}
-			if (togive !== source) {
-				source.line(togive);
-				let num = togive.countCards("h", { name: "sha" });
-				if (num) await togive.damage(Math.min(2, num), source);
-			}
+			source.line(togive);
+			let num = togive.countCards("h", { name: "sha" });
+			if (num) await togive.damage(Math.min(2, num), source);
 		},
 		intro: {
 			content: "expansion",

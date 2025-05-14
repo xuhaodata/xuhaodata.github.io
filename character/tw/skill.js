@@ -9575,32 +9575,33 @@ const skills = {
 	twmutao: {
 		audio: 2,
 		enable: "phaseUse",
-		usable: 1,
 		filterTarget(card, player, target) {
-			return target.countCards("h") && game.hasPlayer(source => target !== source);
+			return target.countCards("h");
 		},
+		usable: 1,
 		async content(event, trigger, player) {
-			const source = event.target;
-			if (!source.hasCard({ name: "sha" }, "h")) {
+			let source = event.target;
+			let cards = source.getCards("h", { name: "sha" });
+			if (!cards.length) {
 				game.log("但", source, "没有", "#y杀", "！");
 				return;
 			}
-			let togive = source;
-			while (source.hasCard({ name: "sha" }, "h")) {
-				togive = togive.getNext();
-				while (togive === source) togive = togive.getNext();
+			let togive = source.getNext();
+			let gained;
+			while (true) {
 				let card = source.getCards("h", { name: "sha" }).randomGet();
-				if (card) {
+				if (togive == gained) break;
+				if (togive.isIn()) {
 					await source.give(card, togive);
-					if (game.hasPlayer(target => target !== source)) continue;
+					gained = togive;
 				}
-				break;
+				let num = togive == source ? 1 : 0;
+				if (source.countCards("h", { name: "sha" }) > num) togive = togive.getNext();
+				else break;
 			}
-			if (togive !== source) {
-				source.line(togive);
-				let num = togive.countCards("h", { name: "sha" });
-				if (num) await togive.damage(Math.min(2, num), source);
-			}
+			source.line(togive);
+			let num = togive.countCards("h", { name: "sha" });
+			if (num) await togive.damage(Math.min(2, num), source);
 		},
 		ai: {
 			order: 10,
@@ -9612,7 +9613,6 @@ const skills = {
 						map = {};
 					for (var i = 0; i < numx; i++) {
 						targetx = targetx.getNext();
-						while (targetx === target) targetx = targetx.getNext();
 						map[targetx.playerid] ??= 0;
 						map[targetx.playerid]++;
 					}
