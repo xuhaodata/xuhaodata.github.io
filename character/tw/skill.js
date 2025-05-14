@@ -9607,7 +9607,6 @@ const skills = {
 			order: 10,
 			result: {
 				player(player, target) {
-					if (!game.hasPlayer(targetx => targetx !== target)) return 0;
 					var numx = target.countCards("h", { name: "sha" }),
 						targetx = target,
 						map = {};
