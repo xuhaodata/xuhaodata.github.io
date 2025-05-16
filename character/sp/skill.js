@@ -58,19 +58,18 @@ const skills = {
 			player: "phaseJieshuBegin",
 		},
 		async cost(event, trigger, player) {
-			const result = await player
-				.chooseTarget(get.prompt2("olcunze"))
-				.set("ai", function (target) {
-					let att = get.attitude(_status.event.player, target);
+			const { result } = await player
+				.chooseTarget(get.prompt2(event.skill))
+				.set("ai", target => {
+					let att = get.attitude(get.player(), target);
 					if (att > 0) return att + 1;
 					if (att == 0) return Math.random();
 					return att;
 				})
-				.set("animate", false)
-				.forResult();
+				.set("animate", false);
 			event.result = {
-				bool: true,
-				cost_data: result.targets[0],
+				bool: result?.targets?.length,
+				cost_data: result?.targets?.[0],
 			};
 		},
 		async content(event, trigger, player) {
